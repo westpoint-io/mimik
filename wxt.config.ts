@@ -8,6 +8,9 @@ export default defineConfig({
   webExt: {
     chromiumArgs: ['--user-data-dir=/tmp/mimik-dev-profile', '--window-size=1280,800', '--window-position=0,0', '--force-device-scale-factor=1.25'],
   },
+  zip: {
+    excludeSources: ["docs/**", "mockups/**"],
+  },
   alias: {
     '@': 'src',
   },
@@ -37,7 +40,7 @@ export default defineConfig({
         "webNavigation",
         ...(isFirefox ? [] : ["sidePanel"]),
       ],
-      ...(isFirefox ? {} : { host_permissions: ["<all_urls>"] }),
+      host_permissions: ["<all_urls>"],
       ...(isFirefox ? {} : { minimum_chrome_version: "118" }),
       icons: {
         16: 'icon16.png',
