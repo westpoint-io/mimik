@@ -59,6 +59,15 @@ export default defineConfig({
         128: 'icon128.png',
       },
       action: {},
+      commands: {
+        'toggle-recording': {
+          suggested_key: {
+            default: 'Ctrl+Shift+R',
+            mac: 'Command+Shift+R',
+          },
+          description: 'Start or stop a Mimik recording',
+        },
+      },
       ...(isFirefox
         ? {
             sidebar_action: {

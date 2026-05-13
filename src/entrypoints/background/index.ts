@@ -51,6 +51,44 @@ async function generateTitleInBackground(guideId: string) {
   }
 }
 
+async function startRecordingFromActiveTab() {
+  await waitUntilReady();
+  const actor = getActor();
+  const activeTab = await getActiveTab();
+  actor.send({ type: 'START_RECORDING', url: activeTab?.url });
+  const guideId = actor.getSnapshot().context.currentGuideId!;
+
+  await createGuide(guideId);
+
+  if (activeTab?.id) await showNotificationOnTab(activeTab.id);
+
+  await broadcastStartCapture(guideId);
+  return guideId;
+}
+
+async function stopRecordingInBackground() {
+  await waitUntilReady();
+  const actor = getActor();
+  const guideId = actor.getSnapshot().context.currentGuideId;
+  await broadcastStopCapture();
+  actor.send({ type: 'STOP_RECORDING' });
+
+  if (guideId) generateTitleInBackground(guideId);
+
+  return guideId ?? undefined;
+}
+
+async function toggleRecordingFromCommand(command: string) {
+  if (command !== 'toggle-recording') return;
+  await waitUntilReady();
+  const actor = getActor();
+  if (actor.getSnapshot().value === 'recording') {
+    await stopRecordingInBackground();
+  } else {
+    await startRecordingFromActiveTab();
+  }
+}
+
 export default defineBackground(() => {
   logger.info('Background service worker started');
 
@@ -81,6 +119,11 @@ export default defineBackground(() => {
       browser.sidebarAction.toggle();
     });
   }
+  browser.commands.onCommand.addListener((command) => {
+    toggleRecordingFromCommand(command).catch((err) => {
+      logger.error('Toggle recording shortcut failed', err);
+    });
+  });
   initActor().catch(initActorFallback);
   cancelSession();
   registerNavigationListeners();
@@ -128,15 +171,8 @@ export default defineBackground(() => {
   });
 
   onMessage('stopRecording', async () => {
-    await waitUntilReady();
-    const actor = getActor();
-    const guideId = actor.getSnapshot().context.currentGuideId;
-    await broadcastStopCapture();
-    actor.send({ type: 'STOP_RECORDING' });
-
-    if (guideId) generateTitleInBackground(guideId);
-
-    return { success: true, guideId: guideId ?? undefined };
+    const guideId = await stopRecordingInBackground();
+    return { success: true, guideId };
   });
 
   onMessage('enterBlurMode', async () => {
