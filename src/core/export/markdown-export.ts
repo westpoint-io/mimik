@@ -29,3 +29,39 @@ export async function exportGuideAsMarkdown(
 
   return lines.join('\n');
 }
+
+export interface MarkdownBundleFile {
+  filename: string;
+  blob: Blob;
+}
+
+export async function exportGuideAsMarkdownBundle(
+  guide: Guide,
+  steps: Step[],
+  screenshots: Map<string, Screenshot>,
+): Promise<{ markdown: string; files: MarkdownBundleFile[] }> {
+  const domain = extractDomain(steps);
+  const meta = [
+    i18n.t('export.stepsCount', [String(steps.length)]),
+    i18n.t('export.createdLabel', [formatDate(guide.createdAt)]),
+    ...(domain ? [i18n.t('export.sourceLabel', [domain])] : []),
+  ].join(' · ');
+
+  const lines: string[] = [`# ${guide.title}`, '', `*${meta}*`, '', '---', ''];
+  const files: MarkdownBundleFile[] = [];
+
+  for (const step of steps) {
+    const num = String(step.index + 1).padStart(2, '0');
+    lines.push(`## ${i18n.t('export.stepLabel', [num])}: ${step.description}`, '');
+
+    const screenshot = screenshots.get(step.id);
+    if (screenshot) {
+      const ext = screenshot.mimeType === 'image/png' ? 'png' : 'jpg';
+      const imageFilename = `images/step-${num}.${ext}`;
+      lines.push(`![${i18n.t('export.stepLabel', [num])}](${imageFilename})`, '');
+      files.push({ filename: imageFilename, blob: screenshot.blob });
+    }
+  }
+
+  return { markdown: lines.join('\n'), files };
+}

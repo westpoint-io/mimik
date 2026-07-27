@@ -164,6 +164,7 @@ blurPanel:
 exportMenu:
   html: HTML
   markdown: Markdown
+  markdownBundle: "Markdown + Imagens (.zip)"
   pdf: PDF
 
 onboarding:

@@ -9,3 +9,4 @@ docs/
 mockups/
 .worktrees/
 public/transformers/
+.env.github

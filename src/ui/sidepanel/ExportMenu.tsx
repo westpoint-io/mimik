@@ -1,8 +1,9 @@
-import { Download, FileCode, FileDown, FileText, Loader2 } from 'lucide-react';
+import JSZip from 'jszip';
+import { Download, FileCode, FileDown, FileText, FolderArchive, Loader2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { i18n } from '#imports';
 import { exportGuideAsHTML } from '@/core/export/html-export';
-import { exportGuideAsMarkdown } from '@/core/export/markdown-export';
+import { exportGuideAsMarkdown, exportGuideAsMarkdownBundle } from '@/core/export/markdown-export';
 import { exportGuideAsPDF } from '@/core/export/pdf-export';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
 import { Button } from '@/ui/components/ui/button';
@@ -37,7 +38,7 @@ export default function ExportMenu({ guide, steps, screenshots }: ExportMenuProp
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [open]);
 
-  async function handleExport(type: 'html' | 'markdown' | 'pdf') {
+  async function handleExport(type: 'html' | 'markdown' | 'markdown-bundle' | 'pdf') {
     setOpen(false);
     setExporting(true);
     try {
@@ -47,6 +48,20 @@ export default function ExportMenu({ guide, steps, screenshots }: ExportMenuProp
       } else if (type === 'markdown') {
         const md = await exportGuideAsMarkdown(guide, steps, screenshots);
         downloadFile(md, `${guide.title}.md`, 'text/markdown');
+      } else if (type === 'markdown-bundle') {
+        const { markdown, files } = await exportGuideAsMarkdownBundle(guide, steps, screenshots);
+        const zip = new JSZip();
+        zip.file(`${guide.title}.md`, markdown);
+        for (const f of files) {
+          zip.file(f.filename, f.blob);
+        }
+        const blob = await zip.generateAsync({ type: 'blob' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${guide.title}.zip`;
+        a.click();
+        URL.revokeObjectURL(url);
       } else {
         const blob = await exportGuideAsPDF(guide, steps, screenshots);
         const url = URL.createObjectURL(blob);
@@ -64,6 +79,7 @@ export default function ExportMenu({ guide, steps, screenshots }: ExportMenuProp
   const items = [
     { type: 'html' as const, icon: FileCode, label: i18n.t('exportMenu.html') },
     { type: 'markdown' as const, icon: FileText, label: i18n.t('exportMenu.markdown') },
+    { type: 'markdown-bundle' as const, icon: FolderArchive, label: i18n.t('exportMenu.markdownBundle') },
     { type: 'pdf' as const, icon: FileDown, label: i18n.t('exportMenu.pdf') },
   ];
 
