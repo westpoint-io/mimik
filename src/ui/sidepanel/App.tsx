@@ -1,4 +1,4 @@
-import { Search, Settings, Video } from 'lucide-react';
+import { Maximize2, Search, Settings, Video } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';
 import { CaptureState } from '@/core/capture/machine';
@@ -175,6 +175,17 @@ export default function App() {
     }
   }, []);
 
+  const handleOpenMimik = useCallback(async () => {
+    const url = getExtensionURL('/fullview.html');
+    const tabs = await queryTabs({ url });
+    if (tabs.length > 0 && tabs[0].id) {
+      await updateTab(tabs[0].id, { active: true, url });
+      if (tabs[0].windowId) await focusWindow(tabs[0].windowId);
+    } else {
+      await createTab({ url });
+    }
+  }, []);
+
   if (view.name === 'recording') {
     return (
       <RecordingView
@@ -282,9 +293,20 @@ export default function App() {
           />
         </div>
 
-        <p className="text-[11px] font-semibold uppercase tracking-wider mb-2.5 text-muted-foreground">
-          {i18n.t('sidepanel.recentLabel')}
-        </p>
+        <div className="flex items-center justify-between mb-2.5">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            {i18n.t('sidepanel.recentLabel')}
+          </p>
+          <button
+            type="button"
+            onClick={handleOpenMimik}
+            className="flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium text-purple transition-colors hover:bg-secondary hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+            title={i18n.t('library.openInFullView')}
+          >
+            {i18n.t('sidepanel.openMimik')}
+            <Maximize2 size={12} />
+          </button>
+        </div>
 
         <LibraryView
           onOpen={(guideId) => setView({ name: 'editor', guideId })}

@@ -29,6 +29,7 @@ sidepanel:
   startCapture: Lancer la capture
   searchPlaceholder: "Rechercher des guides..."
   recentLabel: "Récents"
+  openMimik: "Ouvrir Mimik"
 
 library:
   noGuidesTitle: Pas encore de guide
