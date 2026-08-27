@@ -23,6 +23,7 @@ import {
 import { logger } from '@/lib/logger';
 import { onMessage } from '@/lib/messaging';
 import { broadcastStateToPanel, setupPortListener } from '@/lib/port';
+import { recordUpdate } from '@/lib/update-notice';
 import { getActor, getStateUpdate, initActor, initActorFallback, waitUntilReady } from './actor';
 import { generateDescriptionOnDemand, generateGuideMetaOnStop, settlePendingDescriptions } from './guide-meta';
 import { registerNavigationListeners } from './navigation';
@@ -55,6 +56,7 @@ export default defineBackground(() => {
   logger.info('Background service worker started');
 
   browser.runtime.onInstalled.addListener(async (details) => {
+    await recordUpdate(details.reason);
     if (details.reason !== 'install') return;
     if (import.meta.env.BROWSER === 'firefox') {
       // Firefox MV3 bug 1758306: the <all_urls> grant lands in the origin

@@ -20,6 +20,8 @@ common:
   star: Star
   unstar: Unstar
   restore: Restore
+  updated: "Updated to v$1"
+  whatsNew: See what's new
 
 sidepanel:
   connected: Connected

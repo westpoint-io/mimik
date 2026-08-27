@@ -22,6 +22,7 @@ import { Button } from '@/ui/components/ui/button';
 import { Input } from '@/ui/components/ui/input';
 import { TooltipProvider } from '@/ui/components/ui/tooltip';
 import SettingsView from '@/ui/shared/SettingsView';
+import UpdateNotice from '@/ui/shared/UpdateNotice';
 import GuideEditor from './GuideEditor';
 import GuideMeCompletion from './GuideMeCompletion';
 import GuideMeView from './GuideMeView';
@@ -302,6 +303,8 @@ export default function App() {
 
         {/* Body */}
         <div className="flex-1 px-5 pt-5">
+          <UpdateNotice className="mb-4" />
+
           <div className="relative mb-5">
             <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-purple" />
             <Input

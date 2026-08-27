@@ -20,6 +20,8 @@ common:
   star: Favoritar
   unstar: Tirar dos favoritos
   restore: Restaurar
+  updated: "Atualizado para a v$1"
+  whatsNew: Ver as novidades
 
 sidepanel:
   connected: Conectado
