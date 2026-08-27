@@ -111,11 +111,12 @@ export interface ValidateApiKeyData {
   provider: string;
   apiKey: string;
   baseUrl?: string;
+  model?: string;
 }
 
 export interface ValidateApiKeyResponse {
   valid: boolean;
-  reason?: 'rejected' | 'network';
+  reason?: 'rejected' | 'network' | 'model-required' | 'model-invalid';
   models?: string[];
 }
 

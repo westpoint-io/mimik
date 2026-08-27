@@ -126,6 +126,8 @@ settings:
   validatingKey: "Checking key\u2026"
   keyValid: API key verified.
   keyInvalid: That API key was rejected. Check it and try again.
+  keyModelRequired: Choose a model before checking this key.
+  keyModelInvalid: The selected model is not available from this provider.
   checkKey: Check key
   keyUnreachable: Could not reach the provider. Check your connection and try again.
   modelsFound: "$1 models available"

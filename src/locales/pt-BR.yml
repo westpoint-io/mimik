@@ -126,6 +126,8 @@ settings:
   validatingKey: "Verificando chave\u2026"
   keyValid: Chave de API verificada.
   keyInvalid: Essa chave de API foi recusada. Verifique-a e tente novamente.
+  keyModelRequired: Escolha um modelo antes de verificar esta chave.
+  keyModelInvalid: O modelo selecionado não está disponível neste provedor.
   checkKey: Verificar chave
   keyUnreachable: Não deu pra falar com o provedor. Confere sua conexão e tenta de novo.
   modelsFound: "$1 modelos disponíveis"

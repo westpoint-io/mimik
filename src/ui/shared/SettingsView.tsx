@@ -182,7 +182,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
 
   const handleProviderChange = (newProvider: AIProviderKey) => {
     setProvider(newProvider);
-    aiKeyCheck.setStatus(null);
+    aiKeyCheck.reset();
     setCustomModel(false);
     setModel(AI_PROVIDERS[newProvider].defaultModel);
   };
@@ -191,10 +191,12 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     if (value === CUSTOM_MODEL_VALUE) {
       setCustomModel(true);
       setModel('');
+      aiKeyCheck.reset();
       return;
     }
     setCustomModel(false);
     setModel(value);
+    aiKeyCheck.reset();
   };
 
   const providerConfig = AI_PROVIDERS[provider];
@@ -279,7 +281,10 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
             {usingCustomModel && (
               <Input
                 value={model}
-                onChange={(e) => setModel(e.target.value)}
+                onChange={(e) => {
+                  setModel(e.target.value);
+                  aiKeyCheck.reset();
+                }}
                 placeholder={providerConfig.defaultModel}
                 aria-label={i18n.t('settings.modelCustom')}
                 className="mt-1.5 h-8 text-[12px] rounded-lg border-border"
@@ -298,7 +303,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
                 value={baseUrl}
                 onChange={(e) => {
                   setBaseUrl(e.target.value);
-                  aiKeyCheck.setStatus(null);
+                  aiKeyCheck.reset();
                 }}
                 placeholder="https://api.example.com/v1"
                 aria-label={i18n.t('settings.baseUrl')}
@@ -315,7 +320,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
                 value={apiKey}
                 onChange={(e) => {
                   setApiKey(e.target.value);
-                  aiKeyCheck.setStatus(null);
+                  aiKeyCheck.reset();
                 }}
                 placeholder="sk-..."
                 className="h-8 text-[12px] rounded-lg border-border"
@@ -324,7 +329,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
                 variant="outline"
                 size="sm"
                 disabled={!apiKey || aiKeyCheck.status === 'checking'}
-                onClick={() => void aiKeyCheck.check(provider, apiKey, baseUrl)}
+                onClick={() => void aiKeyCheck.check(provider, apiKey, baseUrl, model)}
                 className="h-8 shrink-0 rounded-lg bg-card text-[11px] font-semibold"
               >
                 {i18n.t('settings.checkKey')}
@@ -497,7 +502,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
               value={voiceProvider}
               onChange={(e) => {
                 setVoiceProvider(e.target.value as VoiceProvider);
-                voiceKeyCheck.setStatus(null);
+                voiceKeyCheck.reset();
               }}
               className="w-full border border-border rounded-lg px-3 py-2 text-[13px] text-foreground bg-card font-medium outline-none focus:border-ring focus:ring-2 focus:ring-ring/10"
             >
@@ -514,7 +519,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
                 value={voiceApiKey}
                 onChange={(e) => {
                   setVoiceApiKey(e.target.value);
-                  voiceKeyCheck.setStatus(null);
+                  voiceKeyCheck.reset();
                 }}
                 placeholder={voiceProvider === 'groq' ? 'gsk_...' : 'sk-...'}
               />
