@@ -255,7 +255,14 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
 
   const providerConfig = AI_PROVIDERS[provider];
   const usingCustomModel = customModel || isCustomModel(model, providerConfig);
-  const voiceKey = resolveVoiceApiKey({ voiceProvider, voiceApiKey, aiProvider: provider, aiApiKey: apiKey });
+  const voiceKey = resolveVoiceApiKey({
+    voiceProvider,
+    voiceApiKey,
+    voiceBaseUrl,
+    voiceModel,
+    aiProvider: provider,
+    aiApiKey: apiKey,
+  });
 
   const BLUR_PRESET_I18N: Record<PresetKey, string> = {
     email: 'blurPresets.email',
