@@ -135,3 +135,58 @@ describe('createTranscriber', () => {
     await expect(run({ provider: 'openai', apiKey: 'sk-test' })).resolves.toEqual(verbose);
   });
 });
+
+describe('createTranscriber against an azure deployment', () => {
+  const azure = {
+    provider: 'azure' as const,
+    apiKey: 'az-key',
+    baseURL: 'https://my-res.openai.azure.com',
+    model: 'whisper',
+  };
+
+  it('posts to the deployment route, which is how azure addresses a model', async () => {
+    await run(azure);
+    expect(sentTo()).toBe(
+      'https://my-res.openai.azure.com/openai/deployments/whisper/audio/transcriptions?api-version=2024-06-01',
+    );
+  });
+
+  it('appends the /openai path the user does not have to type', async () => {
+    await run({ ...azure, baseURL: 'https://my-res.openai.azure.com/' });
+    expect(sentTo()).toContain('/openai/deployments/whisper/');
+  });
+
+  it('authenticates with api-key, since azure rejects a bearer token', async () => {
+    await run(azure);
+    const headers = sentInit().headers as Record<string, string>;
+    expect(headers['api-key']).toBe('az-key');
+    expect(headers.Authorization).toBeUndefined();
+  });
+
+  it('sends the deployment name as the model, which azure accepts', async () => {
+    await run(azure);
+    expect(sentForm().get('model')).toBe('whisper');
+  });
+
+  it('still asks for the verbose payload the narration matcher depends on', async () => {
+    await run(azure);
+    expect(sentForm().get('response_format')).toBe('verbose_json');
+    expect(sentForm().getAll('timestamp_granularities[]')).toEqual(['word', 'segment']);
+  });
+
+  it('refuses to transcribe rather than call the wrong host when no endpoint is set', async () => {
+    await expect(run({ ...azure, baseURL: '' })).rejects.toThrow();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('refuses to transcribe when no deployment name is given', async () => {
+    await expect(run({ ...azure, model: '' })).rejects.toThrow();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('leaves openai and groq on their own hosts with bearer auth', async () => {
+    await run({ provider: 'openai', apiKey: 'sk-test' });
+    expect(sentTo()).toBe('https://api.openai.com/v1/audio/transcriptions');
+    expect((sentInit().headers as Record<string, string>).Authorization).toBe('Bearer sk-test');
+  });
+});

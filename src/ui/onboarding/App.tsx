@@ -2,7 +2,8 @@ import { Mic, MousePointerClick, Shield } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';
 import { PRESET_LABELS, type PresetKey } from '@/core/blur/regexes';
-import { AI_PROVIDERS, type AIProviderKey } from '@/core/capture/ai/models';
+import { isInsecureEndpoint } from '@/core/capture/ai/endpoint';
+import { AI_PROVIDERS, type AIProviderKey, CUSTOM_MODEL_VALUE, isCustomModel } from '@/core/capture/ai/models';
 import { AI_LANGUAGES, type AILanguageCode } from '@/core/capture/ai/prompts';
 import type { VoiceProvider } from '@/core/capture/voice/transcribe';
 import { localStorage, openSidebar, requestHostPermissions } from '@/lib/browser-api';
@@ -118,16 +119,19 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
   const [provider, setProvider] = useState<AIProviderKey>('openai');
   const [model, setModel] = useState(AI_PROVIDERS.openai.defaultModel);
   const [apiKey, setApiKey] = useState('');
+  const [baseUrl, setBaseUrl] = useState('');
   const [aiLanguage, setAiLanguage] = useState<AILanguageCode>('en');
+  const [customModel, setCustomModel] = useState(false);
 
   useEffect(() => {
     const load = () =>
-      localStorage.get(['aiProvider', 'aiModel', 'aiApiKey', 'aiLanguage']).then((stored) => {
+      localStorage.get(['aiProvider', 'aiModel', 'aiApiKey', 'aiBaseUrl', 'aiLanguage']).then((stored) => {
         if (typeof stored.aiProvider === 'string' && stored.aiProvider in AI_PROVIDERS) {
           setProvider(stored.aiProvider as AIProviderKey);
         }
         if (typeof stored.aiModel === 'string') setModel(stored.aiModel);
         if (typeof stored.aiApiKey === 'string') setApiKey(stored.aiApiKey);
+        if (typeof stored.aiBaseUrl === 'string') setBaseUrl(stored.aiBaseUrl);
         if (typeof stored.aiLanguage === 'string') setAiLanguage(stored.aiLanguage as AILanguageCode);
       });
 
@@ -140,15 +144,34 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
   }, []);
 
   const providerConfig = AI_PROVIDERS[provider];
+  const usingCustomModel = customModel || providerConfig.models.length === 0 || isCustomModel(model, providerConfig);
 
   const handleProviderChange = (newProvider: AIProviderKey) => {
     const nextModel = AI_PROVIDERS[newProvider].defaultModel;
     setProvider(newProvider);
+    setCustomModel(false);
     setModel(nextModel);
-    void localStorage.set({ aiProvider: newProvider, aiModel: nextModel });
+    setBaseUrl('');
+    void localStorage.set({ aiProvider: newProvider, aiModel: nextModel, aiBaseUrl: '' });
+  };
+
+  const handleBaseUrlChange = (nextBaseUrl: string) => {
+    setBaseUrl(nextBaseUrl);
+    void localStorage.set({ aiBaseUrl: nextBaseUrl });
   };
 
   const handleModelChange = (nextModel: string) => {
+    if (nextModel === CUSTOM_MODEL_VALUE) {
+      setCustomModel(true);
+      setModel('');
+      return;
+    }
+    setCustomModel(false);
+    setModel(nextModel);
+    void localStorage.set({ aiModel: nextModel });
+  };
+
+  const handleCustomModelChange = (nextModel: string) => {
     setModel(nextModel);
     void localStorage.set({ aiModel: nextModel });
   };
@@ -192,9 +215,30 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
               </Select>
             </div>
 
+            {providerConfig.requiresEndpoint && (
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1.5">
+                  {i18n.t('settings.endpoint')}
+                </label>
+                <Input
+                  type="text"
+                  value={baseUrl}
+                  onChange={(e) => handleBaseUrlChange(e.target.value)}
+                  placeholder={providerConfig.endpointExample}
+                  className="w-full rounded-xl px-4 py-2.5 text-sm focus:border-accent focus:ring-accent/10"
+                />
+                <p className="mt-1.5 text-xs text-muted-foreground">{i18n.t('settings.endpointHint')}</p>
+                {isInsecureEndpoint(baseUrl) && (
+                  <p className="mt-1.5 text-xs text-destructive" role="alert">
+                    {i18n.t('settings.endpointInsecure')}
+                  </p>
+                )}
+              </div>
+            )}
+
             <div>
               <label className="block text-xs font-semibold text-foreground mb-1.5">{i18n.t('settings.model')}</label>
-              <Select value={model} onValueChange={handleModelChange}>
+              <Select value={usingCustomModel ? CUSTOM_MODEL_VALUE : model} onValueChange={handleModelChange}>
                 <SelectTrigger className="w-full rounded-xl px-4 py-2.5 text-sm focus:border-accent focus:ring-accent/10">
                   <SelectValue />
                 </SelectTrigger>
@@ -204,8 +248,18 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
                       {m.label}
                     </SelectItem>
                   ))}
+                  <SelectItem value={CUSTOM_MODEL_VALUE}>{i18n.t('settings.modelCustom')}</SelectItem>
                 </SelectContent>
               </Select>
+              {usingCustomModel && (
+                <Input
+                  value={model}
+                  onChange={(e) => handleCustomModelChange(e.target.value)}
+                  placeholder={providerConfig.defaultModel}
+                  aria-label={i18n.t('settings.modelCustom')}
+                  className="mt-1.5 w-full rounded-xl px-4 py-2.5 text-sm focus:border-accent focus:ring-accent/10"
+                />
+              )}
             </div>
 
             <div>
@@ -333,15 +387,22 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
 function VoiceStep({ onNext, onSkip, onBack, index, total }: StepProps) {
   const [provider, setProvider] = useState<VoiceProvider>('openai');
   const [apiKey, setApiKey] = useState('');
+  const [baseUrl, setBaseUrl] = useState('');
+  const [model, setModel] = useState('');
   const [microphoneId, setMicrophoneId] = useState('');
 
   useEffect(() => {
     const load = () =>
-      localStorage.get(['voiceProvider', 'voiceApiKey', 'voiceMicrophoneId']).then((stored) => {
-        if (stored.voiceProvider === 'openai' || stored.voiceProvider === 'groq') setProvider(stored.voiceProvider);
-        if (typeof stored.voiceApiKey === 'string') setApiKey(stored.voiceApiKey);
-        if (typeof stored.voiceMicrophoneId === 'string') setMicrophoneId(stored.voiceMicrophoneId);
-      });
+      localStorage
+        .get(['voiceProvider', 'voiceApiKey', 'voiceBaseUrl', 'voiceModel', 'voiceMicrophoneId'])
+        .then((stored) => {
+          if (stored.voiceProvider === 'openai' || stored.voiceProvider === 'groq' || stored.voiceProvider === 'azure')
+            setProvider(stored.voiceProvider);
+          if (typeof stored.voiceApiKey === 'string') setApiKey(stored.voiceApiKey);
+          if (typeof stored.voiceBaseUrl === 'string') setBaseUrl(stored.voiceBaseUrl);
+          if (typeof stored.voiceModel === 'string') setModel(stored.voiceModel);
+          if (typeof stored.voiceMicrophoneId === 'string') setMicrophoneId(stored.voiceMicrophoneId);
+        });
 
     void load();
     const onVisible = () => {
@@ -358,12 +419,24 @@ function VoiceStep({ onNext, onSkip, onBack, index, total }: StepProps) {
 
   const handleProviderChange = (nextProvider: VoiceProvider) => {
     setProvider(nextProvider);
-    void localStorage.set({ voiceProvider: nextProvider });
+    setBaseUrl('');
+    setModel('');
+    void localStorage.set({ voiceProvider: nextProvider, voiceBaseUrl: '', voiceModel: '' });
   };
 
   const handleApiKeyChange = (nextKey: string) => {
     setApiKey(nextKey);
     void localStorage.set({ voiceApiKey: nextKey });
+  };
+
+  const handleBaseUrlChange = (nextBaseUrl: string) => {
+    setBaseUrl(nextBaseUrl);
+    void localStorage.set({ voiceBaseUrl: nextBaseUrl });
+  };
+
+  const handleModelChange = (nextModel: string) => {
+    setModel(nextModel);
+    void localStorage.set({ voiceModel: nextModel });
   };
 
   return (
@@ -391,6 +464,7 @@ function VoiceStep({ onNext, onSkip, onBack, index, total }: StepProps) {
                 >
                   <option value="openai">OpenAI</option>
                   <option value="groq">Groq</option>
+                  <option value="azure">Azure OpenAI</option>
                 </select>
               </div>
               <div className="flex-1">
@@ -401,11 +475,45 @@ function VoiceStep({ onNext, onSkip, onBack, index, total }: StepProps) {
                   type="password"
                   value={apiKey}
                   onChange={(e) => handleApiKeyChange(e.target.value)}
-                  placeholder={provider === 'groq' ? 'gsk_...' : 'sk-...'}
+                  placeholder={provider === 'groq' ? 'gsk_...' : provider === 'azure' ? '' : 'sk-...'}
                   className="w-full border border-border rounded-xl px-3 py-2 text-[13px] text-foreground bg-card font-medium outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 placeholder:text-muted-foreground/50"
                 />
               </div>
             </div>
+
+            {provider === 'azure' && (
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="block text-[11px] font-semibold text-foreground mb-1">
+                    {i18n.t('settings.endpoint')}
+                  </label>
+                  <input
+                    type="text"
+                    value={baseUrl}
+                    onChange={(e) => handleBaseUrlChange(e.target.value)}
+                    placeholder="https://your-resource.openai.azure.com"
+                    className="w-full border border-border rounded-xl px-3 py-2 text-[13px] text-foreground bg-card font-medium outline-none focus:border-accent focus:ring-2 focus:ring-accent/10"
+                  />
+                  <p className="mt-1 text-[11px] text-muted-foreground">{i18n.t('settings.endpointHint')}</p>
+                  {isInsecureEndpoint(baseUrl) && (
+                    <p className="mt-1 text-[11px] text-destructive" role="alert">
+                      {i18n.t('settings.endpointInsecure')}
+                    </p>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <label className="block text-[11px] font-semibold text-foreground mb-1">
+                    {i18n.t('settings.voiceDeployment')}
+                  </label>
+                  <input
+                    type="text"
+                    value={model}
+                    onChange={(e) => handleModelChange(e.target.value)}
+                    className="w-full border border-border rounded-xl px-3 py-2 text-[13px] text-foreground bg-card font-medium outline-none focus:border-accent focus:ring-2 focus:ring-accent/10"
+                  />
+                </div>
+              </div>
+            )}
 
             <MicrophonePicker value={microphoneId} onChange={handleMicrophoneChange} />
 

@@ -7,6 +7,8 @@ export interface AIProviderConfig {
   label: string;
   defaultModel: string;
   models: AIModelOption[];
+  requiresEndpoint?: boolean;
+  endpointExample?: string;
 }
 
 export const AI_PROVIDERS: Record<string, AIProviderConfig> = {
@@ -28,6 +30,13 @@ export const AI_PROVIDERS: Record<string, AIProviderConfig> = {
       { id: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku' },
       { id: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4' },
     ],
+  },
+  azure: {
+    label: 'Azure OpenAI',
+    defaultModel: '',
+    models: [],
+    requiresEndpoint: true,
+    endpointExample: 'https://your-resource.openai.azure.com',
   },
 };
 

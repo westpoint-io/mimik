@@ -101,6 +101,53 @@ describe('resolveVoiceApiKey', () => {
   it('resolves nothing from empty storage', () => {
     expect(resolveVoiceApiKey({})).toEqual({ provider: 'openai', apiKey: '', source: 'none' });
   });
+
+  it('resolves an azure voice key with its endpoint and deployment when fully configured', () => {
+    expect(
+      resolveVoiceApiKey({
+        voiceProvider: 'azure',
+        voiceApiKey: 'az-key',
+        voiceBaseUrl: 'https://my-res.openai.azure.com',
+        voiceModel: 'my-deployment',
+      }),
+    ).toEqual({
+      provider: 'azure',
+      apiKey: 'az-key',
+      source: 'voice',
+      baseURL: 'https://my-res.openai.azure.com',
+      model: 'my-deployment',
+    });
+  });
+
+  it('resolves nothing for azure when the endpoint is missing', () => {
+    expect(resolveVoiceApiKey({ voiceProvider: 'azure', voiceApiKey: 'az-key', voiceModel: 'my-deployment' })).toEqual({
+      provider: 'azure',
+      apiKey: '',
+      source: 'none',
+    });
+  });
+
+  it('resolves nothing for azure when the deployment name is missing', () => {
+    expect(
+      resolveVoiceApiKey({
+        voiceProvider: 'azure',
+        voiceApiKey: 'az-key',
+        voiceBaseUrl: 'https://my-res.openai.azure.com',
+      }),
+    ).toEqual({ provider: 'azure', apiKey: '', source: 'none' });
+  });
+
+  it('never lends the ai key to azure, even when endpoint and model are set', () => {
+    expect(
+      resolveVoiceApiKey({
+        voiceProvider: 'azure',
+        voiceApiKey: '',
+        voiceBaseUrl: 'https://my-res.openai.azure.com',
+        voiceModel: 'my-deployment',
+        aiApiKey: 'sk-ai',
+      }),
+    ).toEqual({ provider: 'azure', apiKey: '', source: 'none' });
+  });
 });
 
 describe('hasVoiceApiKey', () => {
@@ -122,6 +169,13 @@ describe('normalizeVoiceProvider', () => {
 
 describe('VOICE_KEY_SETTINGS', () => {
   it('names every storage key the resolution reads', () => {
-    expect([...VOICE_KEY_SETTINGS]).toEqual(['voiceProvider', 'voiceApiKey', 'aiProvider', 'aiApiKey']);
+    expect([...VOICE_KEY_SETTINGS]).toEqual([
+      'voiceProvider',
+      'voiceApiKey',
+      'voiceBaseUrl',
+      'voiceModel',
+      'aiProvider',
+      'aiApiKey',
+    ]);
   });
 });

@@ -18,6 +18,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { i18n } from '#imports';
 import { PRESET_LABELS, type PresetKey } from '@/core/blur/regexes';
+import { isInsecureEndpoint } from '@/core/capture/ai/endpoint';
 import { AI_PROVIDERS, type AIProviderKey, CUSTOM_MODEL_VALUE, isCustomModel } from '@/core/capture/ai/models';
 import { AI_LANGUAGES, type AILanguageCode } from '@/core/capture/ai/prompts';
 import { resolveVoiceApiKey } from '@/core/capture/voice/api-key';
@@ -48,14 +49,14 @@ function useKeyCheck() {
   const [status, setStatus] = useState<KeyStatus>(null);
   const validated = useRef('');
 
-  const check = useCallback(async (provider: string, apiKey: string) => {
-    const fingerprint = `${provider}:${apiKey}`;
+  const check = useCallback(async (provider: string, apiKey: string, baseURL?: string) => {
+    const fingerprint = `${provider}:${apiKey}:${baseURL ?? ''}`;
     if (validated.current === fingerprint) {
       setStatus('valid');
       return;
     }
     setStatus('checking');
-    const result = await sendMessage('validateApiKey', { provider, apiKey }).catch(() => null);
+    const result = await sendMessage('validateApiKey', { provider, apiKey, baseURL }).catch(() => null);
     if (result?.valid) validated.current = fingerprint;
     setStatus(result?.valid ? 'valid' : result?.reason === 'rejected' ? 'rejected' : 'unreachable');
   }, []);
@@ -98,6 +99,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   const [provider, setProvider] = useState<AIProviderKey>('openai');
   const [model, setModel] = useState(AI_PROVIDERS.openai.defaultModel);
   const [apiKey, setApiKey] = useState('');
+  const [baseUrl, setBaseUrl] = useState('');
   const [saved, setSaved] = useState(false);
   const aiKeyCheck = useKeyCheck();
   const voiceKeyCheck = useKeyCheck();
@@ -109,6 +111,8 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   const [aiLanguage, setAiLanguage] = useState<AILanguageCode>('en');
   const [voiceProvider, setVoiceProvider] = useState<VoiceProvider>('openai');
   const [voiceApiKey, setVoiceApiKey] = useState('');
+  const [voiceBaseUrl, setVoiceBaseUrl] = useState('');
+  const [voiceModel, setVoiceModel] = useState('');
   const [voiceMicrophoneId, setVoiceMicrophoneId] = useState('');
   const [targetColor, setTargetColor] = useState<string>(DEFAULT_TARGET_COLOR);
   const [brandLogo, setBrandLogo] = useState<BrandLogo | null>(null);
@@ -128,12 +132,15 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     localStorage
       .get([
         'aiApiKey',
+        'aiBaseUrl',
         'aiProvider',
         'aiModel',
         'aiLanguage',
         'blurPresets',
         'voiceProvider',
         'voiceApiKey',
+        'voiceBaseUrl',
+        'voiceModel',
         'voiceMicrophoneId',
         'targetColor',
         'brandLogo',
@@ -145,10 +152,13 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
         setProvider(p);
         setModel((result.aiModel as string) || AI_PROVIDERS[p].defaultModel);
         if (result.aiApiKey) setApiKey(result.aiApiKey as string);
+        if (result.aiBaseUrl) setBaseUrl(result.aiBaseUrl as string);
         if (result.aiLanguage) setAiLanguage(result.aiLanguage as AILanguageCode);
         if (result.blurPresets) setBlurPresets(result.blurPresets as Record<PresetKey, boolean>);
         setVoiceProvider((result.voiceProvider as VoiceProvider) || 'openai');
         if (result.voiceApiKey) setVoiceApiKey(result.voiceApiKey as string);
+        if (result.voiceBaseUrl) setVoiceBaseUrl(result.voiceBaseUrl as string);
+        if (result.voiceModel) setVoiceModel(result.voiceModel as string);
         if (result.voiceMicrophoneId) setVoiceMicrophoneId(result.voiceMicrophoneId as string);
         if (result.targetColor) setTargetColor(result.targetColor as string);
         if (result.brandLogo) setBrandLogo(result.brandLogo as BrandLogo);
@@ -160,12 +170,15 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
 
   const stored = {
     aiApiKey: apiKey,
+    aiBaseUrl: baseUrl,
     aiProvider: provider,
     aiModel: model,
     aiLanguage,
     blurPresets,
     voiceProvider,
     voiceApiKey,
+    voiceBaseUrl,
+    voiceModel,
     voiceMicrophoneId,
     targetColor,
     brandLogo,
@@ -227,6 +240,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     aiKeyCheck.setStatus(null);
     setCustomModel(false);
     setModel(AI_PROVIDERS[newProvider].defaultModel);
+    setBaseUrl('');
   };
 
   const handleModelChange = (value: string) => {
@@ -303,6 +317,27 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
             </Select>
           </div>
 
+          {providerConfig.requiresEndpoint && (
+            <div>
+              <label className="block text-[11px] font-semibold text-foreground mb-1">
+                {i18n.t('settings.endpoint')}
+              </label>
+              <Input
+                type="text"
+                value={baseUrl}
+                onChange={(e) => setBaseUrl(e.target.value)}
+                placeholder={providerConfig.endpointExample}
+                className="h-8 text-[12px] rounded-lg border-border"
+              />
+              <p className="mt-1 text-[11px] text-muted-foreground">{i18n.t('settings.endpointHint')}</p>
+              {isInsecureEndpoint(baseUrl) && (
+                <p className="mt-1 text-[11px] text-destructive" role="alert">
+                  {i18n.t('settings.endpointInsecure')}
+                </p>
+              )}
+            </div>
+          )}
+
           <div>
             <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.model')}</label>
             <Select value={usingCustomModel ? CUSTOM_MODEL_VALUE : model} onValueChange={handleModelChange}>
@@ -345,8 +380,10 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
               <Button
                 variant="outline"
                 size="sm"
-                disabled={!apiKey || aiKeyCheck.status === 'checking'}
-                onClick={() => void aiKeyCheck.check(provider, apiKey)}
+                disabled={
+                  !apiKey || (providerConfig.requiresEndpoint && !baseUrl.trim()) || aiKeyCheck.status === 'checking'
+                }
+                onClick={() => void aiKeyCheck.check(provider, apiKey, baseUrl)}
                 className="h-8 shrink-0 rounded-lg bg-card text-[11px] font-semibold"
               >
                 {i18n.t('settings.checkKey')}
@@ -519,13 +556,51 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
               onChange={(e) => {
                 setVoiceProvider(e.target.value as VoiceProvider);
                 voiceKeyCheck.setStatus(null);
+                setVoiceBaseUrl('');
+                setVoiceModel('');
               }}
               className="w-full border border-border rounded-lg px-3 py-2 text-[13px] text-foreground bg-card font-medium outline-none focus:border-ring focus:ring-2 focus:ring-ring/10"
             >
               <option value="openai">OpenAI</option>
               <option value="groq">Groq</option>
+              <option value="azure">Azure OpenAI</option>
             </select>
           </div>
+
+          {voiceProvider === 'azure' && (
+            <>
+              <div>
+                <label className="block text-[11px] font-semibold text-foreground mb-1">
+                  {i18n.t('settings.endpoint')}
+                </label>
+                <Input
+                  type="text"
+                  value={voiceBaseUrl}
+                  onChange={(e) => setVoiceBaseUrl(e.target.value)}
+                  placeholder="https://your-resource.openai.azure.com"
+                  className="h-8 text-[12px] rounded-lg border-border"
+                />
+                <p className="mt-1 text-[11px] text-muted-foreground">{i18n.t('settings.endpointHint')}</p>
+                {isInsecureEndpoint(voiceBaseUrl) && (
+                  <p className="mt-1 text-[11px] text-destructive" role="alert">
+                    {i18n.t('settings.endpointInsecure')}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-foreground mb-1">
+                  {i18n.t('settings.voiceDeployment')}
+                </label>
+                <Input
+                  type="text"
+                  value={voiceModel}
+                  onChange={(e) => setVoiceModel(e.target.value)}
+                  className="h-8 text-[12px] rounded-lg border-border"
+                />
+              </div>
+            </>
+          )}
 
           <div>
             <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.apiKey')}</label>
@@ -537,13 +612,17 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
                   setVoiceApiKey(e.target.value);
                   voiceKeyCheck.setStatus(null);
                 }}
-                placeholder={voiceProvider === 'groq' ? 'gsk_...' : 'sk-...'}
+                placeholder={voiceProvider === 'groq' ? 'gsk_...' : voiceProvider === 'azure' ? '' : 'sk-...'}
               />
               <Button
                 variant="outline"
                 size="sm"
-                disabled={!voiceApiKey || voiceKeyCheck.status === 'checking'}
-                onClick={() => void voiceKeyCheck.check(voiceProvider, voiceApiKey)}
+                disabled={
+                  !voiceApiKey ||
+                  (voiceProvider === 'azure' && !voiceBaseUrl.trim()) ||
+                  voiceKeyCheck.status === 'checking'
+                }
+                onClick={() => void voiceKeyCheck.check(voiceProvider, voiceApiKey, voiceBaseUrl)}
                 className="h-8 shrink-0 rounded-lg bg-card text-[11px] font-semibold"
               >
                 {i18n.t('settings.checkKey')}

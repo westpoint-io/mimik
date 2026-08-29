@@ -4,7 +4,7 @@ import { logger } from '@/lib/logger';
 import type { RewriteSelectionResponse } from '@/lib/messaging';
 import { AI_PROVIDERS } from './models';
 import { getLanguageSuffix, REWRITE_PROMPT } from './prompts';
-import { createModel } from './provider';
+import { createModel, isConnectionConfigured } from './provider';
 
 const WRAPPED_IN_QUOTES = /^["“'](.*)["”']$/s;
 
@@ -22,18 +22,19 @@ export function buildRewritePrompt(text: string, instruction: string, locale: st
 }
 
 export async function rewriteSelection(text: string, instruction: string): Promise<RewriteSelectionResponse> {
-  const settings = await localStorage.get(['aiApiKey', 'aiProvider', 'aiModel', 'aiLanguage']);
-  if (!settings.aiApiKey) return { error: 'no-api-key' };
-
+  const settings = await localStorage.get(['aiApiKey', 'aiProvider', 'aiModel', 'aiLanguage', 'aiBaseUrl']);
   const provider = (settings.aiProvider as string) || 'openai';
+  const connection = {
+    provider,
+    model: (settings.aiModel as string) || AI_PROVIDERS[provider].defaultModel,
+    apiKey: settings.aiApiKey as string,
+    baseURL: settings.aiBaseUrl as string | undefined,
+  };
+  if (!isConnectionConfigured(connection)) return { error: 'no-api-key' };
 
   try {
     const { text: raw } = await generateText({
-      model: createModel(
-        provider,
-        (settings.aiModel as string) || AI_PROVIDERS[provider].defaultModel,
-        settings.aiApiKey as string,
-      ),
+      model: createModel(connection),
       prompt: buildRewritePrompt(text, instruction, (settings.aiLanguage as string) || 'en'),
       maxOutputTokens: 400,
     });

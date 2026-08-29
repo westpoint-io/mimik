@@ -96,12 +96,12 @@ describe('background guide-meta', () => {
 
       await run(GUIDE_ID);
 
-      expect(generateGuideMetaMock).toHaveBeenCalledWith(
-        expect.anything(),
-        'anthropic',
-        AI_PROVIDERS.anthropic.defaultModel,
-        'key',
-      );
+      expect(generateGuideMetaMock).toHaveBeenCalledWith(expect.anything(), {
+        provider: 'anthropic',
+        model: AI_PROVIDERS.anthropic.defaultModel,
+        apiKey: 'key',
+        baseURL: undefined,
+      });
     });
 
     it.each(entryPoints)('%s defaults the provider to OpenAI when none is stored', async (_name, run) => {
@@ -109,12 +109,12 @@ describe('background guide-meta', () => {
 
       await run(GUIDE_ID);
 
-      expect(generateGuideMetaMock).toHaveBeenCalledWith(
-        expect.anything(),
-        'openai',
-        AI_PROVIDERS.openai.defaultModel,
-        'key',
-      );
+      expect(generateGuideMetaMock).toHaveBeenCalledWith(expect.anything(), {
+        provider: 'openai',
+        model: AI_PROVIDERS.openai.defaultModel,
+        apiKey: 'key',
+        baseURL: undefined,
+      });
     });
   });
 

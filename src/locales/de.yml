@@ -100,8 +100,12 @@ settings:
   provider: Anbieter
   model: Modell
   apiKey: API-Schlüssel
+  endpoint: Endpunkt
+  endpointHint: "Die Basis-URL deines Anbieters. Dein Schlüssel und deine Daten gehen ausschließlich an diese Adresse."
+  endpointInsecure: "Diese Verbindung ist nicht verschlüsselt. Dein API-Schlüssel wird im Klartext übertragen."
   aiLanguage: Sprache der Beschreibungen
   voiceNarration: Sprachkommentar
+  voiceDeployment: Bereitstellungsname
   voiceUsingAiKey: "Es ist kein Sprach-Schlüssel gesetzt, daher nutzt Mimik den OpenAI-Schlüssel aus den KI-Beschreibungen oben."
   aiNoKey: "Kein API-Schlüssel gesetzt, daher verwenden Schritte einfache regelbasierte Beschreibungen."
   voiceNoKey: "Es ist kein API-Schlüssel gesetzt, daher werden deine Aufnahmen nicht vertont."

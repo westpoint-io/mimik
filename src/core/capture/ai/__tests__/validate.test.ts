@@ -71,3 +71,42 @@ describe('validateApiKey', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
+
+describe('validateApiKey for user-supplied endpoints', () => {
+  beforeEach(() => {
+    fetchMock.mockReset();
+  });
+
+  it('checks an azure key against the resource the user configured', async () => {
+    fetchMock.mockResolvedValue({ ok: true, status: 200 });
+    expect(await validateApiKey('azure', 'az-key', 'https://my-res.openai.azure.com')).toEqual({ valid: true });
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe('https://my-res.openai.azure.com/openai/v1/models?api-version=v1');
+    expect(init.headers['api-key']).toBe('az-key');
+  });
+
+  it('authenticates azure with api-key rather than a bearer token', async () => {
+    fetchMock.mockResolvedValue({ ok: true, status: 200 });
+    await validateApiKey('azure', 'az-key', 'https://my-res.openai.azure.com');
+    const [, init] = fetchMock.mock.calls[0];
+    expect(init.headers.Authorization).toBeUndefined();
+  });
+
+  it('reports a rejected azure key as rejected, not as a network problem', async () => {
+    fetchMock.mockResolvedValue({ ok: false, status: 401 });
+    expect(await validateApiKey('azure', 'bad', 'https://my-res.openai.azure.com')).toEqual({
+      valid: false,
+      reason: 'rejected',
+    });
+  });
+
+  it('never sends the key anywhere when the azure endpoint is missing', async () => {
+    expect(await validateApiKey('azure', 'az-key', '')).toEqual({ valid: false, reason: 'network' });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('never sends the key anywhere when the endpoint is not a usable url', async () => {
+    expect(await validateApiKey('azure', 'az-key', 'my-resource')).toEqual({ valid: false, reason: 'network' });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});
