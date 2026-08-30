@@ -184,7 +184,7 @@ export default defineBackground(() => {
 
   onMessage('generateGuideDescription', ({ data }) => generateDescriptionOnDemand(data.guideId));
 
-  onMessage('validateApiKey', ({ data }) => validateApiKey(data.provider, data.apiKey));
+  onMessage('validateApiKey', ({ data }) => validateApiKey(data.provider, data.apiKey, data.baseUrl));
 
   onMessage('rewriteSelection', ({ data }) => rewriteSelection(data.text, data.instruction));
 

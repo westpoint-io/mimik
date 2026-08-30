@@ -122,6 +122,15 @@ describe('normalizeVoiceProvider', () => {
 
 describe('VOICE_KEY_SETTINGS', () => {
   it('names every storage key the resolution reads', () => {
-    expect([...VOICE_KEY_SETTINGS]).toEqual(['voiceProvider', 'voiceApiKey', 'aiProvider', 'aiApiKey']);
+    expect([...VOICE_KEY_SETTINGS]).toEqual([
+      'voiceProvider',
+      'voiceApiKey',
+      'voiceBaseUrl',
+      'voiceModel',
+      'aiProvider',
+      'aiApiKey',
+      'aiProfiles',
+      'aiBaseUrl',
+    ]);
   });
 });

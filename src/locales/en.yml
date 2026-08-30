@@ -88,6 +88,17 @@ settings:
   model: Model
   modelCustom: Custom model
   apiKey: API Key
+  baseUrl: Base URL
+  baseUrlOptional: optional
+  baseUrlHint: "OpenAI-compatible endpoint, e.g. https://api.example.com/v1 or http://localhost:11434/v1 (leave empty for default)"
+  baseUrlRequired: Base URL is required for custom providers
+  profileName: Name
+  addProfile: Add Custom Provider
+  editProfile: Edit
+  deleteProfile: Delete
+  profilesHint: Custom providers speak the OpenAI API
+  voiceProfileHint: Using the custom provider's endpoint and model for voice.
+  modelRequired: Model is required
   aiLanguage: Description Language
   voiceNarration: Voice Narration
   voiceUsingAiKey: "No voice key is set, so Mimik uses the OpenAI key from AI Descriptions above."

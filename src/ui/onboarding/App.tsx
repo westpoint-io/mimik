@@ -2,9 +2,8 @@ import { Mic, MousePointerClick, Shield } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';
 import { PRESET_LABELS, type PresetKey } from '@/core/blur/regexes';
-import { AI_PROVIDERS, type AIProviderKey } from '@/core/capture/ai/models';
+import { AI_PROVIDERS, type AIProfile, PROFILE_PREFIX, profileProviderId } from '@/core/capture/ai/models';
 import { AI_LANGUAGES, type AILanguageCode } from '@/core/capture/ai/prompts';
-import type { VoiceProvider } from '@/core/capture/voice/transcribe';
 import { localStorage, openSidebar, requestHostPermissions } from '@/lib/browser-api';
 import { Input } from '@/ui/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/components/ui/select';
@@ -115,21 +114,36 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
 }
 
 function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
-  const [provider, setProvider] = useState<AIProviderKey>('openai');
+  const [provider, setProvider] = useState<string>('openai');
   const [model, setModel] = useState(AI_PROVIDERS.openai.defaultModel);
   const [apiKey, setApiKey] = useState('');
+  const [baseUrl, setBaseUrl] = useState('');
+  const [profiles, setProfiles] = useState<AIProfile[]>([]);
   const [aiLanguage, setAiLanguage] = useState<AILanguageCode>('en');
 
   useEffect(() => {
     const load = () =>
-      localStorage.get(['aiProvider', 'aiModel', 'aiApiKey', 'aiLanguage']).then((stored) => {
-        if (typeof stored.aiProvider === 'string' && stored.aiProvider in AI_PROVIDERS) {
-          setProvider(stored.aiProvider as AIProviderKey);
-        }
-        if (typeof stored.aiModel === 'string') setModel(stored.aiModel);
-        if (typeof stored.aiApiKey === 'string') setApiKey(stored.aiApiKey);
-        if (typeof stored.aiLanguage === 'string') setAiLanguage(stored.aiLanguage as AILanguageCode);
-      });
+      localStorage
+        .get(['aiProvider', 'aiModel', 'aiApiKey', 'aiBaseUrl', 'aiEndpoint', 'aiProfiles', 'aiLanguage'])
+        .then((stored) => {
+          if (Array.isArray(stored.aiProfiles)) setProfiles(stored.aiProfiles as AIProfile[]);
+          const p = typeof stored.aiProvider === 'string' ? stored.aiProvider : 'openai';
+          if (p in AI_PROVIDERS || p.startsWith(PROFILE_PREFIX)) setProvider(p);
+          if (typeof stored.aiModel === 'string') setModel(stored.aiModel);
+          if (typeof stored.aiApiKey === 'string') setApiKey(stored.aiApiKey);
+          const bu = (stored.aiBaseUrl as string) || (stored.aiEndpoint as string) || '';
+          if (bu) setBaseUrl(bu);
+          if (typeof stored.aiLanguage === 'string') setAiLanguage(stored.aiLanguage as AILanguageCode);
+          // if provider is profile, hydrate model/baseUrl from profile
+          if (typeof p === 'string' && p.startsWith(PROFILE_PREFIX) && Array.isArray(stored.aiProfiles)) {
+            const pr = (stored.aiProfiles as AIProfile[]).find((x) => profileProviderId(x.id) === p);
+            if (pr) {
+              setModel(pr.model);
+              setApiKey(pr.apiKey);
+              setBaseUrl(pr.baseUrl);
+            }
+          }
+        });
 
     void load();
     const onVisible = () => {
@@ -139,23 +153,75 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
     return () => document.removeEventListener('visibilitychange', onVisible);
   }, []);
 
-  const providerConfig = AI_PROVIDERS[provider];
+  const isProfile = provider.startsWith(PROFILE_PREFIX);
+  const activeProfile = isProfile ? profiles.find((pr) => profileProviderId(pr.id) === provider) : null;
+  const providerConfig =
+    !isProfile && provider in AI_PROVIDERS ? AI_PROVIDERS[provider as keyof typeof AI_PROVIDERS] : null;
 
-  const handleProviderChange = (newProvider: AIProviderKey) => {
-    const nextModel = AI_PROVIDERS[newProvider].defaultModel;
+  const handleProviderChange = (newProvider: string) => {
     setProvider(newProvider);
-    setModel(nextModel);
-    void localStorage.set({ aiProvider: newProvider, aiModel: nextModel });
+    if (newProvider in AI_PROVIDERS) {
+      const nextModel = AI_PROVIDERS[newProvider as keyof typeof AI_PROVIDERS].defaultModel;
+      setModel(nextModel);
+      void localStorage.set({ aiProvider: newProvider, aiModel: nextModel });
+      // persist baseUrl separately
+      void localStorage.set({ aiBaseUrl: baseUrl });
+    } else if (newProvider.startsWith(PROFILE_PREFIX)) {
+      const pr = profiles.find((x) => profileProviderId(x.id) === newProvider);
+      if (pr) {
+        setModel(pr.model);
+        setApiKey(pr.apiKey);
+        setBaseUrl(pr.baseUrl);
+        void localStorage.set({ aiProvider: newProvider });
+      }
+    } else if (newProvider === '__add_profile__') {
+      // quickly create placeholder profile
+      const id = Math.random().toString(36).slice(2, 10);
+      const np: AIProfile = {
+        id,
+        name: `Custom ${profiles.length + 1}`,
+        baseUrl: 'https://api.example.com/v1',
+        apiKey: '',
+        model: 'gpt-4o-mini',
+      };
+      const next = [...profiles, np];
+      setProfiles(next);
+      setProvider(profileProviderId(id));
+      void localStorage.set({ aiProfiles: next, aiProvider: profileProviderId(id) });
+    }
   };
 
   const handleModelChange = (nextModel: string) => {
     setModel(nextModel);
-    void localStorage.set({ aiModel: nextModel });
+    if (isProfile && activeProfile) {
+      const next = profiles.map((p) => (p.id === activeProfile.id ? { ...p, model: nextModel } : p));
+      setProfiles(next);
+      void localStorage.set({ aiProfiles: next });
+    } else {
+      void localStorage.set({ aiModel: nextModel });
+    }
   };
 
   const handleApiKeyChange = (nextKey: string) => {
     setApiKey(nextKey);
-    void localStorage.set({ aiApiKey: nextKey });
+    if (isProfile && activeProfile) {
+      const next = profiles.map((p) => (p.id === activeProfile.id ? { ...p, apiKey: nextKey } : p));
+      setProfiles(next);
+      void localStorage.set({ aiProfiles: next });
+    } else {
+      void localStorage.set({ aiApiKey: nextKey });
+    }
+  };
+
+  const handleBaseUrlChange = (next: string) => {
+    setBaseUrl(next);
+    if (isProfile && activeProfile) {
+      const np = profiles.map((p) => (p.id === activeProfile.id ? { ...p, baseUrl: next } : p));
+      setProfiles(np);
+      void localStorage.set({ aiProfiles: np });
+    } else {
+      void localStorage.set({ aiBaseUrl: next });
+    }
   };
 
   const handleLanguageChange = (nextLanguage: AILanguageCode) => {
@@ -178,7 +244,7 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
               <label className="block text-xs font-semibold text-foreground mb-1.5">
                 {i18n.t('settings.provider')}
               </label>
-              <Select value={provider} onValueChange={(v) => handleProviderChange(v as AIProviderKey)}>
+              <Select value={provider} onValueChange={handleProviderChange}>
                 <SelectTrigger className="w-full rounded-xl px-4 py-2.5 text-sm focus:border-accent focus:ring-accent/10">
                   <SelectValue />
                 </SelectTrigger>
@@ -188,25 +254,59 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
                       {cfg.label}
                     </SelectItem>
                   ))}
+                  {profiles.map((pr) => (
+                    <SelectItem key={pr.id} value={profileProviderId(pr.id)}>
+                      {pr.name} — {pr.model}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="__add_profile__">+ {i18n.t('settings.addProfile')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-foreground mb-1.5">{i18n.t('settings.model')}</label>
-              <Select value={model} onValueChange={handleModelChange}>
-                <SelectTrigger className="w-full rounded-xl px-4 py-2.5 text-sm focus:border-accent focus:ring-accent/10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {providerConfig.models.map((m) => (
-                    <SelectItem key={m.id} value={m.id}>
-                      {m.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {isProfile ? (
+              <>
+                <div>
+                  <label className="block text-xs font-semibold text-foreground mb-1.5">
+                    {i18n.t('settings.model')}
+                  </label>
+                  <Input
+                    value={model}
+                    onChange={(e) => handleModelChange(e.target.value)}
+                    placeholder="gpt-4o-mini"
+                    className="w-full rounded-xl px-4 py-2.5 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-foreground mb-1.5">
+                    {i18n.t('settings.baseUrl')}
+                  </label>
+                  <Input
+                    value={baseUrl}
+                    onChange={(e) => handleBaseUrlChange(e.target.value)}
+                    placeholder="https://api.example.com/v1"
+                    className="w-full rounded-xl px-4 py-2.5 text-sm"
+                  />
+                  <p className="mt-1 text-[11px] text-muted-foreground">{i18n.t('settings.baseUrlHint')}</p>
+                </div>
+              </>
+            ) : (
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1.5">{i18n.t('settings.model')}</label>
+                <Select value={model} onValueChange={handleModelChange}>
+                  <SelectTrigger className="w-full rounded-xl px-4 py-2.5 text-sm focus:border-accent focus:ring-accent/10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {providerConfig?.models.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div>
               <label className="block text-xs font-semibold text-foreground mb-1.5">{i18n.t('settings.apiKey')}</label>
@@ -214,10 +314,25 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
                 type="password"
                 value={apiKey}
                 onChange={(e) => handleApiKeyChange(e.target.value)}
-                placeholder="sk-..."
+                placeholder={isProfile ? 'sk-... (empty for local)' : 'sk-...'}
                 className="w-full rounded-xl px-4 py-2.5 text-sm focus:border-accent focus:ring-accent/10"
               />
             </div>
+            {!isProfile && provider === 'openai' && (
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1.5">
+                  {i18n.t('settings.baseUrl')}{' '}
+                  <span className="font-normal text-muted-foreground">({i18n.t('settings.baseUrlOptional')})</span>
+                </label>
+                <Input
+                  value={baseUrl}
+                  onChange={(e) => handleBaseUrlChange(e.target.value)}
+                  placeholder="https://api.example.com/v1"
+                  className="w-full rounded-xl px-4 py-2.5 text-sm"
+                />
+                <p className="mt-1 text-[11px] text-muted-foreground">{i18n.t('settings.baseUrlHint')}</p>
+              </div>
+            )}
 
             <div>
               <label className="block text-xs font-semibold text-foreground mb-1.5">
@@ -331,17 +446,25 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
 }
 
 function VoiceStep({ onNext, onSkip, onBack, index, total }: StepProps) {
-  const [provider, setProvider] = useState<VoiceProvider>('openai');
+  const [provider, setProvider] = useState<string>('openai');
   const [apiKey, setApiKey] = useState('');
+  const [baseUrl, setBaseUrl] = useState('');
+  const [model, setModel] = useState('');
+  const [profiles, setProfiles] = useState<AIProfile[]>([]);
   const [microphoneId, setMicrophoneId] = useState('');
 
   useEffect(() => {
     const load = () =>
-      localStorage.get(['voiceProvider', 'voiceApiKey', 'voiceMicrophoneId']).then((stored) => {
-        if (stored.voiceProvider === 'openai' || stored.voiceProvider === 'groq') setProvider(stored.voiceProvider);
-        if (typeof stored.voiceApiKey === 'string') setApiKey(stored.voiceApiKey);
-        if (typeof stored.voiceMicrophoneId === 'string') setMicrophoneId(stored.voiceMicrophoneId);
-      });
+      localStorage
+        .get(['voiceProvider', 'voiceApiKey', 'voiceBaseUrl', 'voiceModel', 'voiceMicrophoneId', 'aiProfiles'])
+        .then((stored) => {
+          if (Array.isArray(stored.aiProfiles)) setProfiles(stored.aiProfiles as AIProfile[]);
+          if (typeof stored.voiceProvider === 'string') setProvider(stored.voiceProvider);
+          if (typeof stored.voiceApiKey === 'string') setApiKey(stored.voiceApiKey);
+          if (typeof stored.voiceBaseUrl === 'string') setBaseUrl(stored.voiceBaseUrl);
+          if (typeof stored.voiceModel === 'string') setModel(stored.voiceModel);
+          if (typeof stored.voiceMicrophoneId === 'string') setMicrophoneId(stored.voiceMicrophoneId);
+        });
 
     void load();
     const onVisible = () => {
@@ -356,7 +479,7 @@ function VoiceStep({ onNext, onSkip, onBack, index, total }: StepProps) {
     void localStorage.set({ voiceMicrophoneId: deviceId });
   };
 
-  const handleProviderChange = (nextProvider: VoiceProvider) => {
+  const handleProviderChange = (nextProvider: string) => {
     setProvider(nextProvider);
     void localStorage.set({ voiceProvider: nextProvider });
   };
@@ -386,11 +509,16 @@ function VoiceStep({ onNext, onSkip, onBack, index, total }: StepProps) {
                 </label>
                 <select
                   value={provider}
-                  onChange={(e) => handleProviderChange(e.target.value as VoiceProvider)}
+                  onChange={(e) => handleProviderChange(e.target.value)}
                   className="w-full border border-border rounded-xl px-3 py-2 text-[13px] text-foreground bg-card font-medium outline-none focus:border-accent focus:ring-2 focus:ring-accent/10"
                 >
                   <option value="openai">OpenAI</option>
                   <option value="groq">Groq</option>
+                  {profiles.map((pr) => (
+                    <option key={pr.id} value={profileProviderId(pr.id)}>
+                      {pr.name} (Custom)
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="flex-1">
@@ -406,6 +534,40 @@ function VoiceStep({ onNext, onSkip, onBack, index, total }: StepProps) {
                 />
               </div>
             </div>
+            {!provider.startsWith(PROFILE_PREFIX) && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-foreground mb-1">
+                    {i18n.t('settings.baseUrl')}{' '}
+                    <span className="font-normal text-muted-foreground">({i18n.t('settings.baseUrlOptional')})</span>
+                  </label>
+                  <input
+                    value={baseUrl}
+                    onChange={(e) => {
+                      setBaseUrl(e.target.value);
+                      void localStorage.set({ voiceBaseUrl: e.target.value });
+                    }}
+                    placeholder="https://api.example.com/v1"
+                    className="w-full border border-border rounded-xl px-3 py-2 text-[13px] text-foreground bg-card font-medium outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 placeholder:text-muted-foreground/50"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-foreground mb-1">
+                    {i18n.t('settings.model')}{' '}
+                    <span className="font-normal text-muted-foreground">({i18n.t('settings.baseUrlOptional')})</span>
+                  </label>
+                  <input
+                    value={model}
+                    onChange={(e) => {
+                      setModel(e.target.value);
+                      void localStorage.set({ voiceModel: e.target.value });
+                    }}
+                    placeholder="whisper-1"
+                    className="w-full border border-border rounded-xl px-3 py-2 text-[13px] text-foreground bg-card font-medium outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 placeholder:text-muted-foreground/50"
+                  />
+                </div>
+              </div>
+            )}
 
             <MicrophonePicker value={microphoneId} onChange={handleMicrophoneChange} />
 
