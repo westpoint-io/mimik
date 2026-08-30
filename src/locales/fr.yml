@@ -141,6 +141,10 @@ blurPresets:
   creditCard: "Carte bancaire"
   ipAddress: Adresse IP
   macAddress: Adresse MAC
+  ukPhone: "Numéros de téléphone britanniques"
+  ukPostcode: "Codes postaux britanniques"
+  ukNino: "Numéro d'assurance nationale (NINO)"
+  ukSortCode: "Code guichet britannique (Sort Code)"
 
 fullview:
   allGuides: Tous les guides

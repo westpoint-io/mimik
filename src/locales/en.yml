@@ -141,6 +141,10 @@ blurPresets:
   creditCard: Credit Card
   ipAddress: IP Address
   macAddress: MAC Address
+  ukPhone: UK phone numbers
+  ukPostcode: UK postcodes
+  ukNino: National Insurance numbers
+  ukSortCode: UK sort codes
 
 fullview:
   allGuides: All Guides

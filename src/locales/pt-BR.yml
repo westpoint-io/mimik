@@ -141,6 +141,10 @@ blurPresets:
   creditCard: Cartão de crédito
   ipAddress: Endereço IP
   macAddress: Endereço MAC
+  ukPhone: Números de telefone do Reino Unido
+  ukPostcode: Códigos postais do Reino Unido
+  ukNino: Número de seguro nacional do Reino Unido (NINO)
+  ukSortCode: Código bancário do Reino Unido (Sort Code)
 
 fullview:
   allGuides: Todos os guias

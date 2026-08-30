@@ -122,6 +122,10 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     creditCard: false,
     ipAddress: false,
     macAddress: false,
+    ukPhone: false,
+    ukPostcode: false,
+    ukNino: false,
+    ukSortCode: false,
   });
 
   useEffect(() => {
@@ -250,6 +254,10 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     creditCard: 'blurPresets.creditCard',
     ipAddress: 'blurPresets.ipAddress',
     macAddress: 'blurPresets.macAddress',
+    ukPhone: 'blurPresets.ukPhone',
+    ukPostcode: 'blurPresets.ukPostcode',
+    ukNino: 'blurPresets.ukNino',
+    ukSortCode: 'blurPresets.ukSortCode',
   };
 
   return (

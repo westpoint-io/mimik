@@ -1,4 +1,14 @@
-export type PresetKey = 'email' | 'phone' | 'ssn' | 'creditCard' | 'ipAddress' | 'macAddress';
+export type PresetKey =
+  | 'email'
+  | 'phone'
+  | 'ssn'
+  | 'creditCard'
+  | 'ipAddress'
+  | 'macAddress'
+  | 'ukPhone'
+  | 'ukPostcode'
+  | 'ukNino'
+  | 'ukSortCode';
 
 export const PRESET_REGEXES: Record<PresetKey, RegExp> = {
   email: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,
@@ -7,6 +17,10 @@ export const PRESET_REGEXES: Record<PresetKey, RegExp> = {
   phone: /(?:\+?\d{1,3}[\s.-]?)?(?:\(?\d{2,4}\)?[\s.-]?)?\d{3,4}[\s.-]?\d{4}\b/g,
   ipAddress: /\b(?:(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\b/g,
   macAddress: /\b[0-9A-F]{2}(?:[:-][0-9A-F]{2}){5}\b/gi,
+  ukPhone: /(?<!\d)(?:\+44[\s-]?(?:\(0\)[\s-]?)?\d{2,4}|\(?0\d{2,4}\)?)[\s-]?\d{3,4}[\s-]?\d{3,4}\b/g,
+  ukPostcode: /\b[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}\b/gi,
+  ukNino: /\b[A-Z]{2}\s?\d{2}\s?\d{2}\s?\d{2}\s?[A-D]\b/gi,
+  ukSortCode: /(?<!\d)\d{2}-\d{2}-\d{2}(?!\d)/g,
 };
 
 export const PRESET_LABELS: Record<PresetKey, string> = {
@@ -16,6 +30,10 @@ export const PRESET_LABELS: Record<PresetKey, string> = {
   creditCard: 'Credit Card',
   ipAddress: 'IP Address',
   macAddress: 'MAC Address',
+  ukPhone: 'UK Phone Numbers',
+  ukPostcode: 'UK Postcode',
+  ukNino: 'National Insurance Number',
+  ukSortCode: 'UK Sort Code',
 };
 
 export interface MatchRange {

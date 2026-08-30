@@ -27,6 +27,10 @@ const BLUR_PRESET_I18N: Record<PresetKey, string> = {
   creditCard: 'creditCard',
   ipAddress: 'ipAddress',
   macAddress: 'macAddress',
+  ukPhone: 'ukPhone',
+  ukPostcode: 'ukPostcode',
+  ukNino: 'ukNino',
+  ukSortCode: 'ukSortCode',
 };
 
 function MascotLarge({ size = 280 }: { size?: number }) {
@@ -509,6 +513,10 @@ function SmartBlurStep({ onNext, onBack, index, total }: StepProps) {
     creditCard: false,
     ipAddress: false,
     macAddress: false,
+    ukPhone: false,
+    ukPostcode: false,
+    ukNino: false,
+    ukSortCode: false,
   });
 
   useEffect(() => {
