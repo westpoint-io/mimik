@@ -148,7 +148,8 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
         'brandAttribution',
       ])
       .then((result) => {
-        const p = (result.aiProvider as AIProviderKey) || 'openai';
+        const stored = result.aiProvider as string | undefined;
+        const p: AIProviderKey = stored && stored in AI_PROVIDERS ? (stored as AIProviderKey) : 'openai';
         setProvider(p);
         setModel((result.aiModel as string) || AI_PROVIDERS[p].defaultModel);
         if (result.aiApiKey) setApiKey(result.aiApiKey as string);
