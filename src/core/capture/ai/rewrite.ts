@@ -22,7 +22,7 @@ export function buildRewritePrompt(text: string, instruction: string, locale: st
 }
 
 export async function rewriteSelection(text: string, instruction: string): Promise<RewriteSelectionResponse> {
-  const settings = await localStorage.get(['aiApiKey', 'aiProvider', 'aiModel', 'aiLanguage']);
+  const settings = await localStorage.get(['aiApiKey', 'aiProvider', 'aiModel', 'aiBaseUrl', 'aiLanguage']);
   if (!settings.aiApiKey) return { error: 'no-api-key' };
 
   const provider = (settings.aiProvider as string) || 'openai';
@@ -33,6 +33,7 @@ export async function rewriteSelection(text: string, instruction: string): Promi
         provider,
         (settings.aiModel as string) || AI_PROVIDERS[provider].defaultModel,
         settings.aiApiKey as string,
+        settings.aiBaseUrl as string | undefined,
       ),
       prompt: buildRewritePrompt(text, instruction, (settings.aiLanguage as string) || 'en'),
       maxOutputTokens: 400,

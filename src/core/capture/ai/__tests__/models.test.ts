@@ -55,7 +55,24 @@ describe('custom model sentinel', () => {
 
 describe('every provider default is selectable', () => {
   it.each(Object.entries(AI_PROVIDERS))('%s lists its own default model', (_key, config) => {
-    expect(config.models.some((option) => option.id === config.defaultModel)).toBe(true);
+    if (!config.baseUrl) {
+      expect(config.models.some((option) => option.id === config.defaultModel)).toBe(true);
+    }
+  });
+});
+
+describe('openaiCompatible provider', () => {
+  it('opts into a base URL and a free-text model', () => {
+    const config = AI_PROVIDERS.openaiCompatible;
+    expect(config.baseUrl).toBe(true);
+    expect(isCustomModel('llama3:70b', config)).toBe(true);
+    expect(isCustomModel('', config)).toBe(false);
+  });
+
+  it('carries the base URL label in every locale', () => {
+    for (const locale of LOCALES) {
+      expect(localeKeys(locale).has('settings.baseUrl')).toBe(true);
+    }
   });
 });
 

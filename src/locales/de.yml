@@ -97,6 +97,7 @@ settings:
   title: Einstellungen
   aiDescriptions: KI-Beschreibungen
   modelCustom: Eigenes Modell
+  baseUrl: Basis-URL
   provider: Anbieter
   model: Modell
   apiKey: API-Schlüssel
@@ -131,8 +132,11 @@ settings:
   validatingKey: "Schlüssel wird geprüft…"
   keyValid: API-Schlüssel bestätigt.
   keyInvalid: Dieser API-Schlüssel wurde abgelehnt. Prüfe ihn und versuche es erneut.
+  keyModelRequired: Wähle ein Modell, bevor du diesen Schlüssel prüfst.
+  keyModelInvalid: Das ausgewählte Modell ist bei diesem Anbieter nicht verfügbar.
   checkKey: Schlüssel prüfen
   keyUnreachable: Der Anbieter war nicht erreichbar. Prüfe deine Verbindung und versuche es erneut.
+  modelsFound: "$1 Modelle verfügbar"
 
 blurPresets:
   email: E-Mail

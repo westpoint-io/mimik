@@ -18,11 +18,18 @@ import { whenNarrationSettled } from './voice';
 type ResolveFailure = Extract<GuideDescriptionError, 'no-api-key' | 'no-steps'>;
 
 type GuideMetaInputs =
-  | { ok: true; steps: { description: string; url: string }[]; provider: string; model: string; apiKey: string }
+  | {
+      ok: true;
+      steps: { description: string; url: string }[];
+      provider: string;
+      model: string;
+      apiKey: string;
+      baseUrl?: string;
+    }
   | { ok: false; reason: ResolveFailure };
 
 async function resolveGuideMetaInputs(guideId: string): Promise<GuideMetaInputs> {
-  const settings = await localStorage.get(['aiApiKey', 'aiProvider', 'aiModel']);
+  const settings = await localStorage.get(['aiApiKey', 'aiProvider', 'aiModel', 'aiBaseUrl']);
   if (!settings.aiApiKey) return { ok: false, reason: 'no-api-key' };
 
   const steps = actionSteps(await getStepsForGuide(guideId));
@@ -36,6 +43,7 @@ async function resolveGuideMetaInputs(guideId: string): Promise<GuideMetaInputs>
     provider,
     model: (settings.aiModel as string) || AI_PROVIDERS[provider].defaultModel,
     apiKey: settings.aiApiKey as string,
+    baseUrl: settings.aiBaseUrl as string | undefined,
   };
 }
 
@@ -63,7 +71,7 @@ export async function generateGuideMetaOnStop(guideId: string) {
       return;
     }
 
-    const meta = await generateGuideMeta(inputs.steps, inputs.provider, inputs.model, inputs.apiKey);
+    const meta = await generateGuideMeta(inputs.steps, inputs.provider, inputs.model, inputs.apiKey, inputs.baseUrl);
     if (!meta) {
       await applyFallbackTitle(guideId);
       return;
@@ -87,7 +95,7 @@ export async function generateDescriptionOnDemand(guideId: string): Promise<Gene
     const inputs = await resolveGuideMetaInputs(guideId);
     if (!inputs.ok) return { error: inputs.reason };
 
-    const meta = await generateGuideMeta(inputs.steps, inputs.provider, inputs.model, inputs.apiKey);
+    const meta = await generateGuideMeta(inputs.steps, inputs.provider, inputs.model, inputs.apiKey, inputs.baseUrl);
     if (!meta?.description) return { error: 'generation-failed' };
 
     await updateGuideDescription(guideId, meta.description);

@@ -59,8 +59,9 @@ export interface Screenshot {
 
 export interface Settings {
   aiApiKey: string;
-  aiProvider: 'openai' | 'anthropic';
+  aiProvider: 'openai' | 'anthropic' | 'openaiCompatible';
   aiModel: string;
+  aiBaseUrl?: string;
   voiceEnabled: boolean;
   voiceProvider: VoiceProvider;
   voiceApiKey: string;

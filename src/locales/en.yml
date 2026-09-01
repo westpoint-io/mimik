@@ -87,6 +87,7 @@ settings:
   provider: Provider
   model: Model
   modelCustom: Custom model
+  baseUrl: Base URL
   apiKey: API Key
   aiLanguage: Description Language
   voiceNarration: Voice Narration
@@ -125,8 +126,11 @@ settings:
   validatingKey: "Checking key\u2026"
   keyValid: API key verified.
   keyInvalid: That API key was rejected. Check it and try again.
+  keyModelRequired: Choose a model before checking this key.
+  keyModelInvalid: The selected model is not available from this provider.
   checkKey: Check key
   keyUnreachable: Could not reach the provider. Check your connection and try again.
+  modelsFound: "$1 models available"
   smartBlur: Smart Blur
   privacyNotice: "Your keys and audio go only to the provider you pick. Nothing else leaves your browser."
   bugReport: "Found a bug? Report it on GitHub"
