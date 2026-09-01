@@ -101,6 +101,7 @@ describe('background guide-meta', () => {
         'anthropic',
         AI_PROVIDERS.anthropic.defaultModel,
         'key',
+        undefined,
       );
     });
 
@@ -114,6 +115,7 @@ describe('background guide-meta', () => {
         'openai',
         AI_PROVIDERS.openai.defaultModel,
         'key',
+        undefined,
       );
     });
   });

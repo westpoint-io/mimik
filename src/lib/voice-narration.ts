@@ -11,6 +11,8 @@ import type { VoiceStepMark } from './voice-messages';
 export interface TranscriptionSettings {
   provider: VoiceProvider;
   apiKey: string;
+  baseUrl?: string;
+  model?: string;
   language?: string;
 }
 
@@ -36,11 +38,13 @@ export const EMPTY_NARRATION: NarrationResult = {
 
 export async function readTranscriptionSettings(): Promise<TranscriptionSettings> {
   const stored = await localStorage.get([...VOICE_KEY_SETTINGS, 'voiceLanguage', 'aiLanguage']);
-  const { provider, apiKey } = resolveVoiceApiKey(stored);
+  const { provider, apiKey, baseUrl, model } = resolveVoiceApiKey(stored);
   const locale = (stored.voiceLanguage ?? stored.aiLanguage) as string | undefined;
   return {
     provider,
     apiKey,
+    baseUrl,
+    model,
     language: locale ? locale.split('-')[0] : undefined,
   };
 }

@@ -8,6 +8,8 @@ import {
   Globe,
   ImageIcon,
   Mic,
+  Pencil,
+  Plus,
   Shield,
   Sparkles,
   Star,
@@ -18,10 +20,18 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { i18n } from '#imports';
 import { PRESET_LABELS, type PresetKey } from '@/core/blur/regexes';
-import { AI_PROVIDERS, type AIProviderKey, CUSTOM_MODEL_VALUE, isCustomModel } from '@/core/capture/ai/models';
+import {
+  AI_PROVIDERS,
+  type AIProfile,
+  CUSTOM_MODEL_VALUE,
+  isCustomModel,
+  isProfileProvider,
+  makeProfileId,
+  PROFILE_PREFIX,
+  profileProviderId,
+} from '@/core/capture/ai/models';
 import { AI_LANGUAGES, type AILanguageCode } from '@/core/capture/ai/prompts';
 import { resolveVoiceApiKey } from '@/core/capture/voice/api-key';
-import type { VoiceProvider } from '@/core/capture/voice/transcribe';
 import { type BrandLogo, defaultFooterLine, makeBrandLogo } from '@/core/export/branding';
 import { DEFAULT_TARGET_COLOR, TARGET_COLORS } from '@/core/screenshot/types';
 import { localStorage } from '@/lib/browser-api';
@@ -48,14 +58,14 @@ function useKeyCheck() {
   const [status, setStatus] = useState<KeyStatus>(null);
   const validated = useRef('');
 
-  const check = useCallback(async (provider: string, apiKey: string) => {
-    const fingerprint = `${provider}:${apiKey}`;
+  const check = useCallback(async (provider: string, apiKey: string, baseUrl?: string) => {
+    const fingerprint = `${provider}:${apiKey}:${baseUrl ?? ''}`;
     if (validated.current === fingerprint) {
       setStatus('valid');
       return;
     }
     setStatus('checking');
-    const result = await sendMessage('validateApiKey', { provider, apiKey }).catch(() => null);
+    const result = await sendMessage('validateApiKey', { provider, apiKey, baseUrl }).catch(() => null);
     if (result?.valid) validated.current = fingerprint;
     setStatus(result?.valid ? 'valid' : result?.reason === 'rejected' ? 'rejected' : 'unreachable');
   }, []);
@@ -94,10 +104,17 @@ const FOOTER_PRESETS = () => [
   i18n.t('settings.footerPresetNoDistribute'),
 ];
 
+const ADD_PROFILE_VALUE = '__add_profile__';
+
 export default function SettingsView({ onBack }: SettingsViewProps) {
-  const [provider, setProvider] = useState<AIProviderKey>('openai');
+  const [provider, setProvider] = useState<string>('openai');
   const [model, setModel] = useState(AI_PROVIDERS.openai.defaultModel);
   const [apiKey, setApiKey] = useState('');
+  const [aiBaseUrl, setAiBaseUrl] = useState('');
+  const [aiProfiles, setAiProfiles] = useState<AIProfile[]>([]);
+  const [editingProfile, setEditingProfile] = useState<AIProfile | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newProfile, setNewProfile] = useState({ name: '', baseUrl: '', apiKey: '', model: '' });
   const [saved, setSaved] = useState(false);
   const aiKeyCheck = useKeyCheck();
   const voiceKeyCheck = useKeyCheck();
@@ -107,8 +124,10 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   const pending = useRef<SettingsSnapshot>({});
   const saveTimer = useRef<number | undefined>(undefined);
   const [aiLanguage, setAiLanguage] = useState<AILanguageCode>('en');
-  const [voiceProvider, setVoiceProvider] = useState<VoiceProvider>('openai');
+  const [voiceProvider, setVoiceProvider] = useState<string>('openai');
   const [voiceApiKey, setVoiceApiKey] = useState('');
+  const [voiceBaseUrl, setVoiceBaseUrl] = useState('');
+  const [voiceModel, setVoiceModel] = useState('');
   const [voiceMicrophoneId, setVoiceMicrophoneId] = useState('');
   const [targetColor, setTargetColor] = useState<string>(DEFAULT_TARGET_COLOR);
   const [brandLogo, setBrandLogo] = useState<BrandLogo | null>(null);
@@ -130,10 +149,15 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
         'aiApiKey',
         'aiProvider',
         'aiModel',
+        'aiBaseUrl',
+        'aiEndpoint',
+        'aiProfiles',
         'aiLanguage',
         'blurPresets',
         'voiceProvider',
         'voiceApiKey',
+        'voiceBaseUrl',
+        'voiceModel',
         'voiceMicrophoneId',
         'targetColor',
         'brandLogo',
@@ -141,14 +165,39 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
         'brandAttribution',
       ])
       .then((result) => {
-        const p = (result.aiProvider as AIProviderKey) || 'openai';
-        setProvider(p);
-        setModel((result.aiModel as string) || AI_PROVIDERS[p].defaultModel);
+        if (Array.isArray(result.aiProfiles)) setAiProfiles(result.aiProfiles as AIProfile[]);
+        const p = (result.aiProvider as string) || 'openai';
+        // if legacy profile not in list, fallback to openai
+        if (isProfileProvider(p) && Array.isArray(result.aiProfiles)) {
+          const exists = (result.aiProfiles as AIProfile[]).some((pr) => profileProviderId(pr.id) === p);
+          setProvider(exists ? p : 'openai');
+        } else {
+          setProvider(p in AI_PROVIDERS ? p : 'openai');
+        }
+        // model/key/baseUrl handling
+        if (isProfileProvider(p) && Array.isArray(result.aiProfiles)) {
+          const prof = (result.aiProfiles as AIProfile[]).find((pr) => profileProviderId(pr.id) === p);
+          if (prof) {
+            setModel(prof.model || '');
+          } else {
+            setModel((result.aiModel as string) || AI_PROVIDERS.openai.defaultModel);
+          }
+        } else {
+          setModel(
+            (result.aiModel as string) ||
+              AI_PROVIDERS[p as keyof typeof AI_PROVIDERS]?.defaultModel ||
+              AI_PROVIDERS.openai.defaultModel,
+          );
+        }
         if (result.aiApiKey) setApiKey(result.aiApiKey as string);
+        const base = (result.aiBaseUrl as string) || (result.aiEndpoint as string) || '';
+        if (base) setAiBaseUrl(base);
         if (result.aiLanguage) setAiLanguage(result.aiLanguage as AILanguageCode);
         if (result.blurPresets) setBlurPresets(result.blurPresets as Record<PresetKey, boolean>);
-        setVoiceProvider((result.voiceProvider as VoiceProvider) || 'openai');
+        setVoiceProvider((result.voiceProvider as string) || 'openai');
         if (result.voiceApiKey) setVoiceApiKey(result.voiceApiKey as string);
+        if (result.voiceBaseUrl) setVoiceBaseUrl(result.voiceBaseUrl as string);
+        if (result.voiceModel) setVoiceModel(result.voiceModel as string);
         if (result.voiceMicrophoneId) setVoiceMicrophoneId(result.voiceMicrophoneId as string);
         if (result.targetColor) setTargetColor(result.targetColor as string);
         if (result.brandLogo) setBrandLogo(result.brandLogo as BrandLogo);
@@ -158,14 +207,21 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
       });
   }, []);
 
+  const isProfile = isProfileProvider(provider);
+  const activeProfile = isProfile ? aiProfiles.find((pr) => profileProviderId(pr.id) === provider) : null;
+
   const stored = {
-    aiApiKey: apiKey,
+    aiApiKey: isProfile ? (activeProfile?.apiKey ?? '') : apiKey,
     aiProvider: provider,
-    aiModel: model,
+    aiModel: isProfile ? (activeProfile?.model ?? '') : model,
+    aiBaseUrl: isProfile ? '' : aiBaseUrl,
+    aiProfiles,
     aiLanguage,
     blurPresets,
     voiceProvider,
     voiceApiKey,
+    voiceBaseUrl,
+    voiceModel,
     voiceMicrophoneId,
     targetColor,
     brandLogo,
@@ -222,11 +278,17 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     setBrandLogo(await makeBrandLogo(file));
   };
 
-  const handleProviderChange = (newProvider: AIProviderKey) => {
+  const handleProviderChange = (newProvider: string) => {
+    if (newProvider === ADD_PROFILE_VALUE) {
+      setShowAddForm(true);
+      return;
+    }
     setProvider(newProvider);
     aiKeyCheck.setStatus(null);
-    setCustomModel(false);
-    setModel(AI_PROVIDERS[newProvider].defaultModel);
+    if (newProvider in AI_PROVIDERS) {
+      setCustomModel(false);
+      setModel(AI_PROVIDERS[newProvider as keyof typeof AI_PROVIDERS].defaultModel);
+    }
   };
 
   const handleModelChange = (value: string) => {
@@ -239,9 +301,53 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     setModel(value);
   };
 
-  const providerConfig = AI_PROVIDERS[provider];
-  const usingCustomModel = customModel || isCustomModel(model, providerConfig);
-  const voiceKey = resolveVoiceApiKey({ voiceProvider, voiceApiKey, aiProvider: provider, aiApiKey: apiKey });
+  const updateProfileField = (id: string, patch: Partial<AIProfile>) => {
+    setAiProfiles((prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+  };
+
+  const handleAddProfile = () => {
+    if (!newProfile.baseUrl.trim() || !newProfile.model.trim()) return;
+    const id = makeProfileId();
+    const profile: AIProfile = {
+      id,
+      name: newProfile.name.trim() || `Custom ${aiProfiles.length + 1}`,
+      baseUrl: newProfile.baseUrl.trim(),
+      apiKey: newProfile.apiKey.trim(),
+      model: newProfile.model.trim(),
+    };
+    const next = [...aiProfiles, profile];
+    setAiProfiles(next);
+    setProvider(profileProviderId(id));
+    setNewProfile({ name: '', baseUrl: '', apiKey: '', model: '' });
+    setShowAddForm(false);
+  };
+
+  const handleDeleteProfile = (id: string) => {
+    const next = aiProfiles.filter((p) => p.id !== id);
+    setAiProfiles(next);
+    if (provider === profileProviderId(id)) {
+      setProvider('openai');
+      setModel(AI_PROVIDERS.openai.defaultModel);
+    }
+    if (editingProfile?.id === id) setEditingProfile(null);
+  };
+
+  const isOpenAIProvider = provider === 'openai';
+  const providerConfig =
+    !isProfile && AI_PROVIDERS[provider as keyof typeof AI_PROVIDERS]
+      ? AI_PROVIDERS[provider as keyof typeof AI_PROVIDERS]
+      : null;
+  const usingCustomModel = providerConfig ? customModel || isCustomModel(model, providerConfig) : false;
+  const voiceKey = resolveVoiceApiKey({
+    voiceProvider,
+    voiceApiKey,
+    voiceBaseUrl,
+    voiceModel,
+    aiProvider: provider,
+    aiApiKey: isProfile ? (activeProfile?.apiKey ?? '') : apiKey,
+    aiProfiles,
+    aiBaseUrl,
+  });
 
   const BLUR_PRESET_I18N: Record<PresetKey, string> = {
     email: 'blurPresets.email',
@@ -251,6 +357,21 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     ipAddress: 'blurPresets.ipAddress',
     macAddress: 'blurPresets.macAddress',
   };
+
+  const aiBaseUrlForCheck = isProfile ? activeProfile?.baseUrl : aiBaseUrl;
+  const aiApiKeyForCheck = isProfile ? (activeProfile?.apiKey ?? '') : apiKey;
+  const canCheckAiKey = (() => {
+    if (isProfile) return Boolean(activeProfile?.baseUrl.trim() && activeProfile?.model.trim());
+    if (aiBaseUrl.trim()) return true; // allow keyless check with baseUrl
+    return Boolean(apiKey.trim());
+  })();
+
+  const voiceProviderIsProfile = typeof voiceProvider === 'string' && voiceProvider.startsWith(PROFILE_PREFIX);
+  const canCheckVoiceKey = (() => {
+    if (voiceProviderIsProfile) return true;
+    if (voiceBaseUrl.trim()) return true;
+    return Boolean(voiceApiKey.trim());
+  })();
 
   return (
     <div className="bg-card flex flex-col">
@@ -289,7 +410,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
             <label className="block text-[11px] font-semibold text-foreground mb-1">
               {i18n.t('settings.provider')}
             </label>
-            <Select value={provider} onValueChange={(v) => handleProviderChange(v as AIProviderKey)}>
+            <Select value={provider} onValueChange={handleProviderChange}>
               <SelectTrigger className="w-full rounded-lg px-3 py-2 text-[13px]">
                 <SelectValue />
               </SelectTrigger>
@@ -299,67 +420,250 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
                     {cfg.label}
                   </SelectItem>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.model')}</label>
-            <Select value={usingCustomModel ? CUSTOM_MODEL_VALUE : model} onValueChange={handleModelChange}>
-              <SelectTrigger className="w-full rounded-lg px-3 py-2 text-[13px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {providerConfig.models.map((m) => (
-                  <SelectItem key={m.id} value={m.id}>
-                    {m.label}
+                {aiProfiles.map((pr) => (
+                  <SelectItem key={pr.id} value={profileProviderId(pr.id)}>
+                    {pr.name} — {pr.model}
                   </SelectItem>
                 ))}
-                <SelectItem value={CUSTOM_MODEL_VALUE}>{i18n.t('settings.modelCustom')}</SelectItem>
+                <SelectItem value={ADD_PROFILE_VALUE}>+ {i18n.t('settings.addProfile')}</SelectItem>
               </SelectContent>
             </Select>
-            {usingCustomModel && (
-              <Input
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
-                placeholder={providerConfig.defaultModel}
-                aria-label={i18n.t('settings.modelCustom')}
-                className="mt-1.5 h-8 text-[12px] rounded-lg border-border"
-              />
+            {aiProfiles.length > 0 && !isProfile && (
+              <p className="mt-1 text-[10px] text-muted-foreground">{i18n.t('settings.profilesHint')}</p>
             )}
           </div>
 
-          <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.apiKey')}</label>
-            <div className="flex items-center gap-1.5">
+          {isProfile && activeProfile ? (
+            <>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-[11px] font-semibold text-foreground mb-1">
+                    {i18n.t('settings.profileName')}
+                  </label>
+                  <Input
+                    value={activeProfile.name}
+                    onChange={(e) => updateProfileField(activeProfile.id, { name: e.target.value })}
+                    placeholder="Local Ollama"
+                    className="h-8 text-[12px] rounded-lg border-border"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-foreground mb-1">
+                    {i18n.t('settings.model')}
+                  </label>
+                  <Input
+                    value={activeProfile.model}
+                    onChange={(e) => updateProfileField(activeProfile.id, { model: e.target.value })}
+                    placeholder="gpt-4o-mini"
+                    className="h-8 text-[12px] rounded-lg border-border"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-foreground mb-1">
+                  {i18n.t('settings.baseUrl')}
+                </label>
+                <Input
+                  value={activeProfile.baseUrl}
+                  onChange={(e) => updateProfileField(activeProfile.id, { baseUrl: e.target.value })}
+                  placeholder="https://api.example.com/v1"
+                  className="h-8 text-[12px] rounded-lg border-border"
+                />
+                <p className="mt-1 text-[10px] text-muted-foreground">{i18n.t('settings.baseUrlHint')}</p>
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-foreground mb-1">
+                  {i18n.t('settings.apiKey')}
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    type="password"
+                    value={activeProfile.apiKey}
+                    onChange={(e) => updateProfileField(activeProfile.id, { apiKey: e.target.value })}
+                    placeholder="sk-... (leave empty for local)"
+                    className="h-8 text-[12px] rounded-lg border-border"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!canCheckAiKey || aiKeyCheck.status === 'checking'}
+                    onClick={() => void aiKeyCheck.check(provider, aiApiKeyForCheck, aiBaseUrlForCheck)}
+                    className="h-8 shrink-0 rounded-lg bg-card text-[11px] font-semibold"
+                  >
+                    {i18n.t('settings.checkKey')}
+                  </Button>
+                </div>
+                <KeyStatusNote status={aiKeyCheck.status} />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDeleteProfile(activeProfile.id)}
+                  className="h-7 text-[11px]"
+                >
+                  <Trash2 size={11} className="mr-1" /> {i18n.t('settings.deleteProfile')}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <label className="block text-[11px] font-semibold text-foreground mb-1">
+                  {i18n.t('settings.model')}
+                </label>
+                <Select value={usingCustomModel ? CUSTOM_MODEL_VALUE : model} onValueChange={handleModelChange}>
+                  <SelectTrigger className="w-full rounded-lg px-3 py-2 text-[13px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {providerConfig?.models.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.label}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value={CUSTOM_MODEL_VALUE}>{i18n.t('settings.modelCustom')}</SelectItem>
+                  </SelectContent>
+                </Select>
+                {usingCustomModel && (
+                  <Input
+                    value={model}
+                    onChange={(e) => setModel(e.target.value)}
+                    placeholder={providerConfig?.defaultModel}
+                    aria-label={i18n.t('settings.modelCustom')}
+                    className="mt-1.5 h-8 text-[12px] rounded-lg border-border"
+                  />
+                )}
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-foreground mb-1">
+                  {i18n.t('settings.apiKey')}
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    type="password"
+                    value={apiKey}
+                    onChange={(e) => {
+                      setApiKey(e.target.value);
+                      aiKeyCheck.setStatus(null);
+                    }}
+                    placeholder="sk-..."
+                    className="h-8 text-[12px] rounded-lg border-border"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!canCheckAiKey || aiKeyCheck.status === 'checking'}
+                    onClick={() => void aiKeyCheck.check(provider, apiKey, aiBaseUrl)}
+                    className="h-8 shrink-0 rounded-lg bg-card text-[11px] font-semibold"
+                  >
+                    {i18n.t('settings.checkKey')}
+                  </Button>
+                </div>
+                <KeyStatusNote status={aiKeyCheck.status} />
+                {!apiKey.trim() && !aiBaseUrl.trim() && (
+                  <p
+                    className="mt-1.5 flex items-start gap-1.5 text-[10px] text-destructive leading-relaxed"
+                    role="alert"
+                  >
+                    <TriangleAlert size={11} className="shrink-0 mt-0.5" />
+                    <span>{i18n.t('settings.aiNoKey')}</span>
+                  </p>
+                )}
+              </div>
+
+              {(isOpenAIProvider || provider === 'groq') && (
+                <div>
+                  <label className="block text-[11px] font-semibold text-foreground mb-1">
+                    {i18n.t('settings.baseUrl')}{' '}
+                    <span className="font-normal text-muted-foreground">({i18n.t('settings.baseUrlOptional')})</span>
+                  </label>
+                  <Input
+                    value={aiBaseUrl}
+                    onChange={(e) => {
+                      setAiBaseUrl(e.target.value);
+                      aiKeyCheck.setStatus(null);
+                    }}
+                    placeholder="https://api.example.com/v1"
+                    className="h-8 text-[12px] rounded-lg border-border"
+                  />
+                  <p className="mt-1 text-[10px] text-muted-foreground">{i18n.t('settings.baseUrlHint')}</p>
+                </div>
+              )}
+            </>
+          )}
+
+          {showAddForm && (
+            <div className="border border-accent rounded-lg p-3 space-y-2 bg-secondary/30">
+              <p className="text-[11px] font-semibold text-foreground">{i18n.t('settings.addProfile')}</p>
+              <Input
+                value={newProfile.name}
+                onChange={(e) => setNewProfile((p) => ({ ...p, name: e.target.value }))}
+                placeholder={i18n.t('settings.profileName')}
+                className="h-8 text-[12px]"
+              />
+              <Input
+                value={newProfile.baseUrl}
+                onChange={(e) => setNewProfile((p) => ({ ...p, baseUrl: e.target.value }))}
+                placeholder="https://api.example.com/v1"
+                className="h-8 text-[12px]"
+              />
+              <Input
+                value={newProfile.model}
+                onChange={(e) => setNewProfile((p) => ({ ...p, model: e.target.value }))}
+                placeholder="gpt-4o-mini"
+                className="h-8 text-[12px]"
+              />
               <Input
                 type="password"
-                value={apiKey}
-                onChange={(e) => {
-                  setApiKey(e.target.value);
-                  aiKeyCheck.setStatus(null);
-                }}
-                placeholder="sk-..."
-                className="h-8 text-[12px] rounded-lg border-border"
+                value={newProfile.apiKey}
+                onChange={(e) => setNewProfile((p) => ({ ...p, apiKey: e.target.value }))}
+                placeholder="sk-... (empty for local)"
+                className="h-8 text-[12px]"
               />
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!apiKey || aiKeyCheck.status === 'checking'}
-                onClick={() => void aiKeyCheck.check(provider, apiKey)}
-                className="h-8 shrink-0 rounded-lg bg-card text-[11px] font-semibold"
-              >
-                {i18n.t('settings.checkKey')}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={handleAddProfile}
+                  disabled={!newProfile.baseUrl.trim() || !newProfile.model.trim()}
+                  className="h-7 text-[11px]"
+                >
+                  {i18n.t('common.save')}
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setShowAddForm(false)} className="h-7 text-[11px]">
+                  {i18n.t('common.cancel')}
+                </Button>
+              </div>
             </div>
-            <KeyStatusNote status={aiKeyCheck.status} />
-            {!apiKey.trim() && (
-              <p className="mt-1.5 flex items-start gap-1.5 text-[10px] text-destructive leading-relaxed" role="alert">
-                <TriangleAlert size={11} className="shrink-0 mt-0.5" />
-                <span>{i18n.t('settings.aiNoKey')}</span>
-              </p>
-            )}
-          </div>
+          )}
+
+          {aiProfiles.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 pt-1">
+              {aiProfiles.map((pr) => (
+                <span
+                  key={pr.id}
+                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-md border text-[10px] ${provider === profileProviderId(pr.id) ? 'border-accent text-accent' : 'border-border text-muted-foreground'}`}
+                >
+                  {pr.name}
+                  <button onClick={() => setProvider(profileProviderId(pr.id))} className="hover:text-accent">
+                    <Pencil size={10} />
+                  </button>
+                  <button onClick={() => handleDeleteProfile(pr.id)} className="hover:text-destructive">
+                    <Trash2 size={10} />
+                  </button>
+                </span>
+              ))}
+              {!showAddForm && (
+                <button
+                  onClick={() => setShowAddForm(true)}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-dashed border-border text-[10px] text-muted-foreground hover:border-accent hover:text-accent"
+                >
+                  <Plus size={10} /> {i18n.t('settings.addProfile')}
+                </button>
+              )}
+            </div>
+          )}
 
           <div>
             <label className="block text-[11px] font-semibold text-foreground mb-1">
@@ -517,13 +821,18 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
             <select
               value={voiceProvider}
               onChange={(e) => {
-                setVoiceProvider(e.target.value as VoiceProvider);
+                setVoiceProvider(e.target.value);
                 voiceKeyCheck.setStatus(null);
               }}
               className="w-full border border-border rounded-lg px-3 py-2 text-[13px] text-foreground bg-card font-medium outline-none focus:border-ring focus:ring-2 focus:ring-ring/10"
             >
               <option value="openai">OpenAI</option>
               <option value="groq">Groq</option>
+              {aiProfiles.map((pr) => (
+                <option key={pr.id} value={profileProviderId(pr.id)}>
+                  {pr.name} (Custom)
+                </option>
+              ))}
             </select>
           </div>
 
@@ -542,8 +851,16 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
               <Button
                 variant="outline"
                 size="sm"
-                disabled={!voiceApiKey || voiceKeyCheck.status === 'checking'}
-                onClick={() => void voiceKeyCheck.check(voiceProvider, voiceApiKey)}
+                disabled={!canCheckVoiceKey || voiceKeyCheck.status === 'checking'}
+                onClick={() =>
+                  void voiceKeyCheck.check(
+                    voiceProvider,
+                    voiceApiKey,
+                    voiceProviderIsProfile
+                      ? aiProfiles.find((p) => profileProviderId(p.id) === voiceProvider)?.baseUrl
+                      : voiceBaseUrl,
+                  )
+                }
                 className="h-8 shrink-0 rounded-lg bg-card text-[11px] font-semibold"
               >
                 {i18n.t('settings.checkKey')}
@@ -563,6 +880,41 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
               </p>
             )}
           </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-[11px] font-semibold text-foreground mb-1">
+                {i18n.t('settings.baseUrl')}{' '}
+                <span className="font-normal text-muted-foreground">({i18n.t('settings.baseUrlOptional')})</span>
+              </label>
+              <Input
+                value={voiceBaseUrl}
+                onChange={(e) => {
+                  setVoiceBaseUrl(e.target.value);
+                  voiceKeyCheck.setStatus(null);
+                }}
+                placeholder="https://api.example.com/v1"
+                className="h-8 text-[12px] rounded-lg border-border"
+                disabled={voiceProviderIsProfile}
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-foreground mb-1">
+                {i18n.t('settings.model')}{' '}
+                <span className="font-normal text-muted-foreground">({i18n.t('settings.baseUrlOptional')})</span>
+              </label>
+              <Input
+                value={voiceModel}
+                onChange={(e) => setVoiceModel(e.target.value)}
+                placeholder="whisper-1"
+                className="h-8 text-[12px] rounded-lg border-border"
+                disabled={voiceProviderIsProfile}
+              />
+            </div>
+          </div>
+          {voiceProviderIsProfile && (
+            <p className="text-[10px] text-muted-foreground">{i18n.t('settings.voiceProfileHint')}</p>
+          )}
 
           {import.meta.env.BROWSER !== 'firefox' && (
             <MicrophonePicker value={voiceMicrophoneId} onChange={setVoiceMicrophoneId} />

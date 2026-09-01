@@ -58,6 +58,7 @@ export async function generateGuideMeta(
   provider: string,
   model: string,
   apiKey: string,
+  baseUrl?: string,
 ): Promise<GuideMeta | null> {
   if (steps.length === 0) return null;
 
@@ -65,7 +66,7 @@ export async function generateGuideMeta(
   const settings = await localStorage.get(['aiLanguage']);
   const locale = (settings.aiLanguage as string) || 'en';
   const prompt = GUIDE_META_PROMPT.replace('{{steps}}', formatted) + getLanguageSuffix(locale);
-  const aiModel = createModel(provider, model, apiKey);
+  const aiModel = createModel(provider, model, apiKey, baseUrl);
 
   try {
     const { object } = await generateObject({

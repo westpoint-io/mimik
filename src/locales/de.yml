@@ -100,6 +100,17 @@ settings:
   provider: Anbieter
   model: Modell
   apiKey: API-Schlüssel
+  baseUrl: Base URL
+  baseUrlOptional: optional
+  baseUrlHint: "OpenAI-compatible endpoint, e.g. https://api.example.com/v1"
+  baseUrlRequired: Base URL is required
+  profileName: Name
+  addProfile: Add Custom Provider
+  editProfile: Edit
+  deleteProfile: Delete
+  profilesHint: Custom providers speak the OpenAI API
+  voiceProfileHint: Using custom provider endpoint for voice.
+  modelRequired: Model is required
   aiLanguage: Sprache der Beschreibungen
   voiceNarration: Sprachkommentar
   voiceUsingAiKey: "Es ist kein Sprach-Schlüssel gesetzt, daher nutzt Mimik den OpenAI-Schlüssel aus den KI-Beschreibungen oben."

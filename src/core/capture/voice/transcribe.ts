@@ -6,6 +6,8 @@ export interface TranscribeConfig {
   provider: VoiceProvider;
   apiKey: string;
   language?: string;
+  baseUrl?: string;
+  model?: string;
 }
 
 const PROVIDERS: Record<VoiceProvider, { url: string; model: string }> = {
@@ -13,10 +15,24 @@ const PROVIDERS: Record<VoiceProvider, { url: string; model: string }> = {
   groq: { url: 'https://api.groq.com/openai/v1/audio/transcriptions', model: 'whisper-large-v3' },
 };
 
+function buildTranscriptionUrl(baseUrl: string): string {
+  const trimmed = baseUrl.trim().replace(/\/+$/, '');
+  if (!trimmed) return '';
+  try {
+    return new URL('/v1/audio/transcriptions', trimmed.endsWith('/') ? trimmed : `${trimmed}/`).toString();
+  } catch {
+    if (trimmed.endsWith('/v1')) return `${trimmed}/audio/transcriptions`;
+    if (trimmed.includes('/v1')) return `${trimmed.replace(/\/+$/, '')}/audio/transcriptions`;
+    return `${trimmed}/v1/audio/transcriptions`;
+  }
+}
+
 const ERROR_BODY_LIMIT = 200;
 
 export function createTranscriber(config: TranscribeConfig): (wav: Blob) => Promise<TranscriptionResponse> {
-  const { url, model } = PROVIDERS[config.provider] ?? PROVIDERS.openai;
+  const fallback = PROVIDERS[config.provider] ?? PROVIDERS.openai;
+  const url = config.baseUrl ? buildTranscriptionUrl(config.baseUrl) : fallback.url;
+  const model = config.model?.trim() ? config.model.trim() : fallback.model;
 
   return async (wav: Blob): Promise<TranscriptionResponse> => {
     const form = new FormData();
