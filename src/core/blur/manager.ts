@@ -13,6 +13,10 @@ const DEFAULT_PRESETS: Record<PresetKey, boolean> = {
   creditCard: false,
   ipAddress: false,
   macAddress: false,
+  ukPhone: false,
+  ukPostcode: false,
+  ukNino: false,
+  ukSortCode: false,
 };
 
 const EVENTS = ['mimik-blur:update-presets', 'mimik-blur:start-picker', 'mimik-blur:reset', 'mimik-blur:done'] as const;
@@ -83,6 +87,10 @@ export class BlurManager {
       creditCard: false,
       ipAddress: false,
       macAddress: false,
+      ukPhone: false,
+      ukPostcode: false,
+      ukNino: false,
+      ukSortCode: false,
     };
     for (const key of activeKeys) presets[key] = true;
     browser.storage.local.set({ blurPresets: presets });

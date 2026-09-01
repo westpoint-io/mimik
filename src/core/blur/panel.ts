@@ -2,7 +2,18 @@ import { i18n } from '#imports';
 import type { PresetKey } from './regexes';
 import { PRESET_LABELS } from './regexes';
 
-const PRESET_KEYS: PresetKey[] = ['email', 'phone', 'ssn', 'creditCard', 'ipAddress', 'macAddress'];
+const PRESET_KEYS: PresetKey[] = [
+  'email',
+  'phone',
+  'ssn',
+  'creditCard',
+  'ipAddress',
+  'macAddress',
+  'ukPhone',
+  'ukPostcode',
+  'ukNino',
+  'ukSortCode',
+];
 
 const STYLES = `
   :host {
