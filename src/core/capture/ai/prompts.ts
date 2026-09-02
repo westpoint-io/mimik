@@ -63,6 +63,7 @@ export type RewritePreset = keyof typeof REWRITE_PRESETS;
 
 export const AI_LANGUAGES = [
   { code: 'en', label: 'English' },
+  { code: 'zh-CN', label: '中文' },
   { code: 'es', label: 'Español' },
   { code: 'pt-BR', label: 'Português (Brasil)' },
   { code: 'fr', label: 'Français' },
