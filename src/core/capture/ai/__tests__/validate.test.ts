@@ -59,6 +59,14 @@ describe('validateApiKey', () => {
     expect(init.headers.Authorization).toBe('Bearer gsk-key');
   });
 
+  it('checks a deepseek key against deepseek, not openai', async () => {
+    fetchMock.mockResolvedValue({ ok: true, status: 200 });
+    expect(await validateApiKey('deepseek', 'sk-deepseek')).toEqual({ valid: true });
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe('https://api.deepseek.com/models');
+    expect(init.headers.Authorization).toBe('Bearer sk-deepseek');
+  });
+
   it('gives up rather than spinning forever when a host never answers', async () => {
     fetchMock.mockResolvedValue({ ok: true, status: 200 });
     await validateApiKey('openai', 'sk-key');
