@@ -205,14 +205,25 @@ export function letterbox(srcWidth: number, srcHeight: number, dstWidth: number,
   const scale = Math.min(dstWidth / srcWidth, dstHeight / srcHeight);
   const width = srcWidth * scale;
   const height = srcHeight * scale;
-  return { scale, width, height, x: (dstWidth - width) / 2, y: (dstHeight - height) / 2 };
+  return {
+    scale,
+    width,
+    height,
+    x: (dstWidth - width) / 2,
+    y: (dstHeight - height) / 2,
+  };
 }
 
 function coverFit(source: Size, overscan: number): Rect {
   const scale = Math.max(FRAME_WIDTH / source.width, FRAME_HEIGHT / source.height) * overscan;
   const width = source.width * scale;
   const height = source.height * scale;
-  return { x: (FRAME_WIDTH - width) / 2, y: (FRAME_HEIGHT - height) / 2, width, height };
+  return {
+    x: (FRAME_WIDTH - width) / 2,
+    y: (FRAME_HEIGHT - height) / 2,
+    width,
+    height,
+  };
 }
 
 export function wrapLines(
@@ -246,7 +257,7 @@ export function wrapLines(
 }
 
 export function tooltipBand(box: { height: number }): number {
-  return box.height + TOOLTIP_GAP + FRAME_PADDING;
+  return box.height + TOOLTIP_GAP;
 }
 
 export function reserveTooltip(
@@ -428,7 +439,11 @@ export function normalizedTargetCenter(screenshot: Screenshot): Point | null {
 
 async function loadScreenshotLayer(step: Step, screenshot: Screenshot, from: Point): Promise<ScreenshotLayer> {
   const viewport = resolveFrameViewport(screenshot);
-  const rendered = await renderScreenshot(screenshot, { ...RENDER_OPTIONS, viewport, target: false });
+  const rendered = await renderScreenshot(screenshot, {
+    ...RENDER_OPTIONS,
+    viewport,
+    target: false,
+  });
   const bitmap = await createImageBitmap(rendered);
   const target = resolveTarget(screenshot);
   const sx = bitmap.width / viewport.width;
@@ -561,7 +576,10 @@ function drawStepFrame(ctx: Ctx, layer: StepLayer, frame: number, device: Size) 
   ctx.drawImage(layer.bitmap, crop.x, crop.y, crop.width, crop.height, fit.x, fit.y, fit.width, fit.height);
 
   const scale = fit.width / crop.width;
-  const project = (x: number, y: number) => ({ x: fit.x + (x - crop.x) * scale, y: fit.y + (y - crop.y) * scale });
+  const project = (x: number, y: number) => ({
+    x: fit.x + (x - crop.x) * scale,
+    y: fit.y + (y - crop.y) * scale,
+  });
 
   const anchor: Rect = layer.target
     ? {
