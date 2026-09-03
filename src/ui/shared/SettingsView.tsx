@@ -327,6 +327,13 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
                 className="mt-1.5 h-8 text-[12px] rounded-lg border-border"
               />
             )}
+            {provider === 'openrouter' && (
+              <p className="mt-1.5 text-[10px] text-muted-foreground leading-relaxed">
+                OpenRouter supports models from multiple providers. Use custom format like{' '}
+                <code className="text-[9px] bg-secondary px-1 py-0.5 rounded">anthropic/claude-3.5-sonnet</code> or{' '}
+                <code className="text-[9px] bg-secondary px-1 py-0.5 rounded">openai/gpt-4o</code>
+              </p>
+            )}
           </div>
 
           <div>
@@ -339,7 +346,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
                   setApiKey(e.target.value);
                   aiKeyCheck.setStatus(null);
                 }}
-                placeholder="sk-..."
+                placeholder={provider === 'openrouter' ? 'sk-or-...' : 'sk-...'}
                 className="h-8 text-[12px] rounded-lg border-border"
               />
               <Button

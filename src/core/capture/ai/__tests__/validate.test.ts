@@ -70,4 +70,12 @@ describe('validateApiKey', () => {
     expect(await validateApiKey('mystery', 'secret')).toEqual({ valid: false, reason: 'network' });
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  it('checks an openrouter key against openrouter', async () => {
+    fetchMock.mockResolvedValue({ ok: true, status: 200 });
+    expect(await validateApiKey('openrouter', 'sk-or-key')).toEqual({ valid: true });
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe('https://openrouter.ai/api/v1/models');
+    expect(init.headers.Authorization).toBe('Bearer sk-or-key');
+  });
 });
