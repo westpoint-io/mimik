@@ -1,4 +1,5 @@
 import { browser, defineBackground } from '#imports';
+import '@/lib/i18n-runtime';
 import { rewriteSelection } from '@/core/capture/ai/rewrite';
 import { validateApiKey } from '@/core/capture/ai/validate';
 import { stepRequiresManual } from '@/core/guideme/manual';

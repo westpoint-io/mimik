@@ -6,6 +6,8 @@ import { AI_PROVIDERS, type AIProviderKey } from '@/core/capture/ai/models';
 import { AI_LANGUAGES, type AILanguageCode } from '@/core/capture/ai/prompts';
 import type { VoiceProvider } from '@/core/capture/voice/transcribe';
 import { localStorage, openSidebar, requestHostPermissions } from '@/lib/browser-api';
+import { setDisplayLocale } from '@/lib/i18n-runtime';
+import { useDisplayLocale } from '@/lib/use-display-locale';
 import { Input } from '@/ui/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/components/ui/select';
 import MicrophonePicker from '@/ui/shared/MicrophonePicker';
@@ -128,7 +130,10 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
         }
         if (typeof stored.aiModel === 'string') setModel(stored.aiModel);
         if (typeof stored.aiApiKey === 'string') setApiKey(stored.aiApiKey);
-        if (typeof stored.aiLanguage === 'string') setAiLanguage(stored.aiLanguage as AILanguageCode);
+        if (typeof stored.aiLanguage === 'string') {
+          setAiLanguage(stored.aiLanguage as AILanguageCode);
+          setDisplayLocale(stored.aiLanguage);
+        }
       });
 
     void load();
@@ -160,6 +165,7 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
 
   const handleLanguageChange = (nextLanguage: AILanguageCode) => {
     setAiLanguage(nextLanguage);
+    setDisplayLocale(nextLanguage);
     void localStorage.set({ aiLanguage: nextLanguage });
   };
 
@@ -920,6 +926,7 @@ const CONFIG_STEPS =
     : [AISetupStep, VoiceStep, SmartBlurStep, PinExtensionStep, GitHubStarStep];
 
 export default function OnboardingApp() {
+  useDisplayLocale();
   const [step, setStep] = useState(0);
 
   const lastStep = CONFIG_STEPS.length + 1;

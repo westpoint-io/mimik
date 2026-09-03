@@ -25,8 +25,10 @@ import type { VoiceProvider } from '@/core/capture/voice/transcribe';
 import { type BrandLogo, defaultFooterLine, makeBrandLogo } from '@/core/export/branding';
 import { DEFAULT_TARGET_COLOR, TARGET_COLORS } from '@/core/screenshot/types';
 import { localStorage } from '@/lib/browser-api';
+import { setDisplayLocale } from '@/lib/i18n-runtime';
 import { logger } from '@/lib/logger';
 import { sendMessage } from '@/lib/messaging';
+import { useDisplayLocale } from '@/lib/use-display-locale';
 import { Button } from '@/ui/components/ui/button';
 import { Input } from '@/ui/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/ui/components/ui/popover';
@@ -95,6 +97,7 @@ const FOOTER_PRESETS = () => [
 ];
 
 export default function SettingsView({ onBack }: SettingsViewProps) {
+  useDisplayLocale();
   const [provider, setProvider] = useState<AIProviderKey>('openai');
   const [model, setModel] = useState(AI_PROVIDERS.openai.defaultModel);
   const [apiKey, setApiKey] = useState('');
@@ -145,7 +148,10 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
         setProvider(p);
         setModel((result.aiModel as string) || AI_PROVIDERS[p].defaultModel);
         if (result.aiApiKey) setApiKey(result.aiApiKey as string);
-        if (result.aiLanguage) setAiLanguage(result.aiLanguage as AILanguageCode);
+        if (result.aiLanguage) {
+          setAiLanguage(result.aiLanguage as AILanguageCode);
+          setDisplayLocale(result.aiLanguage);
+        }
         if (result.blurPresets) setBlurPresets(result.blurPresets as Record<PresetKey, boolean>);
         setVoiceProvider((result.voiceProvider as VoiceProvider) || 'openai');
         if (result.voiceApiKey) setVoiceApiKey(result.voiceApiKey as string);
@@ -366,7 +372,13 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
               <Globe size={11} className="inline mr-1 -mt-px" />
               {i18n.t('settings.aiLanguage')}
             </label>
-            <Select value={aiLanguage} onValueChange={(v) => setAiLanguage(v as AILanguageCode)}>
+            <Select
+              value={aiLanguage}
+              onValueChange={(v) => {
+                setAiLanguage(v as AILanguageCode);
+                setDisplayLocale(v);
+              }}
+            >
               <SelectTrigger className="w-full rounded-lg px-3 py-2 text-[13px]">
                 <SelectValue />
               </SelectTrigger>

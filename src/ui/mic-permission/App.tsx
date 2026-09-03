@@ -1,6 +1,7 @@
 import { Check, Mic, MicOff } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { browser, i18n } from '#imports';
+import { useDisplayLocale } from '@/lib/use-display-locale';
 import {
   VOICE_BACKGROUND_TARGET,
   VoiceMessage,
@@ -56,6 +57,7 @@ async function returnToOpener(): Promise<void> {
 }
 
 export default function MicPermissionApp() {
+  useDisplayLocale();
   const [phase, setPhase] = useState<Phase>('checking');
   const settled = useRef(false);
   const reportedDenied = useRef(false);
