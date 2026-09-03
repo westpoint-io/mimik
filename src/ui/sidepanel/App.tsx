@@ -18,6 +18,7 @@ import { logger } from '@/lib/logger';
 import { sendMessage } from '@/lib/messaging';
 import { getVoiceStatus } from '@/lib/offscreen';
 import { connectToBackground, type PanelVoiceUpdate } from '@/lib/port';
+import { useDisplayLocale } from '@/lib/use-display-locale';
 import { Button } from '@/ui/components/ui/button';
 import { Input } from '@/ui/components/ui/input';
 import { TooltipProvider } from '@/ui/components/ui/tooltip';
@@ -88,6 +89,7 @@ function MascotIcon({ size = 44 }: { size?: number }) {
 }
 
 export default function App() {
+  useDisplayLocale();
   const [isAlive, setIsAlive] = useState(false);
   const [_isRecording, setIsRecording] = useState(false);
   const [view, setView] = useState<View>({ name: 'library' });

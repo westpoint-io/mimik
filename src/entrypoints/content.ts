@@ -1,5 +1,6 @@
 import { defineContentScript } from 'wxt/utils/define-content-script';
 import { browser } from '#imports';
+import '@/lib/i18n-runtime';
 import { BlurManager } from '@/core/blur/manager';
 import { CaptureSession } from '@/core/capture/session';
 import { updateUrl } from '@/core/capture/spa-nav';

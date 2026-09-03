@@ -1,0 +1,520 @@
+meta:
+  locale: zh-CN
+
+app:
+  name: Mimik
+  store_title: "Mimik：分步指南与教程"
+  description: "将任何浏览器工作流录制成分步指南。可编辑、添加语音讲解，并导出为视频、PDF 或 DOCX。本地优先，开源透明。"
+
+common:
+  loading: 正在加载...
+  cancel: 取消
+  save: 保存
+  delete: 删除
+  back: 返回
+  continue: 继续
+  skip: 跳过
+  export: 导出
+  close: 关闭
+  undo: 撤销
+  star: 收藏
+  unstar: 取消收藏
+  restore: 恢复
+  updated: "已更新到 v$1"
+  whatsNew: 查看更新内容
+
+sidepanel:
+  connected: 已连接
+  connecting: 正在连接...
+  heroTitle: 想要捕获什么内容？
+  heroSubtitle: 自动录制任何工作流
+  startCapture: 开始捕获
+  searchPlaceholder: 搜索指南...
+  recentLabel: 最近使用
+  notRecordable: 打开一个网站即可开始捕获
+
+library:
+  noGuidesTitle: 暂无指南
+  noGuidesSub: 开始捕获，创建你的第一份指南
+  noStarredTitle: 暂无收藏指南
+  noStarredSub: 收藏指南后可快速找到它
+  trashEmptyTitle: 回收站为空
+  trashEmptySub: 干干净净！
+  noMatchingGuides: 没有匹配的指南
+  moveToTrash: 移至回收站
+  deletePermanently: 永久删除
+  openInFullView: 在完整视图中打开
+
+guideme:
+  live: 实时
+  roadblock: "遇到阻碍了。请在屏幕上执行操作以继续。"
+  manualStep: "此步骤已被编辑，无法自动检测。完成后请点击下一步。"
+  stepOf: "第 $1 步，共 $2 步"
+  noDescription: 无描述
+  prev: 上一步
+  next: 下一步
+  finish: 完成
+  exitTitle: 要离开了吗？
+  exitMessage: 演示将停止，页面上的覆盖层也会被移除。
+  stay: 留在此处
+  exit: 退出
+  guideNotFound: 未找到指南
+
+guidemeCompletion:
+  title: "全部完成！"
+  stepsCompleted: "已完成全部 $1 个步骤。"
+  stepsCompletedPlural: "已完成全部 $1 个步骤。"
+  allDone: 完成
+  runAgain: 再运行一次
+
+recording:
+  capturePaused: 捕获已暂停
+  recording: "正在录制 · $1 个步骤"
+  recordingPlural: "正在录制 · $1 个步骤"
+  readyTitle: 已准备好捕获！
+  readySub: 点击页面开始
+  finishRecording: 完成录制
+  smartBlur: 智能模糊
+  discard: 丢弃
+  deleteStep: 删除步骤
+  justNow: 刚刚
+  secondsAgo: "$1 秒前"
+  minutesAgo: "$1 分钟前"
+
+settings:
+  title: 设置
+  aiDescriptions: AI 描述
+  provider: 提供商
+  model: 模型
+  modelCustom: 自定义模型
+  apiKey: API 密钥
+  aiLanguage: 描述语言
+  voiceNarration: 语音讲解
+  voiceUsingAiKey: "未设置语音密钥，因此 Mimik 会使用上方 AI 描述中的 OpenAI 密钥。"
+  aiNoKey: "未设置 API 密钥，步骤将使用普通的规则描述。"
+  voiceNoKey: "未设置 API 密钥，因此录制不会生成语音讲解。"
+  microphone: 麦克风
+  microphoneDefault: 系统默认
+  microphoneNeedsAccess: 允许麦克风访问后即可查看设备名称。
+  microphoneGrantAccess: 允许麦克风访问
+  microphoneNone: 未找到麦克风。接入麦克风后会显示在这里。
+  microphoneUnavailable: 不可用的麦克风
+  microphoneMissing: 你选择的麦克风当前不可用，Mimik 将使用系统默认设备。
+  microphoneTest: 测试麦克风
+  microphoneStatusAllowed: 已允许
+  microphoneStatusBlocked: 已阻止
+  microphoneStatusPending: 尚未允许
+  microphoneBlocked: 浏览器正在阻止 Mimik 使用麦克风。请从地址栏左侧图标打开网站设置，并将麦克风设为允许。
+  microphoneUnblockHow: 如何解除阻止？
+  microphoneTestStop: 停止测试
+  microphoneTestFailed: 无法打开该麦克风。请选择另一个后重试。
+  targetColor: "品牌颜色"
+  targetColorHint: "点击高亮和导出强调色"
+  branding: "导出品牌设置"
+  brandLogo: "Logo"
+  uploadLogo: "上传 Logo"
+  replaceLogo: "替换"
+  removeLogo: "移除 Logo"
+  footerLine: "页脚文本"
+  footerLinePlaceholder: "例如：机密，仅供内部使用"
+  footerPresetConfidential: "机密，仅供内部使用"
+  footerPresetNoDistribute: "请勿分发"
+  attribution: '显示“Made with Mimik”'
+  saveSettings: 保存设置
+  saved: 已保存
+  validatingKey: "正在检查密钥..."
+  keyValid: API 密钥已验证。
+  keyInvalid: 该 API 密钥被拒绝。请检查后重试。
+  checkKey: 检查密钥
+  keyUnreachable: 无法连接到提供商。请检查网络后重试。
+  smartBlur: 智能模糊
+  privacyNotice: "你的密钥和音频只会发送给你选择的提供商。除此之外，没有任何内容会离开你的浏览器。"
+  bugReport: "发现问题？在 GitHub 上报告"
+  starCtaTitle: "喜欢 Mimik 吗？"
+  starCtaMessage: 给 GitHub star 可以帮助更多人发现 Mimik，也会让我们更有动力！
+  starOnGithub: 在 GitHub 上加星
+
+blurPresets:
+  email: 邮箱
+  phoneNumbers: 电话号码
+  ssn: 社会安全号码
+  creditCard: 信用卡
+  ipAddress: IP 地址
+  macAddress: MAC 地址
+
+fullview:
+  allGuides: 全部指南
+  starred: 已收藏
+  trash: 回收站
+  searchPlaceholder: 搜索指南...
+  guideMe: 引导我
+  untitledGuide: 未命名指南
+  writingTitle: 正在根据捕获的步骤生成标题...
+  writingDescription: "正在生成描述..."
+  guideNotFound: "未找到指南。"
+  stepCount: "$1 个步骤"
+  stepCountPlural: "$1 个步骤"
+  pageOf: "$1 / $2"
+
+sort:
+  recentFirst: 最近优先
+  oldestFirst: 最早优先
+  alphaAZ: "A - Z"
+  mostSteps: 步骤最多
+  gridView: 网格视图
+  listView: 列表视图
+
+search:
+  startTyping: 开始输入以查找指南
+  noMatchingGuides: 没有匹配的指南
+  noGuidesYet: 暂无指南
+
+keyboard:
+  navigate: 导航
+  open: 打开
+  close: 关闭
+
+confirmDelete:
+  title: "删除指南？"
+  message: 这将永久删除该指南，且无法撤销。
+  confirm: 永久删除
+
+editor:
+  backToLibrary: 返回资料库
+  openInDashboard: 打开
+  openInDashboardHint: 在仪表盘中打开以编辑或导出
+  guideMe: 引导我
+  guideMeUnavailable: 此指南中没有可重放的步骤
+  deleteThisStep: "删除此步骤？"
+  selectStep: 选择步骤
+  selectedCount: "已选择 $1 项"
+  deleteSelectedStep: "删除选中的 $1 个步骤？"
+  deleteSelectedSteps: "删除选中的 $1 个步骤？"
+  copyScreenshot: 复制截图
+  noScreenshot: 无截图
+  edit: 编辑
+  done: 完成
+  versionHistory: 版本历史
+  moreActions: 更多操作
+  generateDescription: 生成描述
+  regenerateDescription: 重新生成描述
+  generatingDescription: "正在生成..."
+  descriptionPlaceholder: 添加描述
+  descriptionErrorNoApiKey: 请在设置中添加 AI API 密钥以生成描述。
+  descriptionErrorNoSteps: 此指南没有可用于总结的已描述步骤。
+  descriptionErrorFailed: 无法生成描述。请重试。
+  descriptionErrorSaveFailed: 描述已生成，但无法保存。请重试。
+  writingStepDescription: "正在写入描述..."
+  transcribingStepDescription: "正在转写你说的话..."
+  rewriteAskAi: 询问 AI
+  rewritePlaceholder: "告诉 AI 如何编辑这段文字..."
+  rewriteEnter: 回车
+  rewriteShorter: 更简短
+  rewriteDetail: 更详细
+  rewriteGrammar: 修正语法
+  rewriteFormal: 更正式
+  rewriteCasual: 更随意
+  rewriteReplace: 替换
+  rewriteDiscard: 丢弃
+  rewriteErrorNoApiKey: 请在设置中添加 AI API 密钥以改写文本。
+  rewriteErrorFailed: 无法改写选中文本。请重试。
+  rewriteErrorStale: 文本已变化。请重新选择。
+
+capture:
+  recordSteps: 录制步骤
+  moreStepsTitle: 捕获更多步骤
+  moreStepsBody: 新步骤会插入到这里。请选择要录制的标签页。
+  startCapture: 开始捕获
+  noRecordableTabs: 当前窗口没有可录制的标签页。
+
+blocks:
+  add: 添加区块
+  heading: 标题
+  callout: 备注
+  headingPlaceholder: 章节标题
+  calloutPlaceholder: 写一条备注
+  deleteHeading: "删除此标题？"
+  deleteCallout: "删除此备注？"
+  variantInfo: 信息
+  variantWarning: 警告
+  variantError: 错误
+  variantSuccess: 成功
+  variantCustom: 自定义
+
+history:
+  title: 版本历史
+  current: 当前版本
+  restore: 恢复
+  unchangedVersions: "未变化的版本（$1）"
+  readOnlyBanner: "你正在查看早期版本。关闭版本历史即可返回当前指南。"
+  loadError: 无法加载版本历史。请重试。
+  restoreError: 暂时无法恢复。请稍后重试。
+  storageFull: 存储空间不足，无法保存撤销点。请删除一个指南后重试。
+  empty: 暂无早期版本。编辑此指南后，它们会显示在这里。
+  nameVersion: 命名此版本
+  namePlaceholder: 版本名称
+  allVersions: 全部版本
+  namedOnly: 仅显示已命名版本
+  emptyNamed: 暂无已命名版本。命名一个版本后即可再次找到它。
+  renameError: 无法保存该名称。请重试。
+  changeTitle: 标题已更改
+  changeStepAdded: "新增 $1 个步骤"
+  changeStepsAdded: "新增 $1 个步骤"
+  changeStepRemoved: "删除 $1 个步骤"
+  changeStepsRemoved: "删除 $1 个步骤"
+  changeStepEdited: "编辑 $1 个步骤"
+  changeStepsEdited: "编辑 $1 个步骤"
+  changeStepReordered: 步骤已重新排序
+  changeLink: "更改 $1 个链接"
+  changeLinks: "更改 $1 个链接"
+  changeImageReplaced: "替换 $1 张图片"
+  changeImagesReplaced: "替换 $1 张图片"
+  changeImageCropped: "裁剪 $1 张图片"
+  changeImagesCropped: "裁剪 $1 张图片"
+  changeImageAnnotated: "标注 $1 张图片"
+  changeImagesAnnotated: "标注 $1 张图片"
+  changeImageBlurred: "模糊处理 $1 张图片"
+  changeImagesBlurred: "模糊处理 $1 张图片"
+  changeAltText: 已编辑替代文本
+
+emptyGuide:
+  title: 此指南为空
+  subtitle: 录制一些步骤来唤醒它
+
+blurPanel:
+  title: 智能模糊
+  manualMode: 手动模式
+  selectElements: 选择要模糊的元素
+  done: 完成
+  doneResume: "完成 · 继续录制"
+  resetAll: 全部重置
+
+screenshotView:
+  zoomIn: 放大
+  zoomOut: 缩小
+  saved: 已保存
+  editMenu: 编辑截图
+  downloadEdited: "已编辑图片"
+  downloadOriginal: "原始图片"
+  edit: "编辑"
+  addImage: 添加图片
+  replaceImage: 替换图片
+  replaceHint: "为此步骤选择一张新图片"
+  replaceDrop: "点击浏览或将图片拖放到这里"
+  replaceFormats: "PNG、JPG 或 WebP"
+  download: 下载
+  deleteImage: 删除图片
+  deleteConfirm: "删除此截图？此操作无法撤销。"
+  imageDeleted: 图片已删除
+  altButton: ALT
+  altLabel: 替代文本
+  altPlaceholder: 为屏幕阅读器描述此图片
+
+annotationEditor:
+  title: 编辑截图
+  toolBox: 方框
+  toolArrow: 箭头
+  toolText: 文本
+  toolSelect: "选择"
+  addTarget: "添加点击目标"
+  toolRedact: 遮盖
+  toolCrop: 裁剪
+  colorLabel: 颜色
+  textPlaceholder: 输入内容...
+  targetBorder: 边框样式
+  modeAnnotate: "标注"
+  toolLine: "直线"
+  duplicate: "复制"
+  toolEllipse: "椭圆"
+  lineColor: "线条颜色"
+  fillColor: "填充颜色"
+  lineWidth: "线条宽度"
+  cornerRadius: "圆角半径"
+  font: "字体"
+  bold: "加粗"
+  italic: "斜体"
+  lineHeight: "行高"
+  width_none: "无轮廓"
+  width_xs: "极小"
+  width_sm: "小"
+  width_ms: "中小"
+  width_md: "中"
+  width_ml: "中大"
+  width_lg: "大"
+  width_xl: "极大"
+  zoom: "缩放"
+  cropHint: "拖动以裁剪，或拖动角点调整大小"
+  resetCrop: "重置裁剪"
+  arrowEnd: "箭头端点"
+  fontSize: "字号"
+  undo: "撤销"
+  redo: "重做"
+  end_none: "无"
+  end_bar: "短线"
+  end_arrow: "箭头"
+  end_arrow_solid: "实心箭头"
+  end_circle: "圆形"
+  end_circle_solid: "实心圆形"
+  end_square: "方形"
+  end_square_solid: "实心方形"
+  done: 完成
+
+exportPreview:
+  stepDescriptions: "步骤说明"
+  stepDescriptionsHint: "将步骤文字绘制到每一帧视频中"
+  resolution: "视频质量"
+  res_720p: "720p"
+  res_1080p: "1080p"
+  title: "导出预览"
+  cover: "封面页"
+  coverHint: "包含标题和详情的独立第一页"
+  screenshots: "截图"
+  screenshotsHint: "关闭后将生成更紧凑的纯文本文件"
+  stepUrls: "步骤链接"
+  stepUrlsHint: "显示每个步骤发生的页面地址"
+  imageScale: "截图大小"
+  scale_small: "小"
+  scale_medium: "中"
+  scale_large: "大"
+  download: "导出 $1"
+  rendering: "正在更新预览"
+  videoReady: "$1 个步骤 · 约 $2 分钟视频"
+  videoReadyHint: "较长的指南不会自动编码。预览会覆盖每个步骤。"
+  videoGenerate: "生成预览"
+  modeDocument: "文档"
+  modeVideo: "视频"
+  encodingVideo: "正在编码视频预览"
+  videoFailed: "无法创建视频预览"
+videoPlayer:
+  stepCount: "$1 个步骤"
+  previousStep: "上一步"
+  nextStep: "下一步"
+  speed: "播放速度"
+
+exportMenu:
+  docx: DOCX
+  html: HTML
+  markdown: Markdown
+  pdf: PDF
+  video: 视频
+  cancelProgress: "取消 · $1%"
+
+onboarding:
+  welcomeBadge: 欢迎
+  welcomeTitle: "你已成功安装 Mimik！"
+  welcomeMessage: "只需几步即可开始自动捕获浏览器工作流并生成分步指南。无需账号，一切都保留在你的浏览器中。"
+  getStarted: 开始使用
+  stepOf: "第 $1 步，共 $2 步"
+  aiTitle: AI 描述
+  aiMessage: 连接你自己的 API 密钥，即可获得 AI 生成的步骤描述。此功能可选，也可以稍后在设置中更改。
+  aiGenerated: AI 生成
+  aiGeneratedDescription: AI 生成的描述
+  voiceTitle: 先说，再操作
+  voiceMessage: 先说出你将要做的事，然后执行操作。Mimik 会将你的语音讲解匹配到紧随其后的动作，因此顺序最重要。
+  voiceRecordHint: 语音讲解默认关闭，直到你主动开启。录制时使用侧边栏中的麦克风按钮，这样每份指南都可以单独选择。
+  voiceDataNotice: 你的音频会使用你自己的 API 密钥发送到这里选择的提供商。除此之外，Mimik 中没有任何内容会离开你的浏览器。
+  voiceDemoLabel: 语音讲解如何落到步骤上
+  voiceDemoSay: 你说
+  voiceDemoQuote: "现在我要打开账单设置"
+  voiceDemoAct: 然后你点击
+  voiceDemoAction: 点击账单标签页
+  voiceDemoBadge: 来自你的语音
+  blurTitle: 智能模糊
+  blurMessage: 自动模糊截图中的敏感信息。请选择要检测的模式。
+  screenshotPreview: 截图预览
+  notEnabled: 未启用
+  categoriesProtected: "已保护 $1 个类别"
+  pinTitle: 固定 Mimik
+  pinMessage: 将扩展固定到工具栏以便快速访问。点击 Chrome 中的拼图图标，然后固定 Mimik。
+  pinStep1Title: 点击拼图图标
+  pinStep1Sub: 位于浏览器工具栏右上角
+  pinStep2Title: 找到 Mimik
+  pinStep2Sub: 在扩展下拉菜单中
+  pinStep3Title: 点击固定图标
+  pinStep3Sub: Mimik 会出现在工具栏中
+  pinScreenshotAlt: 固定 Mimik 扩展
+  starTitle: 愿意给我们一个 star 吗？
+  starMessage: "Mimik 是免费开源的。star 是最简单的感谢方式，也能帮助更多人发现它。"
+  starAction: 在 GitHub 上加星
+  starLater: 稍后再说
+  doneTitle: "全部设置完成！"
+  doneMessage: "Mimik 已准备好捕获你的工作流。点击扩展中的“开始捕获”来录制第一份指南。"
+  featureAutoCapture: 自动捕获
+  featureAIAssist: AI 辅助
+  featureVoice: 语音讲解
+  featureAnnotate: 标注与遮盖
+  featureExports: 随处导出
+  featureSmartBlur: 智能模糊
+  openMimik: 打开 Mimik
+
+steps:
+  pressKey: "在 $2 上按 $1"
+  toggleCheckbox: "切换 $1"
+  selectRadio: "选择 $1"
+  toggleSwitch: "切换 $1"
+  clickLink: '点击链接“$1”'
+  click: "点击 $1"
+  typeIntoField: "在 $1 字段中输入 $2"
+  typeInto: "在 $1 中输入"
+  copyFrom: "从 $1 复制"
+  pasteInto: "粘贴到 $1"
+  cutFrom: "从 $1 剪切"
+  drag: "拖动 $1"
+  navigate: 导航到页面
+  defaultAction: "$1 $2"
+
+export:
+  guideLabel: "指南"
+  endLabel: "指南完成"
+  stepsRange: "步骤 $1-$2，共 $3 步"
+  stepOf: "第 $1 步，共 $2 步"
+  madeWith: "使用 Mimik 制作"
+  created: 创建时间
+  source: 来源
+  step: 步骤
+  steps: 步骤
+  stepLabel: "步骤 $1"
+  stepsCount: "$1 个步骤"
+  createdLabel: "创建于 $1"
+  sourceLabel: "来源：$1"
+
+background:
+  guideOnDomain: "$1 上的指南"
+  newGuide: 新指南
+
+voice:
+  turnOn: 开启语音讲解
+  turnOff: 关闭语音讲解
+  needsApiKey: 在设置中添加转写 API 密钥以使用语音讲解
+  micStarting: 正在启动麦克风...
+  micHearing: 正在听你说话
+  micQuiet: 没有声音
+  nextRecording: 语音讲解已开启，将从下一次录制开始。
+  orderHint: 先说出你将要做的事，然后执行操作。你的话会关联到下一个动作。
+  transcribing: 正在转写你的语音讲解...
+  transcribingHint: 转写完成后，步骤描述会自动更新。
+  narrated: "已为 $1 个步骤添加语音讲解。"
+  narratedPlural: "已为 $1 个步骤添加语音讲解。"
+  narratedNone: 没有语音讲解匹配到你的步骤，因此描述未更改。
+  guideSafe: 你的指南和截图都没问题。只有语音讲解丢失了。
+  openSettings: 打开设置
+  errorPermissionDenied: 麦克风访问被阻止，因此没有生成语音讲解。
+  errorNoDevice: 未找到麦克风，因此没有生成语音讲解。
+  errorNoAudio: 麦克风没有采集到声音，因此没有可转写的内容。
+  errorMissingApiKey: 语音讲解需要转写提供商和 API 密钥。
+  errorStreamEnded: 麦克风中途停止，因此语音讲解提前结束。
+  errorNotRecording: 语音讲解没有运行，因此没有可转写的内容。
+  errorAlreadyRecording: 语音讲解已经在运行，因此这次录制没有生成讲解。
+  errorUnsupported: 此浏览器无法录制语音讲解。
+  errorUnknown: 语音讲解意外停止。
+
+micPermission:
+  title: 允许麦克风访问
+  checkingMessage: 正在检查 Mimik 是否已有麦克风访问权限...
+  promptingMessage: 浏览器正在请求权限。请选择允许，让 Mimik 在你捕获指南时录制语音讲解。此标签页会自动关闭。
+  grantedTitle: 麦克风已就绪
+  grantedMessage: 正在带你回到刚才的操作。
+  deniedTitle: 麦克风访问被阻止
+  deniedMessage: 浏览器正在阻止 Mimik 使用麦克风，因此无法录制语音讲解。请从地址栏左侧图标打开网站设置，将麦克风设为允许，然后重试。即使没有麦克风，捕获指南仍可继续使用。
+  retry: 重试
+  privacy: 音频只会在录制期间保存在内存中，并会发送到你配置的转写提供商。Mimik 永远不会存储它。

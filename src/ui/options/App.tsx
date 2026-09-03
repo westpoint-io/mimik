@@ -1,6 +1,8 @@
+import { useDisplayLocale } from '@/lib/use-display-locale';
 import SettingsView from '@/ui/shared/SettingsView';
 
 export default function App() {
+  useDisplayLocale();
   return (
     <div
       style={{

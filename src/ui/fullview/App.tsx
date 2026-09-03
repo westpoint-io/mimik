@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useDisplayLocale } from '@/lib/use-display-locale';
 import { useFullview } from '@/stores/fullview';
 import { TooltipProvider } from '@/ui/components/ui/tooltip';
 import UpdateNotice from '@/ui/shared/UpdateNotice';
@@ -10,6 +11,7 @@ import SearchModal from './SearchModal';
 import TopNav from './TopNav';
 
 export default function FullViewApp() {
+  useDisplayLocale();
   const route = useRoute();
   const { toggleSearch, historyOpen } = useFullview((s) => ({
     toggleSearch: s.toggleSearch,
