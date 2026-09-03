@@ -89,25 +89,25 @@ src/
 
 ## State Management
 
-| Layer | Tool | Purpose |
-|-------|------|---------|
-| Capture lifecycle | xstate | State machine (IDLE ↔ RECORDING) in background service worker |
-| Fullview UI | Zustand | Search modal, guide counts, active guide data |
-| Persistence | Dexie (IndexedDB) | Guides, steps, screenshots, snapshots |
-| Service worker recovery | sessionStorage | xstate machine snapshot persistence |
-| Background → Sidepanel | Port messaging | Real-time state broadcast |
-| Cross-context sync | BroadcastChannel | Guide mutations (star, delete) across sidepanel/fullview |
+| Layer                   | Tool              | Purpose                                                       |
+| ----------------------- | ----------------- | ------------------------------------------------------------- |
+| Capture lifecycle       | xstate            | State machine (IDLE ↔ RECORDING) in background service worker |
+| Fullview UI             | Zustand           | Search modal, guide counts, active guide data                 |
+| Persistence             | Dexie (IndexedDB) | Guides, steps, screenshots, snapshots                         |
+| Service worker recovery | sessionStorage    | xstate machine snapshot persistence                           |
+| Background → Sidepanel  | Port messaging    | Real-time state broadcast                                     |
+| Cross-context sync      | BroadcastChannel  | Guide mutations (star, delete) across sidepanel/fullview      |
 
 ## Extension Entry Points
 
-| Entry Point | File | Purpose |
-|-------------|------|---------|
-| Background | `entrypoints/background/` | Service worker: xstate actor, message handlers, tab management |
-| Content Script | `entrypoints/content.ts` | Injected into all tabs: CaptureSession, event listeners |
-| Side Panel | `entrypoints/sidepanel/` | Recording controls, library, guide editor, settings |
-| Full View | `entrypoints/fullview/` | Dashboard: library browse, guide viewer, Ctrl+K search |
-| Onboarding | `entrypoints/onboarding/` | First-install wizard: AI setup, smart blur, pin extension |
-| Options | `entrypoints/options/` | Settings page (shared SettingsView in centered card) |
+| Entry Point    | File                      | Purpose                                                        |
+| -------------- | ------------------------- | -------------------------------------------------------------- |
+| Background     | `entrypoints/background/` | Service worker: xstate actor, message handlers, tab management |
+| Content Script | `entrypoints/content.ts`  | Injected into all tabs: CaptureSession, event listeners        |
+| Side Panel     | `entrypoints/sidepanel/`  | Recording controls, library, guide editor, settings            |
+| Full View      | `entrypoints/fullview/`   | Dashboard: library browse, guide viewer, Ctrl+K search         |
+| Onboarding     | `entrypoints/onboarding/` | First-install wizard: AI setup, smart blur, pin extension      |
+| Options        | `entrypoints/options/`    | Settings page (shared SettingsView in centered card)           |
 
 ## Messaging
 
@@ -116,6 +116,7 @@ Content Script ←→ Background Service Worker ←→ Sidepanel / Fullview
 ```
 
 **Extension messages** (webext-core, `lib/messaging.ts`):
+
 - `getState` → current capture state, step count, guide ID
 - `startRecording({url})` → creates guide, returns guideId
 - `stopRecording()` → finalizes guide, generates AI title
@@ -124,6 +125,7 @@ Content Script ←→ Background Service Worker ←→ Sidepanel / Fullview
 - `finalizeInputStep({stepId, elementMeta, domContext})` → final screenshot + AI description
 
 **Tab messages** (content script ↔ background, `lib/tab-messages.ts`):
+
 - `PING` / `START_CAPTURE` / `STOP_CAPTURE` — lifecycle
 - `SHOW_NOTIFICATION` — "Recording started" overlay
 - `URL_CHANGED` / `GET_ROUTE` — SPA navigation tracking
@@ -131,6 +133,7 @@ Content Script ←→ Background Service Worker ←→ Sidepanel / Fullview
 ## Capture Pipeline
 
 **Start recording:**
+
 1. User clicks "Start Capture" in sidepanel
 2. Background transitions xstate machine IDLE → RECORDING
 3. Creates Guide in IndexedDB, broadcasts `START_CAPTURE` to all tabs
@@ -138,6 +141,7 @@ Content Script ←→ Background Service Worker ←→ Sidepanel / Fullview
 5. Shows recording notification overlay on active tab
 
 **Capture a click:**
+
 1. Content script's CaptureController detects click via DOM event listener
 2. Click handler pushes async work into PQueue (concurrency: 1)
 3. Enqueueing hides the hover ring (`pointerdown` already did, on mouse paths); queue waits 3 frames then sends `captureStep`
@@ -147,12 +151,14 @@ Content Script ←→ Background Service Worker ←→ Sidepanel / Fullview
 7. Returns `{ stepId }` → queue processes next event; the ring returns only once the queue is fully drained
 
 **Capture text input (typing):**
+
 1. Click on text field → CaptureController starts InputSession → `captureStep` with initial screenshot
 2. Each keystroke → InputSession.update() → `updateInputStep` (description only, fire-and-forget)
 3. Enter/Escape/focusout → InputSession.finalize() → `finalizeInputStep` → final screenshot replaces initial + queued AI description
 4. Result: one step for entire typing interaction
 
 **Stop recording:**
+
 1. Background transitions RECORDING → IDLE
 2. Broadcasts `STOP_CAPTURE`, content scripts flush pending input sessions
 3. Background drains queued step descriptions (20s cap), then generates the guide title from step descriptions + URLs via AI
@@ -171,6 +177,7 @@ Siblings: input "Name", input "Email", textarea "Bio", button "Update profile"
 ```
 
 Extraction walks up from the target element to find:
+
 - Page title + URL path
 - Nearest semantic container (form, nav, dialog, section) or 3 levels up
 - Nearest heading
@@ -178,13 +185,13 @@ Extraction walks up from the target element to find:
 
 ## Export Formats
 
-| Format | Generator | Details |
-|--------|-----------|---------|
-| HTML | `core/export/html-export.ts` | Self-contained, base64 images, inline CSS |
-| PDF | `core/export/pdf-export.ts` | jsPDF, A4 portrait, auto page breaks |
-| Markdown | `core/export/markdown-export.ts` | Standard MD with base64 image data URLs |
-| DOCX | `core/export/docx-export.ts` | Lazy-imported, Word-compatible |
-| Video | `core/export/video-export.ts` | WebCodecs via mediabunny (lazy), mp4/H.264 with WebM/VP9 fallback |
+| Format   | Generator                        | Details                                                           |
+| -------- | -------------------------------- | ----------------------------------------------------------------- |
+| HTML     | `core/export/html-export.ts`     | Self-contained, base64 images, inline CSS                         |
+| PDF      | `core/export/pdf-export.ts`      | jsPDF, A4 portrait, auto page breaks                              |
+| Markdown | `core/export/markdown-export.ts` | Standard MD with base64 image data URLs                           |
+| DOCX     | `core/export/docx-export.ts`     | Lazy-imported, Word-compatible                                    |
+| Video    | `core/export/video-export.ts`    | WebCodecs via mediabunny (lazy), mp4/H.264 with WebM/VP9 fallback |
 
 Video frames reuse `renderScreenshot`, so the auto-crop, click-target outline, annotations and
 redactions are already baked in. Each step holds 1.5s wide, eases into a crop around the target
@@ -194,42 +201,42 @@ export UIs load it eagerly.
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Extension framework | WXT (Manifest V3) |
-| Language | TypeScript |
-| UI | React 19 |
-| Styling | Tailwind CSS v4 |
-| Components | shadcn/ui |
-| State (capture) | xstate |
-| State (UI) | Zustand |
-| Storage | Dexie.js (IndexedDB) |
-| Messaging | webext-core |
-| Export | jsPDF, docx, mediabunny (WebCodecs video), client-side HTML/Markdown |
-| AI (optional) | Vercel AI SDK (`ai`, `@ai-sdk/openai`, `@ai-sdk/anthropic`) |
-| Event queue | p-queue (concurrency: 1) |
-| Icons | Lucide React |
-| Dates | dayjs |
-| DOM utils | css-selector-generator |
+| Layer               | Technology                                                           |
+| ------------------- | -------------------------------------------------------------------- |
+| Extension framework | WXT (Manifest V3)                                                    |
+| Language            | TypeScript                                                           |
+| UI                  | React 19                                                             |
+| Styling             | Tailwind CSS v4                                                      |
+| Components          | shadcn/ui                                                            |
+| State (capture)     | xstate                                                               |
+| State (UI)          | Zustand                                                              |
+| Storage             | Dexie.js (IndexedDB)                                                 |
+| Messaging           | webext-core                                                          |
+| Export              | jsPDF, docx, mediabunny (WebCodecs video), client-side HTML/Markdown |
+| AI (optional)       | Vercel AI SDK (`ai`, `@ai-sdk/openai`, `@ai-sdk/anthropic`)          |
+| Event queue         | p-queue (concurrency: 1)                                             |
+| Icons               | Lucide React                                                         |
+| Dates               | dayjs                                                                |
+| DOM utils           | css-selector-generator                                               |
 
 ## Design System
 
 All colors are defined as CSS variables in `src/ui/global.css` and used via Tailwind classes:
 
-| Token | Color | Usage |
-|-------|-------|-------|
-| `--color-foreground` | `#1E1B4B` | Primary text (deep navy) |
-| `--color-muted-foreground` | `#6B7280` | Secondary text |
-| `--color-border` | `#C7D2FE` | Borders, dividers (lavender) |
-| `--color-secondary` | `#EEF2FF` | Light wash backgrounds |
-| `--color-accent` | `#4F46E5` | Icons, links, focus rings, toggles, meters (indigo) — never a button fill |
-| `--color-primary` | `#1E1B4B` | Primary buttons, badges, dark backgrounds |
-| `--color-primary-foreground` | `#C7D2FE` | Text on dark backgrounds |
-| `--color-lavender` | `#C7D2FE` | Soft accent |
-| `--color-purple` | `#4F46E5` | Primary indigo |
-| `--color-deep` | `#1E1B4B` | Deepest navy |
-| `--color-violet` | `#38BDF8` | Sky blue accent |
-| `--color-success` | `#059669` | Success green |
+| Token                        | Color     | Usage                                                                     |
+| ---------------------------- | --------- | ------------------------------------------------------------------------- |
+| `--color-foreground`         | `#1E1B4B` | Primary text (deep navy)                                                  |
+| `--color-muted-foreground`   | `#6B7280` | Secondary text                                                            |
+| `--color-border`             | `#C7D2FE` | Borders, dividers (lavender)                                              |
+| `--color-secondary`          | `#EEF2FF` | Light wash backgrounds                                                    |
+| `--color-accent`             | `#4F46E5` | Icons, links, focus rings, toggles, meters (indigo) — never a button fill |
+| `--color-primary`            | `#1E1B4B` | Primary buttons, badges, dark backgrounds                                 |
+| `--color-primary-foreground` | `#C7D2FE` | Text on dark backgrounds                                                  |
+| `--color-lavender`           | `#C7D2FE` | Soft accent                                                               |
+| `--color-purple`             | `#4F46E5` | Primary indigo                                                            |
+| `--color-deep`               | `#1E1B4B` | Deepest navy                                                              |
+| `--color-violet`             | `#38BDF8` | Sky blue accent                                                           |
+| `--color-success`            | `#059669` | Success green                                                             |
 
 Font: Poppins (loaded via `@fontsource/poppins`).
 

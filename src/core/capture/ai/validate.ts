@@ -21,6 +21,10 @@ const ENDPOINTS: Record<string, { url: string; headers: (key: string) => Record<
     url: 'https://api.groq.com/openai/v1/models',
     headers: (key) => ({ Authorization: `Bearer ${key}` }),
   },
+  openrouter: {
+    url: 'https://openrouter.ai/api/v1/models',
+    headers: (key) => ({ Authorization: `Bearer ${key}` }),
+  },
 };
 
 export async function validateApiKey(provider: string, apiKey: string): Promise<KeyValidation> {
