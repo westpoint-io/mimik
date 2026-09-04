@@ -59,6 +59,19 @@ describe('validateApiKey', () => {
     expect(init.headers.Authorization).toBe('Bearer gsk-key');
   });
 
+  it('checks an openrouter key against the endpoint that authenticates, not the public model list', async () => {
+    fetchMock.mockResolvedValue({ ok: true, status: 200 });
+    expect(await validateApiKey('openrouter', 'sk-or-key')).toEqual({ valid: true });
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe('https://openrouter.ai/api/v1/key');
+    expect(init.headers.Authorization).toBe('Bearer sk-or-key');
+  });
+
+  it('reports a rejected openrouter key as rejected', async () => {
+    fetchMock.mockResolvedValue({ ok: false, status: 401 });
+    expect(await validateApiKey('openrouter', 'sk-or-bad')).toEqual({ valid: false, reason: 'rejected' });
+  });
+
   it('gives up rather than spinning forever when a host never answers', async () => {
     fetchMock.mockResolvedValue({ ok: true, status: 200 });
     await validateApiKey('openai', 'sk-key');

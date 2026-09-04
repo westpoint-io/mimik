@@ -17,6 +17,12 @@ const ENDPOINTS: Record<string, { url: string; headers: (key: string) => Record<
       'anthropic-dangerous-direct-browser-access': 'true',
     }),
   },
+  // /models is public on OpenRouter and answers 200 for any key, so check the
+  // key against /key, which is the endpoint that actually authenticates.
+  openrouter: {
+    url: 'https://openrouter.ai/api/v1/key',
+    headers: (key) => ({ Authorization: `Bearer ${key}` }),
+  },
   groq: {
     url: 'https://api.groq.com/openai/v1/models',
     headers: (key) => ({ Authorization: `Bearer ${key}` }),
