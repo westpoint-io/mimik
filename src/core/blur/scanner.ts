@@ -57,7 +57,7 @@ export class BlurScanner {
         if (!node.parentElement) return NodeFilter.FILTER_REJECT;
         if (EXCLUDED_TAGS.has(node.parentElement.tagName)) return NodeFilter.FILTER_REJECT;
         if (node.parentElement.closest(`[${BLUR_ATTR}]`)) return NodeFilter.FILTER_REJECT;
-        if (!node.textContent || !node.textContent.trim()) return NodeFilter.FILTER_REJECT;
+        if (!node.textContent?.trim()) return NodeFilter.FILTER_REJECT;
         return NodeFilter.FILTER_ACCEPT;
       },
     });

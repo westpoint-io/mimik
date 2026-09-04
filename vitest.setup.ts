@@ -94,22 +94,17 @@ vi.mock("wxt/testing", async () => {
   };
 });
 
+// jsdom rejects the Uint8Array that a TextEncoder from another realm hands back,
+// so re-wrap the bytes in this realm's Uint8Array. The encoding itself stays
+// native UTF-8: hand-rolling it as one byte per code unit truncates anything
+// outside latin1, which silently corrupts multi-byte text and makes any real
+// fetch fail with "body length does not match content-length header".
 class ESBuildAndJSDOMCompatibleTextEncoder extends TextEncoder {
-  constructor() {
-    super();
-  }
-
-  encode(input: string) {
+  encode(input = "") {
     if (typeof input !== "string") {
       throw new TypeError("`input` must be a string");
     }
-    const decodedURI = decodeURIComponent(encodeURIComponent(input));
-    const arr = new Uint8Array(decodedURI.length);
-    const chars = decodedURI.split("");
-    for (let i = 0; i < chars.length; i++) {
-      arr[i] = decodedURI[i].charCodeAt(0);
-    }
-    return arr;
+    return Uint8Array.from(super.encode(input));
   }
 }
 
