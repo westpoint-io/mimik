@@ -56,6 +56,12 @@ describe('resolveVoiceApiKey', () => {
     ).toEqual({ provider: 'openai', apiKey: '', source: 'none' });
   });
 
+  it('does not lend an openrouter key to a whisper endpoint', () => {
+    expect(
+      resolveVoiceApiKey({ voiceProvider: 'openai', voiceApiKey: '', aiProvider: 'openrouter', aiApiKey: 'sk-or-x' }),
+    ).toEqual({ provider: 'openai', apiKey: '', source: 'none' });
+  });
+
   it('treats a missing ai provider as openai', () => {
     expect(resolveVoiceApiKey({ voiceProvider: 'openai', aiProvider: undefined, aiApiKey: 'sk-ai' }).source).toBe('ai');
   });

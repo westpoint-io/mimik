@@ -26,9 +26,9 @@ src/
 │   │   ├── ai/              # AI description + title generation (Vercel AI SDK)
 │   │   │   ├── description.ts   # getAIDescription (DOM context → AI → step text)
 │   │   │   ├── title.ts         # generateGuideTitle (steps → AI → guide name)
-│   │   │   ├── models.ts        # AI_PROVIDERS config (OpenAI/Anthropic model lists)
+│   │   │   ├── models.ts        # AI_PROVIDERS config (OpenAI/Anthropic/OpenRouter model lists)
 │   │   │   ├── prompts.ts       # Prompt templates
-│   │   │   └── provider.ts      # createModel factory (OpenAI/Anthropic)
+│   │   │   └── provider.ts      # createModel factory (OpenAI/Anthropic/OpenRouter)
 │   │   ├── dom/              # DOM extraction utilities
 │   │   │   ├── context.ts       # DOMContext extraction + serialization
 │   │   │   ├── element-meta.ts  # extractElementMeta (selector, text, aria, rect)
