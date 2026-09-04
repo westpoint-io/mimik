@@ -56,8 +56,38 @@ describe('shouldInterceptClick', () => {
     expect(shouldInterceptClick(el('<textarea></textarea>'), click())).toBe(false);
   });
 
-  it('still intercepts a checkbox, which is a click and not typing', () => {
-    expect(shouldInterceptClick(el('<input type="checkbox">'), click())).toBe(true);
+  it('lets a checkbox toggle first, so the shot is not one state behind', () => {
+    expect(shouldInterceptClick(el('<input type="checkbox">'), click())).toBe(false);
+    expect(shouldInterceptClick(el('<input type="radio">'), click())).toBe(false);
+  });
+
+  it('lets an aria toggle through, the way a component library builds one', () => {
+    expect(shouldInterceptClick(el('<div role="checkbox" aria-checked="false">Ship it</div>'), click())).toBe(false);
+    expect(shouldInterceptClick(el('<div role="switch" aria-checked="false">Dark mode</div>'), click())).toBe(false);
+    expect(shouldInterceptClick(el('<div role="radio" aria-checked="false">Weekly</div>'), click())).toBe(false);
+  });
+
+  it('lets a label through, because clicking it toggles the box it drives', () => {
+    const host = document.createElement('div');
+    host.innerHTML = '<input type="checkbox" id="bike"><label for="bike">I have a bike</label>';
+    document.body.appendChild(host);
+    expect(shouldInterceptClick(host.querySelector('label') as HTMLElement, click())).toBe(false);
+  });
+
+  it('lets a wrapping label through as well', () => {
+    const label = el('<label>Remember me<input type="checkbox"></label>');
+    expect(shouldInterceptClick(label, click())).toBe(false);
+  });
+
+  it('still intercepts a label that drives a text field, which is not a toggle', () => {
+    const host = document.createElement('div');
+    host.innerHTML = '<input type="text" id="email"><label for="email">Email</label>';
+    document.body.appendChild(host);
+    expect(shouldInterceptClick(host.querySelector('label') as HTMLElement, click())).toBe(true);
+  });
+
+  it('still intercepts an ordinary button inside a label', () => {
+    expect(shouldInterceptClick(el('<button>Save</button>'), click())).toBe(true);
   });
 });
 

@@ -1,4 +1,4 @@
-import { isTextField } from '../dom/element-utils';
+import { isTextField, isToggleControl } from '../dom/element-utils';
 
 const replayed = new WeakSet<Event>();
 
@@ -10,6 +10,10 @@ export function shouldInterceptClick(target: HTMLElement, event: MouseEvent): bo
   if (!event.isTrusted || event.shiftKey) return false;
   if (target instanceof HTMLSelectElement || target instanceof HTMLOptionElement) return false;
   if (target.isContentEditable) return false;
+  // Holding a toggle back would screenshot it in the state the step is about to
+  // leave, and the replayed click lands after the capture, so the guide would
+  // show every checkbox one state behind.
+  if (isToggleControl(target)) return false;
   return !isTextField(target);
 }
 
