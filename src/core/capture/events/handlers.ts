@@ -13,6 +13,7 @@ import {
   isTextField,
   isTooLarge,
 } from '../dom/element-utils';
+import { frameOffset, installFrameOffsetResponder, translateMeta } from '../dom/frame-offset';
 import { isReplayedClick, replayClick, replayInit, shouldInterceptClick } from './click-intercept';
 import { InputSession } from './input-session';
 
@@ -64,12 +65,14 @@ class CaptureController {
   private ring = new HoverRing(DEFAULT_TARGET_COLOR);
   private hovered: HTMLElement | null = null;
   private busy = false;
+  private stopAnsweringFrames: () => void;
 
   constructor(
     private guideId: string,
     isTopFrame: boolean,
   ) {
     this.input = new InputSession(guideId);
+    this.stopAnsweringFrames = installFrameOffsetResponder();
     this.listeners = [
       ['click', this.onClick.bind(this), ACTIVE_CAPTURE],
       ['auxclick', this.onAuxClick.bind(this), ACTIVE_CAPTURE],
@@ -103,11 +106,12 @@ class CaptureController {
   private capture(action: string, target: HTMLElement, point?: { x: number; y: number }) {
     const atEvent = freezeRect(target);
     return async () => {
-      const elementMeta = extractElementMeta(target, atEvent);
+      const base = extractElementMeta(target, atEvent);
+      const elementMeta = translateMeta(point ? { ...base, clickPoint: point } : base, await frameOffset());
       await sendMessage('captureStep', {
         guideId: this.guideId,
         action,
-        elementMeta: point ? { ...elementMeta, clickPoint: point } : elementMeta,
+        elementMeta,
         domContext: extractDOMContext(target, action),
       });
     };
@@ -315,6 +319,7 @@ class CaptureController {
     for (const [event, handler, opts] of this.listeners) {
       window.removeEventListener(event, handler, opts);
     }
+    this.stopAnsweringFrames();
     this.hovered = null;
     this.ring.dispose();
     this.queue.add(() => this.input.finalize());

@@ -29,6 +29,30 @@ export function isTextField(el: Element): boolean {
   return el instanceof HTMLTextAreaElement || (el instanceof HTMLElement && el.isContentEditable);
 }
 
+const TOGGLE_ROLES = new Set(['checkbox', 'radio', 'switch']);
+const TOGGLE_INPUT_TYPES = new Set(['checkbox', 'radio']);
+
+function isToggleInput(el: Element | null): el is HTMLInputElement {
+  return el instanceof HTMLInputElement && TOGGLE_INPUT_TYPES.has(el.type);
+}
+
+/**
+ * A click whose whole visible effect is the control flipping state: a checkbox,
+ * a radio, an aria switch, or a label that drives one. The step is worth showing
+ * settled rather than mid-flip, so these are captured after the toggle lands.
+ */
+export function isToggleControl(el: HTMLElement): boolean {
+  if (isToggleInput(el)) return true;
+
+  const role = el.getAttribute('role');
+  if (role && TOGGLE_ROLES.has(role)) return true;
+
+  const label = el instanceof HTMLLabelElement ? el : el.closest('label');
+  if (!label) return false;
+  const control = label.control ?? (label.htmlFor ? label.ownerDocument.getElementById(label.htmlFor) : null);
+  return isToggleInput(control);
+}
+
 export function isNavigatingClick(el: HTMLElement): boolean {
   const anchor = el.closest('a[href]');
   if (!anchor) return false;

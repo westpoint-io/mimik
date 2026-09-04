@@ -157,3 +157,69 @@ describe('click interception', () => {
     expect(seen).toBe(1);
   });
 });
+
+describe('toggle controls', () => {
+  function placeCheckbox(): HTMLInputElement {
+    const box = place('input') as HTMLInputElement;
+    box.type = 'checkbox';
+    return box;
+  }
+
+  function recordCheckedAtCapture(box: HTMLInputElement): boolean[] {
+    const seen: boolean[] = [];
+    vi.mocked(sendMessage).mockImplementation(((name: string) => {
+      if (name === 'captureStep') seen.push(box.checked);
+      const d = deferred();
+      pending.push(d);
+      return d.promise;
+    }) as unknown as typeof sendMessage);
+    return seen;
+  }
+
+  it('screenshots a checkbox after it flips, not in the state it is leaving', async () => {
+    const box = placeCheckbox();
+    const checkedAtCapture = recordCheckedAtCapture(box);
+
+    userClick(box);
+    await settle();
+
+    expect(box.checked).toBe(true);
+    expect(checkedAtCapture).toEqual([true]);
+  });
+
+  it('screenshots an unchecking click as unchecked', async () => {
+    const box = placeCheckbox();
+    box.checked = true;
+    const checkedAtCapture = recordCheckedAtCapture(box);
+
+    userClick(box);
+    await settle();
+
+    expect(box.checked).toBe(false);
+    expect(checkedAtCapture).toEqual([false]);
+  });
+
+  it('does not hold the toggle back from the page', async () => {
+    const box = placeCheckbox();
+    let seen = 0;
+    box.addEventListener('click', () => {
+      seen += 1;
+    });
+
+    userClick(box);
+    await settle();
+
+    expect(seen).toBe(1);
+  });
+
+  it('records the toggle once, not once per replay', async () => {
+    const box = placeCheckbox();
+
+    userClick(box);
+    await settle();
+    for (const d of pending) d.resolve();
+    await settle();
+
+    expect(vi.mocked(sendMessage).mock.calls.filter((c) => c[0] === 'captureStep')).toHaveLength(1);
+  });
+});

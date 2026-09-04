@@ -3,6 +3,7 @@ import { sendMessage } from '@/lib/messaging';
 import { extractDOMContext } from '../dom/context';
 import { extractElementMeta, type FrozenRect, freezeRect } from '../dom/element-meta';
 import { getFieldLabel, getFieldValue } from '../dom/element-utils';
+import { frameOffset, translateMeta } from '../dom/frame-offset';
 
 export class InputSession {
   stepId: string | null = null;
@@ -24,7 +25,7 @@ export class InputSession {
     const res = await sendMessage('captureStep', {
       guideId: this.guideId,
       action: 'input',
-      elementMeta: extractElementMeta(target, atEvent),
+      elementMeta: translateMeta(extractElementMeta(target, atEvent), await frameOffset()),
       domContext: extractDOMContext(target, 'input'),
     });
     if ('stepId' in res) {
@@ -53,7 +54,7 @@ export class InputSession {
     this.atEvent = undefined;
     await sendMessage('finalizeInputStep', {
       stepId,
-      elementMeta: extractElementMeta(target, atEvent),
+      elementMeta: translateMeta(extractElementMeta(target, atEvent), await frameOffset()),
       domContext: extractDOMContext(target, 'input'),
     });
   }
