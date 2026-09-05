@@ -1,7 +1,7 @@
 import { Globe, Search, Settings, Video } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';
-import { CaptureState } from '@/core/capture/machine';
+import { hasActiveRecording } from '@/core/capture/machine';
 import { isRecordableUrl } from '@/core/capture/recordable-tabs';
 import type { GuideMeSession } from '@/core/guideme/session';
 import { SESSION_KEY } from '@/core/guideme/session';
@@ -111,7 +111,7 @@ export default function App() {
       },
       onDisconnect: () => setIsAlive(false),
       onStateUpdate: (update) => {
-        if (update.state === CaptureState.RECORDING) {
+        if (hasActiveRecording(update.state)) {
           setIsRecording(true);
           const guideId = update.currentGuideId;
           if (guideId) {
