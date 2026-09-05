@@ -163,6 +163,7 @@ export default defineBackground(() => {
 
   onMessage('enterBlurMode', async () => {
     await waitUntilReady();
+    getActor().send({ type: 'PAUSE_CAPTURE' });
     await broadcastStopCapture();
     const activeTab = await getActiveTab();
     if (activeTab?.id) {
@@ -175,6 +176,7 @@ export default defineBackground(() => {
     await waitUntilReady();
     await localStorage.set({ mimikBlurMode: false });
     const actor = getActor();
+    actor.send({ type: 'RESUME_CAPTURE' });
     const guideId = actor.getSnapshot().context.currentGuideId;
     if (guideId) {
       await broadcastStartCapture(guideId);

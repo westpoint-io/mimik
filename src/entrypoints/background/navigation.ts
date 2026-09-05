@@ -1,4 +1,4 @@
-import { CaptureState } from '@/core/capture/machine';
+import { CaptureState, type CaptureStateValue, hasActiveRecording } from '@/core/capture/machine';
 import {
   getTab,
   onHistoryStateUpdated,
@@ -17,7 +17,7 @@ export function registerNavigationListeners() {
     if (details.frameId !== 0) return;
     await waitUntilReady();
     const state = getActor().getSnapshot();
-    if (state.value === CaptureState.RECORDING) {
+    if (hasActiveRecording(state.value as CaptureStateValue)) {
       logger.debug('URL changed (navigation) →', details.url);
       getActor().send({ type: 'URL_CHANGED', url: details.url });
     }
@@ -27,7 +27,7 @@ export function registerNavigationListeners() {
     if (details.frameId !== 0) return;
     await waitUntilReady();
     const state = getActor().getSnapshot();
-    if (state.value === CaptureState.RECORDING) {
+    if (hasActiveRecording(state.value as CaptureStateValue)) {
       logger.debug('URL changed (SPA pushState) →', details.url);
       getActor().send({ type: 'URL_CHANGED', url: details.url });
     }
@@ -36,7 +36,7 @@ export function registerNavigationListeners() {
   onTabActivated(async (activeInfo) => {
     await waitUntilReady();
     const state = getActor().getSnapshot();
-    if (state.value !== CaptureState.RECORDING) return;
+    if (!hasActiveRecording(state.value as CaptureStateValue)) return;
     if (!state.context.currentGuideId) return;
 
     try {
@@ -57,7 +57,7 @@ export function registerNavigationListeners() {
     if (changeInfo.status !== 'complete') return;
     await waitUntilReady();
     const state = getActor().getSnapshot();
-    if (state.value !== CaptureState.RECORDING) return;
+    if (!hasActiveRecording(state.value as CaptureStateValue)) return;
     if (!isInjectableTab(tab)) return;
 
     try {
@@ -67,6 +67,13 @@ export function registerNavigationListeners() {
       try {
         await injectContentScript(tabId);
       } catch {}
+    }
+
+    // A full navigation while paused tears down the blur panel, the only way
+    // back to RECORDING. Offer it again so the pause does not strand the
+    // recording. START_BLUR is a no-op for subframes and on BlurManager.start.
+    if (state.value === CaptureState.PAUSED && tab.active) {
+      sendMessageToTab(tabId, { type: TabMessage.START_BLUR }).catch(() => {});
     }
   });
 }
