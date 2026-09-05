@@ -5,7 +5,7 @@ import { AI_PROVIDERS, CUSTOM_MODEL_VALUE, isCustomModel } from '../models';
 
 const LOCALES = ['en', 'de', 'es', 'fr', 'pt-BR'];
 
-const MODEL_KEYS = ['settings.model', 'settings.modelCustom'];
+const MODEL_KEYS = ['settings.model', 'settings.modelCustom', 'settings.endpoint', 'settings.endpointHint'];
 
 function localeKeys(locale: string): Set<string> {
   const keys = new Set<string>();
@@ -53,9 +53,31 @@ describe('custom model sentinel', () => {
   });
 });
 
-describe('every provider default is selectable', () => {
-  it.each(Object.entries(AI_PROVIDERS))('%s lists its own default model', (_key, config) => {
+const CURATED = Object.entries(AI_PROVIDERS).filter(([, config]) => !config.requiresEndpoint);
+const ENDPOINT_DRIVEN = Object.entries(AI_PROVIDERS).filter(([, config]) => config.requiresEndpoint);
+
+describe('every curated provider default is selectable', () => {
+  it.each(CURATED)('%s lists its own default model', (_key, config) => {
     expect(config.models.some((option) => option.id === config.defaultModel)).toBe(true);
+  });
+});
+
+describe('endpoint-driven providers', () => {
+  it('exist, so the picker is not curated-only', () => {
+    expect(ENDPOINT_DRIVEN.length).toBeGreaterThan(0);
+  });
+
+  it.each(ENDPOINT_DRIVEN)('%s curates no model list, because the ids are the user own deployments', (_key, config) => {
+    expect(config.models).toEqual([]);
+    expect(config.defaultModel).toBe('');
+  });
+
+  it.each(ENDPOINT_DRIVEN)('%s shows an example url so the field is not a blank guess', (_key, config) => {
+    expect(config.endpointExample).toBeTruthy();
+  });
+
+  it.each(ENDPOINT_DRIVEN)('%s opens the free-text model box, having nothing to pick from', (_key, config) => {
+    expect(isCustomModel('some-deployment-name', config)).toBe(true);
   });
 });
 

@@ -88,8 +88,12 @@ settings:
   model: Modelo
   modelCustom: Modelo personalizado
   apiKey: Chave da API
+  endpoint: Endpoint
+  endpointHint: "A URL base do seu provedor. Sua chave e seus dados vão só pra esse endereço."
+  endpointInsecure: "Esse endpoint não é criptografado. Sua chave de API vai ser enviada em texto simples."
   aiLanguage: "Idioma das descrições"
   voiceNarration: "Narração por voz"
+  voiceDeployment: "Nome da implantação"
   voiceUsingAiKey: "Não tem chave de voz, então o Mimik usa a chave da OpenAI das Descrições com IA lá de cima."
   aiNoKey: "Nenhuma chave de API definida, então as etapas usarão descrições simples baseadas em regras."
   voiceNoKey: "Nenhuma chave de API foi definida, então suas gravações não serão narradas."

@@ -2,6 +2,7 @@ import { generateObject, generateText, jsonSchema } from 'ai';
 import { localStorage } from '@/lib/browser-api';
 import { logger } from '@/lib/logger';
 import { GUIDE_META_JSON_SUFFIX, GUIDE_META_PROMPT, getLanguageSuffix } from './prompts';
+import type { AIConnection } from './provider';
 import { createModel } from './provider';
 
 export interface GuideMeta {
@@ -55,9 +56,7 @@ export function parseGuideMeta(raw: string): GuideMeta | null {
 
 export async function generateGuideMeta(
   steps: { description: string; url: string }[],
-  provider: string,
-  model: string,
-  apiKey: string,
+  connection: AIConnection,
 ): Promise<GuideMeta | null> {
   if (steps.length === 0) return null;
 
@@ -65,7 +64,7 @@ export async function generateGuideMeta(
   const settings = await localStorage.get(['aiLanguage']);
   const locale = (settings.aiLanguage as string) || 'en';
   const prompt = GUIDE_META_PROMPT.replace('{{steps}}', formatted) + getLanguageSuffix(locale);
-  const aiModel = createModel(provider, model, apiKey);
+  const aiModel = createModel(connection);
 
   try {
     const { object } = await generateObject({

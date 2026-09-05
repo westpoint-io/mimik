@@ -88,8 +88,12 @@ settings:
   model: Model
   modelCustom: Custom model
   apiKey: API Key
+  endpoint: Endpoint
+  endpointHint: The base URL of your provider. Your key and data go only to this address.
+  endpointInsecure: This endpoint is not encrypted. Your API key will be sent in plain text.
   aiLanguage: Description Language
   voiceNarration: Voice Narration
+  voiceDeployment: Deployment name
   voiceUsingAiKey: "No voice key is set, so Mimik uses the OpenAI key from AI Descriptions above."
   aiNoKey: "No API key is set, so steps will use plain rule-based descriptions."
   voiceNoKey: "No API key is set, so your recordings will not be narrated."

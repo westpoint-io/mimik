@@ -110,6 +110,7 @@ export interface RewriteSelectionResponse {
 export interface ValidateApiKeyData {
   provider: string;
   apiKey: string;
+  baseURL?: string;
 }
 
 export interface ValidateApiKeyResponse {

@@ -12,6 +12,8 @@ export interface TranscriptionSettings {
   provider: VoiceProvider;
   apiKey: string;
   language?: string;
+  baseURL?: string;
+  model?: string;
 }
 
 export interface VoiceRecording {
@@ -36,12 +38,14 @@ export const EMPTY_NARRATION: NarrationResult = {
 
 export async function readTranscriptionSettings(): Promise<TranscriptionSettings> {
   const stored = await localStorage.get([...VOICE_KEY_SETTINGS, 'voiceLanguage', 'aiLanguage']);
-  const { provider, apiKey } = resolveVoiceApiKey(stored);
+  const { provider, apiKey, baseURL, model } = resolveVoiceApiKey(stored);
   const locale = (stored.voiceLanguage ?? stored.aiLanguage) as string | undefined;
   return {
     provider,
     apiKey,
     language: locale ? locale.split('-')[0] : undefined,
+    baseURL,
+    model,
   };
 }
 

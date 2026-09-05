@@ -37,7 +37,7 @@ describe('generateGuideMeta', () => {
       },
     });
 
-    const result = await generateGuideMeta(steps, 'openai', 'gpt-4o-mini', 'key');
+    const result = await generateGuideMeta(steps, { provider: 'openai', model: 'gpt-4o-mini', apiKey: 'key' });
 
     expect(result).toEqual({
       title: 'Reset a User Password in Okta',
@@ -48,7 +48,7 @@ describe('generateGuideMeta', () => {
   it('still yields a usable title when the model omits the description', async () => {
     generateObjectMock.mockResolvedValue({ object: { title: 'Reset a User Password in Okta' } });
 
-    const result = await generateGuideMeta(steps, 'openai', 'gpt-4o-mini', 'key');
+    const result = await generateGuideMeta(steps, { provider: 'openai', model: 'gpt-4o-mini', apiKey: 'key' });
 
     expect(result?.title).toBe('Reset a User Password in Okta');
     expect(result?.description).toBeUndefined();
@@ -57,7 +57,7 @@ describe('generateGuideMeta', () => {
   it('truncates a title over 70 characters', async () => {
     generateObjectMock.mockResolvedValue({ object: { title: 'x'.repeat(90), description: 'ok' } });
 
-    const result = await generateGuideMeta(steps, 'openai', 'gpt-4o-mini', 'key');
+    const result = await generateGuideMeta(steps, { provider: 'openai', model: 'gpt-4o-mini', apiKey: 'key' });
 
     expect(result?.title.length).toBe(70);
     expect(result?.title.endsWith('...')).toBe(true);
@@ -66,7 +66,7 @@ describe('generateGuideMeta', () => {
   it('marks every declared property as required, as strict mode demands', async () => {
     generateObjectMock.mockResolvedValue({ object: { title: 'T', description: null } });
 
-    await generateGuideMeta(steps, 'openai', 'gpt-4o-mini', 'key');
+    await generateGuideMeta(steps, { provider: 'openai', model: 'gpt-4o-mini', apiKey: 'key' });
 
     const { schema } = generateObjectMock.mock.calls[0][0];
     expect(schema.required.sort()).toEqual(Object.keys(schema.properties).sort());
@@ -75,7 +75,7 @@ describe('generateGuideMeta', () => {
   it('treats a null description from the model as absent', async () => {
     generateObjectMock.mockResolvedValue({ object: { title: 'Okta Password Reset', description: null } });
 
-    const result = await generateGuideMeta(steps, 'openai', 'gpt-4o-mini', 'key');
+    const result = await generateGuideMeta(steps, { provider: 'openai', model: 'gpt-4o-mini', apiKey: 'key' });
 
     expect(result?.title).toBe('Okta Password Reset');
     expect(result?.description).toBeUndefined();
@@ -84,13 +84,13 @@ describe('generateGuideMeta', () => {
   it('returns null when the model returns a blank title', async () => {
     generateObjectMock.mockResolvedValue({ object: { title: '   ', description: 'ok' } });
 
-    expect(await generateGuideMeta(steps, 'openai', 'gpt-4o-mini', 'key')).toBeNull();
+    expect(await generateGuideMeta(steps, { provider: 'openai', model: 'gpt-4o-mini', apiKey: 'key' })).toBeNull();
   });
 
   it('interpolates the numbered steps into the prompt', async () => {
     generateObjectMock.mockResolvedValue({ object: { title: 'Okta Password Reset' } });
 
-    await generateGuideMeta(steps, 'openai', 'gpt-4o-mini', 'key');
+    await generateGuideMeta(steps, { provider: 'openai', model: 'gpt-4o-mini', apiKey: 'key' });
 
     const { prompt } = generateObjectMock.mock.calls[0][0];
     expect(prompt).toContain('1. [https://admin.okta.com/users] Click Directory');
@@ -98,14 +98,14 @@ describe('generateGuideMeta', () => {
   });
 
   it('returns null for an empty step list without calling the model', async () => {
-    expect(await generateGuideMeta([], 'openai', 'gpt-4o-mini', 'key')).toBeNull();
+    expect(await generateGuideMeta([], { provider: 'openai', model: 'gpt-4o-mini', apiKey: 'key' })).toBeNull();
     expect(generateObjectMock).not.toHaveBeenCalled();
   });
 
   it('returns null when both the structured call and the text retry throw', async () => {
     generateObjectMock.mockRejectedValue(new Error('rate limited'));
     generateTextMock.mockRejectedValue(new Error('rate limited'));
-    expect(await generateGuideMeta(steps, 'openai', 'gpt-4o-mini', 'key')).toBeNull();
+    expect(await generateGuideMeta(steps, { provider: 'openai', model: 'gpt-4o-mini', apiKey: 'key' })).toBeNull();
   });
 });
 
@@ -121,7 +121,7 @@ describe('models without structured output support', () => {
       text: '{"title": "Check Recent Deaths on Wikipedia", "description": "Look up an entry."}',
     });
 
-    const result = await generateGuideMeta(steps, 'openai', 'gpt-3.5-turbo', 'key');
+    const result = await generateGuideMeta(steps, { provider: 'openai', model: 'gpt-3.5-turbo', apiKey: 'key' });
 
     expect(result).toEqual({
       title: 'Check Recent Deaths on Wikipedia',
@@ -132,7 +132,7 @@ describe('models without structured output support', () => {
   it('asks the fallback call for bare JSON', async () => {
     generateTextMock.mockResolvedValue({ text: '{"title": "T"}' });
 
-    await generateGuideMeta(steps, 'openai', 'gpt-3.5-turbo', 'key');
+    await generateGuideMeta(steps, { provider: 'openai', model: 'gpt-3.5-turbo', apiKey: 'key' });
 
     const { prompt } = generateTextMock.mock.calls[0][0];
     expect(prompt).toContain('1. [https://admin.okta.com/users] Click Directory');
@@ -143,7 +143,7 @@ describe('models without structured output support', () => {
     generateObjectMock.mockReset();
     generateObjectMock.mockResolvedValue({ object: { title: 'T', description: 'D' } });
 
-    await generateGuideMeta(steps, 'openai', 'gpt-4o-mini', 'key');
+    await generateGuideMeta(steps, { provider: 'openai', model: 'gpt-4o-mini', apiKey: 'key' });
 
     expect(generateTextMock).not.toHaveBeenCalled();
   });
