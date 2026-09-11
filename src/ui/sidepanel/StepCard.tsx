@@ -11,6 +11,7 @@ import ConfirmDialog from '@/ui/shared/ConfirmDialog';
 import { DragGrip, type DragHandleProps, useCardDrag } from '@/ui/shared/card-drag';
 import ImagePlaceholder from '@/ui/shared/ImagePlaceholder';
 import ScreenshotView from '@/ui/shared/ScreenshotView';
+import StepSourceBadge from '@/ui/shared/StepSourceBadge';
 
 interface StepCardProps {
   step: Step;
@@ -150,7 +151,8 @@ export default function StepCard({
             />
           )}
         </div>
-        <div className="flex items-center justify-end mt-1">
+        <div className="flex items-center justify-between gap-2 mt-1">
+          {step.aiPending ? <span /> : <StepSourceBadge source={step.descriptionSource} />}
           <div className="flex items-center gap-0.5">
             {askAi.trigger}
             {screenshot && (

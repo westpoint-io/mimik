@@ -18,6 +18,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { i18n } from '#imports';
 import { PRESET_LABELS, type PresetKey } from '@/core/blur/regexes';
+import { type AIApiKeys, keyFor, migrateApiKeys, withKeyFor } from '@/core/capture/ai/keys';
 import {
   AI_PROVIDERS,
   type AIProviderKey,
@@ -39,7 +40,7 @@ import { Input } from '@/ui/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/ui/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/components/ui/select';
 import ColorPicker from '@/ui/shared/ColorPicker';
-import { KeyStatusNote, ModelList, SecretInput, useKeyCheck } from '@/ui/shared/key-check';
+import { KeyStatusNote, KeyWarningNote, ModelList, SecretInput, useKeyCheck } from '@/ui/shared/key-check';
 import MicrophonePicker from '@/ui/shared/MicrophonePicker';
 import { changedSettings, type SettingsSnapshot } from '@/ui/shared/settings-autosave';
 
@@ -60,6 +61,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   const [provider, setProvider] = useState<AIProviderKey>('openai');
   const [model, setModel] = useState(AI_PROVIDERS.openai.defaultModel);
   const [apiKey, setApiKey] = useState('');
+  const [apiKeys, setApiKeys] = useState<AIApiKeys>({});
   const [baseUrl, setBaseUrl] = useState('');
   const [saved, setSaved] = useState(false);
   const aiKeyCheck = useKeyCheck();
@@ -92,6 +94,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     localStorage
       .get([
         'aiApiKey',
+        'aiApiKeys',
         'aiProvider',
         'aiModel',
         'aiBaseUrl',
@@ -109,7 +112,9 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
         const p = providerOrDefault(result.aiProvider);
         setProvider(p);
         setModel((result.aiModel as string) || AI_PROVIDERS[p].defaultModel);
-        if (result.aiApiKey) setApiKey(result.aiApiKey as string);
+        const keys = migrateApiKeys(result);
+        setApiKeys(keys);
+        setApiKey(keyFor(keys, p));
         if (isCustomBaseUrl(AI_PROVIDERS[p], result.aiBaseUrl as string)) {
           setBaseUrl(result.aiBaseUrl as string);
           setOwnServer(true);
@@ -129,6 +134,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
 
   const stored = {
     aiApiKey: apiKey,
+    aiApiKeys: apiKeys,
     aiProvider: provider,
     aiModel: model,
     aiBaseUrl: baseUrl,
@@ -194,6 +200,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
 
   const handleProviderChange = (newProvider: AIProviderKey) => {
     setProvider(newProvider);
+    setApiKey(keyFor(apiKeys, newProvider));
     aiKeyCheck.reset();
     setCustomModel(false);
     setModel(AI_PROVIDERS[newProvider].defaultModel);
@@ -320,6 +327,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
                 value={apiKey}
                 onChange={(next) => {
                   setApiKey(next);
+                  setApiKeys((prev) => withKeyFor(prev, provider, next));
                   aiKeyCheck.reset();
                 }}
                 placeholder="sk-..."
@@ -338,6 +346,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
               </Button>
             </div>
             <KeyStatusNote status={aiKeyCheck.status} />
+            <KeyWarningNote warning={aiKeyCheck.warning} />
             {aiKeyCheck.models && <ModelList models={aiKeyCheck.models} />}
             {!apiKey.trim() && (
               <p className="mt-1.5 flex items-start gap-1.5 text-[10px] text-destructive leading-relaxed" role="alert">

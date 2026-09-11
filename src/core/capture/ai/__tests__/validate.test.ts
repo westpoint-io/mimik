@@ -7,7 +7,7 @@ const { fetchMock } = vi.hoisted(() => {
 
 vi.stubGlobal('fetch', fetchMock);
 
-import { validateApiKey } from '../validate';
+import { spendWarning, validateApiKey } from '../validate';
 
 function jsonResponse(body: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' }, ...init });
@@ -320,6 +320,52 @@ describe('validateApiKey', () => {
       await validateApiKey('openai', 'sk-good');
       expect(fetchMock).toHaveBeenCalledTimes(1);
       expect(fetchMock.mock.calls[0][0]).toBe('https://api.openai.com/v1/models');
+    });
+  });
+
+  describe('whether a key can spend', () => {
+    const freeTierKeyBody = {
+      data: {
+        is_free_tier: true,
+        limit: null,
+        limit_remaining: null,
+        usage: 0,
+        rate_limit: { interval: '10s', requests: -1, note: 'This field is deprecated and safe to ignore.' },
+      },
+    };
+
+    it('warns when the account has never bought credits', async () => {
+      fetchMock.mockResolvedValueOnce(jsonResponse(freeTierKeyBody));
+      fetchMock.mockResolvedValueOnce(modelsBody('openai/gpt-4o-mini'));
+      expect(await validateApiKey('openrouter', 'sk-or-free')).toEqual({
+        valid: true,
+        models: ['openai/gpt-4o-mini'],
+        warning: 'cannot-spend',
+      });
+    });
+
+    it('stays quiet for a funded account', async () => {
+      fetchMock.mockResolvedValueOnce(jsonResponse({ data: { is_free_tier: false, limit_remaining: null } }));
+      fetchMock.mockResolvedValueOnce(modelsBody('openai/gpt-4o-mini'));
+      expect(await validateApiKey('openrouter', 'sk-or-paid')).toEqual({
+        valid: true,
+        models: ['openai/gpt-4o-mini'],
+      });
+    });
+
+    it('warns when the key has spent its own cap', async () => {
+      fetchMock.mockResolvedValueOnce(jsonResponse({ data: { is_free_tier: false, limit_remaining: 0 } }));
+      fetchMock.mockResolvedValueOnce(modelsBody('openai/gpt-4o-mini'));
+      expect(await validateApiKey('openrouter', 'sk-or-spent')).toMatchObject({ warning: 'cannot-spend' });
+    });
+
+    it('ignores the deprecated rate limit field rather than reading it as a cap', () => {
+      expect(spendWarning({ data: { rate_limit: { requests: -1 } } })).toBeUndefined();
+    });
+
+    it('says nothing about providers that expose no spend information', async () => {
+      fetchMock.mockResolvedValueOnce(modelsBody('gpt-4o-mini'));
+      expect(await validateApiKey('openai', 'sk-good')).toEqual({ valid: true, models: ['gpt-4o-mini'] });
     });
   });
 });

@@ -1,4 +1,5 @@
 import { browser } from '#imports';
+import type { AiFailureReason } from '@/core/capture/ai/errors';
 import type { CaptureStateValue } from '@/core/capture/machine';
 import { logger } from '@/lib/logger';
 import type { VoiceErrorReason } from '@/lib/voice-messages';
@@ -23,7 +24,14 @@ export interface PanelVoiceUpdate {
   narrated?: number;
 }
 
-type PortMessage = PanelStateUpdate | PanelVoiceUpdate;
+export interface PanelAiUpdate {
+  type: 'AI_UPDATE';
+  reason: AiFailureReason;
+  status?: number;
+  provider: string;
+}
+
+type PortMessage = PanelStateUpdate | PanelVoiceUpdate | PanelAiUpdate;
 type Port = ReturnType<typeof browser.runtime.connect>;
 
 function openPort(
@@ -75,6 +83,7 @@ export function connectToBackground(callbacks: {
   onConnect: () => void;
   onDisconnect: () => void;
   onVoiceUpdate?: (update: PanelVoiceUpdate) => void;
+  onAiUpdate?: (update: PanelAiUpdate) => void;
 }): () => void {
   return openPort(
     PORT_NAME,
@@ -83,6 +92,8 @@ export function connectToBackground(callbacks: {
         callbacks.onStateUpdate(msg);
       } else if (msg.type === 'VOICE_UPDATE') {
         callbacks.onVoiceUpdate?.(msg);
+      } else if (msg.type === 'AI_UPDATE') {
+        callbacks.onAiUpdate?.(msg);
       }
     },
     callbacks.onConnect,
@@ -145,6 +156,10 @@ function broadcastTo(ports: Set<Port>, message: PortMessage): void {
 }
 
 export function broadcastStateToPanel(update: PanelStateUpdate): void {
+  broadcastTo(panelPorts, update);
+}
+
+export function broadcastAiToPanel(update: PanelAiUpdate): void {
   broadcastTo(panelPorts, update);
 }
 

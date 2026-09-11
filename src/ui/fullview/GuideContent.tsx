@@ -186,7 +186,7 @@ export default function GuideContent({ guideId, initialStepId, initialTool }: Gu
   }, [guideId]);
 
   const handleDescriptionChange = useCallback(async (stepId: string, description: string) => {
-    await updateStepDescription(stepId, description);
+    await updateStepDescription(stepId, description, 'manual');
     setData((prev) => {
       if (!prev) return prev;
       return { ...prev, steps: prev.steps.map((s) => (s.id === stepId ? { ...s, description } : s)) };

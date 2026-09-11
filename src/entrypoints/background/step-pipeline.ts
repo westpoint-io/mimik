@@ -1,3 +1,4 @@
+import { AI_KEY_SETTINGS, resolveAiKey } from '@/core/capture/ai/keys';
 import type { DOMContext } from '@/core/capture/dom/context';
 import { CaptureState } from '@/core/capture/machine';
 import { buildFallbackDescription } from '@/core/capture/step-description';
@@ -57,7 +58,7 @@ async function takeScreenshot(stepId: string, meta: ElementMeta): Promise<string
 }
 
 async function tryAIDescription(stepId: string, domContext: DOMContext) {
-  if (!(await localStorage.get(['aiApiKey'])).aiApiKey) return;
+  if (!resolveAiKey(await localStorage.get([...AI_KEY_SETTINGS])).apiKey) return;
   try {
     await clearStepAiPending(stepId, await generateAiDescription(domContext));
   } catch (err) {
@@ -79,7 +80,7 @@ export async function handleCaptureStep(data: CaptureStepData): Promise<CaptureS
   const screenshotId = await takeScreenshot(stepId, data.elementMeta);
 
   const narrationCapturing = getVoiceUpdate().phase === 'recording';
-  const hasAiKey = !!(await localStorage.get(['aiApiKey'])).aiApiKey;
+  const hasAiKey = !!resolveAiKey(await localStorage.get([...AI_KEY_SETTINGS])).apiKey;
   const willUseAI = shouldQueueAiDescription({
     action: data.action,
     hasDomContext: !!data.domContext,
@@ -98,6 +99,7 @@ export async function handleCaptureStep(data: CaptureStepData): Promise<CaptureS
     timestamp,
     screenshotId,
     elementMeta: data.elementMeta,
+    descriptionSource: 'heuristic',
     aiPending: willUseAI || narrationCapturing,
   });
   await addStepToGuide(guideId, stepId);

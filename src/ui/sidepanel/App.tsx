@@ -17,7 +17,7 @@ import {
 import { logger } from '@/lib/logger';
 import { sendMessage } from '@/lib/messaging';
 import { getVoiceStatus } from '@/lib/offscreen';
-import { connectToBackground, type PanelVoiceUpdate } from '@/lib/port';
+import { connectToBackground, type PanelAiUpdate, type PanelVoiceUpdate } from '@/lib/port';
 import { Button } from '@/ui/components/ui/button';
 import { Input } from '@/ui/components/ui/input';
 import { TooltipProvider } from '@/ui/components/ui/tooltip';
@@ -94,6 +94,7 @@ export default function App() {
   const [search, setSearch] = useState('');
   const [activeUrl, setActiveUrl] = useState<string>();
   const [voice, setVoice] = useState<PanelVoiceUpdate>({ type: 'VOICE_UPDATE', phase: 'idle' });
+  const [aiFailure, setAiFailure] = useState<PanelAiUpdate | null>(null);
   const [voiceStarted, setVoiceStarted] = useState(false);
 
   useEffect(() => {
@@ -113,6 +114,7 @@ export default function App() {
       onStateUpdate: (update) => {
         if (update.state === CaptureState.RECORDING) {
           setIsRecording(true);
+          setAiFailure(null);
           const guideId = update.currentGuideId;
           if (guideId) {
             setView((prev) => (prev.name === 'recording' ? prev : { name: 'recording', guideId }));
@@ -125,6 +127,7 @@ export default function App() {
         if (update.phase !== 'idle') setVoiceStarted(true);
         setVoice(update);
       },
+      onAiUpdate: setAiFailure,
     });
 
     return disconnect;
@@ -210,7 +213,7 @@ export default function App() {
 
   function renderView() {
     if (view.name === 'recording') {
-      return <RecordingView guideId={view.guideId} onStop={handleStopRecording} voice={voice} />;
+      return <RecordingView guideId={view.guideId} onStop={handleStopRecording} voice={voice} aiFailure={aiFailure} />;
     }
 
     if (view.name === 'guideme') {
