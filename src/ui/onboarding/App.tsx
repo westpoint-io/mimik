@@ -1,4 +1,4 @@
-import { ChevronDown, Globe, Mic, MousePointerClick, Shield } from 'lucide-react';
+import { Globe, Mic, MousePointerClick, Shield } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';
 import { PRESET_LABELS, type PresetKey } from '@/core/blur/regexes';
@@ -6,15 +6,17 @@ import {
   AI_PROVIDERS,
   type AIProviderKey,
   CUSTOM_MODEL_VALUE,
-  DEFAULT_OPENAI_BASE_URL,
+  DEFAULT_AI_PROVIDER,
+  isCustomBaseUrl,
   isCustomModel,
+  providerOrDefault,
 } from '@/core/capture/ai/models';
 import { AI_LANGUAGES, type AILanguageCode } from '@/core/capture/ai/prompts';
 import type { VoiceProvider } from '@/core/capture/voice/transcribe';
 import { localStorage, openSidebar, requestHostPermissions } from '@/lib/browser-api';
 import { Input } from '@/ui/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/components/ui/select';
-import { KeyStatusNote, ModelList, useKeyCheck } from '@/ui/shared/key-check';
+import { KeyStatusNote, ModelList, SecretInput, useKeyCheck } from '@/ui/shared/key-check';
 import MicrophonePicker from '@/ui/shared/MicrophonePicker';
 
 interface StepProps {
@@ -127,19 +129,21 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
   const [apiKey, setApiKey] = useState('');
   const [baseUrl, setBaseUrl] = useState('');
   const [aiLanguage, setAiLanguage] = useState<AILanguageCode>('en');
-  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [ownServer, setOwnServer] = useState(false);
   const [customModel, setCustomModel] = useState(false);
   const aiKeyCheck = useKeyCheck();
 
   useEffect(() => {
     const load = () =>
       localStorage.get(['aiProvider', 'aiModel', 'aiApiKey', 'aiBaseUrl', 'aiLanguage']).then((stored) => {
-        if (typeof stored.aiProvider === 'string' && stored.aiProvider in AI_PROVIDERS) {
-          setProvider(stored.aiProvider as AIProviderKey);
-        }
+        const key = providerOrDefault(stored.aiProvider);
+        setProvider(key);
         if (typeof stored.aiModel === 'string') setModel(stored.aiModel);
         if (typeof stored.aiApiKey === 'string') setApiKey(stored.aiApiKey);
-        if (typeof stored.aiBaseUrl === 'string') setBaseUrl(stored.aiBaseUrl);
+        if (isCustomBaseUrl(AI_PROVIDERS[key], stored.aiBaseUrl as string)) {
+          setBaseUrl(stored.aiBaseUrl as string);
+          setOwnServer(true);
+        }
         if (typeof stored.aiLanguage === 'string') setAiLanguage(stored.aiLanguage as AILanguageCode);
       });
 
@@ -151,7 +155,7 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
     return () => document.removeEventListener('visibilitychange', onVisible);
   }, []);
 
-  const providerConfig = AI_PROVIDERS[provider];
+  const providerConfig = AI_PROVIDERS[provider] ?? AI_PROVIDERS[DEFAULT_AI_PROVIDER];
   const usingCustomModel = customModel || isCustomModel(model, providerConfig);
 
   const handleProviderChange = (newProvider: AIProviderKey) => {
@@ -159,8 +163,20 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
     setProvider(newProvider);
     setModel(nextModel);
     setCustomModel(false);
+    setOwnServer(false);
+    setBaseUrl('');
     aiKeyCheck.reset();
-    void localStorage.set({ aiProvider: newProvider, aiModel: nextModel });
+    void localStorage.set({ aiProvider: newProvider, aiModel: nextModel, aiBaseUrl: '' });
+  };
+
+  const handleOwnServerToggle = () => {
+    const next = !ownServer;
+    setOwnServer(next);
+    if (!next) {
+      setBaseUrl('');
+      void localStorage.set({ aiBaseUrl: '' });
+    }
+    aiKeyCheck.reset();
   };
 
   const handleModelChange = (nextModel: string) => {
@@ -209,7 +225,7 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
                 {i18n.t('settings.provider')}
               </label>
               <Select value={provider} onValueChange={(v) => handleProviderChange(v as AIProviderKey)}>
-                <SelectTrigger className="w-full rounded-xl px-4 py-2.5 text-sm focus:border-accent focus:ring-accent/10">
+                <SelectTrigger className="w-full h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -225,7 +241,7 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
             <div>
               <label className="block text-xs font-semibold text-foreground mb-1.5">{i18n.t('settings.model')}</label>
               <Select value={usingCustomModel ? CUSTOM_MODEL_VALUE : model} onValueChange={handleModelChange}>
-                <SelectTrigger className="w-full rounded-xl px-4 py-2.5 text-sm focus:border-accent focus:ring-accent/10">
+                <SelectTrigger className="w-full h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -246,19 +262,19 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
                     void localStorage.set({ aiModel: e.target.value });
                   }}
                   placeholder={providerConfig.defaultModel}
-                  className="w-full mt-1.5 rounded-xl px-4 py-2.5 text-sm focus:border-accent focus:ring-accent/10"
+                  className="w-full mt-1.5 h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10"
                 />
               )}
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-foreground mb-1.5">{i18n.t('settings.apiKey')}</label>
-              <Input
-                type="password"
+              <SecretInput
                 value={apiKey}
-                onChange={(e) => handleApiKeyChange(e.target.value)}
+                onChange={handleApiKeyChange}
                 placeholder="sk-..."
-                className="w-full rounded-xl px-4 py-2.5 text-sm focus:border-accent focus:ring-accent/10"
+                className="w-full h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10"
+                buttonClassName="right-3"
               />
               <div className="flex items-center gap-3 mt-2">
                 <button
@@ -278,46 +294,56 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
               {aiKeyCheck.models && <ModelList models={aiKeyCheck.models} />}
             </div>
 
-            {providerConfig.baseUrl && (
-              <div>
+            <div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs font-semibold text-foreground flex items-center gap-1">
+                  <Globe size={12} className="-mt-px" />
+                  {i18n.t('settings.useOwnServer')}
+                </span>
                 <button
                   type="button"
-                  onClick={() => setAdvancedOpen((v) => !v)}
-                  className="flex items-center gap-1 text-xs font-semibold text-accent hover:text-foreground transition-colors py-0.5"
+                  role="switch"
+                  aria-checked={ownServer}
+                  aria-label={i18n.t('settings.useOwnServer')}
+                  onClick={handleOwnServerToggle}
+                  className={`w-10 h-6 rounded-full transition-colors relative shrink-0 ${
+                    ownServer ? 'bg-accent' : 'bg-border'
+                  }`}
                 >
-                  <ChevronDown
-                    size={14}
-                    className={`transition-transform duration-200 ${advancedOpen ? 'rotate-180' : ''}`}
+                  <span
+                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
+                      ownServer ? 'translate-x-4' : 'translate-x-0'
+                    }`}
                   />
-                  Advanced
                 </button>
-                {advancedOpen && (
-                  <div className="mt-2 space-y-2">
-                    <label className="block text-xs font-semibold text-foreground mb-1.5">
-                      <Globe size={11} className="inline mr-1 -mt-px" />
-                      {i18n.t('settings.baseUrl')}
-                    </label>
-                    <Input
-                      type="text"
-                      value={baseUrl}
-                      onChange={(e) => handleBaseUrlChange(e.target.value)}
-                      placeholder={DEFAULT_OPENAI_BASE_URL}
-                      className="w-full rounded-xl px-4 py-2.5 text-sm focus:border-accent focus:ring-accent/10"
-                    />
-                    <p className="text-[10px] text-muted-foreground leading-relaxed">
-                      Custom endpoint for OpenAI-compatible APIs. Leave empty for the default.
-                    </p>
-                  </div>
-                )}
               </div>
-            )}
+              {ownServer && (
+                <div className="mt-2 space-y-2">
+                  <Input
+                    type="text"
+                    value={baseUrl}
+                    onChange={(e) => handleBaseUrlChange(e.target.value)}
+                    placeholder={providerConfig.defaultBaseUrl}
+                    aria-label={i18n.t('settings.baseUrl')}
+                    className="w-full h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10"
+                  />
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    {i18n.t(
+                      providerConfig.protocol === 'anthropic'
+                        ? 'settings.ownServerHintAnthropic'
+                        : 'settings.ownServerHintOpenai',
+                    )}
+                  </p>
+                </div>
+              )}
+            </div>
 
             <div>
               <label className="block text-xs font-semibold text-foreground mb-1.5">
                 {i18n.t('settings.aiLanguage')}
               </label>
               <Select value={aiLanguage} onValueChange={(v) => handleLanguageChange(v as AILanguageCode)}>
-                <SelectTrigger className="w-full rounded-xl px-4 py-2.5 text-sm focus:border-accent focus:ring-accent/10">
+                <SelectTrigger className="w-full h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -474,33 +500,37 @@ function VoiceStep({ onNext, onSkip, onBack, index, total }: StepProps) {
           <div className="border border-border rounded-2xl p-4 space-y-3 mb-6">
             <div className="flex gap-3">
               <div className="flex-1">
-                <label className="block text-[11px] font-semibold text-foreground mb-1">
+                <label className="block text-xs font-semibold text-foreground mb-1.5">
                   {i18n.t('settings.provider')}
                 </label>
-                <select
-                  value={provider}
-                  onChange={(e) => handleProviderChange(e.target.value as VoiceProvider)}
-                  className="w-full border border-border rounded-xl px-3 py-2 text-[13px] text-foreground bg-card font-medium outline-none focus:border-accent focus:ring-2 focus:ring-accent/10"
-                >
-                  <option value="openai">OpenAI</option>
-                  <option value="groq">Groq</option>
-                </select>
+                <Select value={provider} onValueChange={(v) => handleProviderChange(v as VoiceProvider)}>
+                  <SelectTrigger className="h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="openai">OpenAI</SelectItem>
+                    <SelectItem value="groq">Groq</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex-1">
-                <label className="block text-[11px] font-semibold text-foreground mb-1">
+                <label className="block text-xs font-semibold text-foreground mb-1.5">
                   {i18n.t('settings.apiKey')}
                 </label>
-                <input
-                  type="password"
+                <SecretInput
                   value={apiKey}
-                  onChange={(e) => handleApiKeyChange(e.target.value)}
+                  onChange={handleApiKeyChange}
                   placeholder={provider === 'groq' ? 'gsk_...' : 'sk-...'}
-                  className="w-full border border-border rounded-xl px-3 py-2 text-[13px] text-foreground bg-card font-medium outline-none focus:border-accent focus:ring-2 focus:ring-accent/10 placeholder:text-muted-foreground/50"
+                  className="w-full h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10"
                 />
               </div>
             </div>
 
-            <MicrophonePicker value={microphoneId} onChange={handleMicrophoneChange} />
+            <MicrophonePicker
+              value={microphoneId}
+              onChange={handleMicrophoneChange}
+              triggerClassName="h-11 px-4 text-sm"
+            />
 
             <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-secondary text-[11px] text-muted-foreground leading-relaxed">
               <Mic size={12} className="shrink-0 mt-0.5 text-accent" />
