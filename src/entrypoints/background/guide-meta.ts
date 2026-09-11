@@ -1,6 +1,7 @@
 import { i18n } from '#imports';
+import { resolveAiKey } from '@/core/capture/ai/keys';
 import { generateGuideMeta } from '@/core/capture/ai/meta';
-import { AI_PROVIDERS, providerOrDefault } from '@/core/capture/ai/models';
+import { AI_PROVIDERS } from '@/core/capture/ai/models';
 import { actionSteps } from '@/core/guides/blocks';
 import {
   clearStepAiPending,
@@ -29,20 +30,20 @@ type GuideMetaInputs =
   | { ok: false; reason: ResolveFailure };
 
 async function resolveGuideMetaInputs(guideId: string): Promise<GuideMetaInputs> {
-  const settings = await localStorage.get(['aiApiKey', 'aiProvider', 'aiModel', 'aiBaseUrl']);
-  if (!settings.aiApiKey) return { ok: false, reason: 'no-api-key' };
+  const settings = await localStorage.get(['aiApiKeys', 'aiApiKey', 'aiProvider', 'aiModel', 'aiBaseUrl']);
+  const { provider, apiKey } = resolveAiKey(settings);
+  if (!apiKey) return { ok: false, reason: 'no-api-key' };
 
   const steps = actionSteps(await getStepsForGuide(guideId));
   const described = steps.filter((s) => s.description).map((s) => ({ description: s.description, url: s.url }));
   if (described.length === 0) return { ok: false, reason: 'no-steps' };
 
-  const provider = providerOrDefault(settings.aiProvider);
   return {
     ok: true,
     steps: described.length > 15 ? [...described.slice(0, 10), ...described.slice(-5)] : described,
     provider,
     model: (settings.aiModel as string) || AI_PROVIDERS[provider].defaultModel,
-    apiKey: settings.aiApiKey as string,
+    apiKey,
     baseUrl: settings.aiBaseUrl as string | undefined,
   };
 }

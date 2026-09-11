@@ -2,6 +2,7 @@ import { Globe, Mic, MousePointerClick, Shield } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';
 import { PRESET_LABELS, type PresetKey } from '@/core/blur/regexes';
+import { type AIApiKeys, keyFor, migrateApiKeys, withKeyFor } from '@/core/capture/ai/keys';
 import {
   AI_PROVIDERS,
   type AIProviderKey,
@@ -16,7 +17,7 @@ import type { VoiceProvider } from '@/core/capture/voice/transcribe';
 import { localStorage, openSidebar, requestHostPermissions } from '@/lib/browser-api';
 import { Input } from '@/ui/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/components/ui/select';
-import { KeyStatusNote, ModelList, SecretInput, useKeyCheck } from '@/ui/shared/key-check';
+import { KeyStatusNote, KeyWarningNote, ModelList, SecretInput, useKeyCheck } from '@/ui/shared/key-check';
 import MicrophonePicker from '@/ui/shared/MicrophonePicker';
 
 interface StepProps {
@@ -127,6 +128,7 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
   const [provider, setProvider] = useState<AIProviderKey>('openai');
   const [model, setModel] = useState(AI_PROVIDERS.openai.defaultModel);
   const [apiKey, setApiKey] = useState('');
+  const [apiKeys, setApiKeys] = useState<AIApiKeys>({});
   const [baseUrl, setBaseUrl] = useState('');
   const [aiLanguage, setAiLanguage] = useState<AILanguageCode>('en');
   const [ownServer, setOwnServer] = useState(false);
@@ -135,11 +137,13 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
 
   useEffect(() => {
     const load = () =>
-      localStorage.get(['aiProvider', 'aiModel', 'aiApiKey', 'aiBaseUrl', 'aiLanguage']).then((stored) => {
+      localStorage.get(['aiProvider', 'aiModel', 'aiApiKey', 'aiApiKeys', 'aiBaseUrl', 'aiLanguage']).then((stored) => {
         const key = providerOrDefault(stored.aiProvider);
         setProvider(key);
         if (typeof stored.aiModel === 'string') setModel(stored.aiModel);
-        if (typeof stored.aiApiKey === 'string') setApiKey(stored.aiApiKey);
+        const keys = migrateApiKeys(stored);
+        setApiKeys(keys);
+        setApiKey(keyFor(keys, key));
         if (isCustomBaseUrl(AI_PROVIDERS[key], stored.aiBaseUrl as string)) {
           setBaseUrl(stored.aiBaseUrl as string);
           setOwnServer(true);
@@ -165,8 +169,10 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
     setCustomModel(false);
     setOwnServer(false);
     setBaseUrl('');
+    const nextKey = keyFor(apiKeys, newProvider);
+    setApiKey(nextKey);
     aiKeyCheck.reset();
-    void localStorage.set({ aiProvider: newProvider, aiModel: nextModel, aiBaseUrl: '' });
+    void localStorage.set({ aiProvider: newProvider, aiModel: nextModel, aiBaseUrl: '', aiApiKey: nextKey });
   };
 
   const handleOwnServerToggle = () => {
@@ -194,8 +200,10 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
 
   const handleApiKeyChange = (nextKey: string) => {
     setApiKey(nextKey);
+    const nextKeys = withKeyFor(apiKeys, provider, nextKey);
+    setApiKeys(nextKeys);
     aiKeyCheck.reset();
-    void localStorage.set({ aiApiKey: nextKey });
+    void localStorage.set({ aiApiKey: nextKey, aiApiKeys: nextKeys });
   };
 
   const handleBaseUrlChange = (nextUrl: string) => {
@@ -289,6 +297,7 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
                 </button>
                 <div className="min-w-0">
                   <KeyStatusNote status={aiKeyCheck.status} />
+                  <KeyWarningNote warning={aiKeyCheck.warning} />
                 </div>
               </div>
               {aiKeyCheck.models && <ModelList models={aiKeyCheck.models} />}

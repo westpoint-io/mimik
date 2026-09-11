@@ -1,3 +1,4 @@
+import type { AIApiKeys } from '@/core/capture/ai/keys';
 import type { AIProviderKey } from '@/core/capture/ai/models';
 import type { VoiceProvider } from '@/core/capture/voice/transcribe';
 import type { ScreenshotEdits } from '@/core/screenshot/types';
@@ -14,7 +15,7 @@ export interface Guide {
   staging?: boolean;
 }
 
-export type DescriptionSource = 'narration' | 'ai' | 'heuristic';
+export type DescriptionSource = 'narration' | 'ai' | 'heuristic' | 'manual';
 
 export type BlockType = 'heading' | 'callout';
 
@@ -60,6 +61,7 @@ export interface Screenshot {
 
 export interface Settings {
   aiApiKey: string;
+  aiApiKeys?: AIApiKeys;
   aiProvider: AIProviderKey;
   aiModel: string;
   aiBaseUrl?: string;
