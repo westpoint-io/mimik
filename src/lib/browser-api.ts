@@ -1,5 +1,6 @@
 import type { PublicPath } from 'wxt/browser';
 import { type Browser, browser } from '#imports';
+import type { Settings, SettingsKey } from '@/core/guides/types';
 
 type HtmlPublicPath = Extract<PublicPath, `${string}.html`>;
 type ScriptPath = Extract<PublicPath, `${string}.js`>;
@@ -104,8 +105,9 @@ export const sessionStorage = {
 };
 
 export const localStorage = {
-  get: (keys: string[]) => browser.storage.local.get(keys),
-  set: (items: Record<string, unknown>) => browser.storage.local.set(items),
+  get: <K extends SettingsKey>(keys: readonly K[]) =>
+    browser.storage.local.get(keys as unknown as K) as Promise<Partial<Pick<Settings, K>>>,
+  set: (items: Partial<Settings>) => browser.storage.local.set(items),
 };
 
 export function setSidePanelBehavior(openOnActionClick: boolean): void {

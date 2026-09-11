@@ -1,6 +1,9 @@
 import type { AIApiKeys } from '@/core/capture/ai/keys';
 import type { AIProviderKey } from '@/core/capture/ai/models';
 import type { VoiceProvider } from '@/core/capture/voice/transcribe';
+import type { BrandLogo } from '@/core/export/branding';
+import type { ExportOptions } from '@/core/export/options';
+import type { GuideMeSession } from '@/core/guideme/session';
 import type { ScreenshotEdits } from '@/core/screenshot/types';
 
 export interface Guide {
@@ -61,15 +64,31 @@ export interface Screenshot {
 
 export interface Settings {
   aiApiKey: string;
-  aiApiKeys?: AIApiKeys;
+  aiApiKeys: AIApiKeys;
   aiProvider: AIProviderKey;
   aiModel: string;
-  aiBaseUrl?: string;
+  aiBaseUrl: string;
+  aiLanguage: string;
   voiceEnabled: boolean;
   voiceProvider: VoiceProvider;
   voiceApiKey: string;
   voiceMicrophoneId: string;
+  voiceLanguage: string;
+  blurPresets: Record<string, boolean>;
+  targetColor: string;
+  brandLogo: BrandLogo | null;
+  brandFooter: string;
+  brandAttribution: boolean;
+  exportOptions: ExportOptions;
+  guideMeSession: GuideMeSession | null;
+  guideMeStep: Step | null;
+  guideMeBlocked: number | null;
+  guideMeManual: boolean;
+  mimikBlurMode: boolean;
+  onboardingCompleted: boolean;
 }
+
+export type SettingsKey = keyof Settings;
 
 export interface ElementMeta {
   tag: string;
