@@ -8,8 +8,10 @@ import {
   resolveBaseUrl,
 } from './models';
 
+export type KeyWarning = 'cannot-spend';
+
 export type KeyValidation =
-  | { valid: true; models?: string[] }
+  | { valid: true; models?: string[]; warning?: KeyWarning }
   | { valid: false; reason: 'rejected' | 'network' | 'model-required' | 'model-invalid'; models?: string[] };
 
 const REQUEST_TIMEOUT_MS = 10_000;
@@ -54,22 +56,38 @@ async function fetchModelsFromUrl(url: string, headers: Record<string, string>):
   }
 }
 
-async function checkCatalog(url: string, headers: Record<string, string>): Promise<KeyValidation> {
+type AuthProbe = { valid: true; body: unknown } | { valid: false; reason: 'rejected' | 'network' };
+
+async function probeAuth(url: string, headers: Record<string, string>): Promise<AuthProbe> {
   try {
     const res = await fetch(url, {
       headers,
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
-    if (res.ok) {
-      const models = parseModelIds(await res.json().catch(() => null));
-      return models ? { valid: true, models } : { valid: true };
-    }
+    if (res.ok) return { valid: true, body: await res.json().catch(() => null) };
     if (res.status === 401 || res.status === 403) return { valid: false, reason: 'rejected' };
     return { valid: false, reason: 'network' };
   } catch (err) {
     logger.error('API key validation request failed', err);
     return { valid: false, reason: 'network' };
   }
+}
+
+async function checkCatalog(url: string, headers: Record<string, string>): Promise<KeyValidation> {
+  const probe = await probeAuth(url, headers);
+  if (!probe.valid) return probe;
+  const models = parseModelIds(probe.body);
+  return models ? { valid: true, models } : { valid: true };
+}
+
+export function spendWarning(body: unknown): KeyWarning | undefined {
+  if (typeof body !== 'object' || body === null) return undefined;
+  const data = (body as { data?: unknown }).data;
+  if (typeof data !== 'object' || data === null) return undefined;
+  const key = data as { is_free_tier?: unknown; limit_remaining?: unknown };
+  if (key.is_free_tier === true) return 'cannot-spend';
+  if (typeof key.limit_remaining === 'number' && key.limit_remaining <= 0) return 'cannot-spend';
+  return undefined;
 }
 
 async function probeWithInference(
@@ -147,8 +165,10 @@ export async function validateApiKey(
   const catalogUrl = `${base}/models`;
   if (!config.keyCheckPath) return checkCatalog(catalogUrl, headers);
 
-  const authenticated = await checkCatalog(`${base}${config.keyCheckPath}`, headers);
+  const authenticated = await probeAuth(`${base}${config.keyCheckPath}`, headers);
   if (!authenticated.valid) return authenticated;
+
+  const warning = spendWarning(authenticated.body);
   const models = await fetchModelsFromUrl(catalogUrl, headers);
-  return models ? { valid: true, models } : { valid: true };
+  return { valid: true, ...(models ? { models } : {}), ...(warning ? { warning } : {}) };
 }

@@ -1,4 +1,4 @@
-import { Check, Eye, EyeOff } from 'lucide-react';
+import { Check, Eye, EyeOff, TriangleAlert } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { i18n } from '#imports';
 import { sendMessage } from '@/lib/messaging';
@@ -6,9 +6,12 @@ import { Input } from '@/ui/components/ui/input';
 
 export type KeyStatus = 'checking' | 'valid' | 'rejected' | 'unreachable' | 'model-required' | 'model-invalid' | null;
 
+export type KeyWarning = 'cannot-spend';
+
 export function useKeyCheck() {
   const [status, setStatus] = useState<KeyStatus>(null);
   const [models, setModels] = useState<string[] | null>(null);
+  const [warning, setWarning] = useState<KeyWarning | null>(null);
   const validated = useRef('');
   const requestId = useRef(0);
 
@@ -21,10 +24,12 @@ export function useKeyCheck() {
     const currentRequestId = ++requestId.current;
     setStatus('checking');
     setModels(null);
+    setWarning(null);
     const result = await sendMessage('validateApiKey', { provider, apiKey, baseUrl, model }).catch(() => null);
     if (requestId.current !== currentRequestId) return;
     if (result?.valid) validated.current = fingerprint;
     setModels(result?.models?.length ? result.models : null);
+    setWarning(result?.valid && result.warning ? result.warning : null);
     setStatus(
       result?.valid
         ? 'valid'
@@ -43,9 +48,10 @@ export function useKeyCheck() {
     validated.current = '';
     setStatus(null);
     setModels(null);
+    setWarning(null);
   }, []);
 
-  return { status, models, check, reset };
+  return { status, models, warning, check, reset };
 }
 
 export function KeyStatusNote({ status }: { status: KeyStatus }) {
@@ -85,6 +91,16 @@ export function KeyStatusNote({ status }: { status: KeyStatus }) {
     );
   }
   return null;
+}
+
+export function KeyWarningNote({ warning }: { warning: KeyWarning | null }) {
+  if (!warning) return null;
+  return (
+    <p className="mt-1 flex items-start gap-1.5 text-[10px] text-foreground leading-relaxed" role="status">
+      <TriangleAlert size={11} className="shrink-0 mt-0.5 text-destructive" />
+      <span>{i18n.t('settings.keyCannotSpend')}</span>
+    </p>
+  );
 }
 
 export function ModelList({ models }: { models: string[] }) {
