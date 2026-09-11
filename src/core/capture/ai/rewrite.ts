@@ -2,7 +2,7 @@ import { generateText } from 'ai';
 import { localStorage } from '@/lib/browser-api';
 import { logger } from '@/lib/logger';
 import type { RewriteSelectionResponse } from '@/lib/messaging';
-import { AI_PROVIDERS } from './models';
+import { AI_PROVIDERS, providerOrDefault } from './models';
 import { getLanguageSuffix, REWRITE_PROMPT } from './prompts';
 import { createModel } from './provider';
 
@@ -25,7 +25,7 @@ export async function rewriteSelection(text: string, instruction: string): Promi
   const settings = await localStorage.get(['aiApiKey', 'aiProvider', 'aiModel', 'aiBaseUrl', 'aiLanguage']);
   if (!settings.aiApiKey) return { error: 'no-api-key' };
 
-  const provider = (settings.aiProvider as string) || 'openai';
+  const provider = providerOrDefault(settings.aiProvider);
 
   try {
     const { text: raw } = await generateText({

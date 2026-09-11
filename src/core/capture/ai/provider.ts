@@ -1,14 +1,11 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createOpenAI } from '@ai-sdk/openai';
-
-const DEEPSEEK_BASE_URL = 'https://api.deepseek.com';
+import { AI_PROVIDERS, DEFAULT_AI_PROVIDER, findProvider, openAITransport, resolveBaseUrl } from './models';
 
 export function createModel(provider: string, model: string, apiKey: string, baseUrl?: string) {
-  if (provider === 'anthropic') return createAnthropic({ apiKey })(model);
-  if (provider === 'openaiCompatible') {
-    const baseURL = baseUrl?.trim();
-    return createOpenAI(baseURL ? { apiKey, baseURL } : { apiKey })(model);
-  }
-  if (provider === 'deepseek') return createOpenAI({ apiKey, baseURL: DEEPSEEK_BASE_URL, name: 'deepseek' })(model);
-  return createOpenAI({ apiKey })(model);
+  const config = findProvider(provider) ?? AI_PROVIDERS[DEFAULT_AI_PROVIDER];
+  const baseURL = resolveBaseUrl(config, baseUrl);
+  if (config.protocol === 'anthropic') return createAnthropic({ apiKey, baseURL })(model);
+  const openai = createOpenAI({ apiKey, baseURL, name: provider });
+  return openAITransport(config, baseUrl) === 'responses' ? openai(model) : openai.chat(model);
 }
