@@ -21,6 +21,7 @@ import {
 } from './microphones';
 
 interface MicrophonePickerProps {
+  triggerClassName?: string;
   value: string;
   onChange: (deviceId: string) => void;
 }
@@ -59,7 +60,7 @@ function StatusBadge({ status }: { status: MicrophoneStatus }) {
   );
 }
 
-export default function MicrophonePicker({ value, onChange }: MicrophonePickerProps) {
+export default function MicrophonePicker({ value, onChange, triggerClassName }: MicrophonePickerProps) {
   const [devices, setDevices] = useState<MicrophoneDevice[]>([]);
   const [testing, setTesting] = useState(false);
   const [level, setLevel] = useState(0);
@@ -219,11 +220,7 @@ export default function MicrophonePicker({ value, onChange }: MicrophonePickerPr
               onChange(toStoredMicrophoneId(next));
             }}
           >
-            <SelectTrigger
-              id={triggerId}
-              aria-label={i18n.t('settings.microphone')}
-              className="rounded-lg border-border bg-card text-[13px] font-medium text-foreground"
-            >
+            <SelectTrigger id={triggerId} aria-label={i18n.t('settings.microphone')} className={triggerClassName}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

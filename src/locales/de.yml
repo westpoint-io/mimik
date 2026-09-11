@@ -98,9 +98,14 @@ settings:
   aiDescriptions: KI-Beschreibungen
   modelCustom: Eigenes Modell
   baseUrl: Basis-URL
+  useOwnServer: Eigenen Server verwenden
+  ownServerHintOpenai: "Funktioniert mit Ollama, LM Studio, vLLM oder jedem OpenAI-kompatiblen Server."
+  ownServerHintAnthropic: "Funktioniert mit einem LiteLLM-Proxy oder jedem Anthropic-kompatiblen Server."
   provider: Anbieter
   model: Modell
   apiKey: API-Schlüssel
+  showKey: Schlüssel anzeigen
+  hideKey: Schlüssel verbergen
   aiLanguage: Sprache der Beschreibungen
   voiceNarration: Sprachkommentar
   voiceUsingAiKey: "Es ist kein Sprach-Schlüssel gesetzt, daher nutzt Mimik den OpenAI-Schlüssel aus den KI-Beschreibungen oben."

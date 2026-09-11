@@ -1,3 +1,4 @@
+import type { AIProviderKey } from '@/core/capture/ai/models';
 import type { VoiceProvider } from '@/core/capture/voice/transcribe';
 import type { ScreenshotEdits } from '@/core/screenshot/types';
 
@@ -59,7 +60,7 @@ export interface Screenshot {
 
 export interface Settings {
   aiApiKey: string;
-  aiProvider: 'openai' | 'anthropic' | 'openaiCompatible' | 'deepseek';
+  aiProvider: AIProviderKey;
   aiModel: string;
   aiBaseUrl?: string;
   voiceEnabled: boolean;

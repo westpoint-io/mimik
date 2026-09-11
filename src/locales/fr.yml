@@ -88,7 +88,12 @@ settings:
   model: "Modèle"
   modelCustom: Modèle personnalisé
   baseUrl: URL de base
+  useOwnServer: Utiliser mon propre serveur
+  ownServerHintOpenai: "Fonctionne avec Ollama, LM Studio, vLLM ou tout serveur compatible OpenAI."
+  ownServerHintAnthropic: "Fonctionne avec un proxy LiteLLM ou tout serveur compatible Anthropic."
   apiKey: "Clé API"
+  showKey: Afficher la clé
+  hideKey: Masquer la clé
   aiLanguage: Langue des descriptions
   voiceNarration: "Narration vocale"
   voiceUsingAiKey: "Aucune clé vocale n'est définie : Mimik utilise la clé OpenAI des descriptions IA ci-dessus."

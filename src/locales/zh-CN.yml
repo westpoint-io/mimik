@@ -88,7 +88,12 @@ settings:
   model: 模型
   modelCustom: 自定义模型
   baseUrl: 基础 URL
+  useOwnServer: 使用自己的服务器
+  ownServerHintOpenai: "支持 Ollama、LM Studio、vLLM 或任何兼容 OpenAI 的服务器。"
+  ownServerHintAnthropic: "支持 LiteLLM 代理或任何兼容 Anthropic 的服务器。"
   apiKey: API 密钥
+  showKey: 显示密钥
+  hideKey: 隐藏密钥
   aiLanguage: 描述语言
   voiceNarration: 语音讲解
   voiceUsingAiKey: "未设置语音密钥，因此 Mimik 会使用上方 AI 描述中的 OpenAI 密钥。"

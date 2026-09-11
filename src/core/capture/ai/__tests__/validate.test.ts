@@ -209,4 +209,66 @@ describe('validateApiKey', () => {
       });
     });
   });
+
+  describe('a custom server on any provider', () => {
+    it('probes an openai-protocol server at chat/completions with a bearer token', async () => {
+      fetchMock.mockResolvedValueOnce(chatOkBody());
+      fetchMock.mockResolvedValueOnce(modelsBody('mock-tiny'));
+      await validateApiKey('openai', 'sk-key', 'http://localhost:8787/v1', 'mock-tiny');
+      const [url, init] = fetchMock.mock.calls[0];
+      expect(url).toBe('http://localhost:8787/v1/chat/completions');
+      expect((init!.headers as Record<string, string>).Authorization).toBe('Bearer sk-key');
+    });
+
+    it('probes an anthropic-protocol server at messages with an x-api-key', async () => {
+      fetchMock.mockResolvedValueOnce(chatOkBody());
+      fetchMock.mockResolvedValueOnce(modelsBody('claude-local'));
+      expect(await validateApiKey('anthropic', 'ak-key', 'http://localhost:4000', 'claude-local')).toEqual({
+        valid: true,
+        models: ['claude-local'],
+      });
+      const [url, init] = fetchMock.mock.calls[0];
+      expect(url).toBe('http://localhost:4000/messages');
+      const headers = init!.headers as Record<string, string>;
+      expect(headers['x-api-key']).toBe('ak-key');
+      expect(headers.Authorization).toBeUndefined();
+      expect(JSON.parse(init!.body as string).max_tokens).toBe(8);
+    });
+
+    it('lets deepseek point somewhere else', async () => {
+      fetchMock.mockResolvedValueOnce(chatOkBody());
+      fetchMock.mockResolvedValueOnce(modelsBody('local-r1'));
+      expect(await validateApiKey('deepseek', 'sk-key', 'http://localhost:1234/v1', 'local-r1')).toEqual({
+        valid: true,
+        models: ['local-r1'],
+      });
+      expect(fetchMock.mock.calls[0][0]).toBe('http://localhost:1234/v1/chat/completions');
+    });
+
+    it('treats a provider default typed in by hand as the default, not a custom server', async () => {
+      fetchMock.mockResolvedValueOnce(modelsBody('deepseek-v4-flash'));
+      expect(await validateApiKey('deepseek', 'sk-key', 'https://api.deepseek.com/', 'deepseek-v4-flash')).toEqual({
+        valid: true,
+        models: ['deepseek-v4-flash'],
+      });
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(fetchMock.mock.calls[0][0]).toBe('https://api.deepseek.com/models');
+    });
+
+    it('checks an anthropic key against anthropic by default', async () => {
+      fetchMock.mockResolvedValueOnce(modelsBody('claude-3-5-haiku-20241022'));
+      await validateApiKey('anthropic', 'ak-key');
+      const [url, init] = fetchMock.mock.calls[0];
+      expect(url).toBe('https://api.anthropic.com/v1/models');
+      expect((init!.headers as Record<string, string>)['anthropic-version']).toBe('2023-06-01');
+    });
+
+    it('no longer knows the removed compatible provider, and sends it no key', async () => {
+      expect(await validateApiKey('openaiCompatible', 'sk-key', 'http://localhost:8787/v1', 'mock-tiny')).toEqual({
+        valid: false,
+        reason: 'network',
+      });
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+  });
 });

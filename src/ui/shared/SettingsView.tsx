@@ -22,8 +22,10 @@ import {
   AI_PROVIDERS,
   type AIProviderKey,
   CUSTOM_MODEL_VALUE,
-  DEFAULT_OPENAI_BASE_URL,
+  DEFAULT_AI_PROVIDER,
+  isCustomBaseUrl,
   isCustomModel,
+  providerOrDefault,
 } from '@/core/capture/ai/models';
 import { AI_LANGUAGES, type AILanguageCode } from '@/core/capture/ai/prompts';
 import { resolveVoiceApiKey } from '@/core/capture/voice/api-key';
@@ -37,7 +39,7 @@ import { Input } from '@/ui/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/ui/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/components/ui/select';
 import ColorPicker from '@/ui/shared/ColorPicker';
-import { KeyStatusNote, ModelList, useKeyCheck } from '@/ui/shared/key-check';
+import { KeyStatusNote, ModelList, SecretInput, useKeyCheck } from '@/ui/shared/key-check';
 import MicrophonePicker from '@/ui/shared/MicrophonePicker';
 import { changedSettings, type SettingsSnapshot } from '@/ui/shared/settings-autosave';
 
@@ -63,7 +65,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   const aiKeyCheck = useKeyCheck();
   const voiceKeyCheck = useKeyCheck();
   const [customModel, setCustomModel] = useState(false);
-  const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [ownServer, setOwnServer] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const savedSnapshot = useRef<SettingsSnapshot | null>(null);
   const pending = useRef<SettingsSnapshot>({});
@@ -104,11 +106,14 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
         'brandAttribution',
       ])
       .then((result) => {
-        const p = (result.aiProvider as AIProviderKey) || 'openai';
+        const p = providerOrDefault(result.aiProvider);
         setProvider(p);
         setModel((result.aiModel as string) || AI_PROVIDERS[p].defaultModel);
         if (result.aiApiKey) setApiKey(result.aiApiKey as string);
-        if (result.aiBaseUrl) setBaseUrl(result.aiBaseUrl as string);
+        if (isCustomBaseUrl(AI_PROVIDERS[p], result.aiBaseUrl as string)) {
+          setBaseUrl(result.aiBaseUrl as string);
+          setOwnServer(true);
+        }
         if (result.aiLanguage) setAiLanguage(result.aiLanguage as AILanguageCode);
         if (result.blurPresets) setBlurPresets(result.blurPresets as Record<PresetKey, boolean>);
         setVoiceProvider((result.voiceProvider as VoiceProvider) || 'openai');
@@ -192,6 +197,16 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     aiKeyCheck.reset();
     setCustomModel(false);
     setModel(AI_PROVIDERS[newProvider].defaultModel);
+    setOwnServer(false);
+    setBaseUrl('');
+  };
+
+  const handleOwnServerToggle = () => {
+    setOwnServer((on) => {
+      if (on) setBaseUrl('');
+      return !on;
+    });
+    aiKeyCheck.reset();
   };
 
   const handleModelChange = (value: string) => {
@@ -206,7 +221,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     aiKeyCheck.reset();
   };
 
-  const providerConfig = AI_PROVIDERS[provider];
+  const providerConfig = AI_PROVIDERS[provider] ?? AI_PROVIDERS[DEFAULT_AI_PROVIDER];
   const usingCustomModel = customModel || isCustomModel(model, providerConfig);
   const voiceKey = resolveVoiceApiKey({ voiceProvider, voiceApiKey, aiProvider: provider, aiApiKey: apiKey });
 
@@ -257,7 +272,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
               {i18n.t('settings.provider')}
             </label>
             <Select value={provider} onValueChange={(v) => handleProviderChange(v as AIProviderKey)}>
-              <SelectTrigger className="w-full rounded-lg px-3 py-2 text-[13px]">
+              <SelectTrigger className="h-8">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -273,7 +288,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           <div>
             <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.model')}</label>
             <Select value={usingCustomModel ? CUSTOM_MODEL_VALUE : model} onValueChange={handleModelChange}>
-              <SelectTrigger className="w-full rounded-lg px-3 py-2 text-[13px]">
+              <SelectTrigger className="h-8">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -293,7 +308,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
                 }}
                 placeholder={providerConfig.defaultModel}
                 aria-label={i18n.t('settings.modelCustom')}
-                className="mt-1.5 h-8 text-[12px] rounded-lg border-border"
+                className="mt-1.5 h-8 text-[13px] rounded-lg border-border"
               />
             )}
           </div>
@@ -301,15 +316,14 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           <div>
             <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.apiKey')}</label>
             <div className="flex items-center gap-1.5">
-              <Input
-                type="password"
+              <SecretInput
                 value={apiKey}
-                onChange={(e) => {
-                  setApiKey(e.target.value);
+                onChange={(next) => {
+                  setApiKey(next);
                   aiKeyCheck.reset();
                 }}
                 placeholder="sk-..."
-                className="h-8 text-[12px] rounded-lg border-border"
+                className="h-8 text-[13px] rounded-lg border-border"
               />
               <Button
                 variant="outline"
@@ -333,43 +347,52 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
             )}
           </div>
 
-          {providerConfig.baseUrl && (
-            <div>
+          <div>
+            <div className="flex items-center justify-between gap-3 py-0.5">
+              <span className="text-[11px] font-semibold text-foreground flex items-center gap-1">
+                <Globe size={11} className="-mt-px" />
+                {i18n.t('settings.useOwnServer')}
+              </span>
               <button
                 type="button"
-                onClick={() => setAdvancedOpen((v) => !v)}
-                className="flex items-center gap-1 text-[11px] font-semibold text-accent hover:text-foreground transition-colors py-0.5"
+                role="switch"
+                aria-checked={ownServer}
+                aria-label={i18n.t('settings.useOwnServer')}
+                onClick={handleOwnServerToggle}
+                className={`w-9 h-5 rounded-full transition-colors relative shrink-0 ${
+                  ownServer ? 'bg-accent' : 'bg-border'
+                }`}
               >
-                <ChevronDown
-                  size={12}
-                  className={`transition-transform duration-200 ${advancedOpen ? 'rotate-180' : ''}`}
+                <span
+                  className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
+                    ownServer ? 'translate-x-4' : 'translate-x-0'
+                  }`}
                 />
-                Advanced
               </button>
-              {advancedOpen && (
-                <div className="mt-2 space-y-2">
-                  <label className="block text-[11px] font-semibold text-foreground mb-1">
-                    <Globe size={11} className="inline mr-1 -mt-px" />
-                    {i18n.t('settings.baseUrl')}
-                  </label>
-                  <Input
-                    type="text"
-                    value={baseUrl}
-                    onChange={(e) => {
-                      setBaseUrl(e.target.value);
-                      aiKeyCheck.reset();
-                    }}
-                    placeholder={DEFAULT_OPENAI_BASE_URL}
-                    aria-label={i18n.t('settings.baseUrl')}
-                    className="h-8 text-[12px] rounded-lg border-border"
-                  />
-                  <p className="text-[10px] text-muted-foreground leading-relaxed">
-                    Custom endpoint for OpenAI-compatible APIs. Leave empty for the default.
-                  </p>
-                </div>
-              )}
             </div>
-          )}
+            {ownServer && (
+              <div className="mt-2 space-y-1.5">
+                <Input
+                  type="text"
+                  value={baseUrl}
+                  onChange={(e) => {
+                    setBaseUrl(e.target.value);
+                    aiKeyCheck.reset();
+                  }}
+                  placeholder={providerConfig.defaultBaseUrl}
+                  aria-label={i18n.t('settings.baseUrl')}
+                  className="h-8 text-[13px] rounded-lg border-border"
+                />
+                <p className="text-[10px] text-muted-foreground leading-relaxed">
+                  {i18n.t(
+                    providerConfig.protocol === 'anthropic'
+                      ? 'settings.ownServerHintAnthropic'
+                      : 'settings.ownServerHintOpenai',
+                  )}
+                </p>
+              </div>
+            )}
+          </div>
 
           <div>
             <label className="block text-[11px] font-semibold text-foreground mb-1">
@@ -377,7 +400,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
               {i18n.t('settings.aiLanguage')}
             </label>
             <Select value={aiLanguage} onValueChange={(v) => setAiLanguage(v as AILanguageCode)}>
-              <SelectTrigger className="w-full rounded-lg px-3 py-2 text-[13px]">
+              <SelectTrigger className="h-8">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -397,7 +420,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
               <Target size={14} className="text-accent" />
             </div>
             <div>
-              <div className="text-[13px] font-semibold text-foreground">{i18n.t('settings.targetColor')}</div>
+              <div className="text-xs font-bold text-foreground">{i18n.t('settings.targetColor')}</div>
               <div className="text-[11px] text-muted-foreground">{i18n.t('settings.targetColorHint')}</div>
             </div>
           </div>
@@ -475,7 +498,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
               value={brandFooter}
               onChange={(e) => setBrandFooter(e.target.value)}
               placeholder={i18n.t('settings.footerLinePlaceholder')}
-              className="h-8 text-[12px] rounded-lg border-border"
+              className="h-8 text-[13px] rounded-lg border-border"
             />
             <div className="flex flex-wrap gap-1.5 mt-2">
               {FOOTER_PRESETS().map((preset) => (
@@ -524,30 +547,34 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
             <label className="block text-[11px] font-semibold text-foreground mb-1">
               {i18n.t('settings.provider')}
             </label>
-            <select
+            <Select
               value={voiceProvider}
-              onChange={(e) => {
-                setVoiceProvider(e.target.value as VoiceProvider);
+              onValueChange={(v) => {
+                setVoiceProvider(v as VoiceProvider);
                 voiceKeyCheck.reset();
               }}
-              className="w-full border border-border rounded-lg px-3 py-2 text-[13px] text-foreground bg-card font-medium outline-none focus:border-ring focus:ring-2 focus:ring-ring/10"
             >
-              <option value="openai">OpenAI</option>
-              <option value="groq">Groq</option>
-            </select>
+              <SelectTrigger className="h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="openai">OpenAI</SelectItem>
+                <SelectItem value="groq">Groq</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div>
             <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.apiKey')}</label>
             <div className="flex items-center gap-1.5">
-              <Input
-                type="password"
+              <SecretInput
                 value={voiceApiKey}
-                onChange={(e) => {
-                  setVoiceApiKey(e.target.value);
+                onChange={(next) => {
+                  setVoiceApiKey(next);
                   voiceKeyCheck.reset();
                 }}
                 placeholder={voiceProvider === 'groq' ? 'gsk_...' : 'sk-...'}
+                className="h-8 text-[13px] rounded-lg border-border"
               />
               <Button
                 variant="outline"
@@ -576,7 +603,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           </div>
 
           {import.meta.env.BROWSER !== 'firefox' && (
-            <MicrophonePicker value={voiceMicrophoneId} onChange={setVoiceMicrophoneId} />
+            <MicrophonePicker value={voiceMicrophoneId} onChange={setVoiceMicrophoneId} triggerClassName="h-8" />
           )}
         </div>
 
@@ -593,7 +620,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
               key={key}
               className={`flex items-center justify-between py-2 ${i < arr.length - 1 ? 'border-b border-secondary' : ''}`}
             >
-              <span className="text-xs font-medium text-foreground">{i18n.t(BLUR_PRESET_I18N[key])}</span>
+              <span className="text-[11px] font-semibold text-foreground">{i18n.t(BLUR_PRESET_I18N[key])}</span>
               <button
                 onClick={() =>
                   setBlurPresets((prev) => {

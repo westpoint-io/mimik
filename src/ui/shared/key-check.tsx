@@ -1,7 +1,8 @@
-import { Check } from 'lucide-react';
+import { Check, Eye, EyeOff } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { i18n } from '#imports';
 import { sendMessage } from '@/lib/messaging';
+import { Input } from '@/ui/components/ui/input';
 
 export type KeyStatus = 'checking' | 'valid' | 'rejected' | 'unreachable' | 'model-required' | 'model-invalid' | null;
 
@@ -102,6 +103,44 @@ export function ModelList({ models }: { models: string[] }) {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+export function SecretInput({
+  value,
+  onChange,
+  placeholder,
+  className,
+  buttonClassName,
+}: {
+  value: string;
+  onChange: (next: string) => void;
+  placeholder?: string;
+  className?: string;
+  buttonClassName?: string;
+}) {
+  const [revealed, setRevealed] = useState(false);
+  const Icon = revealed ? EyeOff : Eye;
+  return (
+    <div className="relative flex-1 min-w-0">
+      <Input
+        type={revealed ? 'text' : 'password'}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={`pr-8 ${className ?? ''}`}
+      />
+      <button
+        type="button"
+        onClick={() => setRevealed((on) => !on)}
+        aria-pressed={revealed}
+        aria-label={i18n.t(revealed ? 'settings.hideKey' : 'settings.showKey')}
+        title={i18n.t(revealed ? 'settings.hideKey' : 'settings.showKey')}
+        className={`absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors ${buttonClassName ?? ''}`}
+      >
+        <Icon size={13} />
+      </button>
     </div>
   );
 }
