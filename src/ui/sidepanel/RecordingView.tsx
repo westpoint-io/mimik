@@ -5,11 +5,13 @@ import { deleteStep, getScreenshotsForSteps, getStepsForGuide } from '@/core/gui
 import type { Screenshot, Step } from '@/core/guides/types';
 import { getActiveTab, localStorage } from '@/lib/browser-api';
 import { sendMessage } from '@/lib/messaging';
-import type { PanelVoiceUpdate } from '@/lib/port';
+import type { PanelAiUpdate, PanelVoiceUpdate } from '@/lib/port';
 import { extractDomain } from '@/lib/utils';
 import { Button } from '@/ui/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/components/ui/tooltip';
 import ScreenshotView from '@/ui/shared/ScreenshotView';
+import StepSourceBadge from '@/ui/shared/StepSourceBadge';
+import AiStatus from './AiStatus';
 import MicToggle from './MicToggle';
 import VoiceStatus from './VoiceStatus';
 
@@ -17,6 +19,7 @@ interface RecordingViewProps {
   guideId: string;
   onStop: () => void;
   voice: PanelVoiceUpdate;
+  aiFailure: PanelAiUpdate | null;
 }
 
 function timeAgo(createdAt: number): string {
@@ -31,7 +34,7 @@ interface LiveStep {
   screenshot?: Screenshot;
 }
 
-export default function RecordingView({ guideId, onStop, voice }: RecordingViewProps) {
+export default function RecordingView({ guideId, onStop, voice, aiFailure }: RecordingViewProps) {
   const [steps, setSteps] = useState<LiveStep[]>([]);
   const [siteUrl, setSiteUrl] = useState('');
   const [isBlurring, setIsBlurring] = useState(false);
@@ -189,8 +192,11 @@ export default function RecordingView({ guideId, onStop, voice }: RecordingViewP
                           {liveStep.step.description}
                         </p>
                       )}
-                      <span className="text-[10px] text-purple">
-                        {timeAgo(liveStep.step.timestamp)} · {extractDomain(liveStep.step.url || siteUrl)}
+                      <span className="flex items-baseline gap-1.5 text-[10px] text-purple">
+                        {!liveStep.step.aiPending && <StepSourceBadge source={liveStep.step.descriptionSource} />}
+                        <span>
+                          {timeAgo(liveStep.step.timestamp)} · {extractDomain(liveStep.step.url || siteUrl)}
+                        </span>
                       </span>
                     </div>
                     <Tooltip>
@@ -216,6 +222,7 @@ export default function RecordingView({ guideId, onStop, voice }: RecordingViewP
 
       {/* Bottom bar */}
       <div className="shrink-0 border-t border-border">
+        <AiStatus update={aiFailure} />
         {import.meta.env.BROWSER !== 'firefox' && <VoiceStatus update={voice} enabled={voiceEnabled} />}
         <div className="px-4 py-2.5 flex items-center gap-2">
           <Button onClick={onStop} className="flex-1 h-10 rounded-full font-semibold text-[13px]">

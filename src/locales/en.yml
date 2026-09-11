@@ -134,6 +134,7 @@ settings:
   keyModelRequired: Choose a model before checking this key.
   keyModelInvalid: The selected model is not available from this provider.
   checkKey: Check key
+  keyCannotSpend: "This key has no credits, so only free models will work."
   keyUnreachable: Could not reach the provider. Check your connection and try again.
   modelsFound: "$1 models available"
   smartBlur: Smart Blur
@@ -533,3 +534,24 @@ micPermission:
   deniedMessage: Your browser is blocking the microphone for Mimik, so voice narration cannot record. Open the site settings from the icon at the left of the address bar, set Microphone to Allow, then try again. Capturing guides keeps working without it.
   retry: Try again
   privacy: Audio is held in memory only while you record and is sent to the transcription provider you configured. Mimik never stores it.
+
+aiStatus:
+  rejected: "$1 rejected your API key."
+  noCredits: "Your $1 account has no credits."
+  rateLimited: "$1 is limiting how often Mimik can ask."
+  modelInvalid: "$1 does not offer that model to your account."
+  quota: "That request was too large for this model."
+  network: "Mimik could not reach $1."
+  unknown: "$1 refused the request."
+  actionCheckKey: "Check your key in Settings."
+  actionAddCredits: "Add credits, then check the key again."
+  actionWait: "Wait a moment before recording more."
+  actionPickModel: "Pick another model in Settings."
+  actionConnection: "Check your connection."
+
+stepSource:
+  ai: "AI"
+  voice: "Voice"
+  basic: "Basic"
+  edited: "Edited"
+  hint: "Where this description came from"

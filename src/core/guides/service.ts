@@ -3,7 +3,7 @@ import type { NarrationUpdate } from '@/core/capture/voice/narration-updates';
 import type { ScreenshotEdits } from '@/core/screenshot/types';
 import { db } from './db';
 import { hashPayload } from './snapshot-hash';
-import type { BlockType, CalloutVariant, Guide, Screenshot, Snapshot, Step } from './types';
+import type { BlockType, CalloutVariant, DescriptionSource, Guide, Screenshot, Snapshot, Step } from './types';
 
 export type GuideChangeEvent = { type: 'starred'; id: string; starred: boolean } | { type: 'mutated' };
 
@@ -195,8 +195,12 @@ export async function updateCallout(stepId: string, variant: CalloutVariant, col
   await db.steps.update(stepId, { calloutVariant: variant, calloutColor: color });
 }
 
-export async function updateStepDescription(stepId: string, description: string): Promise<void> {
-  await db.steps.update(stepId, { description });
+export async function updateStepDescription(
+  stepId: string,
+  description: string,
+  source?: DescriptionSource,
+): Promise<void> {
+  await db.steps.update(stepId, source ? { description, descriptionSource: source } : { description });
 }
 
 export async function applyNarrationToSteps(updates: readonly NarrationUpdate[]): Promise<void> {

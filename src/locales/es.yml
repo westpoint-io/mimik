@@ -134,6 +134,7 @@ settings:
   keyModelRequired: Elige un modelo antes de comprobar esta clave.
   keyModelInvalid: El modelo seleccionado no está disponible en este proveedor.
   checkKey: Comprobar clave
+  keyCannotSpend: "Esta clave no tiene créditos, solo funcionarán los modelos gratuitos."
   keyUnreachable: No se pudo conectar con el proveedor. Revisa tu conexión e inténtalo de nuevo.
   modelsFound: "$1 modelos disponibles"
   smartBlur: Desenfoque inteligente
@@ -533,3 +534,24 @@ micPermission:
   deniedMessage: Tu navegador está bloqueando el micrófono para Mimik, así que la narración por voz no puede grabar. Abre la configuración del sitio desde el icono a la izquierda de la barra de direcciones, pon Micrófono en Permitir y vuelve a intentarlo. Capturar guías sigue funcionando sin esto.
   retry: Intentar de nuevo
   privacy: El audio solo se guarda en memoria mientras grabas y se envía al proveedor de transcripción que hayas configurado. Mimik nunca lo almacena.
+
+aiStatus:
+  rejected: "$1 rechazó tu clave de API."
+  noCredits: "Tu cuenta de $1 no tiene créditos."
+  rateLimited: "$1 está limitando la frecuencia de las peticiones de Mimik."
+  modelInvalid: "$1 no ofrece ese modelo a tu cuenta."
+  quota: "Esa petición fue demasiado grande para este modelo."
+  network: "Mimik no pudo contactar con $1."
+  unknown: "$1 rechazó la petición."
+  actionCheckKey: "Revisa tu clave en Ajustes."
+  actionAddCredits: "Añade créditos y vuelve a comprobar la clave."
+  actionWait: "Espera un momento antes de seguir grabando."
+  actionPickModel: "Elige otro modelo en Ajustes."
+  actionConnection: "Revisa tu conexión."
+
+stepSource:
+  ai: "IA"
+  voice: "Voz"
+  basic: "Básica"
+  edited: "Editada"
+  hint: "De dónde viene esta descripción"

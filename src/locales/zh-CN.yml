@@ -134,6 +134,7 @@ settings:
   keyModelInvalid: 所选模型在此提供商上不可用。请选择其他模型或输入自定义模型 ID。
   keyModelRequired: 需要选择模型。请从列表中选择或输入自定义模型 ID。
   checkKey: 检查密钥
+  keyCannotSpend: "该密钥没有额度，只能使用免费模型。"
   keyUnreachable: 无法连接到提供商。请检查网络后重试。
   modelsFound: "找到 $1 个模型"
   smartBlur: 智能模糊
@@ -533,3 +534,24 @@ micPermission:
   deniedMessage: 浏览器正在阻止 Mimik 使用麦克风，因此无法录制语音讲解。请从地址栏左侧图标打开网站设置，将麦克风设为允许，然后重试。即使没有麦克风，捕获指南仍可继续使用。
   retry: 重试
   privacy: 音频只会在录制期间保存在内存中，并会发送到你配置的转写提供商。Mimik 永远不会存储它。
+
+aiStatus:
+  rejected: "$1 拒绘了你的 API 密钥。"
+  noCredits: "你的 $1 账户没有额度。"
+  rateLimited: "$1 正在限制 Mimik 的请求频率。"
+  modelInvalid: "$1 未向你的账户提供该模型。"
+  quota: "该请求内容超出了模型上限。"
+  network: "Mimik 无法连接到 $1。"
+  unknown: "$1 拒绘了该请求。"
+  actionCheckKey: "请在设置中检查密钥。"
+  actionAddCredits: "充值后再次检查密钥。"
+  actionWait: "稍等一下再继续录制。"
+  actionPickModel: "请在设置中选择其他模型。"
+  actionConnection: "请检查网络连接。"
+
+stepSource:
+  ai: "AI"
+  voice: "语音"
+  basic: "基础"
+  edited: "已编辑"
+  hint: "这条描述的来源"

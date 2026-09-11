@@ -134,6 +134,7 @@ settings:
   keyModelRequired: Choisissez un modèle avant de vérifier cette clé.
   keyModelInvalid: "Le modèle sélectionné n'est pas disponible chez ce fournisseur."
   checkKey: Vérifier la clé
+  keyCannotSpend: "Cette clé n’a pas de crédits, seuls les modèles gratuits fonctionneront."
   keyUnreachable: Le fournisseur est injoignable. Vérifiez votre connexion et réessayez.
   modelsFound: "$1 modèles disponibles"
   smartBlur: Flou intelligent
@@ -533,3 +534,24 @@ micPermission:
   deniedMessage: Votre navigateur bloque le microphone pour Mimik, la narration vocale ne peut donc pas enregistrer. Ouvrez les paramètres du site depuis l'icône à gauche de la barre d'adresse, réglez Microphone sur Autoriser, puis réessayez. La capture de guides continue de fonctionner sans cela.
   retry: Réessayer
   privacy: L'audio reste en mémoire pendant l'enregistrement et n'est envoyé qu'au service de transcription que vous avez configuré. Mimik ne le conserve jamais.
+
+aiStatus:
+  rejected: "$1 a refusé votre clé API."
+  noCredits: "Votre compte $1 n’a pas de crédits."
+  rateLimited: "$1 limite la fréquence des requêtes de Mimik."
+  modelInvalid: "$1 ne propose pas ce modèle à votre compte."
+  quota: "Cette requête était trop volumineuse pour ce modèle."
+  network: "Mimik n’a pas pu joindre $1."
+  unknown: "$1 a refusé la requête."
+  actionCheckKey: "Vérifiez votre clé dans les réglages."
+  actionAddCredits: "Ajoutez des crédits, puis revérifiez la clé."
+  actionWait: "Attendez un instant avant de continuer."
+  actionPickModel: "Choisissez un autre modèle dans les réglages."
+  actionConnection: "Vérifiez votre connexion."
+
+stepSource:
+  ai: "IA"
+  voice: "Voix"
+  basic: "Simple"
+  edited: "Modifiée"
+  hint: "D’où vient cette description"

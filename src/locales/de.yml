@@ -140,6 +140,7 @@ settings:
   keyModelRequired: Wähle ein Modell, bevor du diesen Schlüssel prüfst.
   keyModelInvalid: Das ausgewählte Modell ist bei diesem Anbieter nicht verfügbar.
   checkKey: Schlüssel prüfen
+  keyCannotSpend: "Dieser Schlüssel hat kein Guthaben, es funktionieren nur kostenlose Modelle."
   keyUnreachable: Der Anbieter war nicht erreichbar. Prüfe deine Verbindung und versuche es erneut.
   modelsFound: "$1 Modelle verfügbar"
 
@@ -534,3 +535,24 @@ micPermission:
   deniedMessage: Dein Browser blockiert das Mikrofon für Mimik, daher kann der Sprachkommentar nicht aufnehmen. Öffne die Website-Einstellungen über das Symbol links in der Adressleiste, setze Mikrofon auf Zulassen und versuche es dann erneut. Anleitungen aufzeichnen funktioniert auch ohne.
   retry: Erneut versuchen
   privacy: Audio bleibt nur während der Aufnahme im Speicher und wird an den von dir konfigurierten Transkriptionsanbieter gesendet. Mimik speichert es nie.
+
+aiStatus:
+  rejected: "$1 hat deinen API-Schlüssel abgelehnt."
+  noCredits: "Dein $1-Konto hat kein Guthaben."
+  rateLimited: "$1 begrenzt, wie oft Mimik anfragen darf."
+  modelInvalid: "$1 bietet dieses Modell für dein Konto nicht an."
+  quota: "Diese Anfrage war zu groß für dieses Modell."
+  network: "Mimik konnte $1 nicht erreichen."
+  unknown: "$1 hat die Anfrage abgelehnt."
+  actionCheckKey: "Prüfe deinen Schlüssel in den Einstellungen."
+  actionAddCredits: "Guthaben aufladen, dann den Schlüssel erneut prüfen."
+  actionWait: "Warte einen Moment, bevor du weiter aufnimmst."
+  actionPickModel: "Wähle in den Einstellungen ein anderes Modell."
+  actionConnection: "Prüfe deine Verbindung."
+
+stepSource:
+  ai: "KI"
+  voice: "Stimme"
+  basic: "Einfach"
+  edited: "Bearbeitet"
+  hint: "Woher diese Beschreibung kommt"
