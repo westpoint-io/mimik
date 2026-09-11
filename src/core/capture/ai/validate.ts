@@ -142,5 +142,13 @@ export async function validateApiKey(
 
   if (isCustomBaseUrl(config, baseUrl)) return validateCustomServer(config, apiKey, baseUrl as string, model);
 
-  return checkCatalog(`${resolveBaseUrl(config)}/models`, PROTOCOL_HEADERS[config.protocol](apiKey));
+  const headers = PROTOCOL_HEADERS[config.protocol](apiKey);
+  const base = resolveBaseUrl(config);
+  const catalogUrl = `${base}/models`;
+  if (!config.keyCheckPath) return checkCatalog(catalogUrl, headers);
+
+  const authenticated = await checkCatalog(`${base}${config.keyCheckPath}`, headers);
+  if (!authenticated.valid) return authenticated;
+  const models = await fetchModelsFromUrl(catalogUrl, headers);
+  return models ? { valid: true, models } : { valid: true };
 }

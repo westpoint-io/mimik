@@ -86,7 +86,21 @@ describe('every provider takes a custom server', () => {
   });
 
   it('no longer offers a second OpenAI entry', () => {
-    expect(Object.keys(AI_PROVIDERS)).toEqual(['openai', 'anthropic', 'deepseek']);
+    expect(Object.keys(AI_PROVIDERS)).not.toContain('openaiCompatible');
+  });
+
+  it('offers OpenRouter with its own endpoint and a model id the catalogue carries', () => {
+    const config = AI_PROVIDERS.openrouter;
+    expect(config.defaultBaseUrl).toBe('https://openrouter.ai/api/v1');
+    expect(config.protocol).toBe('openai');
+    expect(config.transport).toBe('chat');
+    expect(config.keyCheckPath).toBe('/key');
+    expect(config.defaultModel).toBe('openai/gpt-4o-mini');
+    expect(config.models.some((m) => m.id.endsWith(':free'))).toBe(true);
+    for (const option of config.models) {
+      if (option.id === CUSTOM_MODEL_VALUE) continue;
+      expect(option.id).toMatch(/^[a-z0-9-]+\/[\w.-]+(:[\w-]+)?$/);
+    }
   });
 
   it('includes a Custom model option', () => {
