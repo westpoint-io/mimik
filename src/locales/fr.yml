@@ -87,6 +87,7 @@ settings:
   provider: Fournisseur
   model: "Modèle"
   modelCustom: Modèle personnalisé
+  baseUrl: URL de base
   apiKey: "Clé API"
   aiLanguage: Langue des descriptions
   voiceNarration: "Narration vocale"
@@ -125,8 +126,11 @@ settings:
   validatingKey: "V\xE9rification de la cl\xE9\u2026"
   keyValid: "Cl\xE9 API v\xE9rifi\xE9e."
   keyInvalid: "Cette cl\xE9 API a \xE9t\xE9 refus\xE9e. V\xE9rifiez-la et r\xE9essayez."
+  keyModelRequired: Choisissez un modèle avant de vérifier cette clé.
+  keyModelInvalid: "Le modèle sélectionné n'est pas disponible chez ce fournisseur."
   checkKey: Vérifier la clé
   keyUnreachable: Le fournisseur est injoignable. Vérifiez votre connexion et réessayez.
+  modelsFound: "$1 modèles disponibles"
   smartBlur: Flou intelligent
   privacyNotice: "Vos clés et votre audio ne vont qu'au fournisseur que vous choisissez. Rien d'autre ne quitte votre navigateur."
   bugReport: "Un bug ? Signalez-le sur GitHub"

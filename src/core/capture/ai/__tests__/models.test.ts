@@ -42,9 +42,10 @@ describe('isCustomModel', () => {
 });
 
 describe('custom model sentinel', () => {
-  it('never collides with a real model id', () => {
+  it('is present in every provider as a selectable option', () => {
     for (const config of Object.values(AI_PROVIDERS)) {
-      expect(config.models.some((option) => option.id === CUSTOM_MODEL_VALUE)).toBe(false);
+      if (config.models.length === 0) continue;
+      expect(config.models.some((option) => option.id === CUSTOM_MODEL_VALUE)).toBe(true);
     }
   });
 
@@ -55,7 +56,26 @@ describe('custom model sentinel', () => {
 
 describe('every provider default is selectable', () => {
   it.each(Object.entries(AI_PROVIDERS))('%s lists its own default model', (_key, config) => {
+    if (config.models.length === 0) return;
     expect(config.models.some((option) => option.id === config.defaultModel)).toBe(true);
+  });
+});
+
+describe('OpenAI provider has base URL support', () => {
+  it('opts into a base URL', () => {
+    const config = AI_PROVIDERS.openai;
+    expect(config.baseUrl).toBe(true);
+  });
+
+  it('carries the base URL label in every locale', () => {
+    for (const locale of LOCALES) {
+      expect(localeKeys(locale).has('settings.baseUrl')).toBe(true);
+    }
+  });
+
+  it('includes a Custom model option', () => {
+    const config = AI_PROVIDERS.openai;
+    expect(config.models.some((m) => m.id === CUSTOM_MODEL_VALUE)).toBe(true);
   });
 });
 

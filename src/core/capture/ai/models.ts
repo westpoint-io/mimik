@@ -3,22 +3,29 @@ export interface AIModelOption {
   label: string;
 }
 
+export const DEFAULT_OPENAI_BASE_URL = 'https://api.openai.com/v1';
+
 export interface AIProviderConfig {
   label: string;
   defaultModel: string;
   models: AIModelOption[];
+  baseUrl?: boolean;
 }
+
+export const CUSTOM_MODEL_VALUE = 'mimik-custom-model';
 
 export const AI_PROVIDERS: Record<string, AIProviderConfig> = {
   openai: {
     label: 'OpenAI',
     defaultModel: 'gpt-4o-mini',
+    baseUrl: true,
     models: [
       { id: 'gpt-4o-mini', label: 'GPT-4o Mini' },
       { id: 'gpt-4.1-nano', label: 'GPT-4.1 Nano' },
       { id: 'gpt-4.1-mini', label: 'GPT-4.1 Mini' },
       { id: 'gpt-4o', label: 'GPT-4o' },
       { id: 'gpt-4.1', label: 'GPT-4.1' },
+      { id: CUSTOM_MODEL_VALUE, label: 'Custom' },
     ],
   },
   anthropic: {
@@ -27,7 +34,14 @@ export const AI_PROVIDERS: Record<string, AIProviderConfig> = {
     models: [
       { id: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku' },
       { id: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4' },
+      { id: CUSTOM_MODEL_VALUE, label: 'Custom' },
     ],
+  },
+  openaiCompatible: {
+    label: 'OpenAI Compatible',
+    defaultModel: 'gpt-4o-mini',
+    models: [],
+    baseUrl: true,
   },
   deepseek: {
     label: 'DeepSeek',
@@ -36,13 +50,12 @@ export const AI_PROVIDERS: Record<string, AIProviderConfig> = {
       { id: 'deepseek-v4-flash', label: 'DeepSeek V4 Flash' },
       { id: 'deepseek-v4-pro', label: 'DeepSeek V4 Pro' },
       { id: 'deepseek-v4-flash-vision-exp', label: 'DeepSeek V4 Flash Vision Exp' },
+      { id: CUSTOM_MODEL_VALUE, label: 'Custom' },
     ],
   },
 };
 
 export type AIProviderKey = keyof typeof AI_PROVIDERS;
-
-export const CUSTOM_MODEL_VALUE = 'mimik-custom-model';
 
 export function isCustomModel(model: string, provider: AIProviderConfig): boolean {
   const id = model.trim();

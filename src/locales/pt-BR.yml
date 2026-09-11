@@ -87,6 +87,7 @@ settings:
   provider: Provedor
   model: Modelo
   modelCustom: Modelo personalizado
+  baseUrl: URL base
   apiKey: Chave da API
   aiLanguage: "Idioma das descrições"
   voiceNarration: "Narração por voz"
@@ -125,8 +126,11 @@ settings:
   validatingKey: "Verificando chave\u2026"
   keyValid: Chave de API verificada.
   keyInvalid: Essa chave de API foi recusada. Verifique-a e tente novamente.
+  keyModelRequired: Escolha um modelo antes de verificar esta chave.
+  keyModelInvalid: O modelo selecionado não está disponível neste provedor.
   checkKey: Verificar chave
   keyUnreachable: Não deu pra falar com o provedor. Confere sua conexão e tenta de novo.
+  modelsFound: "$1 modelos disponíveis"
   smartBlur: Desfoque inteligente
   privacyNotice: "Suas chaves e seu áudio vão só pro provedor que você escolher. Nada mais sai do seu navegador."
   bugReport: "Achou um bug? Reporta no GitHub"

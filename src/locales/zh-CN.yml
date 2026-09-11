@@ -87,6 +87,7 @@ settings:
   provider: 提供商
   model: 模型
   modelCustom: 自定义模型
+  baseUrl: 基础 URL
   apiKey: API 密钥
   aiLanguage: 描述语言
   voiceNarration: 语音讲解
@@ -125,8 +126,11 @@ settings:
   validatingKey: "正在检查密钥..."
   keyValid: API 密钥已验证。
   keyInvalid: 该 API 密钥被拒绝。请检查后重试。
+  keyModelInvalid: 所选模型在此提供商上不可用。请选择其他模型或输入自定义模型 ID。
+  keyModelRequired: 需要选择模型。请从列表中选择或输入自定义模型 ID。
   checkKey: 检查密钥
   keyUnreachable: 无法连接到提供商。请检查网络后重试。
+  modelsFound: "找到 $1 个模型"
   smartBlur: 智能模糊
   privacyNotice: "你的密钥和音频只会发送给你选择的提供商。除此之外，没有任何内容会离开你的浏览器。"
   bugReport: "发现问题？在 GitHub 上报告"
