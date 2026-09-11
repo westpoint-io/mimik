@@ -12,6 +12,7 @@ export interface AIProviderConfig {
   protocol: AIProtocol;
   transport?: OpenAITransport;
   defaultBaseUrl: string;
+  keyCheckPath?: string;
   defaultModel: string;
   models: AIModelOption[];
 }
@@ -55,6 +56,23 @@ export const AI_PROVIDERS = {
       { id: 'deepseek-v4-flash', label: 'DeepSeek V4 Flash' },
       { id: 'deepseek-v4-pro', label: 'DeepSeek V4 Pro' },
       { id: 'deepseek-v4-flash-vision-exp', label: 'DeepSeek V4 Flash Vision Exp' },
+      { id: CUSTOM_MODEL_VALUE, label: 'Custom' },
+    ],
+  },
+  openrouter: {
+    label: 'OpenRouter',
+    protocol: 'openai',
+    transport: 'chat',
+    defaultBaseUrl: 'https://openrouter.ai/api/v1',
+    keyCheckPath: '/key',
+    defaultModel: 'openai/gpt-4o-mini',
+    models: [
+      { id: 'google/gemma-4-26b-a4b-it:free', label: 'Gemma 4 26B (free)' },
+      { id: 'openai/gpt-4o-mini', label: 'GPT-4o Mini' },
+      { id: 'openai/gpt-4.1-mini', label: 'GPT-4.1 Mini' },
+      { id: 'anthropic/claude-haiku-4.5', label: 'Claude Haiku 4.5' },
+      { id: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+      { id: 'google/gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite' },
       { id: CUSTOM_MODEL_VALUE, label: 'Custom' },
     ],
   },

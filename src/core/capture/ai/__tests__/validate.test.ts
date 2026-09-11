@@ -271,4 +271,55 @@ describe('validateApiKey', () => {
       expect(fetchMock).not.toHaveBeenCalled();
     });
   });
+
+  describe('openrouter', () => {
+    it('checks the key against the authenticated endpoint, not the public catalogue', async () => {
+      fetchMock.mockResolvedValueOnce(jsonResponse({ data: { label: 'sk-or-...', usage: 0 } }));
+      fetchMock.mockResolvedValueOnce(modelsBody('openai/gpt-4o-mini', 'anthropic/claude-haiku-4.5'));
+      expect(await validateApiKey('openrouter', 'sk-or-good')).toEqual({
+        valid: true,
+        models: ['openai/gpt-4o-mini', 'anthropic/claude-haiku-4.5'],
+      });
+      expect(fetchMock.mock.calls[0][0]).toBe('https://openrouter.ai/api/v1/key');
+      expect(fetchMock.mock.calls[1][0]).toBe('https://openrouter.ai/api/v1/models');
+    });
+
+    it('rejects a bad key even though the catalogue would answer 200 to anyone', async () => {
+      fetchMock.mockResolvedValueOnce(errorResponse(401));
+      expect(await validateApiKey('openrouter', 'sk-or-bad')).toEqual({ valid: false, reason: 'rejected' });
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(fetchMock.mock.calls[0][0]).toBe('https://openrouter.ai/api/v1/key');
+    });
+
+    it('still reports the key as good when the catalogue request fails', async () => {
+      fetchMock.mockResolvedValueOnce(jsonResponse({ data: { label: 'sk-or-...' } }));
+      fetchMock.mockRejectedValueOnce(new TypeError('fetch failed'));
+      expect(await validateApiKey('openrouter', 'sk-or-good')).toEqual({ valid: true });
+    });
+
+    it('sends the key as a bearer token', async () => {
+      fetchMock.mockResolvedValueOnce(jsonResponse({ data: {} }));
+      fetchMock.mockResolvedValueOnce(modelsBody('openai/gpt-4o-mini'));
+      await validateApiKey('openrouter', 'sk-or-good');
+      const [, init] = fetchMock.mock.calls[0];
+      expect((init!.headers as Record<string, string>).Authorization).toBe('Bearer sk-or-good');
+    });
+
+    it('goes through the custom server path when pointed elsewhere', async () => {
+      fetchMock.mockResolvedValueOnce(chatOkBody());
+      fetchMock.mockResolvedValueOnce(modelsBody('local-model'));
+      expect(await validateApiKey('openrouter', 'sk-key', 'http://localhost:8787/v1', 'local-model')).toEqual({
+        valid: true,
+        models: ['local-model'],
+      });
+      expect(fetchMock.mock.calls[0][0]).toBe('http://localhost:8787/v1/chat/completions');
+    });
+
+    it('leaves providers without an authenticated path checking their catalogue', async () => {
+      fetchMock.mockResolvedValueOnce(modelsBody('gpt-4o-mini'));
+      await validateApiKey('openai', 'sk-good');
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(fetchMock.mock.calls[0][0]).toBe('https://api.openai.com/v1/models');
+    });
+  });
 });
