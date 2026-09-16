@@ -55,6 +55,7 @@ export interface Screenshot {
   id: string;
   stepId: string;
   blob: Blob;
+  src?: string;
   mimeType: string;
   width: number;
   height: number;
@@ -63,6 +64,8 @@ export interface Screenshot {
   clickPoint?: { x: number; y: number };
   edits?: ScreenshotEdits;
 }
+
+export type StoredScreenshot = Omit<Screenshot, 'blob'> & { blob?: Blob };
 
 export interface Settings {
   aiApiKey: string;

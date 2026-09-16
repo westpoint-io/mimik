@@ -4,7 +4,16 @@ import type { ScreenshotEdits } from '@/core/screenshot/types';
 import { db } from './db';
 import { getMostCommonDomain } from './domain';
 import { hashPayload } from './snapshot-hash';
-import type { BlockType, CalloutVariant, DescriptionSource, Guide, Screenshot, Snapshot, Step } from './types';
+import type {
+  BlockType,
+  CalloutVariant,
+  DescriptionSource,
+  Guide,
+  Screenshot,
+  Snapshot,
+  Step,
+  StoredScreenshot,
+} from './types';
 
 export type GuideChangeEvent = { type: 'starred'; id: string; starred: boolean } | { type: 'mutated' };
 
@@ -18,6 +27,20 @@ export function onGuidesChanged(callback: (event: GuideChangeEvent) => void): ()
 
 function notifyGuidesChanged(event: GuideChangeEvent) {
   guidesChannel.postMessage(event);
+}
+
+async function hydrate(row: StoredScreenshot | undefined): Promise<Screenshot | undefined> {
+  if (!row) return undefined;
+  if (row.blob) return row as Screenshot;
+  if (!row.src) return undefined;
+  const response = await fetch(row.src);
+  if (!response.ok) return undefined;
+  return { ...row, blob: await response.blob() };
+}
+
+async function hydrateAll(rows: StoredScreenshot[]): Promise<Screenshot[]> {
+  const out = await Promise.all(rows.map((row) => hydrate(row)));
+  return out.filter((row): row is Screenshot => row !== undefined);
 }
 
 export async function createGuide(guideId: string, staging = false): Promise<Guide> {
@@ -42,7 +65,7 @@ export async function getGuide(
   if (!guide) return null;
   const steps = await db.steps.where('guideId').equals(id).sortBy('index');
   const screenshotIds = steps.map((s) => s.screenshotId).filter(Boolean) as string[];
-  const screenshotRows = await db.screenshots.where('id').anyOf(screenshotIds).toArray();
+  const screenshotRows = await hydrateAll(await db.screenshots.where('id').anyOf(screenshotIds).toArray());
   const screenshots = new Map(screenshotRows.map((s) => [s.stepId, s]));
   return { guide, steps, screenshots };
 }
@@ -283,7 +306,11 @@ export async function getGuideDomain(guideId: string): Promise<string> {
   return getMostCommonDomain(steps);
 }
 
-export async function saveScreenshot(screenshot: Screenshot): Promise<void> {
+export async function allScreenshotIds(): Promise<string[]> {
+  return (await db.screenshots.toCollection().primaryKeys()) as string[];
+}
+
+export async function saveScreenshot(screenshot: StoredScreenshot): Promise<void> {
   await db.screenshots.add(screenshot);
 }
 
@@ -318,7 +345,7 @@ export async function deleteScreenshot(stepId: string): Promise<void> {
 }
 
 export async function getScreenshotsForSteps(stepIds: string[]): Promise<Map<string, Screenshot>> {
-  const rows = await db.screenshots.where('id').anyOf(stepIds).toArray();
+  const rows = await hydrateAll(await db.screenshots.where('id').anyOf(stepIds).toArray());
   return new Map(rows.map((s) => [s.stepId, s]));
 }
 
@@ -326,7 +353,7 @@ export async function getFirstScreenshot(guideId: string): Promise<Screenshot | 
   const steps = await db.steps.where('guideId').equals(guideId).sortBy('index');
   for (const step of steps) {
     if (step.screenshotId) {
-      const screenshot = await db.screenshots.get(step.screenshotId);
+      const screenshot = await hydrate(await db.screenshots.get(step.screenshotId));
       if (screenshot) return screenshot;
     }
   }
