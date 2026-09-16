@@ -393,35 +393,6 @@ opt-in rule holds in three positions, a 400 ms delay measurably slows the grab, 
 synthetic frame encodes to a different size once a cursor is drawn into it. It restores whatever
 settings were on disk when it finishes.
 
-## Testing on Windows
-
-`pnpm vm:windows` runs the desktop app inside a local Windows virtual machine, because the app cannot
-be built for Windows from a Linux machine at all. `get-windows` and `uiohook-napi` are native, no
-win32 binary matches the Electron ABI during a cross-build, and `node-gyp` refuses to cross-compile,
-so `electron-builder --win` fails before it packages anything. Windows has to build its own copy.
-
-The script creates the machine on first run through `quickemu`, fetches the VirtIO drivers, stages the
-working tree, uncommitted and untracked files included, serves it on loopback and boots. Staging the
-working tree rather than a commit is what makes the documented loop true, since otherwise the guest
-silently runs the last commit and a fix appears not to work. QEMU user-mode networking always
-maps the host to `10.0.2.2`, so the guest pulls the source over plain HTTP and needs no shared folder,
-no samba and no SPICE webdav. Inside Windows one line installs Node and pnpm through `winget`,
-unpacks the source to `C:\mimik`, installs and launches. Iterating is: change code, re-run the
-script, re-run the same line in the guest.
-
-Four steps cannot be scripted and the script says so rather than failing quietly:
-
-- Microsoft blocks automated ISO downloads by IP, so the Windows image is fetched once by hand
-- PowerShell refuses unsigned scripts, so the bootstrap runs through `-ExecutionPolicy Bypass`
-- Windows remembers its own display mode, so `--width` and `--height` do not stick and the resolution
-  is set once inside the guest
-- `quickget` leaves a truncated VirtIO download that curl cannot resume, so the script refetches it
-  whenever the file is implausibly small
-
-Whether `uiohook-napi` ships a prebuilt binary for this Electron version on Windows is still unknown.
-The first machine had the Visual Studio Build Tools installed before `pnpm install` ran, so it may
-have compiled rather than downloaded. A fresh machine without them settles it.
-
 ## Export Formats
 
 | Format | Generator | Details |
