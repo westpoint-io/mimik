@@ -1,9 +1,16 @@
 import type { CaptureStepData } from '@mimik/core/capture/sink';
 import { i18n } from '@mimik/core/env';
-import { getStepsForGuide, permanentlyDeleteGuide, updateGuideTitle } from '@mimik/core/guides/service';
+import {
+  allScreenshotIds,
+  getStepsForGuide,
+  permanentlyDeleteGuide,
+  updateGuideTitle,
+} from '@mimik/core/guides/service';
 import { DesktopCaptureSink } from './capture-sink';
 
 const sink = new DesktopCaptureSink();
+
+allScreenshotIds().then((ids) => window.mimik.screenshots.sweep(ids));
 
 window.mimik.onRequest('mimik:capture:startGuide', () => sink.startGuide());
 window.mimik.onRequest('mimik:capture:step', (payload) => sink.captureStep(payload as CaptureStepData));
