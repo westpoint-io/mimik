@@ -1,11 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import type { CaptureImage } from '@mimik/core/capture/sink';
 import type { ElementMeta } from '@mimik/core/guides/types';
-import { nativeImage, screen } from 'electron';
+import { screen } from 'electron';
 import { focusedWindow } from './focused-window';
 import { type InputAction, InputHook } from './input-hook';
 import type { Region } from './region';
-import { type Capture, captureDisplay } from './screenshot';
+import { type Capture, captureArea, type Rect } from './screenshot';
 import { writeScreenshot } from './screenshot-store';
 import { type CaptureSettings, DEFAULT_CAPTURE_SETTINGS } from './settings';
 
@@ -55,7 +55,7 @@ export class DesktopRecorder {
     private readonly region: () => Region,
     private readonly withHidden: <T>(fn: () => Promise<T>) => Promise<T>,
     private readonly send: (request: CaptureRequest) => Promise<unknown>,
-    private readonly grab: (displayId: number) => Promise<Capture> = captureDisplay,
+    private readonly grab: (area: Rect) => Promise<Capture> = captureArea,
     private readonly settings: () => CaptureSettings = () => DEFAULT_CAPTURE_SETTINGS,
   ) {}
 
@@ -94,28 +94,23 @@ export class DesktopRecorder {
   }
 
   private enqueue(point: { x: number; y: number }): void {
-    this.queue = this.queue.then(() => this.capture(point)).catch(() => undefined);
+    this.queue = this.queue
+      .then(() => this.capture(point))
+      .catch((error) => {
+        process.stderr.write(`mimik: capture failed: ${error instanceof Error ? error.message : String(error)}\n`);
+      });
   }
 
   async capture(point: { x: number; y: number }): Promise<void> {
     const settings = this.settings();
     const region = this.region();
     const framed = inside(region, point) ? region : screen.getDisplayNearestPoint(point).bounds;
-    const display = screen.getDisplayMatching(framed);
-    const scale = display.scaleFactor;
 
     const shot = await this.withHidden(async () => {
       await delay(SETTLE_MS + settings.screenshotDelayMs);
-      return this.grab(display.id);
+      return this.grab(framed);
     });
-
-    const cropped = nativeImage.createFromBuffer(Buffer.from(shot.png)).crop({
-      x: Math.round((framed.x - display.bounds.x) * scale),
-      y: Math.round((framed.y - display.bounds.y) * scale),
-      width: Math.round(framed.width * scale),
-      height: Math.round(framed.height * scale),
-    });
-    const size = cropped.getSize();
+    const scale = shot.scaleFactor;
 
     const screenshotId = randomUUID();
     const local = { x: point.x - framed.x, y: point.y - framed.y };
@@ -143,9 +138,9 @@ export class DesktopRecorder {
       },
       image: {
         screenshotId,
-        src: writeScreenshot(screenshotId, cropped.toPNG()),
-        width: size.width,
-        height: size.height,
+        src: writeScreenshot(screenshotId, shot.png),
+        width: shot.width,
+        height: shot.height,
       },
       ...(settings.showCursor ? { cursor: { x: local.x, y: local.y, style: settings.cursorStyle, scale } } : {}),
     });

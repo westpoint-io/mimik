@@ -233,25 +233,33 @@ app in `apps/desktop/dist`. `electron-builder.yml` targets dmg/zip, nsis and App
 
 ## Desktop Capture Primitives
 
-`apps/desktop/src/main/capture` holds the four things a desktop capture needs. Three come from
-Electron; only two need anything native, and both are prebuilt npm packages rather than a crate we
-maintain.
+`apps/desktop/src/main/capture` holds the four things a desktop capture needs. Only one comes from
+Electron; the other three are prebuilt npm packages rather than a crate we maintain.
 
 | Primitive | Source | Native |
 |---|---|---|
 | Displays, DPI, cursor | Electron `screen` | no |
-| Screenshot of a display | Electron `desktopCapturer` | no |
+| Screenshot of a display | `node-screenshots` | prebuilt |
 | Focused foreign window | `get-windows` | prebuilt |
 | Global clicks and keys | `uiohook-napi` | prebuilt |
+
+Screenshots do not go through Electron's `desktopCapturer`. That route asks the xdg desktop portal
+on Wayland and fails outright when the portal does not answer, and it was returning frames that
+decoded to nothing on Windows. `node-screenshots` talks to each platform's own capture API, so it
+has a Wayland path and needs no portal. Monitor identifiers there have nothing to do with Electron
+display ids, so the monitor is resolved from a point inside the display's bounds rather than matched
+by id.
 
 Anything richer than these four — the accessibility tree in particular — needs an addon we build and
 maintain ourselves, and that is a separate task.
 
-**Linux is X11 only.** `uiohook-napi` links `libX11`/`libXtst` and hooks through `XRecord`, with no
-Wayland path; on a Wayland session the hook starts and then silently delivers nothing. `get-windows`
-shells out to `xwininfo`, also X11. Both are gated on `XDG_SESSION_TYPE` and refuse up front with
-`reason: 'unsupported-session'` rather than appearing to work. Linux also needs `xwininfo` and
-`xprop` on `PATH`. macOS and Windows are unaffected.
+**On Linux, input and window lookup are X11 only; screenshots are not.** `uiohook-napi` links
+`libX11`/`libXtst` and hooks through `XRecord`, with no Wayland path; on a Wayland session the hook
+starts and then silently delivers nothing. `get-windows` shells out to `xwininfo`, also X11. Both are
+gated on `XDG_SESSION_TYPE` and refuse up front with `reason: 'unsupported-session'` rather than
+appearing to work. Screenshots work on both, so a Wayland machine can still exercise the capture and
+export path even though it cannot record clicks. Linux also needs `xwininfo` and `xprop` on `PATH`.
+macOS and Windows are unaffected.
 
 `pnpm --filter @mimik/desktop check:capture` builds and exercises every primitive, printing `ok`,
 `n/a` for a platform limit, or `FAIL`. Only `FAIL` sets a non-zero exit, so the check is meaningful
@@ -360,9 +368,9 @@ control under the cursor is. Reading that needs the accessibility tree and is a 
 
 `DesktopRecorder` takes the display grab as a constructor argument defaulting to `captureDisplay`, so
 `check:pipeline` feeds it a generated frame. The crop arithmetic, the sink, the step write and all
-four document exporters then run without a working screen-capture path, which matters because
-`desktopCapturer` on Wayland goes through the xdg desktop portal and fails outright when the portal
-does not answer. Whether a real grab works is `check:capture`'s question, not this one's.
+four document exporters then run without a working screen-capture path, which matters because a real
+grab depends on the machine it runs on. Whether a real grab works is `check:capture`'s question, not
+this one's.
 
 `pnpm --filter @mimik/desktop check:pipeline` captures two clicks into a throwaway guide, then
 asserts the steps landed on the guide, the screenshot is cropped to the region, the description came

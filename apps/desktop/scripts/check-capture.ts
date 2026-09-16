@@ -1,5 +1,14 @@
-import { app } from 'electron';
+import { app, nativeImage, screen } from 'electron';
 import { captureCursorDisplay, cursorPoint, focusedWindow, InputHook, listDisplays } from '../src/main/capture';
+
+function distinctColours(png: Buffer): number {
+  const bitmap = nativeImage.createFromBuffer(png).toBitmap();
+  const seen = new Set<string>();
+  for (let i = 0; i < bitmap.length && seen.size <= 64; i += 4 * 997) {
+    seen.add(`${bitmap[i]},${bitmap[i + 1]},${bitmap[i + 2]}`);
+  }
+  return seen.size;
+}
 
 type Verdict = 'ok' | 'fail' | 'n/a';
 
@@ -26,6 +35,24 @@ app.whenReady().then(async () => {
     const ok = shot.png.length > 0 && shot.width > 0;
     if (!ok) failures++;
     line('screenshot', ok ? 'ok' : 'fail', `${shot.width}x${shot.height}, ${(shot.png.length / 1024).toFixed(0)} KB png`);
+
+    const display = screen.getDisplayNearestPoint(point);
+    const expected = {
+      width: Math.round(display.bounds.width * shot.scaleFactor),
+      height: Math.round(display.bounds.height * shot.scaleFactor),
+    };
+    const sized = shot.width === expected.width && shot.height === expected.height;
+    if (!sized) failures++;
+    line(
+      'frame covers display',
+      sized ? 'ok' : 'fail',
+      `${shot.width}x${shot.height}, expected ${expected.width}x${expected.height} at ${shot.scaleFactor}x`,
+    );
+
+    const colours = distinctColours(shot.png);
+    const painted = colours > 1;
+    if (!painted) failures++;
+    line('frame is not blank', painted ? 'ok' : 'fail', `${colours} distinct colours sampled`);
   } catch (error) {
     failures++;
     line('screenshot', 'fail', error instanceof Error ? error.message : String(error));
