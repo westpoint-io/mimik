@@ -1,11 +1,4 @@
-export type CursorStyle = 'arrow' | 'hand' | 'dot';
-
-export interface CursorMark {
-  x: number;
-  y: number;
-  style: CursorStyle;
-  scale: number;
-}
+import type { CursorMark } from './types';
 
 const ARROW: [number, number][] = [
   [0, 0],
@@ -35,7 +28,9 @@ const HAND: [number, number][] = [
   [6, 14.6],
 ];
 
-function traceOutline(ctx: OffscreenCanvasRenderingContext2D, points: [number, number][], size: number): void {
+type Ctx = OffscreenCanvasRenderingContext2D | CanvasRenderingContext2D;
+
+function traceOutline(ctx: Ctx, points: [number, number][], size: number): void {
   ctx.beginPath();
   points.forEach(([x, y], index) => {
     const px = (x / 20) * size;
@@ -48,7 +43,7 @@ function traceOutline(ctx: OffscreenCanvasRenderingContext2D, points: [number, n
   ctx.stroke();
 }
 
-export function drawCursor(ctx: OffscreenCanvasRenderingContext2D, mark: CursorMark): void {
+export function drawCursor(ctx: Ctx, mark: CursorMark): void {
   const size = 22 * mark.scale;
 
   ctx.save();
@@ -73,19 +68,4 @@ export function drawCursor(ctx: OffscreenCanvasRenderingContext2D, mark: CursorM
   }
 
   ctx.restore();
-}
-
-export async function withCursor(png: Uint8Array, width: number, height: number, mark: CursorMark): Promise<Blob> {
-  const source = await createImageBitmap(new Blob([Uint8Array.from(png)], { type: 'image/png' }));
-  const canvas = new OffscreenCanvas(width, height);
-  const ctx = canvas.getContext('2d');
-  if (!ctx) {
-    source.close();
-    return new Blob([Uint8Array.from(png)], { type: 'image/png' });
-  }
-
-  ctx.drawImage(source, 0, 0);
-  source.close();
-  drawCursor(ctx, mark);
-  return canvas.convertToBlob({ type: 'image/png' });
 }
