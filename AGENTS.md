@@ -297,13 +297,39 @@ so a region stored against a monitor that is no longer attached lands back insid
 instead of off-screen, and nothing smaller than 240 × 160 is storable.
 
 `CaptureOverlay` owns three kinds of window, all frameless, transparent and `alwaysOnTop` at
-`screen-saver` level:
+`screen-saver` level. The controls are a card docked to the bottom-right of the work area, not a bar
+across the middle of the screen, because the middle is where the work being recorded happens:
 
 | Window | When | Input |
 |---|---|---|
 | Editor, one per display | `editing` | interactive — drag to draw, move or resize |
-| Boundary, sized to the region | `armed`, `recording`, `paused` | click-through |
+| Boundary, sized to the region | `armed`, `recording`, `paused`, `region` mode only | click-through |
 | Controls bar | `armed`, `recording`, `paused` | interactive |
+
+The boundary only exists in `region` mode, because the other two modes have no fixed rectangle to
+draw. `overlay.ignores(point)` keeps clicks on the card from becoming steps — without it, pressing
+Pause in whole-screen mode would capture pressing Pause.
+
+The card carries what the extension's recording view carries, shrunk to sit over someone else's work:
+state, step count, the screenshot just taken, its title, and two actions. Showing the capture is the
+point — it is the only way to tell mid-recording that a step landed on the right thing, and without it
+a wrong capture mode is discovered after twenty steps rather than after one. Main already holds that
+screenshot's URL when it tells the overlay a step was captured, so the card reads it over the same
+`mimik-screenshot://` scheme the app window uses and no image data crosses IPC.
+
+All three roles are one HTML file and one stylesheet, told apart only by `body.editor`,
+`body.boundary` and `body.controls`, so an id is shared across three documents. The card's rules are
+scoped under `body.controls` for that reason: an unscoped `#hint` already existed for the region
+editor, absolutely positioned and dark, and it silently captured the card's hint the first time both
+used the name. `check:overlay` asserts the card's hint computes to `position: static`, which is the
+cheapest way to catch the next collision.
+
+The card sizes itself. The renderer reports `scrollHeight` after every render and main moves the
+window to match, so a long step title or a collapse does not need a table of per-state pixel heights.
+That only works because `body.controls` overrides the shared `height: 100%`: a body pinned to the
+window's height reports the window's height back, and the card could never grow.
+Collapsing turns it into a pill; the mode picker appears only while paused, since a mode cannot
+usefully change between one click and the next, and it is what made the old bar 452 px wide.
 
 Editing puts a full-display window on **every** display rather than only the one holding the region,
 which is what makes moving the region to another monitor work: each editor converts client to screen
@@ -311,13 +337,172 @@ coordinates with its own display origin, and whichever one you draw on wins. Out
 boundary shrinks to the region itself and takes `setIgnoreMouseEvents`, so recording never swallows a
 click. The boundary is solid and pulses while recording, dashed and grey while paused.
 
-Overlays must not appear in their own capture. `setContentProtection(true)` handles that on macOS and
-Windows but is a no-op on Linux, so `overlay.withHidden(fn)` hides every visible overlay for the
-duration of `fn` and restores exactly the ones it hid — the capture pipeline wraps its screenshot in
-it, and that is the only mechanism that holds on all three platforms.
+Overlays must not appear in their own capture. `setContentProtection(true)` is what keeps them out,
+and **it is applied after the window is shown, never at creation**: on Windows it sets a display
+affinity on the native handle, and a handle that has not been realised yet does not take it. Setting
+it in the constructor looked correct and silently did nothing, which put the recording card inside the
+screenshots it was displaying.
+
+`overlay.withHidden(fn)` is the fallback for Linux, where content protection is a no-op. It hides
+every visible overlay for the duration of `fn` and restores exactly the ones it hid, reapplying
+protection on the way back. Hiding a window is visible as a blink once per captured step, so it is
+used only where nothing else works. `setOpacity(0)` is not an alternative: it stopped captures
+happening at all.
+
+The boundary only exists in `region` mode, because the other two modes have no fixed rectangle to
+draw. `overlay.ignores(point)` keeps clicks on the card from becoming steps — without it, pressing
+Pause in whole-screen mode would capture pressing Pause.
+
+The card carries what the extension's recording view carries, shrunk to sit over someone else's work:
+state, step count, the screenshot just taken, its title, and two actions. Showing the capture is the
+point — it is the only way to tell mid-recording that a step landed on the right thing, and without it
+a wrong capture mode is discovered after twenty steps rather than after one. Main already holds that
+screenshot's URL when it tells the overlay a step was captured, so the card reads it over the same
+`mimik-screenshot://` scheme the app window uses and no image data crosses IPC.
+
+All three roles are one HTML file and one stylesheet, told apart only by `body.editor`,
+`body.boundary` and `body.controls`, so an id is shared across three documents. The card's rules are
+scoped under `body.controls` for that reason: an unscoped `#hint` already existed for the region
+editor, absolutely positioned and dark, and it silently captured the card's hint the first time both
+used the name. `check:overlay` asserts the card's hint computes to `position: static`, which is the
+cheapest way to catch the next collision.
+
+The card sizes itself. The renderer reports `scrollHeight` after every render and main moves the
+window to match, so a long step title or a collapse does not need a table of per-state pixel heights.
+That only works because `body.controls` overrides the shared `height: 100%`: a body pinned to the
+window's height reports the window's height back, and the card could never grow.
+Collapsing turns it into a pill; the mode picker appears only while paused, since a mode cannot
+usefully change between one click and the next, and it is what made the old bar 452 px wide.
+
+Editing puts a full-display window on **every** display rather than only the one holding the region,
+which is what makes moving the region to another monitor work: each editor converts client to screen
+coordinates with its own display origin, and whichever one you draw on wins. Outside editing the
+boundary shrinks to the region itself and takes `setIgnoreMouseEvents`, so recording never swallows a
+click. The boundary is solid and pulses while recording, dashed and grey while paused.
+
+Overlays must not appear in their own capture. `overlay.withHidden(fn)` hides every visible overlay
+for the duration of `fn` and restores exactly the ones it hid, and the capture pipeline wraps its
+screenshot in it. Hiding is the only mechanism that has ever worked here, and two alternatives have
+been tried and reverted on Windows: `setContentProtection(true)` is set on every overlay window and
+does not keep it out of the frames `node-screenshots` returns, and `setOpacity(0)` stops captures
+happening at all. The cost is a visible blink of the recording card once per step. Anything proposed
+to remove that blink has to be tested on Windows against a real capture before it is believed.
+
+The boundary only exists in `region` mode, because the other two modes have no fixed rectangle to
+draw. `overlay.ignores(point)` keeps clicks on the card from becoming steps — without it, pressing
+Pause in whole-screen mode would capture pressing Pause.
+
+The card carries what the extension's recording view carries, shrunk to sit over someone else's work:
+state, step count, the screenshot just taken, its title, and two actions. Showing the capture is the
+point — it is the only way to tell mid-recording that a step landed on the right thing, and without it
+a wrong capture mode is discovered after twenty steps rather than after one. Main already holds that
+screenshot's URL when it tells the overlay a step was captured, so the card reads it over the same
+`mimik-screenshot://` scheme the app window uses and no image data crosses IPC.
+
+All three roles are one HTML file and one stylesheet, told apart only by `body.editor`,
+`body.boundary` and `body.controls`, so an id is shared across three documents. The card's rules are
+scoped under `body.controls` for that reason: an unscoped `#hint` already existed for the region
+editor, absolutely positioned and dark, and it silently captured the card's hint the first time both
+used the name. `check:overlay` asserts the card's hint computes to `position: static`, which is the
+cheapest way to catch the next collision.
+
+The card sizes itself. The renderer reports `scrollHeight` after every render and main moves the
+window to match, so a long step title or a collapse does not need a table of per-state pixel heights.
+That only works because `body.controls` overrides the shared `height: 100%`: a body pinned to the
+window's height reports the window's height back, and the card could never grow.
+Collapsing turns it into a pill; the mode picker appears only while paused, since a mode cannot
+usefully change between one click and the next, and it is what made the old bar 452 px wide.
+
+Editing puts a full-display window on **every** display rather than only the one holding the region,
+which is what makes moving the region to another monitor work: each editor converts client to screen
+coordinates with its own display origin, and whichever one you draw on wins. Outside editing the
+boundary shrinks to the region itself and takes `setIgnoreMouseEvents`, so recording never swallows a
+click. The boundary is solid and pulses while recording, dashed and grey while paused.
+
+Overlays must not appear in their own capture, and `overlay.withHidden(fn)` is what guarantees it.
+It drops each visible overlay to zero opacity, reads the opacity back, and falls back to hiding the
+window for the ones where the call did nothing. Zero opacity is preferred because hiding and
+re-showing a window is visible — the recording card blinks once per captured step — while a window at
+alpha 0 is simply not composited. `setOpacity` is a no-op on Linux, which is why the fallback exists
+and why it is chosen by reading the value back rather than by testing `process.platform`: the code
+finds out instead of assuming.
+
+`setContentProtection(true)` is set on every overlay window and is **not** sufficient on its own.
+Skipping the hide on Windows and relying on it put the recording card inside the screenshots it was
+displaying. Whatever it excludes, it does not exclude the window from the frames `node-screenshots`
+returns.
+
+The boundary only exists in `region` mode, because the other two modes have no fixed rectangle to
+draw. `overlay.ignores(point)` keeps clicks on the card from becoming steps — without it, pressing
+Pause in whole-screen mode would capture pressing Pause.
+
+The card carries what the extension's recording view carries, shrunk to sit over someone else's work:
+state, step count, the screenshot just taken, its title, and two actions. Showing the capture is the
+point — it is the only way to tell mid-recording that a step landed on the right thing, and without it
+a wrong capture mode is discovered after twenty steps rather than after one. Main already holds that
+screenshot's URL when it tells the overlay a step was captured, so the card reads it over the same
+`mimik-screenshot://` scheme the app window uses and no image data crosses IPC.
+
+All three roles are one HTML file and one stylesheet, told apart only by `body.editor`,
+`body.boundary` and `body.controls`, so an id is shared across three documents. The card's rules are
+scoped under `body.controls` for that reason: an unscoped `#hint` already existed for the region
+editor, absolutely positioned and dark, and it silently captured the card's hint the first time both
+used the name. `check:overlay` asserts the card's hint computes to `position: static`, which is the
+cheapest way to catch the next collision.
+
+The card sizes itself. The renderer reports `scrollHeight` after every render and main moves the
+window to match, so a long step title or a collapse does not need a table of per-state pixel heights.
+That only works because `body.controls` overrides the shared `height: 100%`: a body pinned to the
+window's height reports the window's height back, and the card could never grow.
+Collapsing turns it into a pill; the mode picker appears only while paused, since a mode cannot
+usefully change between one click and the next, and it is what made the old bar 452 px wide.
+
+Editing puts a full-display window on **every** display rather than only the one holding the region,
+which is what makes moving the region to another monitor work: each editor converts client to screen
+coordinates with its own display origin, and whichever one you draw on wins. Outside editing the
+boundary shrinks to the region itself and takes `setIgnoreMouseEvents`, so recording never swallows a
+click. The boundary is solid and pulses while recording, dashed and grey while paused.
+
+Overlays must not appear in their own capture, and `overlay.withHidden(fn)` is the only thing that
+achieves it: it hides every visible overlay for the duration of `fn` and restores exactly the ones it
+hid. The capture pipeline wraps its screenshot in it, on every platform.
+
+`setContentProtection(true)` is set on every overlay window and is **not** sufficient. Skipping the
+hide on Windows and relying on it alone put the recording card inside the screenshots it was
+displaying. Whatever it excludes, it does not exclude the window from the frames `node-screenshots`
+returns, so do not treat it as a substitute. The cost is that hiding and re-showing a window is
+visible: the card blinks once per captured step. That is a known trade and correctness wins.
+
+Anything the card hides is hidden with the `hidden` property, and `body.controls [hidden]` forces
+`display: none` because several of those elements are flex containers whose author rule outranks the
+browser's default for `[hidden]`. Without it the instructions stayed on screen behind the first
+screenshot and collapsing never hid the buttons.
+
+The card's icons come from `lucide`, the vanilla build of the same icon set `lucide-react` gives the
+rest of the app, so a pause or a check is one drawing everywhere. The React package is not used here
+because the overlay renderer has no React and importing an icon component pulls the runtime in with
+it; `lucide` has no dependencies and hands back an `SVGElement`. Copying path data out of either
+package is not the alternative — that silently pins the overlay to whatever the icons looked like on
+the day it was written.
+
+The mascot's geometry lives once, in `packages/ui/src/shared/mascot-shapes.ts`. `MascotIcon` renders it
+as React with Tailwind classes so it themes with tokens; the overlay builds the same paths as DOM nodes
+with CSS variables, because that renderer has neither React nor Tailwind. Two renderers, one set of
+coordinates — copying the paths into the overlay would have made it the fifth copy of this drawing in
+the repository.
+
+The footer is always the same two slots: the transient action on the left, the one that moves the
+recording forward on the right, filled. Close then Start while armed, Pause then Finish while
+recording, Resume then Finish while paused. Finish keeps the right-hand slot for the whole recording
+so it never moves under the cursor.
+
+A capture is in flight from the moment the grab starts until the step is written, and `overlay.setBusy`
+spans exactly that. Finish is disabled while it holds, so a recording cannot be finalised between the
+screenshot and the row that points at it.
 
 `pnpm --filter @mimik/desktop check:overlay` asserts persistence, clamping, one editor per display,
-controls clearing the region, and the state changes — driving Start and Pause through a real renderer
+controls clearing the region, whole-screen mode dropping the boundary, clicks on the bar being
+ignored, and the state changes — driving Start and Pause through a real renderer
 click so the preload and IPC path is covered rather than the main-process methods alone. On Linux it
 runs under `xvfb-run` when available (`xorg-server-xvfb`), so the check does not throw always-on-top
 windows over whatever you are doing.
@@ -362,6 +547,17 @@ Files outlive the rows that point at them, because deleting a guide only removes
 renderer sends every known screenshot id to main at startup and main deletes any file not in that
 set, so an interrupted delete costs disk until the next launch rather than forever.
 
+What a capture frames is `captureMode`'s decision, and `frameFor` owns it: the focused window's
+bounds, the whole display under the cursor, or the drawn region. The window rectangle is resolved on
+every click rather than once at Start, so a window that moves or is resized between steps is followed
+with no extra work, and it falls back to the whole display whenever the lookup fails or reports a
+rectangle that does not contain the click. Active-window mode therefore degrades to whole-screen
+rather than erroring, which is also what a Wayland session gets.
+
+Window bounds come back in the platform's own coordinates. Windows reports physical pixels while
+every rectangle elsewhere in the app is in DIP, so `focusedWindow` converts through `screenToDipRect`
+before returning — without it a high-DPI machine crops a rectangle scaled by its own DPI factor.
+
 `elementSource` is `'screen'` for these steps: the click point, the region-relative target rect, the
 display scale factor, and the foreground app and window title are all known, but nothing about the
 control under the cursor is. Reading that needs the accessibility tree and is a later task.
@@ -392,17 +588,57 @@ Step descriptions read as bare actions until the accessibility tree lands. A scr
 where the click was and which application owned it, so `buildFallbackDescription` has no control
 name to work with and every step reads the same.
 
+## Desktop Home Screen
+
+**A guide looks the same everywhere; getting to one does not have to.** Viewing, editing, annotating
+and exporting live in `packages/ui` and both surfaces mount the same components, so a step card reads
+identically in a browser panel and in a desktop window. Everything before the guide is free to differ,
+because the products differ: the extension records a tab, has no capture mode to choose and lives in
+400 px of browser chrome, while the desktop records the operating system in a window five times as
+wide and has to pick between three framings first. Forcing those two shells together makes both worse.
+Divergence inside the guide is a bug; divergence in how you reach it is not.
+
+The window opens on `HomeScreen`, not on the fullview dashboard. The extension's side panel already
+established the shape and the desktop follows it rather than inventing a second one: the mascot, the
+question, one primary control, then a search field and the library. `sidepanel_heroTitle` and its
+neighbours are reused verbatim, so the two surfaces stay worded the same.
+
+Pressing Start Capture opens `CaptureSheet` rather than arming immediately. The sheet is where the
+capture mode is chosen, because the mode decides what every screenshot in the guide will frame and
+that is worth one deliberate choice before recording rather than a control discovered afterwards.
+Picking a mode writes `captureMode` straight through to `capture-settings.json`, so the sheet reopens
+on whatever was used last and the recording bar's own picker reads the same value.
+
+The sheet holds the mode and nothing else. `captureOutsideClicks` was tried there and taken out: read
+beside a rectangle the user has just chosen, an option that falls back to the whole screen reads as
+undoing that choice, when what it really decides is whether a click outside the rectangle is dropped
+or kept. It stays in Settings, where there is room to say so. Nothing in the sheet is editable in two
+places.
+
+Start on Selected Region opens the region editor first and arming happens when the rectangle is
+confirmed. The other two modes arm directly, because they have no rectangle to draw.
+
+Guide rows carry an avatar built from the guide title through `getDomainInitial`, which gives a stable
+letter and tint from a hash without a second query. A desktop guide has no web address, so
+`FaviconImg` has nothing to fetch and the title, which is named after the recorded application, is the
+only identity available. Star and delete are always visible rather than revealed on hover, matching
+the side panel; the fullview list hides them until hover and that reads as inert in a window this wide.
+
+Starred and Trash have no route on desktop yet. `LibraryContent` supports both and the home screen
+does not reach them.
+
 ## Capture Settings
 
-Three settings that only a desktop capture needs live in `capture-settings.json` beside the region,
+Five settings that only a desktop capture needs live in `capture-settings.json` beside the region,
 read by main rather than by core, because none of them mean anything to the extension.
 
 | Setting | Default | Effect |
 |---|---|---|
+| `captureMode` | `window` | What each screenshot frames: the focused window, the whole screen, or a drawn area |
 | `showCursor` | on | A pointer is drawn into the screenshot at the click point |
 | `cursorStyle` | `arrow`, `dot` on Linux | Which pointer shape gets drawn |
 | `screenshotDelayMs` | 0, capped at 2000 | Extra wait between the click and the grab |
-| `captureOutsideClicks` | off | Whether clicks beyond the capture area are recorded at all |
+| `captureOutsideClicks` | off | Whether clicks beyond the capture area are recorded at all, in `region` mode only |
 
 `normaliseSettings` runs on every read and write, so an out-of-range delay clamps and an unknown
 cursor style falls back to the platform default rather than reaching the recorder.
@@ -416,11 +652,13 @@ without touching the original.
 
 A click outside the capture area cannot be framed by a region that does not contain it, so those
 captures fall back to the whole display the click landed on. `shouldCapture` is exported for that
-decision rather than being inline in the hook handler, so the rule is testable on its own.
+decision rather than being inline in the hook handler, so the rule is testable on its own. It only
+filters in `region` mode; the other two modes frame every click by construction.
 
-`check:pipeline` covers all four: clamping and persistence round-trip through the real file, the
-opt-in rule holds in three positions, a 400 ms delay measurably slows the grab, and the same
-synthetic frame renders to a different size once a cursor is drawn over it. It restores whatever
+`check:pipeline` covers all five: clamping and persistence round-trip through the real file, an
+unknown mode falls back, the opt-in rule holds in four positions, `frameFor` returns the right
+rectangle for all three modes including both window fallbacks, a 400 ms delay measurably slows the
+grab, and the same synthetic frame renders to a different size once a cursor is drawn over it. It restores whatever
 settings were on disk when it finishes.
 
 ## Export Formats
