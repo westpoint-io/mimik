@@ -20,8 +20,14 @@ function localeKeys(path: string): string[] {
   return keys.sort();
 }
 
-describe('zh-CN locale coverage', () => {
-  it('matches the English message keys', () => {
-    expect(localeKeys('src/locales/zh-CN.yml')).toEqual(localeKeys('src/locales/en.yml'));
-  });
+// Every locale, not just zh-CN: a key missing from one of the others used to
+// ship silently and render as the raw key in the UI.
+const LOCALES = ['zh-CN', 'es', 'fr', 'de', 'pt-BR'] as const;
+
+describe('locale coverage', () => {
+  for (const locale of LOCALES) {
+    it(`${locale} matches the English message keys`, () => {
+      expect(localeKeys(`src/locales/${locale}.yml`)).toEqual(localeKeys('src/locales/en.yml'));
+    });
+  }
 });
