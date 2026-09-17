@@ -1,6 +1,17 @@
+import {
+  MASCOT_ASPECT,
+  MASCOT_BODY,
+  MASCOT_CROWN,
+  MASCOT_CROWN_SPLIT,
+  MASCOT_FACES,
+  MASCOT_SEAM,
+  MASCOT_VIEW_BOX,
+  type MascotPose,
+} from './mascot-shapes';
+
 interface MascotIconProps {
   size?: number;
-  pose?: 'happy' | 'lookaway';
+  pose?: MascotPose;
   tone?: 'brand' | 'muted';
 }
 
@@ -10,45 +21,54 @@ export default function MascotIcon({ size = 22, pose = 'happy', tone = 'brand' }
   const crown = muted ? 'fill-current opacity-80' : 'fill-violet-mid';
   const seam = muted ? 'fill-current opacity-25' : 'fill-lavender';
   const feature = muted ? 'fill-card stroke-card' : 'fill-lavender stroke-lavender';
+  const face = MASCOT_FACES[pose];
 
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="20 50 160 120"
+      viewBox={MASCOT_VIEW_BOX}
       width={size}
-      height={Math.round((size * 120) / 160)}
+      height={Math.round(size * MASCOT_ASPECT)}
       className="block shrink-0"
       aria-hidden="true"
     >
       <defs>
         <clipPath id="mascot-crown-split">
-          <path d="M30 95 L170 60 L170 95 Z" />
+          <path d={MASCOT_CROWN_SPLIT} />
         </clipPath>
       </defs>
-      <rect x="30" y="95" width="140" height="68" rx="5" className={body} />
-      <path d="M30 95 L30 80 Q30 60, 100 60 Q170 60, 170 80 L170 95 Z" className={crown} />
-      {!muted && (
-        <path
-          d="M30 95 L30 80 Q30 60, 100 60 Q170 60, 170 80 L170 95 Z"
-          className="fill-accent"
-          clipPath="url(#mascot-crown-split)"
-        />
-      )}
-      <rect x="30" y="93" width="140" height="3" className={seam} />
+      <rect {...MASCOT_BODY} className={body} />
+      <path d={MASCOT_CROWN} className={crown} />
+      {!muted && <path d={MASCOT_CROWN} className="fill-accent" clipPath="url(#mascot-crown-split)" />}
+      <rect {...MASCOT_SEAM} className={seam} />
 
-      {pose === 'lookaway' ? (
+      {'pupils' in face ? (
         <>
-          <circle cx="80" cy="124" r="5" className={feature} strokeWidth="0" />
-          <circle cx="128" cy="124" r="5" className={feature} strokeWidth="0" />
-          <path d="M86 141 Q100 136 116 141" className={feature} strokeWidth="3.5" fill="none" strokeLinecap="round" />
+          {face.pupils.map((pupil) => (
+            <circle key={pupil.cx} {...pupil} className={feature} strokeWidth="0" />
+          ))}
         </>
       ) : (
         <>
-          <path d="M68 122 Q76 112 84 122" className={feature} strokeWidth="5" fill="none" strokeLinecap="round" />
-          <path d="M116 122 Q124 112 132 122" className={feature} strokeWidth="5" fill="none" strokeLinecap="round" />
-          <path d="M84 138 Q100 148 116 138" className={feature} strokeWidth="3.5" fill="none" strokeLinecap="round" />
+          {face.eyes.map((eye) => (
+            <path
+              key={eye}
+              d={eye}
+              className={feature}
+              strokeWidth={face.eyeWidth}
+              fill="none"
+              strokeLinecap="round"
+            />
+          ))}
         </>
       )}
+      <path
+        d={face.mouth}
+        className={feature}
+        strokeWidth={face.mouthWidth}
+        fill="none"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
