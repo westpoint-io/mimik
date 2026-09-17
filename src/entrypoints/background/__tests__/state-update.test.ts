@@ -14,7 +14,6 @@ vi.mock('@/lib/browser-api', () => ({
 
 vi.mock('@/lib/logger', () => ({ logger: { info: vi.fn(), debug: vi.fn(), warn: vi.fn(), error: vi.fn() } }));
 
-/** A snapshot as the previous build would have persisted it: no pauseReason. */
 function legacyRecordingSnapshot() {
   const actor = createActor(captureMachine);
   actor.start();
@@ -45,10 +44,6 @@ beforeEach(() => {
 });
 
 describe('getStateUpdate', () => {
-  // Reloading the extension mid-session restores a snapshot written by the
-  // build before PAUSED existed. Its context has no pauseReason at all, and an
-  // `undefined` reaching the panel read as paused — the pill said "capture
-  // paused" and the button offered Resume while the machine was RECORDING.
   it('reports a legacy RECORDING snapshot as recording, not paused', async () => {
     const { getStateUpdate } = await loadActor(legacyRecordingSnapshot());
 

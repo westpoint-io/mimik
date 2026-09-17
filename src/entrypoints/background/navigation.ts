@@ -12,13 +12,6 @@ import { TabMessage } from '@/lib/tab-messages';
 import { getActor, waitUntilReady } from './actor';
 import { injectContentScript, isInjectableTab } from './tab-manager';
 
-/**
- * A paused recording is still a recording: the tab keeps navigating, and the URL
- * has to stay current or the next step after the resume is stamped with the page
- * the user was on before pausing — which then drives Guide Me's replay to the
- * wrong page. Content scripts need injecting while paused for the same reason:
- * a tab opened mid-pause would otherwise be deaf to the resume broadcast.
- */
 function isLive(state: CaptureSnapshot): boolean {
   return state.value === CaptureState.RECORDING || state.value === CaptureState.PAUSED;
 }

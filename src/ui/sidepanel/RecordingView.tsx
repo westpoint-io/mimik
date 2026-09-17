@@ -21,9 +21,7 @@ interface RecordingViewProps {
   onStop: () => void;
   voice: PanelVoiceUpdate;
   aiFailure: PanelAiUpdate | null;
-  /** True while the machine holds PAUSED. The authority on paused-ness. */
   paused: boolean;
-  /** Why it is paused, for the wording only — may be null on a restored state. */
   pauseReason: PauseReason | null;
 }
 
@@ -107,8 +105,6 @@ export default function RecordingView({ guideId, onStop, voice, aiFailure, pause
     await sendMessage('pauseCapture', undefined);
   }, []);
 
-  // Either handler dismisses the overlay before resuming, so a restored state
-  // with no reason still recovers; the branch only keeps the blur path named.
   const handleResume = useCallback(async () => {
     await sendMessage(pauseReason === 'blur' ? 'exitBlurMode' : 'resumeCapture', undefined);
   }, [pauseReason]);

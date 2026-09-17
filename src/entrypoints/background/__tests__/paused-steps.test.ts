@@ -59,8 +59,6 @@ describe('step writes while PAUSED', () => {
     expect(captureVisibleTab).not.toHaveBeenCalled();
   });
 
-  // A typing session that began before the pause must not land a keystroke
-  // afterwards, which is the one write that used to bypass the state check.
   it('ignores an input step update', async () => {
     const { handleUpdateInputStep } = await import('../step-pipeline');
     state = CaptureState.PAUSED;
@@ -70,9 +68,6 @@ describe('step writes while PAUSED', () => {
     expect(updateStepDescription).not.toHaveBeenCalled();
   });
 
-  // A finalize is the opposite case: it only completes a step the user finished
-  // *before* pausing, so dropping it would leave that step holding the
-  // screenshot taken while the field was still empty.
   it('still finalizes an input step, so the typed text is not lost', async () => {
     captureVisibleTab.mockRejectedValue(new Error('no tab in this harness'));
     const { handleFinalizeInputStep } = await import('../step-pipeline');

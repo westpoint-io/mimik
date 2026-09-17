@@ -119,7 +119,6 @@ export default defineBackground(() => {
     getActor().subscribe(() => broadcastStateToPanel(getStateUpdate()));
   });
 
-  /** Resume, putting the microphone back if the pause took it away. */
   const resume = () => resumeFromPause(() => void startNarrationIfPossible());
 
   onMessage('getState', async () => {
@@ -176,10 +175,6 @@ export default defineBackground(() => {
   onMessage('enterBlurMode', async () => {
     await waitUntilReady();
     const activeTab = await getActiveTab();
-    // Blur is a request to mask this page. On a tab that cannot host the
-    // overlay — a PDF viewer, a chrome:// page, the dashboard itself — pausing
-    // anyway would leave a paused recording with no blur UI and no error, so
-    // refuse before touching the machine.
     if (!activeTab?.id || !isInjectableTab(activeTab)) return { entered: false };
     if (!(await pauseCapture('blur'))) return { entered: false };
 

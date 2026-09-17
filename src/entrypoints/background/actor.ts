@@ -53,8 +53,6 @@ export function getStateUpdate(): PanelStateUpdate {
     state: snap.value as CaptureStateValue,
     stepCount: snap.context.stepCount,
     currentGuideId: snap.context.currentGuideId,
-    // A snapshot persisted before PAUSED existed has no pauseReason key, so
-    // normalise it rather than letting `undefined` reach the panel.
     pauseReason: snap.context.pauseReason ?? null,
   };
 }

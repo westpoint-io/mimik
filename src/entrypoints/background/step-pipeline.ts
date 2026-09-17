@@ -57,17 +57,10 @@ async function takeScreenshot(stepId: string, meta: ElementMeta): Promise<string
   }
 }
 
-/** A keystroke arriving after the user paused must not be written. */
 function isRecording(): boolean {
   return getActor().getSnapshot().value === CaptureState.RECORDING;
 }
 
-/**
- * A finalize only completes a step the user finished *before* pausing, so it is
- * allowed to land while paused — dropping it would leave that step holding the
- * screenshot taken when the field was still empty. The pause handlers await the
- * flush before opening the blur overlay, so this screenshot cannot catch it.
- */
 function isRecordingOrPaused(): boolean {
   return getActor().getSnapshot().value !== CaptureState.IDLE;
 }

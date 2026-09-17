@@ -33,8 +33,6 @@ function createTabMessageHandler(session: CaptureSession, guideMe: GuideMeContro
         return true;
 
       case TabMessage.STOP_CAPTURE:
-        // Answered only once the queue has drained, so a pause that follows can
-        // rely on the final input screenshot already being written.
         session.stop().then(() => sendResponse({ stopped: true }));
         return true;
 
@@ -88,11 +86,6 @@ export default defineContentScript({
     document.dispatchEvent(new CustomEvent(CLEANUP_EVENT));
 
     const blurManager = new BlurManager();
-    // A recording paused for blur keeps the overlay alive across navigation:
-    // without this, the page that loads next has no Done button, so the user
-    // would be stuck paused with no way back from the page itself. The state is
-    // re-read rather than trusted, because the boot round trip is long enough
-    // for a Resume to land in the middle of it.
     const session = new CaptureSession(async (state) => {
       if (!shouldReopenBlur(state, window.self === window.top)) return;
       const current = await sendMessage('getState', undefined).catch(() => null);

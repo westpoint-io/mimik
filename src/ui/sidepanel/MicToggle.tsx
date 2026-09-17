@@ -11,8 +11,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/components/ui/tool
 interface MicToggleProps {
   enabled: boolean;
   live: boolean;
-  /** Narration cannot start while capture is paused, so the control locks
-   *  rather than accepting a toggle the background will refuse. */
   paused?: boolean;
   onChange: (enabled: boolean) => void;
 }

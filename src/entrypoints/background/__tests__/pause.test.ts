@@ -6,7 +6,6 @@ let actor: ReturnType<typeof createActor<typeof captureMachine>>;
 let voicePhase = 'idle';
 let activeTab: { id?: number; url?: string } | undefined;
 
-/** Ordering matters more than call counts here, so record a sequence. */
 const { calls, record } = vi.hoisted(() => {
   const seq: string[] = [];
   return {
@@ -72,8 +71,6 @@ describe('pauseCapture', () => {
     expect(calls).toEqual([]);
   });
 
-  // Speech during a pause would otherwise be transcribed and attributed to the
-  // step captured after the resume.
   it('stops narration when it was live', async () => {
     voicePhase = 'recording';
 
@@ -88,8 +85,6 @@ describe('pauseCapture', () => {
     expect(calls).not.toContain('stopNarration');
   });
 
-  // The flush is what lets a typing session's final screenshot land, so it must
-  // finish before the caller opens the blur overlay over the page.
   it('flushes before returning', async () => {
     await pauseCapture('blur');
 
@@ -122,8 +117,6 @@ describe('resumeCapture', () => {
     expect(actor.getSnapshot().context.currentGuideId).toBe(guideId);
   });
 
-  // A tab opened during the pause was skipped by the navigation listeners, so
-  // it has no content script to answer START_CAPTURE.
   it('injects the active tab before restarting capture', async () => {
     await pauseCapture('manual');
     calls.length = 0;
@@ -179,8 +172,6 @@ describe('resumeCapture', () => {
 });
 
 describe('resumeFromPause', () => {
-  // Clearing here instead of dismissing would wipe the masks the user just
-  // picked, leaving every screenshot after the resume unredacted.
   it('dismisses the overlay and never clears the masks', async () => {
     await pauseCapture('blur');
     calls.length = 0;

@@ -21,12 +21,10 @@ vi.mock('@/lib/messaging', () => ({ sendMessage: vi.fn().mockResolvedValue(undef
 
 import { BlurManager } from '../manager';
 
-/** The panel mounts a host on <html>, so its presence is the visible overlay. */
 function overlayHosts(): number {
   return document.documentElement.querySelectorAll(':scope > [data-mimik-ignore]').length;
 }
 
-/** Drains the microtask queue regardless of how deep start()'s chain gets. */
 async function settle() {
   resolvePresets?.({ blurPresets: { email: true } });
   await new Promise((resolve) => setTimeout(resolve, 0));
@@ -49,9 +47,6 @@ describe('BlurManager start/stop races', () => {
     expect(overlayHosts()).toBe(1);
   });
 
-  // Discarding a recording right after entering blur mode used to leave the
-  // panel on the page forever: teardown ran before the panel existed, then the
-  // pending start() mounted it with active already false.
   it('does not mount the overlay when stop lands while the presets load', async () => {
     const manager = new BlurManager();
     manager.start();
@@ -82,9 +77,6 @@ describe('BlurManager start/stop races', () => {
     expect(overlayHosts()).toBe(1);
   });
 
-  // The whole point of having both: Done keeps the masks so later screenshots
-  // stay redacted, and only the end of a recording takes them away. Mutating
-  // dismiss() into stop() used to pass the entire suite.
   it('dismiss closes the overlay but leaves the masks and styles in place', async () => {
     document.body.innerHTML = '<p>ada@example.com</p>';
     const manager = new BlurManager();
@@ -113,8 +105,6 @@ describe('BlurManager start/stop races', () => {
     expect(document.getElementById('mimik-blur-style')).toBeNull();
   });
 
-  // The CLEAR_BLUR path: Done already tore the panel down, so a stop() gated on
-  // `active` would leave the page blurred until the user reloaded it.
   it('stop still clears the masks after a dismiss has already run', async () => {
     document.body.innerHTML = '<p>ada@example.com</p>';
     const manager = new BlurManager();

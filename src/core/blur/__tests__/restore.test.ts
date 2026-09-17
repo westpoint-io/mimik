@@ -16,8 +16,6 @@ describe('shouldReopenBlur', () => {
     expect(shouldReopenBlur(state(), true)).toBe(true);
   });
 
-  // The overlay is a top-frame singleton; without this every iframe on the
-  // page would mount its own panel.
   it('never re-opens in a subframe', () => {
     expect(shouldReopenBlur(state(), false)).toBe(false);
   });
@@ -36,7 +34,6 @@ describe('shouldReopenBlur', () => {
     );
   });
 
-  // A snapshot persisted before PAUSED existed restores with no reason at all.
   it('does not re-open when the reason is missing', () => {
     expect(shouldReopenBlur(state({ pauseReason: null }), true)).toBe(false);
   });

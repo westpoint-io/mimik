@@ -46,17 +46,10 @@ export async function broadcastStartCapture(guideId: string): Promise<void> {
   }
 }
 
-/**
- * Closes the blur overlay everywhere, leaving the masks in place. Broadcast
- * rather than aimed at the active tab, because a paused recording re-opens the
- * overlay on whatever page loads, so the overlay may live in a different tab
- * by the time capture resumes.
- */
 export async function broadcastDismissBlur(): Promise<void> {
   await broadcastBlur(TabMessage.DISMISS_BLUR);
 }
 
-/** Closes the overlay and removes the masks. For the end of a recording. */
 export async function broadcastClearBlur(): Promise<void> {
   await broadcastBlur(TabMessage.CLEAR_BLUR);
 }
@@ -74,14 +67,8 @@ async function broadcastBlur(type: TabMessageType): Promise<void> {
   }
 }
 
-/** A frame that never answers must not hold a pause open. */
 const FLUSH_TIMEOUT_MS = 1500;
 
-/**
- * Stops capture everywhere and waits for the content scripts to answer, which
- * they only do once their queue has drained. Pausing mid-typing would otherwise
- * drop the finalize that writes the step's real screenshot.
- */
 export async function broadcastStopCaptureAndFlush(): Promise<void> {
   try {
     const tabs = await queryTabs({});

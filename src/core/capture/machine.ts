@@ -8,7 +8,6 @@ export const CaptureState = {
 
 export type CaptureStateValue = (typeof CaptureState)[keyof typeof CaptureState];
 
-/** Why capture is paused: the blur overlay is open, or the user pressed pause. */
 export type PauseReason = 'blur' | 'manual';
 
 type CaptureEvent =
@@ -85,9 +84,6 @@ export const captureMachine = createMachine({
         },
       },
     },
-    // No USER_ACTION here on purpose: while paused, nothing can advance the
-    // step count, so the "capture paused" label cannot be contradicted by a
-    // frame that missed the stop broadcast.
     [CaptureState.PAUSED]: {
       on: {
         RESUME_CAPTURE: {

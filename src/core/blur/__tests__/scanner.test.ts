@@ -54,9 +54,6 @@ describe('text node filtering', () => {
   });
 });
 
-// These lock in the limits documented under "What Smart Blur does not cover"
-// in the README. A change here is a change to a documented privacy boundary,
-// so the README has to move with it.
 describe('documented coverage limits', () => {
   it('does not reach into a shadow root', () => {
     document.body.innerHTML = '<div id="host"></div><p>carol@example.com</p>';

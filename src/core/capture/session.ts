@@ -8,11 +8,6 @@ export class CaptureSession {
   private activeGuideId: string | null = null;
   private disabled = false;
 
-  /**
-   * @param onSynced Called once with whatever the background reports when this
-   *   frame boots, so a caller can react to states this session ignores —
-   *   notably PAUSED, which must re-open the blur overlay rather than capture.
-   */
   constructor(private readonly onSynced?: (state: GetStateResponse) => void) {
     this.syncWithBackground();
   }
@@ -41,8 +36,6 @@ export class CaptureSession {
     this.capture = startCapture(guideId, isTopFrame);
   }
 
-  /** Resolves once in-flight capture work has drained. Callers that pause a
-   *  recording await this so a typing session's final screenshot still lands. */
   stop(): Promise<void> {
     if (!this.isActive) return Promise.resolve();
 

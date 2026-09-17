@@ -47,8 +47,6 @@ describe('CaptureSession boot sync', () => {
     expect(session.isActive).toBe(true);
   });
 
-  // The bug in issue 58: a frame that loads during blur mode used to hear
-  // RECORDING and start capturing behind a "capture paused" label.
   it('does not start capturing when the background is PAUSED', async () => {
     const session = await bootFrame(pausedForBlur);
 

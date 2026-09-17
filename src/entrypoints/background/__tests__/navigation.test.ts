@@ -52,9 +52,6 @@ describe('URL tracking', () => {
     expect(url()).toBe('https://app.test/b');
   });
 
-  // A paused recording is still a recording. Without this the first step after
-  // the resume is stamped with the page the user was on before pausing, which
-  // Guide Me then replays to.
   it('follows a navigation while paused', async () => {
     actor.send({ type: 'PAUSE_CAPTURE', reason: 'blur' });
 
@@ -86,8 +83,6 @@ describe('URL tracking', () => {
 });
 
 describe('content script injection', () => {
-  // A tab activated or loaded mid-pause would otherwise have no content script
-  // to answer the resume broadcast, so its clicks are never captured.
   it('injects into a tab activated while paused', async () => {
     actor.send({ type: 'PAUSE_CAPTURE', reason: 'manual' });
     sendMessageToTab.mockRejectedValue(new Error('no receiving end'));

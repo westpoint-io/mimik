@@ -32,8 +32,6 @@ beforeEach(() => {
 });
 
 describe('blur broadcasts', () => {
-  // Swapping these two silently destroys the masks the user just picked, so the
-  // message each one sends is worth pinning by name.
   it('dismiss asks every tab to close the overlay and keep the masks', async () => {
     await broadcastDismissBlur();
     expect(typesSent()).toEqual(['DISMISS_BLUR', 'DISMISS_BLUR']);
@@ -64,8 +62,6 @@ describe('broadcastStopCaptureAndFlush', () => {
     expect(typesSent()).toEqual(['STOP_CAPTURE', 'STOP_CAPTURE']);
   });
 
-  // A tab with no content script rejects, and a frozen one never answers at
-  // all — neither may hold the pause open.
   it('resolves even when a tab never answers', async () => {
     sendMessageToTab.mockImplementation(() => new Promise(() => {}));
     await expect(broadcastStopCaptureAndFlush()).resolves.toBeUndefined();

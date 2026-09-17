@@ -50,8 +50,6 @@ let lastClickTarget: Element | null = null;
 let lastClickTime = 0;
 
 export interface CaptureHandle {
-  /** Resolves once queued work has drained, so a caller can wait for the
-   *  final input screenshot to land before pausing. */
   stop: () => Promise<void>;
 }
 
