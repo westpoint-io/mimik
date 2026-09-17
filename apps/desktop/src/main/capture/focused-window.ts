@@ -1,3 +1,5 @@
+import { screen } from 'electron';
+
 export interface FocusedWindow {
   title: string | null;
   app: { name: string; id?: string };
@@ -13,6 +15,16 @@ function classify(message: string): Exclude<FocusedWindowResult, { ok: true }>['
   if (/permission|not authorized|denied/i.test(message)) return 'permission';
   if (process.platform === 'linux' && process.env.XDG_SESSION_TYPE === 'wayland') return 'unsupported-session';
   return 'unknown';
+}
+
+function toDip(bounds: FocusedWindow['bounds']): FocusedWindow['bounds'] {
+  if (!bounds || bounds.width <= 0 || bounds.height <= 0) return null;
+  if (process.platform !== 'win32' || typeof screen.screenToDipRect !== 'function') return bounds;
+  try {
+    return screen.screenToDipRect(null, bounds);
+  } catch {
+    return bounds;
+  }
 }
 
 export async function focusedWindow(): Promise<FocusedWindowResult> {
@@ -33,7 +45,7 @@ export async function focusedWindow(): Promise<FocusedWindowResult> {
       window: {
         title: found.title || null,
         app: { name: found.owner.name, id: 'bundleId' in found.owner ? found.owner.bundleId : found.owner.path },
-        bounds: found.bounds ?? null,
+        bounds: toDip(found.bounds ?? null),
       },
     };
   } catch (error) {

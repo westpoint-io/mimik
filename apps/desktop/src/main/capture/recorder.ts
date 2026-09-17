@@ -7,7 +7,7 @@ import { type InputAction, InputHook } from './input-hook';
 import type { Region } from './region';
 import { type Capture, captureArea, type Rect } from './screenshot';
 import { writeScreenshot } from './screenshot-store';
-import { type CaptureSettings, DEFAULT_CAPTURE_SETTINGS } from './settings';
+import { type CaptureMode, type CaptureSettings, DEFAULT_CAPTURE_SETTINGS } from './settings';
 
 const TARGET_SIZE = 28;
 const SETTLE_MS = 60;
@@ -42,7 +42,20 @@ function inside(region: Region, point: { x: number; y: number }): boolean {
 }
 
 export function shouldCapture(settings: CaptureSettings, region: Region, point: { x: number; y: number }): boolean {
+  if (settings.captureMode !== 'region') return true;
   return inside(region, point) || settings.captureOutsideClicks;
+}
+
+export function frameFor(
+  mode: CaptureMode,
+  point: { x: number; y: number },
+  region: Region,
+  window: Rect | null,
+): Rect {
+  const display = screen.getDisplayNearestPoint(point).bounds;
+  if (mode === 'screen') return display;
+  if (mode === 'window') return window && inside(window, point) ? window : display;
+  return inside(region, point) ? region : display;
 }
 
 export class DesktopRecorder {
@@ -57,6 +70,7 @@ export class DesktopRecorder {
     private readonly send: (request: CaptureRequest) => Promise<unknown>,
     private readonly grab: (area: Rect) => Promise<Capture> = captureArea,
     private readonly settings: () => CaptureSettings = () => DEFAULT_CAPTURE_SETTINGS,
+    private readonly ignores: (point: { x: number; y: number }) => boolean = () => false,
   ) {}
 
   async start(): Promise<RecorderStart> {
@@ -89,6 +103,7 @@ export class DesktopRecorder {
   private onAction(action: InputAction): void {
     if (action.kind !== 'click' || !this.isRecording) return;
     const point = { x: action.x, y: action.y };
+    if (this.ignores(point)) return;
     if (!shouldCapture(this.settings(), this.region(), point)) return;
     this.enqueue(point);
   }
@@ -103,8 +118,8 @@ export class DesktopRecorder {
 
   async capture(point: { x: number; y: number }): Promise<void> {
     const settings = this.settings();
-    const region = this.region();
-    const framed = inside(region, point) ? region : screen.getDisplayNearestPoint(point).bounds;
+    const found = await focusedWindow();
+    const framed = frameFor(settings.captureMode, point, this.region(), found.ok ? found.window.bounds : null);
 
     const shot = await this.withHidden(async () => {
       await delay(SETTLE_MS + settings.screenshotDelayMs);
@@ -114,7 +129,6 @@ export class DesktopRecorder {
 
     const screenshotId = randomUUID();
     const local = { x: point.x - framed.x, y: point.y - framed.y };
-    const found = await focusedWindow();
 
     await this.send({
       action: 'click',
