@@ -225,4 +225,34 @@ describe('renderScreenshot annotations', () => {
 
     expect(drawAnnotation).not.toHaveBeenCalled();
   });
+
+  describe("annotations: 'redactions'", () => {
+    it('draws the redactions and leaves every other annotation out', async () => {
+      const s = makeScreenshot({
+        bounds: { x: 10, y: 10, width: 20, height: 20 },
+        edits: { annotations },
+      });
+      await renderScreenshot(s, { annotations: 'redactions', target: false });
+
+      const ids = drawAnnotation.mock.calls.map((c) => (c[1] as Annotation).id);
+      expect(ids).toEqual(['a2']);
+    });
+
+    it('still draws everything under the default', async () => {
+      await renderScreenshot(makeScreenshot({ edits: { annotations } }), { target: false });
+
+      const ids = drawAnnotation.mock.calls.map((c) => (c[1] as Annotation).id);
+      expect(ids).toEqual(['a1', 'a2']);
+    });
+
+    it('draws nothing when the screenshot has no redactions to bake', async () => {
+      const box = annotations[0];
+      await renderScreenshot(makeScreenshot({ edits: { annotations: [box] } }), {
+        annotations: 'redactions',
+        target: false,
+      });
+
+      expect(drawAnnotation).not.toHaveBeenCalled();
+    });
+  });
 });

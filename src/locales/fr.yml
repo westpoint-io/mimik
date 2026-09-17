@@ -44,6 +44,8 @@ library:
   moveToTrash: "Mettre à la corbeille"
   deletePermanently: "Supprimer définitivement"
   openInFullView: "Ouvrir en plein écran"
+  openDashboard: "Ouvrir le tableau de bord"
+  openDashboardHint: "Parcourez, importez et exportez vos guides là-bas"
 
 guideme:
   live: En direct
@@ -399,6 +401,17 @@ exportPreview:
   modeVideo: "Vidéo"
   encodingVideo: "Encodage de l’aperçu vidéo"
   videoFailed: "Impossible de créer l’aperçu vidéo"
+  bundle: "Fichier Mimik"
+  bundleHint: "Un fichier .mimik qu’une autre personne peut importer et modifier"
+  bundleStripInputs: "Retirer le texte saisi"
+  bundleStripInputsHint: "Le retire du texte des étapes et des liens. Les captures montrent toujours ce qui était à l’écran."
+  bundleUrls: "Détail des liens"
+  url_origin: "Site"
+  url_path: "Page"
+  url_full: "Complet"
+  bundleRedactionNote: "Les zones floutées sont effacées des images avant qu’elles ne quittent votre navigateur."
+  bundleTypedWarning: "$1 capture montre encore le texte que vous avez saisi. Floutez-la avant de partager si besoin."
+  bundleTypedWarningPlural: "$1 captures montrent encore le texte que vous avez saisi. Floutez-les avant de partager si besoin."
 videoPlayer:
   stepCount: "$1 étapes"
   previousStep: "Étape précédente"
@@ -413,6 +426,7 @@ exportMenu:
   gif: GIF
   video: Vidéo
   cancelProgress: "Annuler · $1 %"
+  bundle: "Fichier Mimik"
 
 onboarding:
   welcomeBadge: Bienvenue
@@ -555,3 +569,22 @@ stepSource:
   basic: "Simple"
   edited: "Modifiée"
   hint: "D’où vient cette description"
+
+import:
+  title: "Importer un guide"
+  dialogDescription: "Vérifiez un fichier de guide avant de l’ajouter à votre bibliothèque"
+  button: "Importer"
+  dropHere: "Déposez un fichier .mimik pour l’importer"
+  reading: "Lecture du fichier"
+  confirm: "Ajouter à la bibliothèque"
+  cancel: "Annuler"
+  guideMeHint: "Ce guide a été enregistré sur $1. Guide Me ne le rejoue que sur ce site."
+  noteRedacted: "Les zones floutées ont été supprimées par l’auteur et ne peuvent pas être récupérées."
+  noteInputs: "Le texte saisi dans les champs n’a pas été inclus."
+  noteUrls: "Les liens ont été réduits à l’adresse de la page."
+  noteUrlsOrigin: "Les liens ont été réduits à l’adresse du site."
+  errorUnreadable: "Ce fichier n’a pas pu être ouvert. Il est peut-être endommagé ou incomplet."
+  errorNotABundle: "Ce n’est pas un fichier Mimik. Choisissez un fichier exporté depuis Mimik."
+  errorVersion: "Ce fichier a été créé avec une version plus récente de Mimik. Mettez Mimik à jour, puis réessayez."
+  errorEmpty: "Ce fichier ne contient aucune étape."
+  errorFailed: "Le guide n’a pas pu être enregistré dans votre bibliothèque. Réessayez de l’importer."

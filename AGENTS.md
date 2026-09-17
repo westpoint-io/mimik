@@ -43,6 +43,12 @@ src/
 │   │   └── step-description.ts   # Fallback rule-based descriptions
 │   ├── blur/                # Smart blur: regex presets, DOM scanner, element picker, panel UI
 │   ├── export/              # HTML, PDF, DOCX, Markdown, video generators + shared utils
+│   ├── transfer/            # .mimik bundle: export/import a guide between browsers
+│   │   ├── schema.ts            # BundleManifest + validation of untrusted files
+│   │   ├── flatten.ts           # flattenScreenshot (bakes redactions before a guide leaves)
+│   │   ├── scrub.ts             # scrubValues (removes typed values from prose)
+│   │   ├── bundle.ts            # exportGuideAsBundle (zip via fflate)
+│   │   └── parse.ts             # readBundle (unzip + validate)
 │   └── guides/              # Data layer: types, Dexie DB, CRUD service
 ├── entrypoints/             # Chrome extension entry points (WXT)
 │   ├── background/          # Service worker: state machine, message handlers, tab management
@@ -184,6 +190,7 @@ Extraction walks up from the target element to find:
 | PDF | `core/export/pdf-export.ts` | jsPDF, A4 portrait, auto page breaks |
 | Markdown | `core/export/markdown-export.ts` | Standard MD with base64 image data URLs |
 | DOCX | `core/export/docx-export.ts` | Lazy-imported, Word-compatible |
+| Mimik bundle | `core/transfer/bundle.ts` | `.mimik` zip: manifest + flattened screenshots + README.md. Re-importable; the others are one-way |
 | Video | `core/export/video-export.ts` | WebCodecs via mediabunny (lazy), mp4/H.264 with WebM/VP9 fallback |
 | GIF | `core/export/gif-export.ts` | gifenc (lazy), same frame timeline as the video; user picks Small/Medium/Large from `GIF_SPECS` |
 
@@ -255,3 +262,5 @@ Font: Poppins (loaded via `@fontsource/poppins`).
 - **Recording notification** uses `animationend` event (not hardcoded delays) for timing
 - **Font loading** uses `@fontsource/poppins` (CSP-safe, no CDN dependency)
 - **Cross-context sync** via BroadcastChannel — star/delete events update other views without full reload
+- **Bundle export flattens before it ships** — `redact` annotations are drawn at render time, so `screenshot.blob` still holds the unblurred capture. `flattenScreenshot` burns redactions into the pixels and drops the annotation, and bakes an *explicit* crop (rebasing annotations and resolving `bounds` into an explicit target). The automatic zoom-to-target crop stays as data. Anything that ships a screenshot outside the browser must go through the renderer
+- **Imports re-mint every id** — `importGuide` mints new guide/step/screenshot ids in one Dexie transaction. Reusing the ids in the file would let a shared guide overwrite one the recipient recorded. It also clears `aiPending`, which no background job will ever resolve for an imported step

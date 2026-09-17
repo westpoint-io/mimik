@@ -44,6 +44,8 @@ library:
   moveToTrash: Move to trash
   deletePermanently: Delete permanently
   openInFullView: Open in full view
+  openDashboard: "Open dashboard"
+  openDashboardHint: "Browse, import and export guides there"
 
 guideme:
   live: Live
@@ -399,6 +401,17 @@ exportPreview:
   modeVideo: "Video"
   encodingVideo: "Encoding video preview"
   videoFailed: "The video preview could not be created"
+  bundle: "Mimik file"
+  bundleHint: "A .mimik file someone else can import and edit"
+  bundleStripInputs: "Remove typed text"
+  bundleStripInputsHint: "Removes it from step text and links. Screenshots still show what was on screen."
+  bundleUrls: "Link detail"
+  url_origin: "Site"
+  url_path: "Page"
+  url_full: "Full"
+  bundleRedactionNote: "Blurred areas are erased from the images before they leave your browser."
+  bundleTypedWarning: "$1 screenshot still shows text you typed. Blur it before sharing if it matters."
+  bundleTypedWarningPlural: "$1 screenshots still show text you typed. Blur them before sharing if it matters."
 videoPlayer:
   stepCount: "$1 steps"
   previousStep: "Previous step"
@@ -413,6 +426,7 @@ exportMenu:
   gif: GIF
   video: Video
   cancelProgress: "Cancel · $1%"
+  bundle: "Mimik file"
 
 onboarding:
   welcomeBadge: Welcome
@@ -555,3 +569,22 @@ stepSource:
   basic: "Basic"
   edited: "Edited"
   hint: "Where this description came from"
+
+import:
+  title: "Import guide"
+  dialogDescription: "Review a guide file before adding it to your library"
+  button: "Import"
+  dropHere: "Drop a .mimik file to import"
+  reading: "Reading the file"
+  confirm: "Add to library"
+  cancel: "Cancel"
+  guideMeHint: "This guide was recorded on $1. Guide Me only replays on that site."
+  noteRedacted: "Blurred areas were removed by the author and cannot be restored."
+  noteInputs: "Text typed into fields was left out."
+  noteUrls: "Links were shortened to the page address."
+  noteUrlsOrigin: "Links were shortened to the site address."
+  errorUnreadable: "This file couldn't be opened. It may be damaged or incomplete."
+  errorNotABundle: "This isn't a Mimik file. Choose a file exported from Mimik."
+  errorVersion: "This file was made with a newer Mimik. Update Mimik, then try again."
+  errorEmpty: "This file has no steps in it."
+  errorFailed: "The guide couldn't be saved to your library. Try importing it again."

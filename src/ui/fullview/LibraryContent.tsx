@@ -1,4 +1,12 @@
-import { ArrowDownWideNarrow, ChevronDown, ChevronLeft, ChevronRight, LayoutGrid, LayoutList } from 'lucide-react';
+import {
+  ArrowDownWideNarrow,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  LayoutGrid,
+  LayoutList,
+  Upload,
+} from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { i18n } from '#imports';
 import {
@@ -14,11 +22,14 @@ import {
   toggleStar,
 } from '@/core/guides/service';
 import type { Guide, Screenshot } from '@/core/guides/types';
+import { BUNDLE_EXTENSION } from '@/core/transfer/schema';
 import { useFullview } from '@/stores/fullview';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/components/ui/tooltip';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
 import GuideGridView from './components/GuideGridView';
 import GuideListView from './components/GuideListView';
+import ImportGuideModal from './components/ImportGuideModal';
+import { navigate } from './router';
 
 interface LibraryContentProps {
   category: 'all' | 'starred' | 'trash';
@@ -165,7 +176,11 @@ export default function LibraryContent({ category }: LibraryContentProps) {
   const [sortOpen, setSortOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [dragging, setDragging] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const dragDepth = useRef(0);
 
   const allGuidesRef = useRef<Guide[]>([]);
 
@@ -283,11 +298,67 @@ export default function LibraryContent({ category }: LibraryContentProps) {
     await loadGuides();
   };
 
+  const bundleFrom = (list: FileList | null): File | null => {
+    const files = Array.from(list ?? []);
+    if (files.length === 0) return null;
+    return files.find((f) => f.name.toLowerCase().endsWith(`.${BUNDLE_EXTENSION}`)) ?? files[0];
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    if (!e.dataTransfer.types.includes('Files')) return;
+    dragDepth.current += 1;
+    setDragging(true);
+  };
+  const handleDragLeave = () => {
+    dragDepth.current = Math.max(0, dragDepth.current - 1);
+    if (dragDepth.current === 0) setDragging(false);
+  };
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    dragDepth.current = 0;
+    setDragging(false);
+    setImportFile(bundleFrom(e.dataTransfer.files));
+  };
+
   const showPagination = !loading && allGuidesRef.current.length > PAGE_SIZE;
 
   return (
-    <div>
+    <div
+      className="relative"
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={(e) => {
+        if (e.dataTransfer.types.includes('Files')) e.preventDefault();
+      }}
+      onDrop={handleDrop}
+    >
+      {dragging && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center rounded-xl border-2 border-dashed border-accent bg-secondary/90 pointer-events-none">
+          <div className="flex items-center gap-2 text-[13px] font-semibold text-accent">
+            <Upload size={16} />
+            {i18n.t('import.dropHere')}
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-end gap-2 mb-4">
+        <input
+          ref={fileRef}
+          type="file"
+          accept={`.${BUNDLE_EXTENSION}`}
+          className="hidden"
+          onChange={(e) => {
+            setImportFile(bundleFrom(e.target.files));
+            e.target.value = '';
+          }}
+        />
+        <button
+          onClick={() => fileRef.current?.click()}
+          className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground px-3 py-1.5 rounded-lg border border-border bg-card hover:border-violet hover:text-purple transition-colors"
+        >
+          <Upload size={13} />
+          {i18n.t('import.button')}
+        </button>
         <div ref={sortRef} className="relative">
           <button
             onClick={() => setSortOpen(!sortOpen)}
@@ -381,6 +452,14 @@ export default function LibraryContent({ category }: LibraryContentProps) {
         open={deleteTarget !== null}
         onClose={() => setDeleteTarget(null)}
         onConfirm={confirmPermanentDelete}
+      />
+      <ImportGuideModal
+        file={importFile}
+        onClose={() => setImportFile(null)}
+        onImported={(guideId) => {
+          setImportFile(null);
+          navigate({ page: 'guide', guideId });
+        }}
       />
     </div>
   );

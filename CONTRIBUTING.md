@@ -68,19 +68,21 @@ One rule Biome cannot check: do not write comments. Name things so the code expl
 ```
 src/
 ├── core/                    # Business logic (no UI dependencies)
-│   ├── capture/             # Recording pipeline (events, AI, DOM context)
+│   ├── capture/             # Recording pipeline (events, AI, voice, DOM context)
 │   ├── blur/                # Smart blur (regex presets, DOM scanner, panel)
-│   ├── export/              # HTML, PDF, Markdown generators
+│   ├── export/              # HTML, PDF, DOCX, Markdown, video, GIF generators
+│   ├── transfer/            # .mimik bundles (export/import a guide between browsers)
 │   ├── guideme/             # Guide replay (finder, overlay, session)
+│   ├── screenshot/          # Rendering, annotations, geometry
 │   └── guides/              # Data layer (types, Dexie DB, CRUD)
 ├── entrypoints/             # WXT extension entry points
 │   ├── background/          # Service worker: state machine + message handlers
-│   ├── content.ts           # Content script: event capture + rrweb
+│   ├── content.ts           # Content script: event capture + capture session
 │   ├── sidepanel/           # Side panel React mount
 │   ├── fullview/            # Full-page dashboard mount
 │   ├── onboarding/          # First-install wizard
 │   └── options/             # Settings page mount
-├── locales/                 # YAML translation files (en, es, pt-BR, fr)
+├── locales/                 # YAML translation files (en, de, es, fr, pt-BR, zh-CN)
 ├── lib/                     # Shared utilities (messaging, port, browser API)
 ├── stores/                  # Zustand state stores
 └── ui/                      # React components
@@ -99,7 +101,7 @@ src/
 | Storage | [Dexie.js](https://dexie.org) (IndexedDB) |
 | Messaging | [webext-core](https://webext-core.aklinker1.io) |
 | Session recording | [rrweb](https://www.rrweb.io) |
-| Export | [jsPDF](https://github.com/parallax/jsPDF) + HTML/Markdown |
+| Export | [jsPDF](https://github.com/parallax/jsPDF), [docx](https://github.com/dolanmiu/docx), [mediabunny](https://github.com/Vanilagy/mediabunny), [gifenc](https://github.com/mattdesl/gifenc), [fflate](https://github.com/101arrowz/fflate) + HTML/Markdown |
 | AI (optional) | [Vercel AI SDK](https://sdk.vercel.ai) (OpenAI, Anthropic) |
 | i18n | [@wxt-dev/i18n](https://wxt.dev) + YAML locales |
 | Testing | [Vitest](https://vitest.dev) + Testing Library |

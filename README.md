@@ -38,6 +38,7 @@ Click record, do the thing, get a polished guide with annotated screenshots. Nar
   - [🎙️ Voice narration (optional)](#️-voice-narration-optional)
   - [✏️ Guide editor](#️-guide-editor)
   - [📤 Multi-format export](#-multi-format-export)
+  - [📦 Share a guide](#-share-a-guide)
 - [🔐 Privacy & storage](#-privacy--storage)
 - [🤝 Contributing](#-contributing)
 - [⭐ Star History](#-star-history)
@@ -160,14 +161,47 @@ through version history.
 Share guides in whatever format fits your workflow:
 
 - **Video**: narrated walkthrough, mp4/H.264, with the cursor moving to each target
+- **GIF**: short looping clip for a chat thread or an issue comment
 - **PDF**: print-ready, A4 portrait with auto page breaks
 - **DOCX**: open and keep editing in Word
 - **HTML**: self-contained, share anywhere, base64-embedded images
 - **Markdown**: paste into Notion, GitHub, internal docs, wikis
+- **Mimik file**: the only format that imports back — see [Share a guide](#-share-a-guide) below
 
 All exports are generated client-side. Nothing touches a server.
 
 <img src="https://github.com/user-attachments/assets/e7584527-7d68-4f3f-9261-8380ee08dfb4" alt="Multi-format export" width="800" />
+
+<div align="right">
+
+[![Back to top][back-to-top]](#readme-top)
+
+</div>
+
+### 📦 Share a guide
+
+Export a guide as a **`.mimik` file** and someone else can import it into their own
+Mimik — same steps, same screenshots, still editable, and still replayable with Guide
+Me. It's a plain zip: a manifest, the screenshots, and a `README.md` so the file still
+reads as a document to anyone without the extension.
+
+It travels as a file, so sharing works the same way anything else does — email it, drop
+it in Slack, commit it to a repo. There's no account and no server involved.
+
+Because a guide can hold more than you meant to send, an export decides what leaves:
+
+- **Blurred areas are burnt into the pixels** before the file is written, so the
+  recipient has nothing to un-blur.
+- **Text you typed into fields is removed** from the step text, title and links, not
+  just from the stored value.
+- **Links are trimmed to the page address** by default, dropping the query strings that
+  carry session tokens.
+
+Screenshots still show whatever was on screen when they were taken — use the blur tool
+for anything sensitive that the camera caught.
+
+To import, open the dashboard and click **Import**, or drop a `.mimik` file onto your
+library. You'll see what the sender removed before anything is added.
 
 <div align="right">
 

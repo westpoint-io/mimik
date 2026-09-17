@@ -44,6 +44,8 @@ library:
   moveToTrash: Mover pra lixeira
   deletePermanently: Excluir de vez
   openInFullView: Abrir em tela cheia
+  openDashboard: "Abrir painel"
+  openDashboardHint: "Veja, importe e exporte guias por lá"
 
 guideme:
   live: Ao vivo
@@ -399,6 +401,17 @@ exportPreview:
   modeVideo: "Vídeo"
   encodingVideo: "Codificando a prévia do vídeo"
   videoFailed: "Não foi possível criar a prévia do vídeo"
+  bundle: "Arquivo Mimik"
+  bundleHint: "Um arquivo .mimik que outra pessoa pode importar e editar"
+  bundleStripInputs: "Remover texto digitado"
+  bundleStripInputsHint: "Remove do texto das etapas e dos links. As capturas continuam mostrando o que estava na tela."
+  bundleUrls: "Detalhe dos links"
+  url_origin: "Site"
+  url_path: "Página"
+  url_full: "Completo"
+  bundleRedactionNote: "As áreas borradas são apagadas das imagens antes de saírem do navegador."
+  bundleTypedWarning: "$1 captura ainda mostra o texto que você digitou. Borre antes de compartilhar, se for o caso."
+  bundleTypedWarningPlural: "$1 capturas ainda mostram o texto que você digitou. Borre antes de compartilhar, se for o caso."
 videoPlayer:
   stepCount: "$1 etapas"
   previousStep: "Etapa anterior"
@@ -413,6 +426,7 @@ exportMenu:
   gif: GIF
   video: Vídeo
   cancelProgress: "Cancelar · $1%"
+  bundle: "Arquivo Mimik"
 
 onboarding:
   welcomeBadge: Bem-vindo
@@ -555,3 +569,22 @@ stepSource:
   basic: "Básica"
   edited: "Editada"
   hint: "De onde veio esta descrição"
+
+import:
+  title: "Importar guia"
+  dialogDescription: "Revise um arquivo de guia antes de adicioná-lo à sua biblioteca"
+  button: "Importar"
+  dropHere: "Solte um arquivo .mimik para importar"
+  reading: "Lendo o arquivo"
+  confirm: "Adicionar à biblioteca"
+  cancel: "Cancelar"
+  guideMeHint: "Este guia foi gravado em $1. O Guide Me só o reproduz nesse site."
+  noteRedacted: "As áreas borradas foram removidas pelo autor e não podem ser recuperadas."
+  noteInputs: "O texto digitado nos campos foi deixado de fora."
+  noteUrls: "Os links foram encurtados para o endereço da página."
+  noteUrlsOrigin: "Os links foram encurtados para o endereço do site."
+  errorUnreadable: "Não foi possível abrir este arquivo. Ele pode estar danificado ou incompleto."
+  errorNotABundle: "Este não é um arquivo Mimik. Escolha um arquivo exportado do Mimik."
+  errorVersion: "Este arquivo foi criado em uma versão mais nova do Mimik. Atualize o Mimik e tente de novo."
+  errorEmpty: "Este arquivo não tem nenhuma etapa."
+  errorFailed: "Não foi possível salvar o guia na sua biblioteca. Tente importar novamente."

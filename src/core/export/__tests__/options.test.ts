@@ -30,7 +30,20 @@ describe('normaliseExportOptions', () => {
       stepDescriptions: DEFAULT_EXPORT_OPTIONS.stepDescriptions,
       resolution: DEFAULT_EXPORT_OPTIONS.resolution,
       gifQuality: DEFAULT_EXPORT_OPTIONS.gifQuality,
+      bundleStripInputs: DEFAULT_EXPORT_OPTIONS.bundleStripInputs,
+      bundleUrls: DEFAULT_EXPORT_OPTIONS.bundleUrls,
     });
+  });
+
+  it('rejects an unknown bundle url mode', () => {
+    expect(normaliseExportOptions({ bundleUrls: 'everything' }).bundleUrls).toBe(DEFAULT_EXPORT_OPTIONS.bundleUrls);
+    expect(normaliseExportOptions({ bundleUrls: 'origin' }).bundleUrls).toBe('origin');
+  });
+
+  it('keeps typed text stripped unless it is explicitly turned off', () => {
+    expect(normaliseExportOptions({}).bundleStripInputs).toBe(true);
+    expect(normaliseExportOptions({ bundleStripInputs: 'no' }).bundleStripInputs).toBe(true);
+    expect(normaliseExportOptions({ bundleStripInputs: false }).bundleStripInputs).toBe(false);
   });
 
   it('rejects an unknown gif quality so the encoder never gets bogus dimensions', () => {

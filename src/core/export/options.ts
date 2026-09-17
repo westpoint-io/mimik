@@ -1,4 +1,7 @@
+import type { BundleUrlMode } from '@/core/transfer/bundle';
 import { localStorage } from '@/lib/browser-api';
+
+export type { BundleUrlMode };
 
 export type ImageScale = 'small' | 'medium' | 'large';
 
@@ -28,6 +31,8 @@ export const GIF_SPECS: Record<GifQuality, GifSpec> = {
 
 export const GIF_QUALITIES: GifQuality[] = ['low', 'medium', 'high'];
 
+export const BUNDLE_URL_MODES: BundleUrlMode[] = ['origin', 'path', 'full'];
+
 export interface ExportOptions {
   cover: boolean;
   screenshots: boolean;
@@ -36,6 +41,8 @@ export interface ExportOptions {
   stepDescriptions: boolean;
   resolution: VideoResolution;
   gifQuality: GifQuality;
+  bundleStripInputs: boolean;
+  bundleUrls: BundleUrlMode;
 }
 
 export const DEFAULT_EXPORT_OPTIONS: ExportOptions = {
@@ -46,6 +53,8 @@ export const DEFAULT_EXPORT_OPTIONS: ExportOptions = {
   stepDescriptions: true,
   resolution: '720p',
   gifQuality: 'medium',
+  bundleStripInputs: true,
+  bundleUrls: 'path',
 };
 
 const bool = (value: unknown, fallback: boolean) => (typeof value === 'boolean' ? value : fallback);
@@ -64,6 +73,10 @@ export function normaliseExportOptions(value: unknown): ExportOptions {
       ? (raw.resolution as VideoResolution)
       : DEFAULT_EXPORT_OPTIONS.resolution,
     gifQuality: raw.gifQuality && raw.gifQuality in GIF_SPECS ? raw.gifQuality : DEFAULT_EXPORT_OPTIONS.gifQuality,
+    bundleStripInputs: bool(raw.bundleStripInputs, DEFAULT_EXPORT_OPTIONS.bundleStripInputs),
+    bundleUrls: BUNDLE_URL_MODES.includes(raw.bundleUrls as BundleUrlMode)
+      ? (raw.bundleUrls as BundleUrlMode)
+      : DEFAULT_EXPORT_OPTIONS.bundleUrls,
   };
 }
 

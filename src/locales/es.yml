@@ -44,6 +44,8 @@ library:
   moveToTrash: Mover a la papelera
   deletePermanently: Eliminar definitivamente
   openInFullView: Abrir en vista completa
+  openDashboard: "Abrir panel"
+  openDashboardHint: "Consulta, importa y exporta guías allí"
 
 guideme:
   live: En vivo
@@ -399,6 +401,17 @@ exportPreview:
   modeVideo: "Vídeo"
   encodingVideo: "Codificando la vista previa del vídeo"
   videoFailed: "No se pudo crear la vista previa del vídeo"
+  bundle: "Archivo Mimik"
+  bundleHint: "Un archivo .mimik que otra persona puede importar y editar"
+  bundleStripInputs: "Quitar el texto escrito"
+  bundleStripInputsHint: "Lo quita del texto de los pasos y de los enlaces. Las capturas siguen mostrando lo que había en pantalla."
+  bundleUrls: "Detalle de los enlaces"
+  url_origin: "Sitio"
+  url_path: "Página"
+  url_full: "Completo"
+  bundleRedactionNote: "Las áreas difuminadas se borran de las imágenes antes de salir del navegador."
+  bundleTypedWarning: "$1 captura todavía muestra el texto que escribiste. Difumínala antes de compartir si hace falta."
+  bundleTypedWarningPlural: "$1 capturas todavía muestran el texto que escribiste. Difumínalas antes de compartir si hace falta."
 videoPlayer:
   stepCount: "$1 pasos"
   previousStep: "Paso anterior"
@@ -413,6 +426,7 @@ exportMenu:
   gif: GIF
   video: Vídeo
   cancelProgress: "Cancelar · $1 %"
+  bundle: "Archivo Mimik"
 
 onboarding:
   welcomeBadge: Bienvenido
@@ -555,3 +569,22 @@ stepSource:
   basic: "Básica"
   edited: "Editada"
   hint: "De dónde viene esta descripción"
+
+import:
+  title: "Importar guía"
+  dialogDescription: "Revisa un archivo de guía antes de añadirlo a tu biblioteca"
+  button: "Importar"
+  dropHere: "Suelta un archivo .mimik para importarlo"
+  reading: "Leyendo el archivo"
+  confirm: "Añadir a la biblioteca"
+  cancel: "Cancelar"
+  guideMeHint: "Esta guía se grabó en $1. Guide Me solo la reproduce en ese sitio."
+  noteRedacted: "El autor eliminó las áreas difuminadas y no se pueden recuperar."
+  noteInputs: "Se dejó fuera el texto escrito en los campos."
+  noteUrls: "Los enlaces se acortaron a la dirección de la página."
+  noteUrlsOrigin: "Los enlaces se acortaron a la dirección del sitio."
+  errorUnreadable: "No se pudo abrir este archivo. Puede estar dañado o incompleto."
+  errorNotABundle: "Este no es un archivo Mimik. Elige un archivo exportado desde Mimik."
+  errorVersion: "Este archivo se creó con una versión más reciente de Mimik. Actualiza Mimik e inténtalo de nuevo."
+  errorEmpty: "Este archivo no tiene ningún paso."
+  errorFailed: "No se pudo guardar la guía en tu biblioteca. Intenta importarla de nuevo."

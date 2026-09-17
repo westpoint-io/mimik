@@ -1,4 +1,4 @@
-import { Star, Trash2 } from 'lucide-react';
+import { LayoutDashboard, Star, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { i18n } from '#imports';
 import {
@@ -10,9 +10,22 @@ import {
   toggleStar,
 } from '@/core/guides/service';
 import type { Guide } from '@/core/guides/types';
+import { createTab, focusWindow, getExtensionURL, queryTabs, updateTab } from '@/lib/browser-api';
 import { formatRelativeTime } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/components/ui/tooltip';
 import FaviconImg from '@/ui/shared/FaviconImg';
+
+async function openDashboard() {
+  const url = getExtensionURL('/fullview.html');
+  const tabs = await queryTabs({ url });
+  const existing = tabs[0];
+  if (existing?.id) {
+    await updateTab(existing.id, { active: true });
+    if (existing.windowId) await focusWindow(existing.windowId);
+  } else {
+    await createTab({ url });
+  }
+}
 
 interface LibraryViewProps {
   onOpen: (guideId: string) => void;
@@ -128,6 +141,15 @@ export default function LibraryView({ onOpen, searchQuery = '' }: LibraryViewPro
         </svg>
         <p className="text-sm font-medium text-foreground mt-3">{i18n.t('library.noGuidesTitle')}</p>
         <p className="text-xs mt-1 text-purple">{i18n.t('library.noGuidesSub')}</p>
+        <button
+          type="button"
+          onClick={() => void openDashboard()}
+          className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-foreground px-3 py-1.5 rounded-lg border border-border bg-card hover:border-violet hover:text-purple transition-colors"
+        >
+          <LayoutDashboard size={13} />
+          {i18n.t('library.openDashboard')}
+        </button>
+        <p className="text-[11px] mt-2 text-muted-foreground">{i18n.t('library.openDashboardHint')}</p>
       </div>
     );
   }

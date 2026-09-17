@@ -1,9 +1,10 @@
-import { FileCode, FileDown, FileImage, FileText, Loader2, Video } from 'lucide-react';
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { FileCode, FileDown, FileImage, FileText, Loader2, Package, TriangleAlert, Video } from 'lucide-react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { i18n } from '#imports';
 import { downloadBlob, downloadText, safeFilename } from '@/core/export/download';
 import { exportGuideAsHTML } from '@/core/export/html-export';
 import {
+  BUNDLE_URL_MODES,
   DEFAULT_EXPORT_OPTIONS,
   type ExportOptions,
   GIF_QUALITIES,
@@ -17,6 +18,7 @@ import { paginatePreview, withPreviewStyles } from '@/core/export/preview';
 import type { VideoChapter } from '@/core/export/video-export';
 import { canExportVideo, STEP_SECONDS } from '@/core/export/video-support';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
+import { BUNDLE_EXTENSION } from '@/core/transfer/schema';
 import { Button } from '@/ui/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/ui/components/ui/dialog';
 
@@ -33,7 +35,7 @@ interface ExportPreviewModalProps {
   screenshots: Map<string, Screenshot>;
 }
 
-type ExportFormat = 'docx' | 'gif' | 'html' | 'markdown' | 'pdf' | 'video';
+type ExportFormat = 'bundle' | 'docx' | 'gif' | 'html' | 'markdown' | 'pdf' | 'video';
 type PreviewMode = 'document' | 'video';
 
 export default function ExportPreviewModal({ open, onOpenChange, guide, steps, screenshots }: ExportPreviewModalProps) {
@@ -66,7 +68,13 @@ export default function ExportPreviewModal({ open, onOpenChange, guide, steps, s
   }, []);
 
   const videoPending = steps.length > VIDEO_AUTOPLAY_STEP_LIMIT && !videoRequested;
-  const { cover, stepDescriptions, resolution } = options;
+  const typedStepCount = steps.filter((step) => step.inputValue && screenshots.has(step.id)).length;
+  const { cover, stepDescriptions, resolution, screenshots: withScreenshots, stepUrls, imageScale } = options;
+
+  const previewOptions = useMemo<ExportOptions>(
+    () => ({ ...DEFAULT_EXPORT_OPTIONS, cover, screenshots: withScreenshots, stepUrls, imageScale, stepDescriptions }),
+    [cover, withScreenshots, stepUrls, imageScale, stepDescriptions],
+  );
 
   useEffect(() => {
     if (!open) setVideoRequested(false);
@@ -77,7 +85,7 @@ export default function ExportPreviewModal({ open, onOpenChange, guide, steps, s
     let cancelled = false;
     setRendering(true);
     const timer = setTimeout(async () => {
-      const html = await exportGuideAsHTML(guide, steps, screenshots, options);
+      const html = await exportGuideAsHTML(guide, steps, screenshots, previewOptions);
       if (cancelled) return;
       setPreview(withPreviewStyles(html));
       setRendering(false);
@@ -86,7 +94,7 @@ export default function ExportPreviewModal({ open, onOpenChange, guide, steps, s
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [open, mode, guide, steps, screenshots, options]);
+  }, [open, mode, guide, steps, screenshots, previewOptions]);
 
   useEffect(() => {
     if (!open || mode !== 'video' || videoPending) return;
@@ -163,6 +171,13 @@ export default function ExportPreviewModal({ open, onOpenChange, guide, steps, s
           onProgress: (encoded, frames) => setDownloadProgress(frames > 0 ? encoded / frames : 0),
         });
         downloadBlob(blob, safeFilename(guide.title, extension));
+      } else if (format === 'bundle') {
+        const { exportGuideAsBundle } = await import('@/core/transfer/bundle');
+        const blob = await exportGuideAsBundle(guide, steps, screenshots, {
+          stripInputValues: options.bundleStripInputs,
+          urls: options.bundleUrls,
+        });
+        downloadBlob(blob, safeFilename(guide.title, BUNDLE_EXTENSION));
       } else {
         const { exportGuideAsMarkdown } = await import('@/core/export/markdown-export');
         const md = await exportGuideAsMarkdown(guide, steps, screenshots);
@@ -199,6 +214,7 @@ export default function ExportPreviewModal({ open, onOpenChange, guide, steps, s
     { key: 'markdown', icon: FileText, label: i18n.t('exportMenu.markdown') },
     { key: 'gif', icon: FileImage, label: i18n.t('exportMenu.gif') },
     ...(videoSupported ? [{ key: 'video' as const, icon: Video, label: i18n.t('exportMenu.video') }] : []),
+    { key: 'bundle', icon: Package, label: i18n.t('exportMenu.bundle') },
   ];
 
   return (
@@ -299,6 +315,76 @@ export default function ExportPreviewModal({ open, onOpenChange, guide, steps, s
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div className="pt-3 border-t border-border">
+              <div className="text-[12px] font-semibold text-foreground">{i18n.t('exportPreview.bundle')}</div>
+              <div className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                {i18n.t('exportPreview.bundleHint')}
+              </div>
+
+              <div className="flex items-start justify-between gap-3 mt-3">
+                <div>
+                  <div className="text-[12px] font-semibold text-foreground">
+                    {i18n.t('exportPreview.bundleStripInputs')}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground leading-snug">
+                    {i18n.t('exportPreview.bundleStripInputsHint')}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  aria-label={i18n.t('exportPreview.bundleStripInputs')}
+                  aria-pressed={options.bundleStripInputs}
+                  onClick={() => update({ bundleStripInputs: !options.bundleStripInputs })}
+                  className={`w-9 h-5 rounded-full transition-colors relative shrink-0 mt-0.5 ${
+                    options.bundleStripInputs ? 'bg-accent' : 'bg-border'
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
+                      options.bundleStripInputs ? 'translate-x-4' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              <div className="mt-3">
+                <div className="text-[12px] font-semibold text-foreground mb-2">
+                  {i18n.t('exportPreview.bundleUrls')}
+                </div>
+                <div className="flex gap-1.5">
+                  {BUNDLE_URL_MODES.map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => update({ bundleUrls: value })}
+                      className={`flex-1 px-2 py-1.5 rounded-lg border text-[11px] transition-colors ${
+                        options.bundleUrls === value
+                          ? 'border-accent text-accent'
+                          : 'border-border text-muted-foreground hover:border-accent hover:text-foreground'
+                      }`}
+                    >
+                      {i18n.t(`exportPreview.url_${value}`)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-[10px] text-muted-foreground leading-snug mt-3">
+                {i18n.t('exportPreview.bundleRedactionNote')}
+              </p>
+
+              {typedStepCount > 0 && (
+                <p className="flex items-start gap-1.5 text-[10px] leading-snug mt-2 text-foreground">
+                  <TriangleAlert size={12} className="shrink-0 mt-px text-accent" />
+                  <span>
+                    {typedStepCount === 1
+                      ? i18n.t('exportPreview.bundleTypedWarning', [String(typedStepCount)])
+                      : i18n.t('exportPreview.bundleTypedWarningPlural', [String(typedStepCount)])}
+                  </span>
+                </p>
+              )}
             </div>
 
             <div className="pt-3 border-t border-border space-y-1.5">

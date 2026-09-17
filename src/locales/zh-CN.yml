@@ -44,6 +44,8 @@ library:
   moveToTrash: 移至回收站
   deletePermanently: 永久删除
   openInFullView: 在完整视图中打开
+  openDashboard: "打开面板"
+  openDashboardHint: "在那里浏览、导入和导出指南"
 
 guideme:
   live: 实时
@@ -399,6 +401,17 @@ exportPreview:
   modeVideo: "视频"
   encodingVideo: "正在编码视频预览"
   videoFailed: "无法创建视频预览"
+  bundle: "Mimik 文件"
+  bundleHint: "一个 .mimik 文件，别人可以导入并编辑"
+  bundleStripInputs: "移除输入的文字"
+  bundleStripInputsHint: "从步骤文字和链接中移除。截图仍会显示当时屏幕上的内容。"
+  bundleUrls: "链接详细程度"
+  url_origin: "站点"
+  url_path: "页面"
+  url_full: "完整"
+  bundleRedactionNote: "模糊区域会在图片离开浏览器前被抹除。"
+  bundleTypedWarning: "仍有 $1 张截图显示你输入的文字。如有需要，请在分享前打码。"
+  bundleTypedWarningPlural: "仍有 $1 张截图显示你输入的文字。如有需要，请在分享前打码。"
 videoPlayer:
   stepCount: "$1 个步骤"
   previousStep: "上一步"
@@ -413,6 +426,7 @@ exportMenu:
   gif: GIF
   video: 视频
   cancelProgress: "取消 · $1%"
+  bundle: "Mimik 文件"
 
 onboarding:
   welcomeBadge: 欢迎
@@ -555,3 +569,22 @@ stepSource:
   basic: "基础"
   edited: "已编辑"
   hint: "这条描述的来源"
+
+import:
+  title: "导入指南"
+  dialogDescription: "在把指南文件加入库之前先查看它"
+  button: "导入"
+  dropHere: "拖入 .mimik 文件即可导入"
+  reading: "正在读取文件"
+  confirm: "添加到库"
+  cancel: "取消"
+  guideMeHint: "本指南录制于 $1。Guide Me 只能在该网站上回放。"
+  noteRedacted: "模糊区域已被作者移除，无法恢复。"
+  noteInputs: "输入框里打过的文字未包含在内。"
+  noteUrls: "链接已缩短为页面地址。"
+  noteUrlsOrigin: "链接已缩短为站点地址。"
+  errorUnreadable: "无法打开这个文件，它可能已损坏或不完整。"
+  errorNotABundle: "这不是 Mimik 文件。请选择从 Mimik 导出的文件。"
+  errorVersion: "这个文件来自更新版本的 Mimik。请更新 Mimik 后重试。"
+  errorEmpty: "这个文件里没有任何步骤。"
+  errorFailed: "无法把这个指南保存到你的库。请重新导入试试。"

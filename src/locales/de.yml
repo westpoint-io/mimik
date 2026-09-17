@@ -44,6 +44,8 @@ library:
   moveToTrash: In den Papierkorb verschieben
   deletePermanently: Endgültig löschen
   openInFullView: In der Vollansicht öffnen
+  openDashboard: "Dashboard öffnen"
+  openDashboardHint: "Dort kannst du Anleitungen ansehen, importieren und exportieren"
 
 guideme:
   manualStep: "Dieser Schritt wurde bearbeitet und kann nicht automatisch erkannt werden. Nutze Weiter, wenn du fertig bist."
@@ -330,6 +332,17 @@ exportPreview:
   modeVideo: "Video"
   encodingVideo: "Videovorschau wird erstellt"
   videoFailed: "Die Videovorschau konnte nicht erstellt werden"
+  bundle: "Mimik-Datei"
+  bundleHint: "Eine .mimik-Datei, die andere importieren und bearbeiten können"
+  bundleStripInputs: "Eingegebenen Text entfernen"
+  bundleStripInputsHint: "Entfernt ihn aus Schritttexten und Links. Screenshots zeigen weiterhin, was auf dem Bildschirm stand."
+  bundleUrls: "Link-Detail"
+  url_origin: "Website"
+  url_path: "Seite"
+  url_full: "Vollständig"
+  bundleRedactionNote: "Unkenntlich gemachte Bereiche werden aus den Bildern gelöscht, bevor sie den Browser verlassen."
+  bundleTypedWarning: "$1 Screenshot zeigt weiterhin eingegebenen Text. Mach ihn unkenntlich, bevor du teilst."
+  bundleTypedWarningPlural: "$1 Screenshots zeigen weiterhin eingegebenen Text. Mach sie unkenntlich, bevor du teilst."
 videoPlayer:
   stepCount: "$1 Schritte"
   previousStep: "Vorheriger Schritt"
@@ -344,6 +357,7 @@ exportMenu:
   gif: GIF
   video: Video
   cancelProgress: "Abbrechen · $1 %"
+  bundle: "Mimik-Datei"
 
 onboarding:
   welcomeBadge: Willkommen
@@ -556,3 +570,22 @@ stepSource:
   basic: "Einfach"
   edited: "Bearbeitet"
   hint: "Woher diese Beschreibung kommt"
+
+import:
+  title: "Anleitung importieren"
+  dialogDescription: "Prüfe eine Anleitungsdatei, bevor du sie zur Bibliothek hinzufügst"
+  button: "Importieren"
+  dropHere: "Eine .mimik-Datei hier ablegen"
+  reading: "Datei wird gelesen"
+  confirm: "Zur Bibliothek hinzufügen"
+  cancel: "Abbrechen"
+  guideMeHint: "Diese Anleitung wurde auf $1 aufgezeichnet. Guide Me spielt sie nur auf dieser Website ab."
+  noteRedacted: "Unkenntlich gemachte Bereiche wurden entfernt und lassen sich nicht wiederherstellen."
+  noteInputs: "In Felder eingegebener Text wurde weggelassen."
+  noteUrls: "Links wurden auf die Seitenadresse gekürzt."
+  noteUrlsOrigin: "Links wurden auf die Website-Adresse gekürzt."
+  errorUnreadable: "Diese Datei konnte nicht geöffnet werden. Sie ist möglicherweise beschädigt oder unvollständig."
+  errorNotABundle: "Das ist keine Mimik-Datei. Wähle eine aus Mimik exportierte Datei."
+  errorVersion: "Diese Datei stammt aus einer neueren Mimik-Version. Aktualisiere Mimik und versuche es erneut."
+  errorEmpty: "Diese Datei enthält keine Schritte."
+  errorFailed: "Die Anleitung konnte nicht in deiner Bibliothek gespeichert werden. Versuche den Import erneut."

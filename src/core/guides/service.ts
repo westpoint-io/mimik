@@ -1,6 +1,7 @@
 import { i18n } from '#imports';
 import type { NarrationUpdate } from '@/core/capture/voice/narration-updates';
 import type { ScreenshotEdits } from '@/core/screenshot/types';
+import type { ParsedBundle } from '@/core/transfer/parse';
 import { db } from './db';
 import { hashPayload } from './snapshot-hash';
 import type { BlockType, CalloutVariant, DescriptionSource, Guide, Screenshot, Snapshot, Step } from './types';
@@ -126,6 +127,61 @@ export async function permanentlyDeleteGuide(id: string): Promise<void> {
   await db.steps.where('guideId').equals(id).delete();
   await db.guides.delete(id);
   notifyGuidesChanged({ type: 'mutated' });
+}
+
+export async function importGuide(bundle: ParsedBundle): Promise<string> {
+  const { manifest, images } = bundle;
+  const guideId = crypto.randomUUID();
+  const now = Date.now();
+
+  const stepIds = new Map<string, string>();
+  for (const step of manifest.steps) stepIds.set(step.id, crypto.randomUUID());
+
+  const screenshotsByStep = new Map(manifest.screenshots.map((shot) => [shot.stepId, shot]));
+
+  const steps: Step[] = [];
+  const screenshots: Screenshot[] = [];
+
+  manifest.steps.forEach((incoming, index) => {
+    const id = stepIds.get(incoming.id)!;
+    const shot = screenshotsByStep.get(incoming.id);
+    const blob = shot ? images.get(shot.file) : undefined;
+    const screenshotId = shot && blob ? crypto.randomUUID() : undefined;
+
+    if (shot && blob && screenshotId) {
+      const { file: _file, ...rest } = shot;
+      screenshots.push({ ...rest, id: screenshotId, stepId: id, blob });
+    }
+
+    steps.push({
+      ...incoming,
+      id,
+      guideId,
+      index,
+      aiPending: undefined,
+      ...(screenshotId ? { screenshotId } : {}),
+    });
+  });
+
+  const guide: Guide = {
+    id: guideId,
+    title: manifest.guide.title,
+    ...(manifest.guide.description ? { description: manifest.guide.description } : {}),
+    createdAt: now,
+    updatedAt: now,
+    stepIds: steps.map((s) => s.id),
+    starred: false,
+    deletedAt: null,
+  };
+
+  await db.transaction('rw', db.guides, db.steps, db.screenshots, async () => {
+    await db.guides.add(guide);
+    await db.steps.bulkAdd(steps);
+    if (screenshots.length > 0) await db.screenshots.bulkAdd(screenshots);
+  });
+
+  notifyGuidesChanged({ type: 'mutated' });
+  return guideId;
 }
 
 export async function reorderSteps(guideId: string, orderedStepIds: string[]): Promise<void> {
