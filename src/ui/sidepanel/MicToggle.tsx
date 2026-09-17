@@ -11,6 +11,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/components/ui/tool
 interface MicToggleProps {
   enabled: boolean;
   live: boolean;
+  /** Narration cannot start while capture is paused, so the control locks
+   *  rather than accepting a toggle the background will refuse. */
+  paused?: boolean;
   onChange: (enabled: boolean) => void;
 }
 
@@ -25,7 +28,7 @@ async function microphoneGranted(): Promise<boolean> {
   }
 }
 
-export default function MicToggle({ enabled, live, onChange }: MicToggleProps) {
+export default function MicToggle({ enabled, live, paused = false, onChange }: MicToggleProps) {
   const [keyed, setKeyed] = useState(false);
 
   useEffect(() => {
@@ -48,7 +51,7 @@ export default function MicToggle({ enabled, live, onChange }: MicToggleProps) {
     };
   }, []);
 
-  const locked = !keyed && !enabled;
+  const locked = (!keyed && !enabled) || paused;
 
   const toggle = useCallback(async () => {
     if (locked) return;
@@ -75,7 +78,11 @@ export default function MicToggle({ enabled, live, onChange }: MicToggleProps) {
   }, [enabled, live, locked, onChange]);
 
   const Icon = enabled ? Mic : MicOff;
-  const label = locked ? i18n.t('voice.needsApiKey') : i18n.t(enabled ? 'voice.turnOff' : 'voice.turnOn');
+  const label = paused
+    ? i18n.t('voice.pausedWithCapture')
+    : locked
+      ? i18n.t('voice.needsApiKey')
+      : i18n.t(enabled ? 'voice.turnOff' : 'voice.turnOn');
 
   return (
     <Tooltip>
