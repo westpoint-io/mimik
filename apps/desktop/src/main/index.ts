@@ -3,7 +3,7 @@ import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, protocol, shell
 import { ask } from './ask';
 import { DesktopRecorder } from './capture/recorder';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from './capture/screenshot-store';
-import { type CaptureSettings, loadSettings, saveSettings } from './capture/settings';
+import { type CaptureMode, type CaptureSettings, loadSettings, saveSettings } from './capture/settings';
 import { CaptureOverlay, type OverlayCommand } from './overlay';
 import { checkForUpdates } from './updater';
 
@@ -115,6 +115,11 @@ function broadcastOverlay(command: OverlayCommand, id: string | null): void {
 
 async function onOverlayCommand(command: OverlayCommand): Promise<void> {
   let finished: string | null = null;
+  if (command.startsWith('mode:')) {
+    captureSettings = saveSettings({ captureMode: command.slice(5) as CaptureMode });
+    overlay?.refresh();
+    return;
+  }
   if (command === 'start' && !guideId) {
     stepCount = 0;
     try {
@@ -174,26 +179,38 @@ if (!app.requestSingleInstanceLock()) {
     ipcMain.handle('mimik:version', () => app.getVersion());
     ipcMain.handle('mimik:screenshots:sweep', (_event, keep: string[]) => sweepScreenshots(keep));
 
-    overlay = new CaptureOverlay((command) => void onOverlayCommand(command));
     captureSettings = loadSettings();
+    overlay = new CaptureOverlay(
+      (command) => void onOverlayCommand(command),
+      () => (captureSettings ?? loadSettings()).captureMode,
+    );
     recorder = new DesktopRecorder(
       () => overlay?.region ?? { x: 0, y: 0, width: 0, height: 0 },
-      (fn) => (overlay ? overlay.withHidden(fn) : fn()),
+      (fn) => {
+        overlay?.setBusy(true);
+        return overlay ? overlay.withHidden(fn) : fn();
+      },
       async (request) => {
-        const reply = await ask<{ title?: string }>(mainWindow?.webContents ?? null, 'mimik:capture:step', {
-          ...request,
-          guideId,
-        }).catch(() => undefined);
-        if (reply?.title) overlay?.stepCaptured(++stepCount, reply.title);
-        return reply;
+        try {
+          const reply = await ask<{ title?: string }>(mainWindow?.webContents ?? null, 'mimik:capture:step', {
+            ...request,
+            guideId,
+          }).catch(() => undefined);
+          if (reply?.title) overlay?.stepCaptured(++stepCount, reply.title, request.image.src);
+          return reply;
+        } finally {
+          overlay?.setBusy(false);
+        }
       },
       undefined,
       () => captureSettings ?? loadSettings(),
+      (point) => overlay?.ignores(point) ?? false,
     );
 
     ipcMain.handle('mimik:capture:settings:get', () => captureSettings ?? loadSettings());
     ipcMain.handle('mimik:capture:settings:set', (_event, patch: Partial<CaptureSettings>) => {
       captureSettings = saveSettings(patch);
+      overlay?.refresh();
       return captureSettings;
     });
     ipcMain.handle('mimik:capture:region', () => overlay?.region);
