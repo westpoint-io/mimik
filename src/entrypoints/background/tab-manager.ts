@@ -1,6 +1,6 @@
 import { executeScript, queryTabs, sendMessageToTab } from '@/lib/browser-api';
 import { logger } from '@/lib/logger';
-import { TabMessage } from '@/lib/tab-messages';
+import { TabMessage, type TabMessageType } from '@/lib/tab-messages';
 
 export function isInjectableTab(tab: { url?: string; pendingUrl?: string }): boolean {
   const url = tab.url || tab.pendingUrl || '';
@@ -43,6 +43,42 @@ export async function broadcastStartCapture(guideId: string): Promise<void> {
     }
   } catch (err) {
     logger.warn(' broadcastStartCapture failed', err);
+  }
+}
+
+export async function broadcastDismissBlur(): Promise<void> {
+  await broadcastBlur(TabMessage.DISMISS_BLUR);
+}
+
+export async function broadcastClearBlur(): Promise<void> {
+  await broadcastBlur(TabMessage.CLEAR_BLUR);
+}
+
+async function broadcastBlur(type: TabMessageType): Promise<void> {
+  try {
+    const tabs = await queryTabs({});
+    for (const tab of tabs) {
+      if (tab.id) {
+        sendMessageToTab(tab.id, { type }).catch(() => {});
+      }
+    }
+  } catch (err) {
+    logger.warn(' broadcastBlur failed', type, err);
+  }
+}
+
+const FLUSH_TIMEOUT_MS = 1500;
+
+export async function broadcastStopCaptureAndFlush(): Promise<void> {
+  try {
+    const tabs = await queryTabs({});
+    const sends = tabs
+      .filter((tab): tab is typeof tab & { id: number } => tab.id !== undefined)
+      .map((tab) => sendMessageToTab(tab.id, { type: TabMessage.STOP_CAPTURE }).catch(() => {}));
+    const timeout = new Promise<void>((resolve) => setTimeout(resolve, FLUSH_TIMEOUT_MS));
+    await Promise.race([Promise.allSettled(sends), timeout]);
+  } catch (err) {
+    logger.warn(' broadcastStopCaptureAndFlush failed', err);
   }
 }
 

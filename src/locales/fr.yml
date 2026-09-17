@@ -69,6 +69,9 @@ guidemeCompletion:
 
 recording:
   capturePaused: Capture en pause
+  capturePausedBlur: Mode flou · capture en pause
+  pauseCapture: Mettre la capture en pause
+  resumeCapture: Reprendre la capture
   recording: "Enregistrement \xB7 $1 étape"
   recordingPlural: "Enregistrement \xB7 $1 étapes"
   readyTitle: "Prêt à capturer !"
@@ -502,6 +505,7 @@ voice:
   turnOn: "Activer la narration vocale"
   turnOff: "Désactiver la narration vocale"
   needsApiKey: "Ajoutez une clé API de transcription dans les paramètres pour commenter"
+  pausedWithCapture: "La narration est en pause avec la capture"
   micStarting: "Démarrage du micro..."
   micHearing: Nous vous entendons
   micQuiet: Aucun son

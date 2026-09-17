@@ -57,6 +57,14 @@ async function takeScreenshot(stepId: string, meta: ElementMeta): Promise<string
   }
 }
 
+function isRecording(): boolean {
+  return getActor().getSnapshot().value === CaptureState.RECORDING;
+}
+
+function isRecordingOrPaused(): boolean {
+  return getActor().getSnapshot().value !== CaptureState.IDLE;
+}
+
 async function tryAIDescription(stepId: string, domContext: DOMContext) {
   if (!resolveAiKey(await localStorage.get([...AI_KEY_SETTINGS])).apiKey) return;
   try {
@@ -116,6 +124,7 @@ export async function handleCaptureStep(data: CaptureStepData): Promise<CaptureS
 }
 
 export async function handleUpdateInputStep(stepId: string, description: string, inputValue?: string) {
+  if (!isRecording()) return;
   await updateStepDescription(stepId, description);
   if (inputValue !== undefined) {
     await db.steps.update(stepId, { inputValue });
@@ -127,6 +136,7 @@ export async function handleFinalizeInputStep(
   elementMeta: ElementMeta,
   domContext: DOMContext | undefined,
 ) {
+  if (!isRecordingOrPaused()) return;
   const screenshotId = await takeScreenshot(stepId, elementMeta);
   const updates: Partial<Step> = { elementMeta };
   if (screenshotId) updates.screenshotId = screenshotId;

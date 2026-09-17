@@ -20,8 +20,12 @@ function localeKeys(path: string): string[] {
   return keys.sort();
 }
 
-describe('zh-CN locale coverage', () => {
-  it('matches the English message keys', () => {
-    expect(localeKeys('src/locales/zh-CN.yml')).toEqual(localeKeys('src/locales/en.yml'));
-  });
+const LOCALES = ['zh-CN', 'es', 'fr', 'de', 'pt-BR'] as const;
+
+describe('locale coverage', () => {
+  for (const locale of LOCALES) {
+    it(`${locale} matches the English message keys`, () => {
+      expect(localeKeys(`src/locales/${locale}.yml`)).toEqual(localeKeys('src/locales/en.yml'));
+    });
+  }
 });

@@ -91,7 +91,7 @@ src/
 
 | Layer | Tool | Purpose |
 |-------|------|---------|
-| Capture lifecycle | xstate | State machine (IDLE ↔ RECORDING) in background service worker |
+| Capture lifecycle | xstate | State machine (IDLE ↔ RECORDING ↔ PAUSED) in background service worker |
 | Fullview UI | Zustand | Search modal, guide counts, active guide data |
 | Persistence | Dexie (IndexedDB) | Guides, steps, screenshots, snapshots |
 | Service worker recovery | sessionStorage | xstate machine snapshot persistence |
@@ -119,6 +119,8 @@ Content Script ←→ Background Service Worker ←→ Sidepanel / Fullview
 - `getState` → current capture state, step count, guide ID
 - `startRecording({url})` → creates guide, returns guideId
 - `stopRecording()` → finalizes guide, generates AI title
+- `pauseCapture()` / `resumeCapture()` → RECORDING ↔ PAUSED, plus the stop/start broadcast
+- `enterBlurMode()` / `exitBlurMode()` → the same pause, with the blur overlay and `pauseReason: 'blur'`
 - `captureStep({guideId, action, elementMeta, domContext})` → screenshots + creates step
 - `updateInputStep({stepId, description})` → updates typing step description
 - `finalizeInputStep({stepId, elementMeta, domContext})` → final screenshot + AI description
@@ -127,6 +129,7 @@ Content Script ←→ Background Service Worker ←→ Sidepanel / Fullview
 - `PING` / `START_CAPTURE` / `STOP_CAPTURE` — lifecycle
 - `SHOW_NOTIFICATION` — "Recording started" overlay
 - `URL_CHANGED` / `GET_ROUTE` — SPA navigation tracking
+- `START_BLUR` / `DISMISS_BLUR` / `CLEAR_BLUR` — blur overlay: open, close keeping masks, close removing masks
 
 ## Capture Pipeline
 
@@ -251,6 +254,14 @@ Font: Poppins (loaded via `@fontsource/poppins`).
 - **DOM context** sent as text to AI instead of screenshots — 15-30x cheaper per step
 - **Hover ring** (`lib/hover-ring.ts`) is a closed-Shadow-DOM host marked `data-mimik-ignore`, shared by recording and the blur picker (purple). Recording reads the user's `targetColor` so the live ring matches the dashed target baked into screenshots. Never drawn on `iframe`/`embed`/`object` — a capture inside a subframe can't hide the top frame's ring
 - **Content script injection** pings first, falls back to `chrome.scripting.executeScript()` for tabs without the script
+- **`PAUSED` is a real machine state**, not a flag. It carries a `pauseReason` (`'blur' | 'manual'`) and deliberately does not handle `USER_ACTION`, so nothing can advance `stepCount` while the UI says capture is paused. `CaptureSession.syncWithBackground` only starts on `RECORDING`, so a frame that loads mid-pause stays idle instead of silently resuming. Background step writes are gated on `RECORDING` too, for a frame that missed the stop broadcast
+- **Pausing also stops the microphone.** `pauseCapture` flushes and stops narration when it was live, and `resumeCapture` restarts it — otherwise speech during the pause is transcribed and attributed to the step captured after the resume. The mic toggle locks while paused, since narration cannot start outside `RECORDING`
+- **Pausing waits for the frames to drain.** `broadcastStopCaptureAndFlush` is answered only once each content script's queue is idle, because `CaptureController.stop()` enqueues the input session's finalize. `handleFinalizeInputStep` is therefore gated on "not IDLE" rather than `RECORDING`: it only ever completes a step the user finished before pausing, and `enterBlurMode` awaits the flush before opening the overlay so that screenshot cannot catch it
+- **Navigation listeners treat `PAUSED` as live** (`navigation.ts:isLive`). `URL_CHANGED` has to keep flowing or the first step after a resume is stamped with the pre-pause URL, which Guide Me then replays to; injection has to keep running or a tab opened mid-pause is deaf to the resume broadcast
+- **Blur mode pauses via that state**, and a top frame booting into `PAUSED`/`'blur'` re-opens the overlay, so a navigation mid-blur still has a Done button. `exitBlurMode` and the panel's Resume both broadcast `DISMISS_BLUR` before resuming, which closes the overlay but keeps the masks the user just picked; only the end of a recording sends `CLEAR_BLUR` to remove them
+- **Smart blur cannot reach** iframes, shadow DOM, canvas/image text, `::before`/`::after`, `<select>`/`<option>`, or attribute-only values like `title`/`alt`; it runs in the top frame only, and a matching input blurs as a whole field. SVG `<text>` *is* blurred. These limits are documented in all five READMEs and *partly* pinned by `core/blur/__tests__/scanner.test.ts` — shadow DOM, `select`/`option`, attribute-only values and whole-field input blur have assertions; canvas/image text, `::before`/`::after` and top-frame-only do not (the last lives in `content.ts`, not the scanner). Move the READMEs with any scanner change
+- **Paused-ness is read from the state value, never from `pauseReason`.** A snapshot persisted before `PAUSED` existed has no `pauseReason` key, so it restores as `undefined` — and `undefined !== null` read as paused, which left the panel offering Resume while the machine was still `RECORDING`. `getStateUpdate` normalises the reason to `null`; the reason only picks the wording. The same applies to any context key added later: a restored snapshot will not have it
+- **`BlurManager.start()` re-checks `active` after awaiting the presets.** A stop landing inside that await tore down a panel that did not exist yet, and the pending `start()` then mounted it with `active` already `false`, so nothing could ever close it. Any new `await` before the panel mounts needs the same guard
 - **xstate snapshot** persisted to sessionStorage so the state machine survives service worker restarts
 - **Recording notification** uses `animationend` event (not hardcoded delays) for timing
 - **Font loading** uses `@fontsource/poppins` (CSP-safe, no CDN dependency)

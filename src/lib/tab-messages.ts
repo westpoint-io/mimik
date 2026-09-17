@@ -7,6 +7,8 @@ export const TabMessage = {
   SHOW_NOTIFICATION: 'SHOW_NOTIFICATION',
   GUIDEME_STOP: 'GUIDEME_STOP',
   START_BLUR: 'START_BLUR',
+  DISMISS_BLUR: 'DISMISS_BLUR',
+  CLEAR_BLUR: 'CLEAR_BLUR',
 } as const;
 
 export type TabMessageType = (typeof TabMessage)[keyof typeof TabMessage];

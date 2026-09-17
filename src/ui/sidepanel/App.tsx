@@ -1,7 +1,7 @@
 import { Globe, Search, Settings, Video } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';
-import { CaptureState } from '@/core/capture/machine';
+import { CaptureState, type PauseReason } from '@/core/capture/machine';
 import { isRecordableUrl } from '@/core/capture/recordable-tabs';
 import type { GuideMeSession } from '@/core/guideme/session';
 import { SESSION_KEY } from '@/core/guideme/session';
@@ -96,6 +96,8 @@ export default function App() {
   const [voice, setVoice] = useState<PanelVoiceUpdate>({ type: 'VOICE_UPDATE', phase: 'idle' });
   const [aiFailure, setAiFailure] = useState<PanelAiUpdate | null>(null);
   const [voiceStarted, setVoiceStarted] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [pauseReason, setPauseReason] = useState<PauseReason | null>(null);
 
   useEffect(() => {
     const disconnect = connectToBackground({
@@ -112,8 +114,12 @@ export default function App() {
       },
       onDisconnect: () => setIsAlive(false),
       onStateUpdate: (update) => {
-        if (update.state === CaptureState.RECORDING) {
-          setIsRecording(true);
+        const live = update.state === CaptureState.RECORDING || update.state === CaptureState.PAUSED;
+        const isPaused = update.state === CaptureState.PAUSED;
+        setPaused(isPaused);
+        setPauseReason(isPaused ? (update.pauseReason ?? null) : null);
+        if (live) {
+          setIsRecording(update.state === CaptureState.RECORDING);
           setAiFailure(null);
           const guideId = update.currentGuideId;
           if (guideId) {
@@ -213,7 +219,16 @@ export default function App() {
 
   function renderView() {
     if (view.name === 'recording') {
-      return <RecordingView guideId={view.guideId} onStop={handleStopRecording} voice={voice} aiFailure={aiFailure} />;
+      return (
+        <RecordingView
+          guideId={view.guideId}
+          onStop={handleStopRecording}
+          voice={voice}
+          aiFailure={aiFailure}
+          paused={paused}
+          pauseReason={pauseReason}
+        />
+      );
     }
 
     if (view.name === 'guideme') {

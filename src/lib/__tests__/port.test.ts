@@ -28,7 +28,13 @@ class FakePort {
   }
 }
 
-const STATE: PanelStateUpdate = { type: 'STATE_UPDATE', state: 'IDLE', stepCount: 0, currentGuideId: null };
+const STATE: PanelStateUpdate = {
+  type: 'STATE_UPDATE',
+  state: 'IDLE',
+  stepCount: 0,
+  currentGuideId: null,
+  pauseReason: null,
+};
 const TRANSCRIBING: PanelVoiceUpdate = { type: 'VOICE_UPDATE', phase: 'transcribing' };
 const DONE: PanelVoiceUpdate = { type: 'VOICE_UPDATE', phase: 'idle', narrated: 3 };
 

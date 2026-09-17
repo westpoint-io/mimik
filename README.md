@@ -63,6 +63,8 @@ Every meaningful action becomes a step: clicks on buttons and links, form inputs
 
 Each step gets a screenshot with the clicked element highlighted and zoomed in. No manual cropping, no annotation tools to learn.
 
+Need the recording to look away for a moment? **Pause** stops capture without ending the recording, and **Resume** picks up where you left off. Entering Smart Blur pauses it the same way.
+
 | Browser | Version | Install |
 | ------- | ------- | ------- |
 | Chrome  | [![Chrome Version][chrome-version-shield]][chrome-link]   | [Chrome Web Store][chrome-link] |
@@ -89,9 +91,34 @@ Available in English, Spanish, Brazilian Portuguese, French, German, and Simplif
 
 ### 🔒 Smart Blur
 
-Mimik automatically detects and blurs sensitive data in your screenshots: emails, phone numbers, SSNs, credit cards, IP addresses, MAC addresses. Toggle each category independently.
+Smart Blur is a mode you enter while recording, not an always-on filter. Click **Blur** and capture pauses, Mimik detects and masks sensitive data on the page — emails, phone numbers, SSNs, credit cards, IP addresses, MAC addresses — and screenshots of that page keep it hidden once you click **Done**. Toggle each category independently.
 
 Need to blur something custom? The manual blur picker lets you select any DOM element and mask it across every screenshot where it appears.
+
+<details>
+<summary><strong>What Smart Blur does not cover</strong></summary>
+
+<br/>
+
+Smart Blur works by scanning text nodes and input values in the page's top frame. That leaves real gaps, all structural. If you rely on this for GDPR or similar, check your screenshots rather than assuming a clean one is a safe one:
+
+| Not covered | Why |
+|-------------|-----|
+| Content inside iframes | Skipped entirely; cross-origin frames are unreachable from the page |
+| Shadow DOM | The scan walks the document and does not descend into shadow roots |
+| Text painted on a `<canvas>`, and text inside images | Pixels, not text |
+| CSS `::before` / `::after` content | Not a text node |
+| `<select>` and `<option>` text | Excluded from the scan |
+| Values held only in attributes, such as `title` or `alt` | Only text nodes and input values are scanned |
+| Frames other than the top one | The overlay and the scan run in the top frame only |
+| Any tab but the one you entered the mode on | Only that tab is scanned; a second tab on the same app is not |
+| Text that appears after you click **Done** | The scan stops with the overlay, so an SPA re-render, the next page of a list, or a navigation is unmasked — re-enter Blur there |
+
+Two things worth knowing about what *is* handled: a match inside SVG `<text>` is removed from the render rather than blurred, because the mask is an HTML element that SVG will not draw — the data does not leak, but it disappears instead of blurring. And a matching `<input>` or `<textarea>` is blurred **as a whole field**, not just the matched substring.
+
+Blur applies from the moment you enter the mode onward. Screenshots already captured before that are not masked retroactively — delete those steps in the editor instead.
+
+</details>
 
 <img src="https://github.com/user-attachments/assets/968d2518-c561-4d68-92a6-3d5f569fe38a" alt="Smart Blur" width="800" />
 
@@ -178,6 +205,8 @@ All exports are generated client-side. Nothing touches a server.
 ## 🔐 Privacy & storage
 
 Guides, steps, and screenshots live on your device. There's no backend, no account, no telemetry. Your API keys (if you bring one) never leave your browser — they're stored locally and used to call the provider you chose directly.
+
+If you are masking personal data before sharing a guide, read [what Smart Blur does not cover](#-smart-blur) first — it cannot reach iframes, shadow DOM, or text drawn into images.
 
 Two things do leave the browser, both documented in the [privacy policy](https://mimik.westpoint.io/privacy/): site icons are fetched from Google's favicon service, which sends that site's domain, and the optional AI and voice features send text or audio to the provider you configured.
 

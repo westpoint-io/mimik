@@ -1,6 +1,7 @@
-import { Check, EyeOff, Loader2, X } from 'lucide-react';
+import { Check, EyeOff, Loader2, Pause, Play, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { browser, i18n } from '#imports';
+import { i18n } from '#imports';
+import type { PauseReason } from '@/core/capture/machine';
 import { deleteStep, getScreenshotsForSteps, getStepsForGuide } from '@/core/guides/service';
 import type { Screenshot, Step } from '@/core/guides/types';
 import { getActiveTab, localStorage } from '@/lib/browser-api';
@@ -20,6 +21,8 @@ interface RecordingViewProps {
   onStop: () => void;
   voice: PanelVoiceUpdate;
   aiFailure: PanelAiUpdate | null;
+  paused: boolean;
+  pauseReason: PauseReason | null;
 }
 
 function timeAgo(createdAt: number): string {
@@ -34,10 +37,9 @@ interface LiveStep {
   screenshot?: Screenshot;
 }
 
-export default function RecordingView({ guideId, onStop, voice, aiFailure }: RecordingViewProps) {
+export default function RecordingView({ guideId, onStop, voice, aiFailure, paused, pauseReason }: RecordingViewProps) {
   const [steps, setSteps] = useState<LiveStep[]>([]);
   const [siteUrl, setSiteUrl] = useState('');
-  const [isBlurring, setIsBlurring] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [, setTick] = useState(0);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -97,18 +99,15 @@ export default function RecordingView({ guideId, onStop, voice, aiFailure }: Rec
 
   const handleBlur = useCallback(async () => {
     await sendMessage('enterBlurMode', undefined);
-    setIsBlurring(true);
   }, []);
 
-  useEffect(() => {
-    const handler = (changes: Record<string, { newValue?: unknown }>) => {
-      if ('mimikBlurMode' in changes && changes.mimikBlurMode.newValue === false) {
-        setIsBlurring(false);
-      }
-    };
-    browser.storage.onChanged.addListener(handler);
-    return () => browser.storage.onChanged.removeListener(handler);
+  const handlePause = useCallback(async () => {
+    await sendMessage('pauseCapture', undefined);
   }, []);
+
+  const handleResume = useCallback(async () => {
+    await sendMessage(pauseReason === 'blur' ? 'exitBlurMode' : 'resumeCapture', undefined);
+  }, [pauseReason]);
 
   const handleDeleteStep = useCallback(
     async (stepId: string) => {
@@ -123,10 +122,10 @@ export default function RecordingView({ guideId, onStop, voice, aiFailure }: Rec
     <div className="flex flex-col h-screen bg-card relative">
       {/* Floating recording pill */}
       <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-sm border border-border shadow-sm">
-        <span className={`w-2 h-2 rounded-full ${isBlurring ? 'bg-accent' : 'bg-destructive animate-pulse'}`} />
+        <span className={`w-2 h-2 rounded-full ${paused ? 'bg-accent' : 'bg-destructive animate-pulse'}`} />
         <span className="text-xs font-semibold text-foreground">
-          {isBlurring
-            ? i18n.t('recording.capturePaused')
+          {paused
+            ? i18n.t(pauseReason === 'blur' ? 'recording.capturePausedBlur' : 'recording.capturePaused')
             : steps.length === 1
               ? i18n.t('recording.recording', [String(steps.length)])
               : i18n.t('recording.recordingPlural', [String(steps.length)])}
@@ -230,14 +229,19 @@ export default function RecordingView({ guideId, onStop, voice, aiFailure }: Rec
             {i18n.t('recording.finishRecording')}
           </Button>
           {import.meta.env.BROWSER !== 'firefox' && (
-            <MicToggle enabled={voiceEnabled} live={voice.phase === 'recording'} onChange={setVoiceEnabled} />
+            <MicToggle
+              enabled={voiceEnabled}
+              live={voice.phase === 'recording'}
+              paused={paused}
+              onChange={setVoiceEnabled}
+            />
           )}
           <Tooltip>
             <TooltipTrigger asChild>
               <span className="shrink-0">
                 <button
                   onClick={handleBlur}
-                  disabled={isBlurring}
+                  disabled={paused}
                   className="w-10 h-10 rounded-full border border-border flex items-center justify-center transition-colors text-muted-foreground hover:border-accent hover:text-accent disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <EyeOff size={16} />
@@ -249,8 +253,23 @@ export default function RecordingView({ guideId, onStop, voice, aiFailure }: Rec
           <Tooltip>
             <TooltipTrigger asChild>
               <button
+                onClick={paused ? handleResume : handlePause}
+                className={`w-10 h-10 shrink-0 rounded-full border flex items-center justify-center transition-colors ${
+                  paused
+                    ? 'border-accent text-accent hover:bg-secondary'
+                    : 'border-border text-muted-foreground hover:border-accent hover:text-accent'
+                }`}
+              >
+                {paused ? <Play size={16} /> : <Pause size={16} />}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>{i18n.t(paused ? 'recording.resumeCapture' : 'recording.pauseCapture')}</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
                 onClick={onStop}
-                className="w-10 h-10 rounded-full border border-border flex items-center justify-center transition-colors text-purple hover:border-destructive/30 hover:text-destructive"
+                className="w-10 h-10 shrink-0 rounded-full border border-border flex items-center justify-center transition-colors text-purple hover:border-destructive/30 hover:text-destructive"
               >
                 <X size={16} />
               </button>

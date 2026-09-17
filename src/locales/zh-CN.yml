@@ -69,6 +69,9 @@ guidemeCompletion:
 
 recording:
   capturePaused: 捕获已暂停
+  capturePausedBlur: 模糊模式 · 捕获已暂停
+  pauseCapture: 暂停捕获
+  resumeCapture: 继续捕获
   recording: "正在录制 · $1 个步骤"
   recordingPlural: "正在录制 · $1 个步骤"
   readyTitle: 已准备好捕获！
@@ -502,6 +505,7 @@ voice:
   turnOn: 开启语音讲解
   turnOff: 关闭语音讲解
   needsApiKey: 在设置中添加转写 API 密钥以使用语音讲解
+  pausedWithCapture: 语音讲解已随捕获一起暂停
   micStarting: 正在启动麦克风...
   micHearing: 正在听你说话
   micQuiet: 没有声音

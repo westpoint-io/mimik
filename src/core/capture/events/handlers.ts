@@ -50,7 +50,7 @@ let lastClickTarget: Element | null = null;
 let lastClickTime = 0;
 
 export interface CaptureHandle {
-  stop: () => void;
+  stop: () => Promise<void>;
 }
 
 const PASSIVE_CAPTURE = { capture: true, passive: true } as const;
@@ -313,13 +313,14 @@ class CaptureController {
     this.enqueue(this.capture('drag', findFocusableAncestor(target)));
   }
 
-  stop() {
+  stop(): Promise<void> {
     for (const [event, handler, opts] of this.listeners) {
       window.removeEventListener(event, handler, opts);
     }
     this.hovered = null;
     this.ring.dispose();
     this.queue.add(() => this.input.finalize());
+    return this.queue.onIdle();
   }
 }
 

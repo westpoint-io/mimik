@@ -1,5 +1,5 @@
 import { logger } from '@/lib/logger';
-import { sendMessage } from '@/lib/messaging';
+import { type GetStateResponse, sendMessage } from '@/lib/messaging';
 import { type CaptureHandle, startCapture } from './events/handlers';
 import { CaptureState } from './machine';
 
@@ -8,7 +8,7 @@ export class CaptureSession {
   private activeGuideId: string | null = null;
   private disabled = false;
 
-  constructor() {
+  constructor(private readonly onSynced?: (state: GetStateResponse) => void) {
     this.syncWithBackground();
   }
 
@@ -36,13 +36,14 @@ export class CaptureSession {
     this.capture = startCapture(guideId, isTopFrame);
   }
 
-  stop(): void {
-    if (!this.isActive) return;
+  stop(): Promise<void> {
+    if (!this.isActive) return Promise.resolve();
 
     logger.info('Capture stopped → guideId:', this.activeGuideId);
-    this.capture?.stop();
+    const draining = this.capture?.stop() ?? Promise.resolve();
     this.capture = null;
     this.activeGuideId = null;
+    return draining;
   }
 
   private syncWithBackground(): void {
@@ -52,6 +53,7 @@ export class CaptureSession {
         if (res.state === CaptureState.RECORDING && res.currentGuideId) {
           this.start(res.currentGuideId);
         }
+        this.onSynced?.(res);
       })
       .catch(() => {});
   }
