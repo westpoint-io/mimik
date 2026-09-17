@@ -62,6 +62,8 @@ Cada ação relevante vira um passo: cliques em botões e links, campos de formu
 
 Cada passo ganha uma captura com o elemento clicado destacado e ampliado. Sem recortar na mão, sem ferramenta de anotação pra aprender.
 
+Precisa que a gravação olhe pro outro lado por um instante? **Pausar** para a captura sem encerrar a gravação, e **Retomar** segue de onde tu parou. Entrar no Smart Blur pausa do mesmo jeito.
+
 | Navegador | Versão | Instalação |
 | --------- | ------ | ---------- |
 | Chrome    | [![Chrome Version][chrome-version-shield]][chrome-link]   | [Chrome Web Store][chrome-link] |
@@ -88,9 +90,34 @@ Disponível em inglês, espanhol, português brasileiro, francês, alemão e chi
 
 ### 🔒 Smart Blur
 
-O Mimik detecta e desfoca dados sensíveis automaticamente nas tuas capturas: e-mails, telefones, CPFs, cartões de crédito, IPs, endereços MAC. Liga ou desliga cada categoria do jeito que tu quiser.
+O Smart Blur é um modo que tu ativa durante a gravação, não um filtro sempre ligado. Clica em **Blur** e a captura pausa, o Mimik detecta e mascara os dados sensíveis da página — e-mails, telefones, CPFs, cartões de crédito, IPs, endereços MAC — e as capturas dessa página mantêm eles escondidos depois que tu clica em **Pronto**. Liga ou desliga cada categoria do jeito que tu quiser.
 
 Precisa esconder algo específico? O seletor manual deixa tu escolher qualquer elemento do DOM e mascarar ele em todas as capturas onde aparecer.
+
+<details>
+<summary><strong>O que o Smart Blur não alcança</strong></summary>
+
+<br/>
+
+O Smart Blur varre nós de texto e valores de campos no frame principal da página. Isso deixa lacunas reais, todas estruturais. Se tu depende disso para LGPD, GDPR ou algo do tipo, confere as capturas em vez de assumir que uma captura limpa é uma captura segura:
+
+| Não coberto | Por quê |
+|-------------|---------|
+| Conteúdo dentro de iframes | Ignorado por completo; frames de outra origem são inalcançáveis |
+| Shadow DOM | A varredura percorre o documento e não entra nos shadow roots |
+| Texto pintado num `<canvas>` e texto dentro de imagens | São pixels, não texto |
+| Conteúdo CSS `::before` / `::after` | Não é nó de texto |
+| Texto de `<select>` e `<option>` | Excluído da varredura |
+| Valores que só existem em atributos, como `title` ou `alt` | Só nós de texto e valores de campos são lidos |
+| Frames que não o principal | O overlay e a varredura rodam só no frame principal |
+| Qualquer aba que não a que tu ativou o modo | Só aquela aba é varrida; outra com a mesma app não |
+| Texto que aparece depois do **Pronto** | A varredura para junto com o overlay, então um re-render da SPA, a próxima página de uma lista ou uma navegação ficam sem máscara — entra no Blur de novo lá |
+
+Duas coisas que vale saber sobre o que é tratado: um casamento dentro de `<text>` de SVG é removido do render em vez de desfocado, porque a máscara é um elemento HTML que o SVG não desenha — o dado não escapa, mas desaparece em vez de desfocar. E um `<input>` ou `<textarea>` que casa é desfocado **por inteiro**, não só o trecho que casou.
+
+O desfoque vale do momento em que tu entra no modo pra frente. Capturas feitas antes não são mascaradas retroativamente — apaga esses passos no editor.
+
+</details>
 
 <img src="https://github.com/user-attachments/assets/968d2518-c561-4d68-92a6-3d5f569fe38a" alt="Smart Blur" width="800" />
 
@@ -177,6 +204,8 @@ Todas as exportações são geradas no cliente. Nada passa por servidor.
 ## 🔐 Privacidade e armazenamento
 
 Teus guias, passos e capturas ficam no teu dispositivo. Sem backend, sem conta, sem telemetria. Tuas API keys (se tu usar alguma) nunca saem do navegador. Ficam salvas localmente e são usadas pra chamar direto o provedor que tu escolheu.
+
+Se tu está mascarando dados pessoais antes de compartilhar um guia, lê primeiro [o que o Smart Blur não alcança](#-smart-blur): ele não chega em iframes, shadow DOM nem texto desenhado dentro de imagens.
 
 Duas coisas saem do navegador, as duas documentadas na [política de privacidade](https://mimik.westpoint.io/privacy/): os ícones dos sites são buscados no serviço de favicons do Google, o que envia o domínio daquele site, e os recursos opcionais de IA e voz mandam texto ou áudio pro provedor que tu configurou.
 

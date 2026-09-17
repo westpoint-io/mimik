@@ -62,6 +62,8 @@ Cada acción relevante se convierte en un paso: clics en botones y enlaces, camp
 
 Cada paso lleva una captura con el elemento pulsado resaltado y ampliado. Sin recortar a mano, sin herramientas de anotación que aprender.
 
+¿Necesitas que la grabación mire hacia otro lado un momento? **Pausar** detiene la captura sin terminar la grabación, y **Reanudar** sigue donde lo dejaste. Entrar en Smart Blur la pausa igual.
+
 | Navegador | Versión | Instalación |
 | --------- | ------- | ----------- |
 | Chrome    | [![Chrome Version][chrome-version-shield]][chrome-link]   | [Chrome Web Store][chrome-link] |
@@ -88,9 +90,34 @@ Disponible en inglés, español, portugués brasileño, francés, alemán y chin
 
 ### 🔒 Smart Blur
 
-Mimik detecta y difumina datos sensibles automáticamente en tus capturas: correos, teléfonos, números de identificación, tarjetas de crédito, IPs, direcciones MAC. Activa o desactiva cada categoría de forma independiente.
+Smart Blur es un modo que activas mientras grabas, no un filtro siempre encendido. Pulsa **Blur** y la captura se pausa, Mimik detecta y enmascara los datos sensibles de la página — correos, teléfonos, números de identificación, tarjetas de crédito, IPs, direcciones MAC — y las capturas de esa página los mantienen ocultos una vez que pulsas **Listo**. Activa o desactiva cada categoría de forma independiente.
 
 ¿Necesitas ocultar algo personalizado? El selector manual te deja elegir cualquier elemento del DOM y enmascararlo en todas las capturas donde aparezca.
+
+<details>
+<summary><strong>Lo que Smart Blur no cubre</strong></summary>
+
+<br/>
+
+Smart Blur analiza nodos de texto y valores de campos en el marco principal de la página. Eso deja huecos reales, todos estructurales. Si dependes de esto para el RGPD o algo similar, revisa tus capturas en lugar de dar por hecho que una captura limpia es una captura segura:
+
+| Sin cubrir | Por qué |
+|------------|---------|
+| Contenido dentro de iframes | Se omite por completo; los marcos de otro origen son inalcanzables |
+| Shadow DOM | El análisis recorre el documento y no entra en los shadow roots |
+| Texto dibujado en un `<canvas>` y texto dentro de imágenes | Son píxeles, no texto |
+| Contenido CSS `::before` / `::after` | No es un nodo de texto |
+| Texto de `<select>` y `<option>` | Excluido del análisis |
+| Valores que solo viven en atributos, como `title` o `alt` | Solo se analizan nodos de texto y valores de campos |
+| Marcos distintos del principal | El overlay y el análisis corren solo en el marco principal |
+| Cualquier pestaña que no sea la que activaste | Solo se analiza esa pestaña; otra con la misma app no |
+| Texto que aparece después de pulsar **Listo** | El análisis se detiene con el overlay, así que un re-render de la SPA, la página siguiente de una lista o una navegación quedan sin enmascarar — vuelve a entrar en Blur ahí |
+
+Dos cosas que conviene saber sobre lo que sí se maneja: una coincidencia dentro de `<text>` de SVG se elimina del render en vez de difuminarse, porque la máscara es un elemento HTML que SVG no dibuja — el dato no se filtra, pero desaparece en lugar de difuminarse. Y un `<input>` o `<textarea>` que coincide se difumina **como campo completo**, no solo la parte coincidente.
+
+El difuminado aplica desde el momento en que entras al modo. Las capturas tomadas antes no se enmascaran de forma retroactiva — borra esos pasos en el editor.
+
+</details>
 
 <img src="https://github.com/user-attachments/assets/968d2518-c561-4d68-92a6-3d5f569fe38a" alt="Smart Blur" width="800" />
 
@@ -177,6 +204,8 @@ Todas las exportaciones se generan del lado del cliente. Nada pasa por un servid
 ## 🔐 Privacidad y almacenamiento
 
 Tus guías, pasos y capturas viven en tu dispositivo. No hay backend, no hay cuenta, no hay telemetría. Tus API keys (si usas alguna) nunca salen del navegador. Se guardan localmente y se usan para llamar directo al proveedor que elegiste.
+
+Si estás enmascarando datos personales antes de compartir una guía, lee primero [lo que Smart Blur no cubre](#-smart-blur): no alcanza iframes, shadow DOM ni texto dibujado dentro de imágenes.
 
 Dos cosas sí salen del navegador, ambas documentadas en la [política de privacidad](https://mimik.westpoint.io/privacy/): los iconos de los sitios se piden al servicio de favicons de Google, lo que envía el dominio de ese sitio, y las funciones opcionales de IA y voz mandan texto o audio al proveedor que configuraste.
 
