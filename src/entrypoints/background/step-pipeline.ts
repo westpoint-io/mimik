@@ -57,6 +57,21 @@ async function takeScreenshot(stepId: string, meta: ElementMeta): Promise<string
   }
 }
 
+/** A keystroke arriving after the user paused must not be written. */
+function isRecording(): boolean {
+  return getActor().getSnapshot().value === CaptureState.RECORDING;
+}
+
+/**
+ * A finalize only completes a step the user finished *before* pausing, so it is
+ * allowed to land while paused — dropping it would leave that step holding the
+ * screenshot taken when the field was still empty. The pause handlers await the
+ * flush before opening the blur overlay, so this screenshot cannot catch it.
+ */
+function isRecordingOrPaused(): boolean {
+  return getActor().getSnapshot().value !== CaptureState.IDLE;
+}
+
 async function tryAIDescription(stepId: string, domContext: DOMContext) {
   if (!resolveAiKey(await localStorage.get([...AI_KEY_SETTINGS])).apiKey) return;
   try {
@@ -116,6 +131,7 @@ export async function handleCaptureStep(data: CaptureStepData): Promise<CaptureS
 }
 
 export async function handleUpdateInputStep(stepId: string, description: string, inputValue?: string) {
+  if (!isRecording()) return;
   await updateStepDescription(stepId, description);
   if (inputValue !== undefined) {
     await db.steps.update(stepId, { inputValue });
@@ -127,6 +143,7 @@ export async function handleFinalizeInputStep(
   elementMeta: ElementMeta,
   domContext: DOMContext | undefined,
 ) {
+  if (!isRecordingOrPaused()) return;
   const screenshotId = await takeScreenshot(stepId, elementMeta);
   const updates: Partial<Step> = { elementMeta };
   if (screenshotId) updates.screenshotId = screenshotId;

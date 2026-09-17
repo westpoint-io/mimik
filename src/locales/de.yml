@@ -69,6 +69,9 @@ guidemeCompletion:
 
 recording:
   capturePaused: Aufnahme pausiert
+  capturePausedBlur: "Smart Blur · Aufnahme pausiert"
+  pauseCapture: Aufnahme pausieren
+  resumeCapture: Aufnahme fortsetzen
   recording: "Aufnahme \xB7 $1 Schritt"
   recordingPlural: "Aufnahme \xB7 $1 Schritte"
   readyTitle: Bereit zur Aufnahme!
@@ -503,6 +506,7 @@ voice:
   turnOn: Sprachkommentar einschalten
   turnOff: Sprachkommentar ausschalten
   needsApiKey: Füge in den Einstellungen einen Transkriptions-API-Schlüssel hinzu, um zu kommentieren
+  pausedWithCapture: Die Kommentierung ist mit der Aufnahme pausiert
   micStarting: "Mikrofon wird gestartet…"
   micHearing: Ich höre dich
   micQuiet: Kein Ton

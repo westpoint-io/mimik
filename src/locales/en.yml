@@ -69,6 +69,9 @@ guidemeCompletion:
 
 recording:
   capturePaused: Capture paused
+  capturePausedBlur: Blur mode · capture paused
+  pauseCapture: Pause capture
+  resumeCapture: Resume capture
   recording: "Recording \xB7 $1 step"
   recordingPlural: "Recording \xB7 $1 steps"
   readyTitle: Ready to capture!
@@ -502,6 +505,7 @@ voice:
   turnOn: Turn on voice narration
   turnOff: Turn off voice narration
   needsApiKey: Add a transcription API key in Settings to narrate
+  pausedWithCapture: Narration is paused with the capture
   micStarting: Starting microphone...
   micHearing: Hearing you
   micQuiet: No sound

@@ -1,11 +1,13 @@
 import { defineContentScript } from 'wxt/utils/define-content-script';
 import { browser } from '#imports';
 import { BlurManager } from '@/core/blur/manager';
+import { shouldReopenBlur } from '@/core/blur/restore';
 import { CaptureSession } from '@/core/capture/session';
 import { updateUrl } from '@/core/capture/spa-nav';
 import { showStartNotification } from '@/core/capture/start-notification';
 import { GuideMeController } from '@/core/guideme/content';
 import { logger } from '@/lib/logger';
+import { sendMessage } from '@/lib/messaging';
 import { TabMessage } from '@/lib/tab-messages';
 
 const CLEANUP_EVENT = `mimik_cleanup_${browser.runtime.id}`;
@@ -31,8 +33,9 @@ function createTabMessageHandler(session: CaptureSession, guideMe: GuideMeContro
         return true;
 
       case TabMessage.STOP_CAPTURE:
-        session.stop();
-        sendResponse({ stopped: true });
+        // Answered only once the queue has drained, so a pause that follows can
+        // rely on the final input screenshot already being written.
+        session.stop().then(() => sendResponse({ stopped: true }));
         return true;
 
       case TabMessage.URL_CHANGED:
@@ -59,6 +62,16 @@ function createTabMessageHandler(session: CaptureSession, guideMe: GuideMeContro
         sendResponse({ started: true });
         return true;
 
+      case TabMessage.DISMISS_BLUR:
+        blurManager.dismiss();
+        sendResponse({ dismissed: true });
+        return true;
+
+      case TabMessage.CLEAR_BLUR:
+        blurManager.stop();
+        sendResponse({ stopped: true });
+        return true;
+
       default:
         return false;
     }
@@ -74,9 +87,19 @@ export default defineContentScript({
   main() {
     document.dispatchEvent(new CustomEvent(CLEANUP_EVENT));
 
-    const session = new CaptureSession();
-    const guideMe = new GuideMeController();
     const blurManager = new BlurManager();
+    // A recording paused for blur keeps the overlay alive across navigation:
+    // without this, the page that loads next has no Done button, so the user
+    // would be stuck paused with no way back from the page itself. The state is
+    // re-read rather than trusted, because the boot round trip is long enough
+    // for a Resume to land in the middle of it.
+    const session = new CaptureSession(async (state) => {
+      if (!shouldReopenBlur(state, window.self === window.top)) return;
+      const current = await sendMessage('getState', undefined).catch(() => null);
+      if (!current || !shouldReopenBlur(current, true)) return;
+      blurManager.start();
+    });
+    const guideMe = new GuideMeController();
     const handleTabMessage = createTabMessageHandler(session, guideMe, blurManager);
 
     document.addEventListener(CLEANUP_EVENT, () => {

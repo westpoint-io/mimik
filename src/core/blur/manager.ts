@@ -22,27 +22,55 @@ export class BlurManager {
   private picker = new ElementPicker();
   private panel: BlurPanel | null = null;
   private active = false;
+  private generation = 0;
 
   async start() {
     if (this.active) return;
     this.active = true;
 
+    // A stop or dismiss can land while the presets load, and so can a second
+    // start() after one. `active` alone cannot tell "still the same start" from
+    // "stopped and started again", and a stale continuation that mounts a panel
+    // drops the reference to the live one, leaving it in the DOM unclosable.
+    const generation = ++this.generation;
+
     injectBlurStyles();
     const presets = await this.loadPresets();
+    if (!this.active || generation !== this.generation) return;
+
     const activeKeys = (Object.entries(presets) as [PresetKey, boolean][]).filter(([, on]) => on).map(([k]) => k);
 
     this.scanner.start(activeKeys);
+    this.panel?.unmount();
     this.panel = new BlurPanel(presets);
     this.panel.mount();
 
     for (const event of EVENTS) document.addEventListener(event, this.handleEvent);
   }
 
+  /**
+   * Closes the overlay and removes every mask. For the end of a recording.
+   *
+   * Only the teardown is conditional on `active`: "Done" already tore the panel
+   * down and left the masks in place, so gating the whole method would make this
+   * a no-op on the one path that matters — the page would keep its injected
+   * style, its mask spans and its blurred inputs until the user reloaded, and
+   * the surviving attributes would keep withholding input values from the next
+   * recording. Both calls below are idempotent on a page that never blurred.
+   */
   stop() {
-    if (!this.active) return;
-    this.teardown();
+    if (this.active) this.teardown();
     this.scanner.stop();
     removeBlurStyles();
+  }
+
+  /**
+   * Closes the overlay but leaves the masks in place, which is what "Done"
+   * does: the point of picking them is that later screenshots keep them.
+   */
+  dismiss() {
+    if (!this.active) return;
+    this.teardown();
   }
 
   private teardown() {

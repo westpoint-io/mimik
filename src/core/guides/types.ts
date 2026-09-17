@@ -84,7 +84,6 @@ export interface Settings {
   guideMeStep: Step | null;
   guideMeBlocked: number | null;
   guideMeManual: boolean;
-  mimikBlurMode: boolean;
   onboardingCompleted: boolean;
 }
 
