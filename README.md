@@ -37,6 +37,7 @@ Click record, do the thing, get a polished guide with annotated screenshots. Nar
   - [▶️ Guide Me replay](#️-guide-me-replay)
   - [🎙️ Voice narration (optional)](#️-voice-narration-optional)
   - [✏️ Guide editor](#️-guide-editor)
+  - [🔊 Video voice-over (optional)](#-video-voice-over-optional)
   - [📤 Multi-format export](#-multi-format-export)
 - [🔐 Privacy & storage](#-privacy--storage)
 - [🤝 Contributing](#-contributing)
@@ -182,11 +183,21 @@ through version history.
 
 </div>
 
+### 🔊 Video voice-over (optional)
+
+Turn it on in the export panel and every step of a video export is read aloud, using your own OpenAI
+or ElevenLabs key. If you already set an OpenAI key for AI descriptions, Mimik reuses it — there is
+nothing else to sign up for. Narrated steps hold on screen until the voice finishes, so nothing gets
+cut off, and clips are cached locally so re-exporting the same guide costs nothing.
+
+Off by default: holding a key never turns narration on, you do.
+
 ### 📤 Multi-format export
 
 Share guides in whatever format fits your workflow:
 
-- **Video**: narrated walkthrough, mp4/H.264, with the cursor moving to each target
+- **Video**: narrated walkthrough, mp4/H.264, with the cursor moving to each target — optionally with an
+  ElevenLabs voice-over reading every step aloud, which also makes the export usable under Section 508
 - **PDF**: print-ready, A4 portrait with auto page breaks
 - **DOCX**: open and keep editing in Word
 - **HTML**: self-contained, share anywhere, base64-embedded images
@@ -208,7 +219,7 @@ Guides, steps, and screenshots live on your device. There's no backend, no accou
 
 If you are masking personal data before sharing a guide, read [what Smart Blur does not cover](#-smart-blur) first — it cannot reach iframes, shadow DOM, or text drawn into images.
 
-Two things do leave the browser, both documented in the [privacy policy](https://mimik.westpoint.io/privacy/): site icons are fetched from Google's favicon service, which sends that site's domain, and the optional AI and voice features send text or audio to the provider you configured.
+Two things do leave the browser, both documented in the [privacy policy](https://mimik.westpoint.io/privacy/): site icons are fetched from Google's favicon service, which sends that site's domain, and the optional AI, voice narration and video voice-over features send text or audio to the provider you configured — voice-over sends each step's text at export time, and only when you turn it on.
 
 <div align="right">
 

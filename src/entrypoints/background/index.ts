@@ -207,6 +207,11 @@ export default defineBackground(() => {
 
   onMessage('validateApiKey', ({ data }) => validateApiKey(data.provider, data.apiKey, data.baseUrl, data.model));
 
+  onMessage('listVoices', async ({ data }) => {
+    const { fetchVoices } = await import('@/core/export/voiceover/client');
+    return { voices: await fetchVoices(data.provider, data.apiKey).catch(() => []) };
+  });
+
   onMessage('rewriteSelection', ({ data }) => rewriteSelection(data.text, data.instruction));
 
   onMessage('captureStep', async ({ data }) => {

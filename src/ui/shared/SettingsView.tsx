@@ -1,5 +1,6 @@
 import {
   ArrowLeft,
+  AudioLines,
   Bug,
   Check,
   ChevronDown,
@@ -32,9 +33,26 @@ import { AI_LANGUAGES, type AILanguageCode } from '@/core/capture/ai/prompts';
 import { resolveVoiceApiKey } from '@/core/capture/voice/api-key';
 import type { VoiceProvider } from '@/core/capture/voice/transcribe';
 import { type BrandLogo, defaultFooterLine, makeBrandLogo } from '@/core/export/branding';
+import {
+  keyForVoiceoverProvider,
+  parseVoiceoverKeys,
+  resolveVoiceoverConfig,
+  type VoiceoverApiKeys,
+  voiceoverKeyPlaceholder,
+  withVoiceoverKey,
+} from '@/core/export/voiceover/config';
+import {
+  DEFAULT_VOICEOVER_PROVIDER,
+  VOICEOVER_PROVIDER_KEYS,
+  VOICEOVER_PROVIDERS,
+  type VoiceoverProviderKey,
+  type VoiceoverVoice,
+  voiceoverProvider,
+} from '@/core/export/voiceover/providers';
 import { DEFAULT_TARGET_COLOR, TARGET_COLORS } from '@/core/screenshot/types';
 import { localStorage } from '@/lib/browser-api';
 import { logger } from '@/lib/logger';
+import { sendMessage } from '@/lib/messaging';
 import { Button } from '@/ui/components/ui/button';
 import { Input } from '@/ui/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/ui/components/ui/popover';
@@ -76,6 +94,13 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   const [voiceProvider, setVoiceProvider] = useState<VoiceProvider>('openai');
   const [voiceApiKey, setVoiceApiKey] = useState('');
   const [voiceMicrophoneId, setVoiceMicrophoneId] = useState('');
+  const [voiceoverProviderKey, setVoiceoverProviderKey] = useState<VoiceoverProviderKey>(DEFAULT_VOICEOVER_PROVIDER);
+  const [voiceoverApiKey, setVoiceoverApiKey] = useState('');
+  const [voiceoverApiKeys, setVoiceoverApiKeys] = useState<VoiceoverApiKeys>({});
+  const [voiceoverVoiceId, setVoiceoverVoiceId] = useState(VOICEOVER_PROVIDERS.openai.defaultVoice);
+  const [voiceoverModelId, setVoiceoverModelId] = useState(VOICEOVER_PROVIDERS.openai.defaultModel);
+  const [voices, setVoices] = useState<VoiceoverVoice[]>(VOICEOVER_PROVIDERS.openai.voices);
+  const voiceoverKeyCheck = useKeyCheck();
   const [targetColor, setTargetColor] = useState<string>(DEFAULT_TARGET_COLOR);
   const [brandLogo, setBrandLogo] = useState<BrandLogo | null>(null);
   const [brandFooter, setBrandFooter] = useState('');
@@ -103,6 +128,10 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
         'voiceProvider',
         'voiceApiKey',
         'voiceMicrophoneId',
+        'voiceoverProvider',
+        'voiceoverApiKeys',
+        'voiceoverVoiceId',
+        'voiceoverModelId',
         'targetColor',
         'brandLogo',
         'brandFooter',
@@ -124,6 +153,14 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
         setVoiceProvider((result.voiceProvider as VoiceProvider) || 'openai');
         if (result.voiceApiKey) setVoiceApiKey(result.voiceApiKey as string);
         if (result.voiceMicrophoneId) setVoiceMicrophoneId(result.voiceMicrophoneId as string);
+        const vo = resolveVoiceoverConfig(result);
+        const voKeys = parseVoiceoverKeys(result.voiceoverApiKeys);
+        setVoiceoverProviderKey(vo.provider);
+        setVoiceoverApiKeys(voKeys);
+        setVoiceoverApiKey(keyForVoiceoverProvider(voKeys, vo.provider));
+        setVoiceoverVoiceId(vo.voiceId);
+        setVoiceoverModelId(vo.modelId);
+        setVoices(voiceoverProvider(vo.provider).voices);
         if (result.targetColor) setTargetColor(result.targetColor as string);
         if (result.brandLogo) setBrandLogo(result.brandLogo as BrandLogo);
         setBrandFooter(typeof result.brandFooter === 'string' ? result.brandFooter : defaultFooterLine());
@@ -143,6 +180,10 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     voiceProvider,
     voiceApiKey,
     voiceMicrophoneId,
+    voiceoverProvider: voiceoverProviderKey,
+    voiceoverApiKeys: withVoiceoverKey(voiceoverApiKeys, voiceoverProviderKey, voiceoverApiKey),
+    voiceoverVoiceId,
+    voiceoverModelId,
     targetColor,
     brandLogo,
     brandFooter,
@@ -193,6 +234,39 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     return () => window.clearTimeout(timer);
   }, [saved]);
 
+  useEffect(() => {
+    const config = voiceoverProvider(voiceoverProviderKey);
+    const key = voiceoverApiKey.trim();
+    if (!config.catalog || !key) {
+      setVoices(config.voices);
+      return;
+    }
+    let active = true;
+    const timer = window.setTimeout(() => {
+      sendMessage('listVoices', { provider: voiceoverProviderKey, apiKey: key })
+        .then((result) => {
+          if (active && result.voices.length > 0) setVoices(result.voices);
+        })
+        .catch(() => undefined);
+    }, 600);
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [voiceoverProviderKey, voiceoverApiKey]);
+
+  const handleVoiceoverProviderChange = (next: VoiceoverProviderKey) => {
+    const keys = withVoiceoverKey(voiceoverApiKeys, voiceoverProviderKey, voiceoverApiKey);
+    const config = voiceoverProvider(next);
+    setVoiceoverApiKeys(keys);
+    setVoiceoverProviderKey(next);
+    setVoiceoverApiKey(keyForVoiceoverProvider(keys, next));
+    setVoiceoverVoiceId(config.defaultVoice);
+    setVoiceoverModelId(config.defaultModel);
+    setVoices(config.voices);
+    voiceoverKeyCheck.reset();
+  };
+
   const handleLogoPick = async (file: File | undefined) => {
     if (!file) return;
     setBrandLogo(await makeBrandLogo(file));
@@ -231,6 +305,15 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   const providerConfig = AI_PROVIDERS[provider] ?? AI_PROVIDERS[DEFAULT_AI_PROVIDER];
   const usingCustomModel = customModel || isCustomModel(model, providerConfig);
   const voiceKey = resolveVoiceApiKey({ voiceProvider, voiceApiKey, aiProvider: provider, aiApiKey: apiKey });
+  const voiceoverKey = resolveVoiceoverConfig({
+    voiceoverProvider: voiceoverProviderKey,
+    voiceoverApiKeys: withVoiceoverKey(voiceoverApiKeys, voiceoverProviderKey, voiceoverApiKey),
+    voiceoverVoiceId,
+    voiceoverModelId,
+    aiProvider: provider,
+    aiApiKey: apiKey,
+    aiApiKeys: apiKeys,
+  });
 
   const BLUR_PRESET_I18N: Record<PresetKey, string> = {
     email: 'blurPresets.email',
@@ -550,7 +633,12 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
               <Mic size={14} className="text-accent" />
             </div>
             <span className="text-xs font-bold text-foreground">{i18n.t('settings.voiceNarration')}</span>
+            <span className="ml-auto shrink-0 rounded-md bg-secondary px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-muted-foreground">
+              {i18n.t('settings.speechToText')}
+            </span>
           </div>
+
+          <p className="text-[10px] text-muted-foreground leading-relaxed">{i18n.t('settings.voiceNarrationHint')}</p>
 
           <div>
             <label className="block text-[11px] font-semibold text-foreground mb-1">
@@ -614,6 +702,110 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           {import.meta.env.BROWSER !== 'firefox' && (
             <MicrophonePicker value={voiceMicrophoneId} onChange={setVoiceMicrophoneId} triggerClassName="h-8" />
           )}
+        </div>
+
+        <div className="border border-border rounded-[10px] p-3.5 space-y-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center">
+              <AudioLines size={14} className="text-accent" />
+            </div>
+            <span className="text-xs font-bold text-foreground">{i18n.t('settings.voiceover')}</span>
+            <span className="ml-auto shrink-0 rounded-md bg-secondary px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-muted-foreground">
+              {i18n.t('settings.textToSpeech')}
+            </span>
+          </div>
+
+          <p className="text-[10px] text-muted-foreground leading-relaxed">{i18n.t('settings.voiceoverHint')}</p>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-foreground mb-1">
+              {i18n.t('settings.provider')}
+            </label>
+            <Select
+              value={voiceoverProviderKey}
+              onValueChange={(v) => handleVoiceoverProviderChange(v as VoiceoverProviderKey)}
+            >
+              <SelectTrigger className="h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {VOICEOVER_PROVIDER_KEYS.map((key) => (
+                  <SelectItem key={key} value={key}>
+                    {VOICEOVER_PROVIDERS[key].label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.apiKey')}</label>
+            <div className="flex items-center gap-1.5">
+              <SecretInput
+                value={voiceoverApiKey}
+                onChange={(next) => {
+                  setVoiceoverApiKey(next);
+                  voiceoverKeyCheck.reset();
+                }}
+                placeholder={voiceoverKeyPlaceholder(voiceoverProviderKey)}
+                className="h-8 text-[13px] rounded-lg border-border"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!voiceoverApiKey || voiceoverKeyCheck.status === 'checking'}
+                onClick={() => void voiceoverKeyCheck.check(voiceoverProviderKey, voiceoverApiKey)}
+                className="h-8 shrink-0 rounded-lg bg-card text-[11px] font-semibold"
+              >
+                {i18n.t('settings.checkKey')}
+              </Button>
+            </div>
+            <KeyStatusNote status={voiceoverKeyCheck.status} />
+            {voiceoverKey.source === 'ai' && (
+              <p className="mt-1.5 flex items-start gap-1.5 text-[10px] text-muted-foreground leading-relaxed">
+                <Sparkles size={11} className="shrink-0 mt-0.5 text-accent" />
+                <span>{i18n.t('settings.voiceoverUsingAiKey')}</span>
+              </p>
+            )}
+            {voiceoverKey.source === 'none' && (
+              <p className="mt-1.5 flex items-start gap-1.5 text-[10px] text-muted-foreground leading-relaxed">
+                <TriangleAlert size={11} className="shrink-0 mt-0.5 text-destructive" />
+                <span>{i18n.t('settings.voiceoverNoKey')}</span>
+              </p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.voice')}</label>
+            <Select value={voiceoverVoiceId} onValueChange={setVoiceoverVoiceId}>
+              <SelectTrigger className="h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {voices.map((voice) => (
+                  <SelectItem key={voice.id} value={voice.id}>
+                    {voice.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.model')}</label>
+            <Select value={voiceoverModelId} onValueChange={setVoiceoverModelId}>
+              <SelectTrigger className="h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {voiceoverProvider(voiceoverProviderKey).models.map((option) => (
+                  <SelectItem key={option.id} value={option.id}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="border border-border rounded-[10px] p-3.5 space-y-1">

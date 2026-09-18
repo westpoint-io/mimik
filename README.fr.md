@@ -37,6 +37,7 @@ Clique sur enregistrer, fais ce que tu as à faire, et récupère un guide soign
   - [▶️ Lecture Guide Me](#️-lecture-guide-me)
   - [🎙️ Narration vocale (optionnel)](#️-narration-vocale-optionnel)
   - [✏️ Éditeur de guides](#️-éditeur-de-guides)
+  - [🔊 Voix off de la vidéo (option)](#-voix-off-de-la-vidéo-option)
   - [📤 Export multi-format](#-export-multi-format)
 - [🔐 Confidentialité et stockage](#-confidentialité-et-stockage)
 - [🤝 Contribuer](#-contribuer)
@@ -181,11 +182,22 @@ réordonne ou supprime en lot, et reviens en arrière via l'historique de versio
 
 </div>
 
+### 🔊 Voix off de la vidéo (option)
+
+Activez-la dans le panneau d'export et chaque étape de la vidéo est lue à voix haute, avec votre
+propre clé OpenAI ou ElevenLabs. Si vous avez déjà renseigné une clé OpenAI pour les descriptions IA,
+Mimik la réutilise : rien d'autre à créer. Les étapes narrées restent à l'écran jusqu'à la fin de la
+voix, donc rien n'est coupé, et les clips sont mis en cache localement pour que réexporter le même
+guide ne coûte rien.
+
+Désactivée par défaut : posséder une clé n'active jamais la narration, c'est vous qui l'activez.
+
 ### 📤 Export multi-format
 
 Partage tes guides dans le format qui colle à ton flux :
 
-- **Vidéo** : parcours narré, mp4/H.264, avec le curseur qui se déplace vers chaque cible
+- **Vidéo** : parcours narré, mp4/H.264, avec le curseur qui se déplace vers chaque cible — au choix avec une
+  voix off ElevenLabs qui lit chaque étape, ce qui rend aussi la vidéo conforme à la Section 508
 - **PDF** : prêt à imprimer, A4 portrait avec sauts de page auto
 - **DOCX** : ouvre-le et continue dans Word
 - **HTML** : autonome, à partager partout, images intégrées en base64
@@ -207,7 +219,7 @@ Tes guides, étapes et captures restent sur ton appareil. Pas de backend, pas de
 
 Si tu masques des données personnelles avant de partager un guide, lis d'abord [ce que Smart Blur ne couvre pas](#-smart-blur) : il n'atteint ni les iframes, ni le shadow DOM, ni le texte dessiné dans une image.
 
-Deux choses sortent bien du navigateur, toutes deux documentées dans la [politique de confidentialité](https://mimik.westpoint.io/privacy/) : les icônes de sites sont récupérées via le service de favicons de Google, ce qui envoie le domaine du site, et les fonctions optionnelles d'IA et de voix envoient du texte ou de l'audio au fournisseur que tu as configuré.
+Deux choses sortent bien du navigateur, toutes deux documentées dans la [politique de confidentialité](https://mimik.westpoint.io/privacy/) : les icônes de sites sont récupérées via le service de favicons de Google, ce qui envoie le domaine du site, et les fonctions optionnelles d'IA, de narration vocale et de voix off envoient du texte ou de l'audio au fournisseur que tu as configuré — la voix off envoie le texte de chaque étape au moment de l'export, et seulement si tu l'actives.
 
 <div align="right">
 

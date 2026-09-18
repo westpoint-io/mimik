@@ -25,10 +25,14 @@ const PROTOCOL_HEADERS: Record<AIProtocol, (key: string) => Record<string, strin
   }),
 };
 
-const VOICE_ENDPOINTS: Record<string, { url: string; headers: (key: string) => Record<string, string> }> = {
+const DIRECT_ENDPOINTS: Record<string, { url: string; headers: (key: string) => Record<string, string> }> = {
   groq: {
     url: 'https://api.groq.com/openai/v1/models',
     headers: (key) => ({ Authorization: `Bearer ${key}` }),
+  },
+  elevenlabs: {
+    url: 'https://api.elevenlabs.io/v1/user',
+    headers: (key) => ({ 'xi-api-key': key }),
   },
 };
 
@@ -150,7 +154,7 @@ export async function validateApiKey(
   const config = findProvider(provider);
 
   if (!config) {
-    const endpoint = VOICE_ENDPOINTS[provider];
+    const endpoint = DIRECT_ENDPOINTS[provider];
     if (!endpoint) {
       logger.error('No API key validation endpoint for provider', provider);
       return { valid: false, reason: 'network' };

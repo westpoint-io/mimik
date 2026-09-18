@@ -1,6 +1,19 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { AVC_CODEC, FRAME_HEIGHT, FRAME_WIDTH, VP9_CODEC } from '@/core/export/video-support';
+import {
+  AVC_CODEC,
+  COVER_SECONDS,
+  FRAME_HEIGHT,
+  FRAME_WIDTH,
+  STEP_SECONDS,
+  TRANSITION_SECONDS,
+  uniformTimeline,
+  VOICE_LEAD_SEC,
+  VOICE_TAIL_SEC,
+  VP9_CODEC,
+  videoSeconds,
+  voiceTimeline,
+} from '@/core/export/video-support';
 
 interface ProbedConfig {
   codec: string;
@@ -122,5 +135,58 @@ describe('canExportVideo', () => {
     const afterFirst = probed.length;
     await pickContainer();
     expect(probed.length).toBe(afterFirst);
+  });
+});
+
+describe('voiceTimeline', () => {
+  it('leaves an unnarrated guide on the structural timeline', () => {
+    expect(voiceTimeline(3, new Map())).toEqual(uniformTimeline(3));
+  });
+
+  it('never shortens a step whose narration is briefer than the animation', () => {
+    expect(voiceTimeline(1, new Map([[0, 0.5]])).stepSeconds[0]).toBe(STEP_SECONDS);
+  });
+
+  it('holds a step until a long narration finishes, with a lead-in and a tail', () => {
+    expect(voiceTimeline(1, new Map([[0, 9]])).stepSeconds[0]).toBeCloseTo(VOICE_LEAD_SEC + 9 + VOICE_TAIL_SEC, 10);
+  });
+
+  it('stretches the cover card for the spoken title', () => {
+    expect(voiceTimeline(1, new Map([[-1, 6]])).coverSeconds).toBeCloseTo(VOICE_LEAD_SEC + 6 + VOICE_TAIL_SEC, 10);
+    expect(voiceTimeline(1, new Map([[-1, 0.2]])).coverSeconds).toBe(COVER_SECONDS);
+  });
+
+  it('sizes each step from its own clip', () => {
+    const timeline = voiceTimeline(3, new Map([[1, 8]]));
+    expect(timeline.stepSeconds[0]).toBe(STEP_SECONDS);
+    expect(timeline.stepSeconds[1]).toBeGreaterThan(STEP_SECONDS);
+    expect(timeline.stepSeconds[2]).toBe(STEP_SECONDS);
+  });
+});
+
+describe('videoSeconds', () => {
+  it('is nothing for a guide with no frames', () => {
+    expect(videoSeconds(0, true)).toBe(0);
+  });
+
+  it('counts one step as its full hold', () => {
+    expect(videoSeconds(1, false)).toBeCloseTo(STEP_SECONDS, 10);
+  });
+
+  it('takes the cross-dissolve off each join', () => {
+    expect(videoSeconds(3, false)).toBeCloseTo(3 * STEP_SECONDS - 2 * TRANSITION_SECONDS, 10);
+  });
+
+  it('adds both cards when the cover is on', () => {
+    expect(videoSeconds(1, true) - videoSeconds(1, false)).toBeCloseTo(2 * COVER_SECONDS, 10);
+  });
+
+  it('grows with a narrated timeline, which is what the estimate is for', () => {
+    const narrated = voiceTimeline(2, new Map([[0, 9]]));
+    expect(videoSeconds(2, false, narrated)).toBeGreaterThan(videoSeconds(2, false));
+    expect(videoSeconds(2, false, narrated)).toBeCloseTo(
+      VOICE_LEAD_SEC + 9 + VOICE_TAIL_SEC + STEP_SECONDS - TRANSITION_SECONDS,
+      10,
+    );
   });
 });

@@ -36,6 +36,7 @@ export interface ExportOptions {
   stepDescriptions: boolean;
   resolution: VideoResolution;
   gifQuality: GifQuality;
+  voiceover: boolean;
 }
 
 export const DEFAULT_EXPORT_OPTIONS: ExportOptions = {
@@ -46,6 +47,7 @@ export const DEFAULT_EXPORT_OPTIONS: ExportOptions = {
   stepDescriptions: true,
   resolution: '720p',
   gifQuality: 'medium',
+  voiceover: false,
 };
 
 const bool = (value: unknown, fallback: boolean) => (typeof value === 'boolean' ? value : fallback);
@@ -64,6 +66,7 @@ export function normaliseExportOptions(value: unknown): ExportOptions {
       ? (raw.resolution as VideoResolution)
       : DEFAULT_EXPORT_OPTIONS.resolution,
     gifQuality: raw.gifQuality && raw.gifQuality in GIF_SPECS ? raw.gifQuality : DEFAULT_EXPORT_OPTIONS.gifQuality,
+    voiceover: bool(raw.voiceover, DEFAULT_EXPORT_OPTIONS.voiceover),
   };
 }
 

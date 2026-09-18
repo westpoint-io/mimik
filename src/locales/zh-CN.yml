@@ -98,6 +98,14 @@ settings:
   showKey: 显示密钥
   hideKey: 隐藏密钥
   aiLanguage: 描述语言
+  voiceover: "视频配音"
+  textToSpeech: "文字 → 语音"
+  voiceoverHint: "Mimik 会在导出的视频中朗读每个步骤的文本。"
+  voiceoverUsingAiKey: "未设置配音密钥，Mimik 将使用上方「AI 描述」中的 OpenAI 密钥。"
+  voiceoverNoKey: "未设置 API 密钥，因此无法为视频配音。"
+  voice: "语音"
+  speechToText: "语音 → 文字"
+  voiceNarrationHint: "边录边讲，Mimik 会根据你说的内容写出每个步骤。"
   voiceNarration: 语音讲解
   voiceUsingAiKey: "未设置语音密钥，因此 Mimik 会使用上方 AI 描述中的 OpenAI 密钥。"
   aiNoKey: "未设置 API 密钥，步骤将使用普通的规则描述。"
@@ -373,6 +381,14 @@ annotationEditor:
   done: 完成
 
 exportPreview:
+  voiceover: "配音"
+  voiceoverHint: "朗读每个步骤，画面会保持到语音结束。"
+  voiceoverNoKey: "在设置中添加 OpenAI 或 ElevenLabs 密钥即可为视频配音。"
+  videoLength: "视频时长 $1"
+  videoLengthVoice: "视频时长 $1 → $2（含配音）"
+  voiceoverCost: "$1 段音频 · 约 $2 个字符待合成"
+  voiceoverFailed: "配音失败，此视频为无声。请在设置中检查 API 密钥。"
+  narrating: "正在为第 $1 步配音，共 $2 步"
   stepDescriptions: "步骤说明"
   stepDescriptionsHint: "将步骤文字绘制到每一帧视频中"
   resolution: "视频质量"
@@ -407,6 +423,8 @@ videoPlayer:
   previousStep: "上一步"
   nextStep: "下一步"
   speed: "播放速度"
+  mute: "静音"
+  unmute: "取消静音"
 
 exportMenu:
   docx: DOCX

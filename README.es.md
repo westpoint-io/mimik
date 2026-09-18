@@ -37,6 +37,7 @@ Le das a grabar, haces lo tuyo, y obtienes una guía pulida con capturas anotada
   - [▶️ Reproducción Guide Me](#️-reproducción-guide-me)
   - [🎙️ Narración por voz (opcional)](#️-narración-por-voz-opcional)
   - [✏️ Editor de guías](#️-editor-de-guías)
+  - [🔊 Voz en off del vídeo (opcional)](#-voz-en-off-del-vídeo-opcional)
   - [📤 Exportación multi-formato](#-exportación-multi-formato)
 - [🔐 Privacidad y almacenamiento](#-privacidad-y-almacenamiento)
 - [🤝 Contribuir](#-contribuir)
@@ -181,11 +182,22 @@ vuelve atrás con el historial de versiones.
 
 </div>
 
+### 🔊 Voz en off del vídeo (opcional)
+
+Actívala en el panel de exportación y cada paso del vídeo se leerá en voz alta, con tu propia clave
+de OpenAI o ElevenLabs. Si ya configuraste una clave de OpenAI para las descripciones con IA, Mimik
+la reutiliza: no hay que registrarse en nada más. Los pasos narrados permanecen en pantalla hasta que
+la voz termina, así que nada se corta, y los clips se guardan en caché local para que volver a
+exportar la misma guía no cueste nada.
+
+Desactivada por defecto: tener una clave nunca activa la narración; lo haces tú.
+
 ### 📤 Exportación multi-formato
 
 Comparte tus guías en el formato que mejor encaje con tu flujo:
 
-- **Video**: recorrido narrado, mp4/H.264, con el cursor moviéndose a cada objetivo
+- **Video**: recorrido narrado, mp4/H.264, con el cursor moviéndose a cada objetivo — opcionalmente con una
+  voz en off de ElevenLabs que lee cada paso, lo que además hace el vídeo apto para la Sección 508
 - **PDF**: listo para imprimir, A4 vertical con saltos automáticos
 - **DOCX**: ábrelo y sigue editando en Word
 - **HTML**: autónomo, comparte donde sea, imágenes embebidas en base64
@@ -207,7 +219,7 @@ Tus guías, pasos y capturas viven en tu dispositivo. No hay backend, no hay cue
 
 Si estás enmascarando datos personales antes de compartir una guía, lee primero [lo que Smart Blur no cubre](#-smart-blur): no alcanza iframes, shadow DOM ni texto dibujado dentro de imágenes.
 
-Dos cosas sí salen del navegador, ambas documentadas en la [política de privacidad](https://mimik.westpoint.io/privacy/): los iconos de los sitios se piden al servicio de favicons de Google, lo que envía el dominio de ese sitio, y las funciones opcionales de IA y voz mandan texto o audio al proveedor que configuraste.
+Dos cosas sí salen del navegador, ambas documentadas en la [política de privacidad](https://mimik.westpoint.io/privacy/): los iconos de los sitios se piden al servicio de favicons de Google, lo que envía el dominio de ese sitio, y las funciones opcionales de IA, narración por voz y voz en off mandan texto o audio al proveedor que configuraste: la voz en off envía el texto de cada paso al exportar, y solo si la activas.
 
 <div align="right">
 
