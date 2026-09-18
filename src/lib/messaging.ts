@@ -1,6 +1,7 @@
 import { defineExtensionMessaging } from '@webext-core/messaging';
 import type { DOMContext } from '@/core/capture/dom/context';
 import type { CaptureStateValue, PauseReason } from '@/core/capture/machine';
+import type { VoiceoverProviderKey } from '@/core/export/voiceover/providers';
 import type { ElementMeta } from '@/core/guides/types';
 
 export interface GetStateResponse {
@@ -122,6 +123,15 @@ export interface ValidateApiKeyResponse {
   warning?: 'cannot-spend';
 }
 
+export interface ListVoicesData {
+  provider: VoiceoverProviderKey;
+  apiKey: string;
+}
+
+export interface ListVoicesResponse {
+  voices: { id: string; name: string }[];
+}
+
 export interface EnterBlurModeResponse {
   entered: boolean;
 }
@@ -160,6 +170,7 @@ interface MimikProtocol {
   startNarration(): StartNarrationResponse;
   generateGuideDescription(data: GenerateGuideDescriptionData): GenerateGuideDescriptionResponse;
   validateApiKey(data: ValidateApiKeyData): ValidateApiKeyResponse;
+  listVoices(data: ListVoicesData): ListVoicesResponse;
   rewriteSelection(data: RewriteSelectionData): RewriteSelectionResponse;
 }
 
