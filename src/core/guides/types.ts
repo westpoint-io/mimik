@@ -3,6 +3,8 @@ import type { AIProviderKey } from '@/core/capture/ai/models';
 import type { VoiceProvider } from '@/core/capture/voice/transcribe';
 import type { BrandLogo } from '@/core/export/branding';
 import type { ExportOptions } from '@/core/export/options';
+import type { VoiceoverApiKeys } from '@/core/export/voiceover/config';
+import type { VoiceoverProviderKey } from '@/core/export/voiceover/providers';
 import type { GuideMeSession } from '@/core/guideme/session';
 import type { ScreenshotEdits } from '@/core/screenshot/types';
 
@@ -74,6 +76,10 @@ export interface Settings {
   voiceApiKey: string;
   voiceMicrophoneId: string;
   voiceLanguage: string;
+  voiceoverProvider: VoiceoverProviderKey;
+  voiceoverApiKeys: VoiceoverApiKeys;
+  voiceoverVoiceId: string;
+  voiceoverModelId: string;
   blurPresets: Record<string, boolean>;
   targetColor: string;
   brandLogo: BrandLogo | null;
@@ -104,6 +110,12 @@ export interface ElementMeta {
   rect: { x: number; y: number; width: number; height: number };
   devicePixelRatio: number;
   clickPoint?: { x: number; y: number };
+}
+
+export interface VoiceClip {
+  id: string;
+  bytes: ArrayBuffer;
+  createdAt: number;
 }
 
 export interface Snapshot {
