@@ -42,7 +42,8 @@ src/
 │   │   ├── start-notification.ts # Recording notification overlay
 │   │   └── step-description.ts   # Fallback rule-based descriptions
 │   ├── blur/                # Smart blur: regex presets, DOM scanner, element picker, panel UI
-│   ├── export/              # HTML, PDF, DOCX, Markdown, video generators + shared utils
+│   ├── export/              # HTML, PDF, DOCX, Markdown, video/GIF generators + shared utils
+│   │   └── voiceover/       # ElevenLabs text-to-speech for narrated video exports
 │   └── guides/              # Data layer: types, Dexie DB, CRUD service
 ├── entrypoints/             # Chrome extension entry points (WXT)
 │   ├── background/          # Service worker: state machine, message handlers, tab management
@@ -93,7 +94,7 @@ src/
 |-------|------|---------|
 | Capture lifecycle | xstate | State machine (IDLE ↔ RECORDING ↔ PAUSED) in background service worker |
 | Fullview UI | Zustand | Search modal, guide counts, active guide data |
-| Persistence | Dexie (IndexedDB) | Guides, steps, screenshots, snapshots |
+| Persistence | Dexie (IndexedDB) | Guides, steps, screenshots, snapshots, cached voice clips |
 | Service worker recovery | sessionStorage | xstate machine snapshot persistence |
 | Background → Sidepanel | Port messaging | Real-time state broadcast |
 | Cross-context sync | BroadcastChannel | Guide mutations (star, delete) across sidepanel/fullview |
@@ -187,7 +188,7 @@ Extraction walks up from the target element to find:
 | PDF | `core/export/pdf-export.ts` | jsPDF, A4 portrait, auto page breaks |
 | Markdown | `core/export/markdown-export.ts` | Standard MD with base64 image data URLs |
 | DOCX | `core/export/docx-export.ts` | Lazy-imported, Word-compatible |
-| Video | `core/export/video-export.ts` | WebCodecs via mediabunny (lazy), mp4/H.264 with WebM/VP9 fallback |
+| Video | `core/export/video-export.ts` | WebCodecs via mediabunny (lazy), mp4/H.264 with WebM/VP9 fallback, optional voice-over |
 | GIF | `core/export/gif-export.ts` | gifenc (lazy), same frame timeline as the video; user picks Small/Medium/Large from `GIF_SPECS` |
 
 Video frames reuse `renderScreenshot`, so the auto-crop, click-target outline, annotations and
@@ -205,6 +206,69 @@ behind it. Encoding yields to the event loop every few frames to keep the tab re
 to a Web Worker crashed the renderer with `KILLED_BAD_MESSAGE` on the first `postMessage` and is
 unexplained.
 
+### Video voice-over (`core/export/voiceover/`)
+
+Off by default. With a key in settings and the export toggle on, every step description — plus the
+guide title over the cover card — is spoken and muxed in as one mono track (AAC for mp4, Opus for
+WebM).
+
+`providers.ts` is the registry, shaped like `AI_PROVIDERS`: OpenAI (`/audio/speech`, fixed voice
+list) and ElevenLabs (`/text-to-speech/{voice}`, per-account catalog via `listVoices`). Both return
+mp3. OpenAI is the default because most users already hold that key, and `resolveVoiceoverConfig`
+borrows it from AI Descriptions on the same terms `resolveVoiceApiKey` uses — both sides OpenAI, or
+nothing. **Holding a key never turns narration on**; `exportOptions.voiceover` defaults to false and
+only the user flips it. Keys are stored per provider (`voiceoverApiKeys`) so switching does not lose
+one, and a voice id is validated against the provider that issued it — an ElevenLabs id selected
+under OpenAI falls back to OpenAI's default rather than being sent and rejected. ElevenLabs ids are
+taken on trust, since the account catalog is larger than the shipped list.
+
+The clips are synthesised *before the first frame is drawn*, because their lengths decide the
+timeline: a step whose narration outruns the 5.23s animation holds its final, zoomed-in frame until
+the voice finishes (`voiceTimeline` in `video-support.ts`; `VOICE_LEAD_SEC` in, `VOICE_TAIL_SEC`
+out). `composeGuideFrames` therefore works from per-step spans (`stepSpans`/`stepStarts`) rather than
+a fixed stride, and `videoChapters` is handed the same timeline so the chapter marks still line up.
+With no timeline the spans collapse back to the uniform layout, which is what GIF still uses — GIF has
+no audio and is never narrated.
+
+Every animation helper saturates at the end of its window, so the extra frames are a still hold and
+need no special case. `voiceTrackPieces` measures each gap from an absolute sample position, so the
+rounding cannot drift over a long guide, and a clip that overruns its slot pushes the rest later
+instead of being cut.
+
+Narration never fails an export. No key, no AAC/Opus encoder, nothing to say, or the API itself
+refusing — all log and fall back to a silent video on the structural timeline, so the stretched
+timeline only ever exists when a track was actually produced. The failure is reported back on
+`VideoExportResult.voiceoverError` and the export panel says the video came out silent, because
+dropping paid-for narration without telling anyone is worse than the error. A user abort is the one
+thing `narrateOrSkip` rethrows — cancelling an export must still cancel it.
+
+Only the dashboard's export panel can turn narration on. `ExportMenu` in the side panel passes
+`voiceover: false` explicitly rather than inheriting the saved option, because that surface has no
+toggle and no indicator: a stored preference must not spend money somewhere the user cannot see or
+stop it. A rejected key's response body is never repeated into the error, since OpenAI echoes part of
+the key back in its 401. Clips are cached in Dexie (`voiceClips`, keyed by provider
++ voice + model + text hash, 500 most recent; the row type lives in `core/guides/types.ts` with the
+rest of the schema) because the preview re-encodes on every option change
+and each miss is a paid API call. The key is read in the export page, not the background: synthesis
+is cancellable through the same AbortSignal the encoder uses. `listVoices` does go through the
+background, next to `validateApiKey`.
+
+`VideoStepPlayer` was written for a silent video: `autoPlay` plus a hard-coded `muted`, and a control
+bar with no volume affordance. Narrated previews flip both — a browser will not autoplay with sound,
+so a narrated preview waits for the play button and that gesture buys it audio from the first frame,
+while a silent one still autoplays muted as before. The mute toggle is there in both cases.
+
+The export panel shows the voice-over control under Video quality wherever video export is possible,
+not only on the video preview tab — a guide can be exported to video from the format list without
+ever opening that tab. The length estimate appears only once voice-over is on; the estimate's second figure comes from the rendered chapters, so it is the
+real narrated length rather than a guess. `videoSeconds` in `video-support.ts` gives the first.
+
+Deliberately out of scope: rephrasing step text for speech (the descriptions are narrated verbatim —
+a spoken rewrite was considered and dropped), local/WASM TTS (86-330MB of ONNX weights, `wasm-unsafe-eval`, and
+runtime model fetches have drawn Web Store "remotely hosted code" rejections), and muxing the user's
+own recorded narration — the mic PCM reaches `runNarrationPipeline` and is discarded, and persisting
+it is a separate bet, not a blocker.
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -218,7 +282,7 @@ unexplained.
 | State (UI) | Zustand |
 | Storage | Dexie.js (IndexedDB) |
 | Messaging | webext-core |
-| Export | jsPDF, docx, mediabunny (WebCodecs video), gifenc (GIF), client-side HTML/Markdown |
+| Export | jsPDF, docx, mediabunny (WebCodecs video), gifenc (GIF), ElevenLabs (voice-over), client-side HTML/Markdown |
 | AI (optional) | Vercel AI SDK (`ai`, `@ai-sdk/openai`, `@ai-sdk/anthropic`) |
 | Event queue | p-queue (concurrency: 1) |
 | Icons | Lucide React |
