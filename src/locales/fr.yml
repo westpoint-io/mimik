@@ -98,6 +98,14 @@ settings:
   showKey: Afficher la clé
   hideKey: Masquer la clé
   aiLanguage: Langue des descriptions
+  voiceover: "Voix off de la vidéo"
+  textToSpeech: "texte → voix"
+  voiceoverHint: "Mimik lit le texte de chaque étape par-dessus la vidéo exportée."
+  voiceoverUsingAiKey: "Aucune clé de voix off n'est définie, Mimik utilise donc la clé OpenAI des Descriptions IA."
+  voiceoverNoKey: "Aucune clé API n'est définie, les vidéos ne peuvent donc pas être narrées."
+  voice: "Voix"
+  speechToText: "voix → texte"
+  voiceNarrationHint: "Explique le flux à voix haute et Mimik écrit chaque étape à partir de ce que tu as dit."
   voiceNarration: "Narration vocale"
   voiceUsingAiKey: "Aucune clé vocale n'est définie : Mimik utilise la clé OpenAI des descriptions IA ci-dessus."
   aiNoKey: "Aucune clé API définie, les étapes utiliseront donc des descriptions simples basées sur des règles."
@@ -373,6 +381,14 @@ annotationEditor:
   done: "Terminé"
 
 exportPreview:
+  voiceover: "Voix off"
+  voiceoverHint: "Lit chaque étape à voix haute. Chaque étape reste à l'écran jusqu'à la fin de la voix."
+  voiceoverNoKey: "Ajoutez une clé OpenAI ou ElevenLabs dans les Réglages pour narrer les vidéos."
+  videoLength: "Durée de la vidéo $1"
+  videoLengthVoice: "Durée de la vidéo $1 → $2 avec voix off"
+  voiceoverCost: "$1 clips · environ $2 caractères à synthétiser"
+  voiceoverFailed: "La narration a échoué, cette vidéo est donc muette. Vérifiez la clé API dans les Réglages."
+  narrating: "Narration de l'étape $1 sur $2"
   stepDescriptions: "Textes d'étape"
   stepDescriptionsHint: "Incruster le texte de l'étape sur chaque image"
   resolution: "Qualité vidéo"
@@ -407,6 +423,8 @@ videoPlayer:
   previousStep: "Étape précédente"
   nextStep: "Étape suivante"
   speed: "Vitesse de lecture"
+  mute: "Couper le son"
+  unmute: "Activer le son"
 
 exportMenu:
   docx: DOCX

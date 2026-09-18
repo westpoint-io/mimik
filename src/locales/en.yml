@@ -98,6 +98,14 @@ settings:
   showKey: Show key
   hideKey: Hide key
   aiLanguage: Description Language
+  voiceover: "Video Voice-over"
+  textToSpeech: "text → speech"
+  voiceoverHint: "Mimik speaks each step's text over the exported video."
+  voiceoverUsingAiKey: "No voice-over key is set, so Mimik uses the OpenAI key from AI Descriptions above."
+  voiceoverNoKey: "No API key is set, so videos cannot be narrated."
+  voice: "Voice"
+  speechToText: "speech → text"
+  voiceNarrationHint: "Talk through the workflow and Mimik writes each step from what you said."
   voiceNarration: Voice Narration
   voiceUsingAiKey: "No voice key is set, so Mimik uses the OpenAI key from AI Descriptions above."
   aiNoKey: "No API key is set, so steps will use plain rule-based descriptions."
@@ -373,6 +381,14 @@ annotationEditor:
   done: Done
 
 exportPreview:
+  voiceover: "Voice-over"
+  voiceoverHint: "Read each step aloud. Steps are held until the voice finishes."
+  voiceoverNoKey: "Add an OpenAI or ElevenLabs key in Settings to narrate videos."
+  videoLength: "Video length $1"
+  videoLengthVoice: "Video length $1 → $2 with voice-over"
+  voiceoverCost: "$1 clips · about $2 characters to synthesise"
+  voiceoverFailed: "Narration failed, so this video is silent. Check the API key in Settings."
+  narrating: "Narrating step $1 of $2"
   stepDescriptions: "Step captions"
   stepDescriptionsHint: "Draw the step text onto each video frame"
   resolution: "Video quality"
@@ -407,6 +423,8 @@ videoPlayer:
   previousStep: "Previous step"
   nextStep: "Next step"
   speed: "Playback speed"
+  mute: "Mute"
+  unmute: "Unmute"
 
 exportMenu:
   docx: DOCX

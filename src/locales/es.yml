@@ -98,6 +98,14 @@ settings:
   showKey: Mostrar clave
   hideKey: Ocultar clave
   aiLanguage: Idioma de descripciones
+  voiceover: "Voz en off del vídeo"
+  textToSpeech: "texto → voz"
+  voiceoverHint: "Mimik lee el texto de cada paso sobre el vídeo exportado."
+  voiceoverUsingAiKey: "No hay clave de voz en off, así que Mimik usa la clave de OpenAI de Descripciones con IA."
+  voiceoverNoKey: "No hay ninguna clave de API configurada, así que los vídeos no se pueden narrar."
+  voice: "Voz"
+  speechToText: "voz → texto"
+  voiceNarrationHint: "Explica el flujo en voz alta y Mimik escribe cada paso con lo que dijiste."
   voiceNarration: "Narración por voz"
   voiceUsingAiKey: "No hay clave de voz, así que Mimik usa la clave de OpenAI de Descripciones con IA de arriba."
   aiNoKey: "No hay clave de API, así que los pasos usarán descripciones básicas por reglas."
@@ -373,6 +381,14 @@ annotationEditor:
   done: Listo
 
 exportPreview:
+  voiceover: "Voz en off"
+  voiceoverHint: "Lee cada paso en voz alta. Cada paso se mantiene hasta que termina la voz."
+  voiceoverNoKey: "Añade una clave de OpenAI o ElevenLabs en Ajustes para narrar los vídeos."
+  videoLength: "Duración del vídeo $1"
+  videoLengthVoice: "Duración del vídeo $1 → $2 con voz en off"
+  voiceoverCost: "$1 clips · unos $2 caracteres a sintetizar"
+  voiceoverFailed: "La narración falló, así que este vídeo es mudo. Revisa la clave de API en Ajustes."
+  narrating: "Narrando el paso $1 de $2"
   stepDescriptions: "Textos de paso"
   stepDescriptionsHint: "Dibujar el texto del paso en cada fotograma"
   resolution: "Calidad de vídeo"
@@ -407,6 +423,8 @@ videoPlayer:
   previousStep: "Paso anterior"
   nextStep: "Paso siguiente"
   speed: "Velocidad de reproducción"
+  mute: "Silenciar"
+  unmute: "Activar sonido"
 
 exportMenu:
   docx: DOCX
