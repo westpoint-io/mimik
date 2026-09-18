@@ -4,6 +4,7 @@ import { i18n } from '#imports';
 import { downloadBlob, downloadText, safeFilename } from '@/core/export/download';
 import { exportGuideAsHTML } from '@/core/export/html-export';
 import { exportGuideAsMarkdown } from '@/core/export/markdown-export';
+import { loadExportOptions } from '@/core/export/options';
 import { exportGuideAsPDF } from '@/core/export/pdf-export';
 import { canExportVideo } from '@/core/export/video-support';
 import { getGuide } from '@/core/guides/service';
@@ -83,10 +84,17 @@ export default function ExportMenu({
         abortRef.current = controller;
         setProgress(0);
         const { exportGuideAsVideo } = await import('@/core/export/video-export');
-        const { blob, extension } = await exportGuideAsVideo(guide, steps, screenshots, undefined, {
-          signal: controller.signal,
-          onProgress: (encoded, frames) => setProgress(frames > 0 ? encoded / frames : 0),
-        });
+        const saved = await loadExportOptions();
+        const { blob, extension } = await exportGuideAsVideo(
+          guide,
+          steps,
+          screenshots,
+          { ...saved, voiceover: false },
+          {
+            signal: controller.signal,
+            onProgress: (encoded, frames) => setProgress(frames > 0 ? encoded / frames : 0),
+          },
+        );
         downloadBlob(blob, safeFilename(guide.title, extension));
       } else {
         downloadBlob(await exportGuideAsPDF(guide, steps, screenshots), safeFilename(guide.title, 'pdf'));

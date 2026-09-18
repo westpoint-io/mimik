@@ -7,6 +7,11 @@ import type { Guide, Screenshot, Step } from '@/core/guides/types';
 const exportGuideAsVideo = vi.hoisted(() => vi.fn());
 const exportGuideAsHTML = vi.hoisted(() => vi.fn());
 const canExportVideo = vi.hoisted(() => vi.fn());
+const stored = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
+
+vi.mock('@/lib/browser-api', () => ({
+  localStorage: { get: async () => stored.value, set: async () => {} },
+}));
 
 vi.mock('@/core/export/video-export', () => ({ exportGuideAsVideo }));
 vi.mock('@/ui/fullview/VideoStepPlayer', () => ({ default: () => <div data-testid="video-player" /> }));
@@ -124,5 +129,62 @@ describe('ExportPreviewModal document preview', () => {
     await waitFor(() => expect(exportGuideAsHTML).toHaveBeenCalled());
     const passed = exportGuideAsHTML.mock.calls[0][1] as Step[];
     expect(passed.map((s) => s.id)).toEqual(steps.map((s) => s.id));
+  });
+});
+
+describe('ExportPreviewModal voice-over controls', () => {
+  const voiceoverToggle = () => screen.queryByRole('button', { name: 'exportPreview.voiceover' });
+  const lengthNote = () => screen.queryByText(/exportPreview\.videoLength/);
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    stored.value = { voiceoverProvider: 'openai', voiceoverApiKeys: { openai: 'sk-test' } };
+    canExportVideo.mockResolvedValue(true);
+    exportGuideAsHTML.mockResolvedValue('<html lang="en"><head></head><body></body></html>');
+    exportGuideAsVideo.mockResolvedValue({ blob: new Blob(['video']), extension: 'mp4', chapters: [] });
+    URL.createObjectURL = vi.fn(() => 'blob:video');
+    URL.revokeObjectURL = vi.fn();
+  });
+
+  it('is offered on the document tab too, since video can be exported from there', async () => {
+    renderModal(3);
+
+    await waitFor(() => expect(exportGuideAsHTML).toHaveBeenCalled());
+    expect(voiceoverToggle()).not.toBeNull();
+  });
+
+  it('is offered on the video tab', async () => {
+    renderModal(3);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'exportPreview.modeVideo' }));
+
+    await waitFor(() => expect(voiceoverToggle()).not.toBeNull());
+  });
+
+  it('is absent entirely when this browser cannot encode video', async () => {
+    canExportVideo.mockResolvedValue(false);
+    renderModal(3);
+
+    await waitFor(() => expect(exportGuideAsHTML).toHaveBeenCalled());
+    expect(voiceoverToggle()).toBeNull();
+  });
+
+  it('holds the length estimate back until voice-over is switched on', async () => {
+    renderModal(3);
+
+    await waitFor(() => expect(voiceoverToggle()).not.toBeNull());
+    expect(lengthNote()).toBeNull();
+
+    fireEvent.click(voiceoverToggle() as HTMLElement);
+    await waitFor(() => expect(lengthNote()).not.toBeNull());
+  });
+
+  it('cannot be switched on without a key', async () => {
+    stored.value = {};
+    renderModal(3);
+
+    await waitFor(() => expect(voiceoverToggle()).not.toBeNull());
+    expect((voiceoverToggle() as HTMLButtonElement).disabled).toBe(true);
+    expect(lengthNote()).toBeNull();
   });
 });
