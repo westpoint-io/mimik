@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { app, BrowserWindow, nativeImage, protocol, screen } from 'electron';
 import { ask } from '../src/main/ask';
-import { DesktopRecorder, frameFor, shouldCapture } from '../src/main/capture/recorder';
+import { DesktopRecorder, frameFor, isRepeatClick, shouldCapture } from '../src/main/capture/recorder';
 import { clampToDisplays } from '../src/main/capture/region';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from '../src/main/capture/screenshot-store';
 import { DEFAULT_CAPTURE_SETTINGS, loadSettings, normaliseSettings, saveSettings } from '../src/main/capture/settings';
@@ -100,6 +100,16 @@ app.whenReady().then(async () => {
       }) &&
       shouldCapture({ ...DEFAULT_CAPTURE_SETTINGS, captureOutsideClicks: false }, region, outsidePoint),
     detail: 'ignored when off, captured when on, inside always captured, never filtered outside region mode',
+  });
+
+  results.push({
+    name: 'a double click is one step',
+    ok:
+      isRepeatClick(1_000, 1_120) &&
+      isRepeatClick(1_000, 1_500) &&
+      !isRepeatClick(1_000, 1_501) &&
+      !isRepeatClick(null, 1_000),
+    detail: 'a press within 500 ms of the last one is dropped, later is kept, the first always captures',
   });
 
   const insidePoint = { x: region.x + 10, y: region.y + 10 };

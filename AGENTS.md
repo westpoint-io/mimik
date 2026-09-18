@@ -526,13 +526,22 @@ and the editor show it with no export-side work. Keeping it out of the file mean
 never decoded and re-encoded on the way to disk, and the pointer can be moved or removed later
 without touching the original.
 
+A double click is one action, so it is one step. `isRepeatClick` drops a press that lands within
+500 ms of the one before it, and the clock is reset on every press rather than on every capture, so a
+burst of clicks stays suppressed until there is a real gap. The rule is time only, deliberately: it
+takes its timestamps as arguments rather than reading the clock, so it is exercised without a mouse.
+
+The cost is that two deliberate presses on different controls less than 500 ms apart become one step.
+Matching on position as well would separate them, and that was tried and dropped in favour of keeping
+the rule identical to the one this behaviour was modelled on.
+
 A click outside the capture area cannot be framed by a region that does not contain it, so those
 captures fall back to the whole display the click landed on. `shouldCapture` is exported for that
 decision rather than being inline in the hook handler, so the rule is testable on its own. It only
 filters in `region` mode; the other two modes frame every click by construction.
 
 `check:pipeline` covers all five: clamping and persistence round-trip through the real file, an
-unknown mode falls back, the opt-in rule holds in four positions, `frameFor` returns the right
+unknown mode falls back, the opt-in rule holds in four positions, a double click collapses to one step, `frameFor` returns the right
 rectangle for all three modes including both window fallbacks, a 400 ms delay measurably slows the
 grab, and the same synthetic frame renders to a different size once a cursor is drawn over it. It restores whatever
 settings were on disk when it finishes.

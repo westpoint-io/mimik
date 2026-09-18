@@ -11,6 +11,7 @@ import { type CaptureMode, type CaptureSettings, DEFAULT_CAPTURE_SETTINGS } from
 
 const TARGET_SIZE = 28;
 const SETTLE_MS = 60;
+const REPEAT_CLICK_MS = 500;
 
 export interface CursorMark {
   x: number;
@@ -41,6 +42,10 @@ function inside(region: Region, point: { x: number; y: number }): boolean {
   );
 }
 
+export function isRepeatClick(previousAt: number | null, at: number): boolean {
+  return previousAt !== null && at - previousAt <= REPEAT_CLICK_MS;
+}
+
 export function shouldCapture(settings: CaptureSettings, region: Region, point: { x: number; y: number }): boolean {
   if (settings.captureMode !== 'region') return true;
   return inside(region, point) || settings.captureOutsideClicks;
@@ -63,6 +68,7 @@ export class DesktopRecorder {
   private queue: Promise<unknown> = Promise.resolve();
   private paused = false;
   private running = false;
+  private lastClickAt: number | null = null;
 
   constructor(
     private readonly region: () => Region,
@@ -79,6 +85,7 @@ export class DesktopRecorder {
     if (!started.ok) return { ok: false, reason: started.reason, detail: started.detail };
     this.running = true;
     this.paused = false;
+    this.lastClickAt = null;
     return { ok: true };
   }
 
@@ -105,6 +112,10 @@ export class DesktopRecorder {
     const point = { x: action.x, y: action.y };
     if (this.ignores(point)) return;
     if (!shouldCapture(this.settings(), this.region(), point)) return;
+    const at = Date.now();
+    const repeat = isRepeatClick(this.lastClickAt, at);
+    this.lastClickAt = at;
+    if (repeat) return;
     this.enqueue(point);
   }
 
