@@ -2,11 +2,12 @@ import {
   FullscreenButton,
   MediaPlayer,
   MediaProvider,
+  MuteButton,
   PlayButton,
   useMediaRemote,
   useMediaState,
 } from '@vidstack/react';
-import { ChevronLeft, ChevronRight, Maximize, Minimize, Pause, Play } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Maximize, Minimize, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { i18n } from '#imports';
 import type { StepKind, VideoChapter } from '@/core/export/video-export';
@@ -25,6 +26,7 @@ const KIND_DOT: Record<StepKind, string> = {
 interface VideoStepPlayerProps {
   src: string;
   chapters: VideoChapter[];
+  narrated?: boolean;
 }
 
 function formatClock(seconds: number): string {
@@ -84,6 +86,7 @@ function PlayerBody({ chapters }: { chapters: VideoChapter[] }) {
   const rate = useMediaState('playbackRate');
   const paused = useMediaState('paused');
   const fullscreen = useMediaState('fullscreen');
+  const muted = useMediaState('muted');
 
   const index = activeIndex(chapters, time);
   const seekTo = (seconds: number) => remote.seek(Math.max(0, seconds + 0.01));
@@ -133,6 +136,13 @@ function PlayerBody({ chapters }: { chapters: VideoChapter[] }) {
             {rate}x
           </button>
 
+          <MuteButton
+            className="rounded-md p-1 hover:bg-white/15"
+            aria-label={muted ? i18n.t('videoPlayer.unmute') : i18n.t('videoPlayer.mute')}
+          >
+            {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+          </MuteButton>
+
           <FullscreenButton className="rounded-md p-1 hover:bg-white/15">
             {fullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
           </FullscreenButton>
@@ -144,12 +154,12 @@ function PlayerBody({ chapters }: { chapters: VideoChapter[] }) {
   );
 }
 
-export default function VideoStepPlayer({ src, chapters }: VideoStepPlayerProps) {
+export default function VideoStepPlayer({ src, chapters, narrated = false }: VideoStepPlayerProps) {
   return (
     <MediaPlayer
       src={{ src, type: 'video/mp4' }}
-      autoPlay
-      muted
+      autoPlay={!narrated}
+      muted={!narrated}
       playsInline
       load="eager"
       viewType="video"
