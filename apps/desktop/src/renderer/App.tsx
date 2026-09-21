@@ -29,7 +29,7 @@ export default function App() {
       <div className="min-h-screen flex flex-col bg-background">
         <TopNav route={route} onSettings={library ? () => setSettingsOpen(true) : undefined} />
         {settingsOpen ? (
-          <main className="flex-1">
+          <main className="flex-1 min-h-0">
             <SettingsPanel onClose={() => setSettingsOpen(false)} />
           </main>
         ) : route.page === 'guide' ? (

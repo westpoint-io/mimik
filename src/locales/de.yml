@@ -180,6 +180,18 @@ desktop:
   startButton: Starten
   guideCount: $1 Anleitung
   guideCountPlural: $1 Anleitungen
+  shortcutsSection: "Tastenkürzel"
+  captureKeys: "Kürzel und benannte Tasten aufzeichnen"
+  captureTyping: "Eingaben aufzeichnen"
+  typingDebounce: "Eingabeschritt beenden nach"
+  typingSmart: "Den Feldtext lesen, wenn möglich"
+  typingSmartHint: "Andernfalls werden die Tastenanschläge aufgezeichnet"
+  shortcutStartStop: "Aufnahme starten oder beenden"
+  shortcutPauseResume: "Pausieren oder fortsetzen"
+  shortcutCapture: "Jetzt einen Schritt aufnehmen"
+  shortcutPress: "Tasten drücken…"
+  shortcutClear: "Löschen"
+  shortcutTaken: "Eine andere Anwendung nutzt diese Taste bereits"
 
 fullview:
   allGuides: Alle Anleitungen

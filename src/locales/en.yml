@@ -180,6 +180,18 @@ desktop:
   startButton: Start
   guideCount: $1 guide
   guideCountPlural: $1 guides
+  shortcutsSection: "Shortcuts"
+  captureKeys: "Record shortcuts and named keys"
+  captureTyping: "Record what you type"
+  typingDebounce: "Close a typing step after"
+  typingSmart: "Read the field's own text when it can"
+  typingSmartHint: "Off means the guide records your keystrokes instead"
+  shortcutStartStop: "Start or finish a recording"
+  shortcutPauseResume: "Pause or resume"
+  shortcutCapture: "Capture a step now"
+  shortcutPress: "Press keys…"
+  shortcutClear: "Clear"
+  shortcutTaken: "Another application already owns this key"
 
 fullview:
   allGuides: All Guides

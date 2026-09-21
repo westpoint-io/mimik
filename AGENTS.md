@@ -741,6 +741,26 @@ rectangle for all three modes including both window fallbacks, a 400 ms delay me
 grab, and the same synthetic frame renders to a different size once a cursor is drawn over it. It restores whatever
 settings were on disk when it finishes.
 
+## Desktop Settings
+
+Three sections behind one left nav: Capture, AI descriptions, Shortcuts. The split is the same one
+that decides where a file lives. Capture and Shortcuts describe things the extension has no concept
+of, so they are written in `apps/desktop` against `capture-settings.json`. AI descriptions are
+identical on both surfaces, so `AiSettings` lives in `packages/ui` and each app hands it a
+`validate` function — the desktop passes core's `validateApiKey` directly, and the extension goes
+through its background messaging, which is the only part that differs.
+
+`SettingsView`, the extension's own 699-line settings screen, was deliberately **not** moved. It
+carries voice narration, smart blur, brand logos and a microphone picker, none of which mean
+anything on desktop, and it reaches for `@/lib/browser-api`. Moving it would have dragged all of
+that across for the sake of four fields; extracting the four was less code and leaves the extension
+untouched.
+
+The shortcut recorder reads a keystroke and writes an Electron accelerator. It refuses a bare key,
+because a global accelerator with no modifier takes that key from every application on the machine,
+and it ignores a modifier pressed alone, because `Shift` is not a shortcut. `accelerator()` is a
+pure function over the event so it is tested without a keyboard.
+
 ## Capture Shortcuts
 
 Three global accelerators, stored in `capture-settings.json` beside everything else: start/stop,

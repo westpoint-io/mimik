@@ -180,6 +180,18 @@ desktop:
   startButton: Démarrer
   guideCount: $1 guide
   guideCountPlural: $1 guides
+  shortcutsSection: "Raccourcis"
+  captureKeys: "Enregistrer les raccourcis et touches nommées"
+  captureTyping: "Enregistrer ce que vous tapez"
+  typingDebounce: "Clôturer l'étape de saisie après"
+  typingSmart: "Lire le texte du champ lorsque c’est possible"
+  typingSmartHint: "Sinon, le guide enregistre vos frappes"
+  shortcutStartStop: "Démarrer ou terminer un enregistrement"
+  shortcutPauseResume: "Mettre en pause ou reprendre"
+  shortcutCapture: "Capturer une étape maintenant"
+  shortcutPress: "Appuyez sur les touches…"
+  shortcutClear: "Effacer"
+  shortcutTaken: "Une autre application utilise déjà cette touche"
 
 fullview:
   allGuides: Tous les guides

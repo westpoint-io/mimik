@@ -180,6 +180,18 @@ desktop:
   startButton: 开始
   guideCount: $1 个指南
   guideCountPlural: $1 个指南
+  shortcutsSection: "快捷键"
+  captureKeys: "记录快捷键和命名按键"
+  captureTyping: "记录输入内容"
+  typingDebounce: "输入步骤结束延迟"
+  typingSmart: "尽可能读取输入框自身的文本"
+  typingSmartHint: "关闭时改为记录按键"
+  shortcutStartStop: "开始或结束录制"
+  shortcutPauseResume: "暂停或继续"
+  shortcutCapture: "立即捕获一步"
+  shortcutPress: "请按下按键…"
+  shortcutClear: "清除"
+  shortcutTaken: "其他应用已占用该按键"
 
 fullview:
   allGuides: 全部指南
