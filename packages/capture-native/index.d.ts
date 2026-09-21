@@ -22,6 +22,8 @@ export declare function focusedElement(): Promise<UiElement | null>
 
 export declare function isSupported(): boolean
 
+export declare function keyLabel(keycode: number): string | null
+
 export interface UiElement {
   role?: string
   name?: string

@@ -781,3 +781,4 @@ module.exports = nativeBinding
 module.exports.elementAtPoint = nativeBinding.elementAtPoint
 module.exports.focusedElement = nativeBinding.focusedElement
 module.exports.isSupported = nativeBinding.isSupported
+module.exports.keyLabel = nativeBinding.keyLabel

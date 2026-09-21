@@ -5,6 +5,7 @@ import {
   elementAt,
   elementLookupAvailable,
   focusedWindow,
+  keyLabel,
   InputHook,
   listDisplays,
 } from '../src/main/capture';
@@ -85,6 +86,14 @@ app.whenReady().then(async () => {
         ? `${element.role ?? 'no role'} — ${element.ariaLabel ?? '(unnamed)'}`
         : 'no element resolved under the cursor'
       : 'the accessibility addon has no build for this platform',
+  );
+
+  const named = lookup ? await keyLabel(28) : null;
+  if (lookup && named !== 'Enter') failures++;
+  line(
+    'key names',
+    lookup ? (named === 'Enter' ? 'ok' : 'fail') : 'n/a',
+    lookup ? `scancode 28 resolved to ${named ?? 'nothing'} on the foreground layout` : 'no addon on this platform',
   );
 
   const hook = new InputHook();

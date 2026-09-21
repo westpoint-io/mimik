@@ -308,7 +308,8 @@ the way in and the rectangle with `screenToDipRect` on the way out, the same con
 name.
 
 `focusedElement()` is the second call, and it is what makes typing capture possible without reading
-keystrokes. It reports `isPassword` alongside the usual fields, and the value is discarded at the
+keystrokes. `keyLabel()` is the third, and unlike the other two it is synchronous, because resolving
+a scancode against a keyboard layout is a local call with nothing to wait on. It reports `isPassword` alongside the usual fields, and the value is discarded at the
 addon boundary when that flag is set, so a password never reaches our data even though UIAutomation
 already withholds it.
 
@@ -528,6 +529,18 @@ written unless it is a text field with something in it — so pressing `n` in a 
 typing into a surface that exposes no value, costs nothing. The exception is a password field, which
 by design reports no value at all: there the step is written anyway, with no `inputValue`, and
 `buildFallbackDescription` words it as "Type password" rather than naming the field's contents.
+
+Keys that are not typing get their own step. A shortcut always does; `Enter`, `Tab` and `Escape` do
+only when no typing session was open, because the `Enter` that submits a field is part of that
+field's step rather than a step of its own. Auto-repeat is collapsed the way a double click is —
+`isRepeatKey` drops the same keycode within 500 ms, so holding a key down is one step.
+
+Naming the key is the only place a keyboard layout is consulted. `keyLabel` maps the hook's scancode
+through `MapVirtualKeyExW` against the **foreground window's** layout, so the same physical key reads
+as `Q` on QWERTY and `A` on AZERTY, which is what the application being recorded will have acted on.
+`ToUnicodeEx` is deliberately not used: it would name punctuation too, but it mutates the thread's
+dead-key state as a side effect, and a shortcut only needs the letter, digit or named key. A key that
+maps to none of those yields no label and therefore no step, rather than a step nobody can follow.
 
 Rich text is the gap. `ValuePattern` is what the value is read through, and a word processor or a
 browser's `contenteditable` exposes `TextPattern` instead, so typing there closes a session and

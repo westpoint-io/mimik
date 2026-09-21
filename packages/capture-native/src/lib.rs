@@ -63,6 +63,17 @@ pub fn focused_element() -> AsyncTask<ElementLookup> {
 }
 
 #[napi]
+pub fn key_label(keycode: u32) -> Option<String> {
+  #[cfg(windows)]
+  return win::key_label(keycode);
+  #[cfg(not(windows))]
+  {
+    let _ = keycode;
+    None
+  }
+}
+
+#[napi]
 pub fn is_supported() -> bool {
   cfg!(windows)
 }

@@ -3,7 +3,7 @@ import type { CaptureImage } from '@mimik/core/capture/sink';
 import type { ElementMeta } from '@mimik/core/guides/types';
 import { screen } from 'electron';
 import { cursorPoint } from './displays';
-import { elementAt, focusedField, isTextField, type ScreenElement } from './element';
+import { elementAt, focusedField, isTextField, keyLabel, type ScreenElement } from './element';
 import { focusedWindow } from './focused-window';
 import { type InputAction, InputHook, type KeyAction, type PointerAction } from './input-hook';
 import type { Region } from './region';
@@ -70,6 +70,7 @@ export interface RecorderHooks {
   ignores?: (point: Point) => boolean;
   lookup?: (point: Point) => Promise<ScreenElement | null>;
   focused?: () => Promise<ScreenElement | null>;
+  label?: (keycode: number) => Promise<string | null>;
 }
 
 export type RecorderStart = { ok: true } | { ok: false; reason: string; detail: string };
@@ -101,6 +102,19 @@ export function frameFor(mode: CaptureMode, point: Point, region: Region, window
   if (mode === 'screen') return display;
   if (mode === 'window') return window && inside(window, point) ? window : display;
   return inside(region, point) ? region : display;
+}
+
+export function isRepeatKey(previous: { keycode: number; at: number } | null, keycode: number, at: number): boolean {
+  return previous !== null && previous.keycode === keycode && at - previous.at <= REPEAT_CLICK_MS;
+}
+
+export function comboLabel(action: KeyAction, key: string): string {
+  const held: string[] = [];
+  if (action.meta) held.push('Meta');
+  if (action.ctrl) held.push('Ctrl');
+  if (action.alt) held.push('Alt');
+  if (action.shift) held.push('Shift');
+  return [...held, key].join('+');
 }
 
 export function isTypingKey(action: KeyAction): boolean {
@@ -138,6 +152,7 @@ export class DesktopRecorder {
   private paused = false;
   private running = false;
   private lastClickAt: number | null = null;
+  private lastKey: { keycode: number; at: number } | null = null;
   private typing = false;
   private idle: NodeJS.Timeout | null = null;
   private readonly grab: (area: Rect) => Promise<Capture>;
@@ -145,6 +160,7 @@ export class DesktopRecorder {
   private readonly ignores: (point: Point) => boolean;
   private readonly lookup: (point: Point) => Promise<ScreenElement | null>;
   private readonly focused: () => Promise<ScreenElement | null>;
+  private readonly label: (keycode: number) => Promise<string | null>;
 
   constructor(
     private readonly region: () => Region,
@@ -157,6 +173,7 @@ export class DesktopRecorder {
     this.ignores = hooks.ignores ?? (() => false);
     this.lookup = hooks.lookup ?? elementAt;
     this.focused = hooks.focused ?? focusedField;
+    this.label = hooks.label ?? keyLabel;
   }
 
   async start(): Promise<RecorderStart> {
@@ -209,14 +226,30 @@ export class DesktopRecorder {
 
   private onKey(action: KeyAction): void {
     if (MODIFIER_KEYS.has(action.keycode)) return;
-    if (!isTypingKey(action)) {
-      this.commitTyping();
+    if (isTypingKey(action)) {
+      this.typing = true;
+      if (this.idle) clearTimeout(this.idle);
+      this.idle = setTimeout(() => this.commitTyping(), TYPING_IDLE_MS);
+      this.idle.unref?.();
       return;
     }
-    this.typing = true;
-    if (this.idle) clearTimeout(this.idle);
-    this.idle = setTimeout(() => this.commitTyping(), TYPING_IDLE_MS);
-    this.idle.unref?.();
+
+    const submitted = this.typing;
+    this.commitTyping();
+
+    const at = Date.now();
+    const repeat = isRepeatKey(this.lastKey, action.keycode, at);
+    this.lastKey = { keycode: action.keycode, at };
+    if (repeat) return;
+    if (submitted && !action.ctrl && !action.alt && !action.meta) return;
+    this.enqueue(() => this.captureKey(action));
+  }
+
+  async captureKey(action: KeyAction): Promise<void> {
+    const key = await this.label(action.keycode);
+    if (!key) return;
+    const field = await this.focused();
+    await this.write(`keydown:${comboLabel(action, key)}`, centreOf(field) ?? cursorPoint(), Promise.resolve(field));
   }
 
   private commitTyping(): void {

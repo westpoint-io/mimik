@@ -7,6 +7,12 @@ use windows::Win32::System::Com::{
   CoCreateInstance, CoInitializeEx, CLSCTX_INPROC_SERVER, COINIT_MULTITHREADED,
 };
 use windows::Win32::UI::Accessibility::*;
+use windows::Win32::UI::Input::KeyboardAndMouse::{
+  GetKeyboardLayout, MapVirtualKeyExW, HKL, MAPVK_VSC_TO_VK_EX, VK_BACK, VK_DELETE, VK_DOWN, VK_END,
+  VK_ESCAPE, VK_F1, VK_F24, VK_HOME, VK_INSERT, VK_LEFT, VK_NEXT, VK_PRIOR, VK_RETURN, VK_RIGHT, VK_SPACE,
+  VK_TAB, VK_UP,
+};
+use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId};
 
 use crate::{ElementRect, UiElement};
 
@@ -137,4 +143,53 @@ pub fn focused_element() -> Result<Option<UiElement>> {
     .and_then(|uia| unsafe { uia.GetFocusedElement() })
     .map_err(|error| napi::Error::from_reason(error.message()))?;
   Ok(Some(describe(&found)))
+}
+
+const NAMED_KEYS: &[(u16, &str)] = &[
+  (VK_RETURN.0, "Enter"),
+  (VK_TAB.0, "Tab"),
+  (VK_ESCAPE.0, "Escape"),
+  (VK_BACK.0, "Backspace"),
+  (VK_SPACE.0, "Space"),
+  (VK_DELETE.0, "Delete"),
+  (VK_INSERT.0, "Insert"),
+  (VK_HOME.0, "Home"),
+  (VK_END.0, "End"),
+  (VK_PRIOR.0, "PageUp"),
+  (VK_NEXT.0, "PageDown"),
+  (VK_UP.0, "ArrowUp"),
+  (VK_DOWN.0, "ArrowDown"),
+  (VK_LEFT.0, "ArrowLeft"),
+  (VK_RIGHT.0, "ArrowRight"),
+];
+
+const EXTENDED: u32 = 0xe00;
+
+fn foreground_layout() -> HKL {
+  let window = unsafe { GetForegroundWindow() };
+  let thread = unsafe { GetWindowThreadProcessId(window, None) };
+  unsafe { GetKeyboardLayout(thread) }
+}
+
+pub fn key_label(keycode: u32) -> Option<String> {
+  let extended = keycode >= EXTENDED;
+  let scancode = if extended {
+    0xe000 | (keycode - EXTENDED)
+  } else {
+    keycode
+  };
+  let vk = unsafe { MapVirtualKeyExW(scancode, MAPVK_VSC_TO_VK_EX, Some(foreground_layout())) } as u16;
+  if vk == 0 {
+    return None;
+  }
+  if let Some((_, name)) = NAMED_KEYS.iter().find(|(key, _)| *key == vk) {
+    return Some((*name).to_string());
+  }
+  if (VK_F1.0..=VK_F24.0).contains(&vk) {
+    return Some(format!("F{}", vk - VK_F1.0 + 1));
+  }
+  if vk < 128 && (vk as u8).is_ascii_alphanumeric() {
+    return Some((vk as u8 as char).to_string());
+  }
+  None
 }

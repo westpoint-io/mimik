@@ -19,6 +19,7 @@ const TEXT_ROLES = new Set(['textbox', 'combobox']);
 type Addon = {
   elementAtPoint(x: number, y: number): Promise<UiElement | null>;
   focusedElement(): Promise<UiElement | null>;
+  keyLabel(keycode: number): string | null;
   isSupported(): boolean;
 };
 
@@ -86,6 +87,11 @@ export async function focusedField(): Promise<ScreenElement | null> {
   if (!native) return null;
   const found = await within(native.focusedElement(), LOOKUP_TIMEOUT_MS);
   return found ? describe(found) : null;
+}
+
+export async function keyLabel(keycode: number): Promise<string | null> {
+  const native = await load();
+  return native?.keyLabel(keycode) ?? null;
 }
 
 export async function elementLookupAvailable(): Promise<boolean> {

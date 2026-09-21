@@ -8,7 +8,9 @@ import {
   type CaptureRequest,
   DesktopRecorder,
   frameFor,
+  comboLabel,
   isRepeatClick,
+  isRepeatKey,
   isTypingKey,
   shouldCapture,
   targetRect,
@@ -168,6 +170,7 @@ app.whenReady().then(async () => {
       settings: () => ({ ...REGION_MODE, showCursor: true }),
       lookup: () => Promise.resolve(control),
       focused: () => Promise.resolve(field),
+      label: (keycode) => Promise.resolve(keycode === 31 ? 'S' : null),
     },
   );
   await metaRecorder.capture({ x: region.x + 60, y: region.y + 40 });
@@ -256,6 +259,38 @@ app.whenReady().then(async () => {
       !press(1) &&
       !press(42),
     detail: 'a letter types, shift still types, a shortcut does not, and Enter, Tab, Escape and Shift all close the session',
+  });
+
+  const pressed = (keycode: number, held: Partial<KeyAction> = {}): KeyAction => ({
+    kind: 'keydown',
+    keycode,
+    shift: false,
+    alt: false,
+    ctrl: false,
+    meta: false,
+    at: 0,
+    ...held,
+  });
+
+  seen = null;
+  field = { ...control };
+  await metaRecorder.captureKey(pressed(31, { ctrl: true }));
+  const shortcut = seen as CaptureRequest | null;
+
+  seen = null;
+  await metaRecorder.captureKey(pressed(99, { ctrl: true }));
+  const unnamed = seen as CaptureRequest | null;
+
+  results.push({
+    name: 'a shortcut is its own step',
+    ok:
+      shortcut?.action === 'keydown:Ctrl+S' &&
+      comboLabel(pressed(31, { ctrl: true, shift: true }), 'S') === 'Ctrl+Shift+S' &&
+      unnamed === null &&
+      isRepeatKey({ keycode: 28, at: 1_000 }, 28, 1_400) &&
+      !isRepeatKey({ keycode: 28, at: 1_000 }, 28, 1_600) &&
+      !isRepeatKey({ keycode: 28, at: 1_000 }, 15, 1_100),
+    detail: `wrote ${shortcut?.action ?? 'nothing'}; an unnameable key wrote nothing, auto-repeat collapses, a different key does not`,
   });
 
   const page = { x: 0, y: 0, width: 800, height: 600 };
