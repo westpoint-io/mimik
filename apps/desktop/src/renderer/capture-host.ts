@@ -4,8 +4,10 @@ import {
   allScreenshotIds,
   getStepsForGuide,
   permanentlyDeleteGuide,
+  updateGuideDescription,
   updateGuideTitle,
 } from '@mimik/core/guides/service';
+import { nameGuide } from './ai';
 import { DesktopCaptureSink } from './capture-sink';
 
 const sink = new DesktopCaptureSink();
@@ -20,6 +22,10 @@ window.mimik.onRequest('mimik:capture:finishGuide', async (payload) => {
   const steps = await getStepsForGuide(guideId);
   const app = steps.find((step) => step.app?.name)?.app?.name;
   await updateGuideTitle(guideId, app ? i18n.t('desktop.guideInApp', [app]) : i18n.t('desktop.newGuide'));
+
+  const meta = await nameGuide(steps);
+  if (meta?.title) await updateGuideTitle(guideId, meta.title);
+  if (meta?.description) await updateGuideDescription(guideId, meta.description);
   return true;
 });
 

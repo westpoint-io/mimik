@@ -618,6 +618,21 @@ rather than the placeholder the extension fills in with AI. Desktop has no AI ti
 comes from the recorded application, or a generic one where no application was identified. Without
 it the guide screen waits forever on a title that is never written.
 
+Descriptions and the guide's name are written by the user's own provider key when there is one, and
+by rule when there is not. `getAIDescription` takes a serialised context string rather than a
+`DOMContext`, because the desktop has no DOM to hand it: `serializeScreenContext` writes the same
+shape of thing from the application, the window title, the control's role and name, and the value,
+which is what UIAutomation knows. No screenshot is ever sent.
+
+A step is written with its heuristic description immediately and `aiPending` set, then rewritten
+when the model answers. The flag is cleared **whichever way that goes** — a miss, a failure and a
+missing key all clear it — because a pending flag that only clears on success is the same trap as a
+title placeholder that only resolves with AI: without a key it stays there forever.
+
+Stopping a recording names the guide twice. The application name lands first so the view never opens
+on a placeholder, and `generateGuideMeta` replaces it if a key is configured. Ordering it that way
+means the guide is always named, and the AI title is an improvement rather than a prerequisite.
+
 Step descriptions are only as good as the element lookup. With one, `buildFallbackDescription` gets
 a role and an accessible name and writes the same wording it writes for the extension. Without one
 it has nothing but the action, and every step in the guide reads the same — which is what a

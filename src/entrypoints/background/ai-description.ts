@@ -3,7 +3,7 @@ import { getAIDescription } from '@/core/capture/ai/description';
 import { describeAiFailure } from '@/core/capture/ai/errors';
 import { resolveAiKey } from '@/core/capture/ai/keys';
 import { AI_PROVIDERS } from '@/core/capture/ai/models';
-import type { DOMContext } from '@/core/capture/dom/context';
+import { type DOMContext, serializeDOMContext } from '@/core/capture/dom/context';
 import { localStorage } from '@/lib/browser-api';
 import { broadcastAiToPanel } from '@/lib/port';
 
@@ -15,7 +15,7 @@ export async function generateAiDescription(domContext: DOMContext): Promise<str
   const model = (settings.aiModel as string) || AI_PROVIDERS[provider].defaultModel;
   try {
     const description = await getAIDescription(
-      domContext,
+      serializeDOMContext(domContext),
       provider,
       model,
       apiKey,
