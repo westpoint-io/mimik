@@ -115,9 +115,11 @@ function broadcastOverlay(command: OverlayCommand, id: string | null): void {
 }
 
 function applyShortcuts(): void {
-  if (!overlay) return;
-  const recording = overlay.state === 'recording' || overlay.state === 'paused';
-  bindShortcuts(shortcutMap((captureSettings ?? loadSettings()).shortcuts, recording), onShortcut);
+  setImmediate(() => {
+    if (!overlay) return;
+    const recording = overlay.state === 'recording' || overlay.state === 'paused';
+    bindShortcuts(shortcutMap((captureSettings ?? loadSettings()).shortcuts, recording), onShortcut);
+  });
 }
 
 function onShortcut(name: ShortcutName): void {

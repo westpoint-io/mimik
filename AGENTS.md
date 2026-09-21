@@ -708,6 +708,14 @@ another application already owns the key and throws on an accelerator Electron c
 `bindShortcuts` catches both and hands back the list it could not take rather than failing the
 launch over a key clash.
 
+**Rebinding must never happen inside a shortcut's own handler.** Unregistering the accelerator that
+is currently firing hangs the main process on Windows — the app goes to "not responding" with no
+error anywhere. Two things keep that from happening: `bindShortcuts` returns immediately when the
+wanted set matches what is already bound, which covers pause and resume since both count as
+recording, and `applyShortcuts` defers the work with `setImmediate` so it is never on the handler's
+stack whatever the set turns out to be. Pausing from the card worked throughout, because that path
+reaches the rebind through IPC rather than from inside a global shortcut.
+
 Start/stop goes straight from hidden to recording rather than arming first, because a shortcut whose
 job is to start recording should not need a second press. The stored region is used as it stands,
 which is what makes that possible in `region` mode.

@@ -12,6 +12,14 @@ export function shortcutMap(shortcuts: CaptureShortcuts, recording: boolean): Re
 }
 
 let bound: string[] = [];
+let current: Record<ShortcutName, string | null> | null = null;
+
+export function sameShortcuts(
+  a: Record<ShortcutName, string | null> | null,
+  b: Record<ShortcutName, string | null>,
+): boolean {
+  return a !== null && a.startStop === b.startStop && a.pauseResume === b.pauseResume && a.capture === b.capture;
+}
 
 export function unbindShortcuts(): void {
   for (const accelerator of bound) {
@@ -20,12 +28,14 @@ export function unbindShortcuts(): void {
     } catch {}
   }
   bound = [];
+  current = null;
 }
 
 export function bindShortcuts(
   wanted: Record<ShortcutName, string | null>,
   run: (name: ShortcutName) => void,
 ): string[] {
+  if (sameShortcuts(current, wanted)) return [];
   unbindShortcuts();
   const refused: string[] = [];
   for (const [name, accelerator] of Object.entries(wanted) as [ShortcutName, string | null][]) {
@@ -37,5 +47,6 @@ export function bindShortcuts(
       refused.push(accelerator);
     }
   }
+  current = { ...wanted };
   return refused;
 }

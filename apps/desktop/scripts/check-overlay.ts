@@ -2,7 +2,7 @@ import { app, BrowserWindow, globalShortcut, screen, webContents } from 'electro
 import { clampToDisplays, defaultRegion, loadRegion, type Region, saveRegion } from '../src/main/capture/region';
 import type { CaptureMode } from '../src/main/capture/settings';
 import { CaptureOverlay } from '../src/main/overlay';
-import { bindShortcuts, shortcutMap, unbindShortcuts } from '../src/main/shortcuts';
+import { bindShortcuts, sameShortcuts, shortcutMap, unbindShortcuts } from '../src/main/shortcuts';
 
 interface CheckResult {
   name: string;
@@ -236,6 +236,22 @@ app.whenReady().then(async () => {
     'shortcuts bind only while they can act',
     idleOnly && allThree && released && refusedIdle.length === 0 && refusedRecording.length === 0,
     'start/stop is always live, pause and capture only while recording, all released on unbind',
+  );
+
+  bindShortcuts(shortcutMap(keys, true), () => {});
+  let rebound = false;
+  bindShortcuts(shortcutMap(keys, true), () => {
+    rebound = true;
+  });
+  const stillLive = Object.values(keys).every((key) => globalShortcut.isRegistered(key));
+  unbindShortcuts();
+  check(
+    'rebinding an unchanged set touches nothing',
+    stillLive &&
+      !rebound &&
+      sameShortcuts(shortcutMap(keys, true), shortcutMap(keys, true)) &&
+      !sameShortcuts(shortcutMap(keys, false), shortcutMap(keys, true)),
+    'the same map is a no-op, so a shortcut never unregisters itself from inside its own handler',
   );
 
   const clash = bindShortcuts(shortcutMap({ ...keys, startStop: 'NotAKey+@@' }, false), () => {});
