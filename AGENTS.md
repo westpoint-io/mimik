@@ -416,7 +416,11 @@ coordinates — copying the paths into the overlay would have made it the fifth 
 the repository.
 
 The footer is always the same two slots: the transient action on the left, the one that moves the
-recording forward on the right, filled. Close then Start while armed, Pause then Finish while
+recording forward on the right, filled. That filled button is `--deep` in every state. A paused
+variant that filled it with `--accent` was tried and removed: the design system reserves the accent
+for icons, links, focus rings, toggles and meters and never for a button fill, and the header
+already says "Paused" beside a stopped dot, so the colour was carrying no information the card did
+not already show. Close then Start while armed, Pause then Finish while
 recording, Resume then Finish while paused. Finish keeps the right-hand slot for the whole recording
 so it never moves under the cursor.
 

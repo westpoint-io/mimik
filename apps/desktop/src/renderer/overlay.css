@@ -362,11 +362,6 @@ body.controls button.primary {
   font-weight: 600;
 }
 
-body.controls[data-state='paused'] button.primary {
-  background: var(--accent);
-  color: #fff;
-}
-
 body.controls button svg {
   width: 15px;
   height: 15px;
