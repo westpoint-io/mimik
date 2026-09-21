@@ -14,6 +14,7 @@ import {
   isRepeatClick,
   isRepeatKey,
   isTypingKey,
+  matchesShortcut,
   shouldCapture,
   targetRect,
 } from '../src/main/capture/recorder';
@@ -200,7 +201,11 @@ app.whenReady().then(async () => {
     },
     {
       grab: syntheticDisplay,
-      settings: () => ({ ...REGION_MODE, showCursor: true }),
+      settings: () => ({
+        ...REGION_MODE,
+        showCursor: true,
+        shortcuts: { ...REGION_MODE.shortcuts, capture: 'Alt+Shift+S' },
+      }),
       lookup: () => Promise.resolve(control),
       focused: () => Promise.resolve(field),
       label: (keycode) => Promise.resolve(keycode === 31 ? 'S' : null),
@@ -313,6 +318,23 @@ app.whenReady().then(async () => {
   seen = null;
   await metaRecorder.captureKey(pressed(99, { ctrl: true }));
   const unnamed = seen as CaptureRequest | null;
+
+  seen = null;
+  await metaRecorder.captureKey(pressed(31, { alt: true, shift: true }));
+  const ownHotkey = seen as CaptureRequest | null;
+
+  results.push({
+    name: 'our own hotkey never becomes a step',
+    ok:
+      ownHotkey === null &&
+      matchesShortcut('Alt+Shift+S', pressed(31, { alt: true, shift: true }), 'S') &&
+      matchesShortcut('shift+ALT+s', pressed(31, { alt: true, shift: true }), 'S') &&
+      !matchesShortcut('Alt+Shift+S', pressed(31, { alt: true }), 'S') &&
+      !matchesShortcut('Alt+Shift+S', pressed(31, { alt: true, shift: true, ctrl: true }), 'S') &&
+      !matchesShortcut('Alt+Shift+S', pressed(31, { alt: true, shift: true }), 'R') &&
+      !matchesShortcut(null, pressed(31, { alt: true, shift: true }), 'S'),
+    detail: 'the configured accelerator is dropped whatever order it is written in, a near miss is not',
+  });
 
   results.push({
     name: 'a shortcut is its own step',

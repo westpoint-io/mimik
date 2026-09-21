@@ -143,6 +143,27 @@ export function chooseTypedText(field: ScreenElement | null, buffer: string, sma
   return value;
 }
 
+export function matchesShortcut(accelerator: string | null, action: KeyAction, key: string): boolean {
+  if (!accelerator) return false;
+  const parts = accelerator
+    .split('+')
+    .map((part) => part.trim().toLowerCase())
+    .filter(Boolean);
+  const wanted = parts.pop();
+  if (!wanted || wanted !== key.toLowerCase()) return false;
+
+  const held = new Set(parts);
+  const either = held.has('commandorcontrol') || held.has('cmdorctrl');
+  const onMac = process.platform === 'darwin';
+  return (
+    held.has('alt') === action.alt &&
+    held.has('shift') === action.shift &&
+    (held.has('control') || held.has('ctrl') || (either && !onMac)) === action.ctrl &&
+    (held.has('super') || held.has('meta') || held.has('cmd') || held.has('command') || (either && onMac)) ===
+      action.meta
+  );
+}
+
 export function isTypingKey(action: KeyAction): boolean {
   if (MODIFIER_KEYS.has(action.keycode)) return false;
   if (action.ctrl || action.alt || action.meta) return false;
@@ -285,6 +306,8 @@ export class DesktopRecorder {
   async captureKey(action: KeyAction): Promise<void> {
     const key = await this.label(action.keycode);
     if (!key) return;
+    const { shortcuts } = this.settings();
+    if (Object.values(shortcuts).some((accelerator) => matchesShortcut(accelerator, action, key))) return;
     const field = await this.focused();
     await this.write(`keydown:${comboLabel(action, key)}`, centreOf(field) ?? cursorPoint(), Promise.resolve(field));
   }

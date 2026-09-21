@@ -723,6 +723,13 @@ which is what makes that possible in `region` mode.
 Capture-now writes an ordinary click step at the cursor. There is no separate action for it: the
 point of pressing it is that the cursor is already on the thing worth capturing.
 
+The keystroke that drives a shortcut must not also be recorded as one. Without that check, pausing a
+recording writes "Press Alt+Shift+P on Mimik" as a step, which is both wrong and confusing, and
+resuming writes another. `matchesShortcut` compares a keystroke against each configured accelerator
+before `captureKey` writes anything, and it compares by parts rather than by string so
+`Shift+Alt+P` and `Alt+Shift+P` are the same shortcut. `CommandOrControl` resolves to Control
+everywhere but macOS.
+
 ## Export Formats
 
 | Format | Generator | Details |
