@@ -2,7 +2,15 @@ import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { app, BrowserWindow, nativeImage, protocol, screen } from 'electron';
 import { ask } from '../src/main/ask';
-import { DesktopRecorder, frameFor, isRepeatClick, shouldCapture } from '../src/main/capture/recorder';
+import type { ScreenElement } from '../src/main/capture/element';
+import {
+  type CaptureRequest,
+  DesktopRecorder,
+  frameFor,
+  isRepeatClick,
+  shouldCapture,
+  targetRect,
+} from '../src/main/capture/recorder';
 import { clampToDisplays } from '../src/main/capture/region';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from '../src/main/capture/screenshot-store';
 import { DEFAULT_CAPTURE_SETTINGS, loadSettings, normaliseSettings, saveSettings } from '../src/main/capture/settings';
@@ -126,6 +134,54 @@ app.whenReady().then(async () => {
       sameRect(frameFor('region', insidePoint, region, windowRect), region) &&
       sameRect(frameFor('region', outsidePoint, region, windowRect), display.bounds),
     detail: 'screen takes the display, window takes the window and falls back twice, region takes the region',
+  });
+
+  const control: ScreenElement = {
+    role: 'button',
+    name: 'SaveButton',
+    textContent: null,
+    ariaLabel: 'Save',
+    altText: null,
+    rect: { x: region.x + 40, y: region.y + 30, width: 120, height: 32 },
+  };
+  let seen: CaptureRequest | null = null;
+  const metaRecorder = new DesktopRecorder(
+    () => region,
+    (fn) => fn(),
+    (request) => {
+      seen = request;
+      return Promise.resolve(null);
+    },
+    syntheticDisplay,
+    () => ({ ...REGION_MODE, showCursor: false }),
+    () => false,
+    () => Promise.resolve(control),
+  );
+  await metaRecorder.capture({ x: region.x + 60, y: region.y + 40 });
+  const meta = (seen as CaptureRequest | null)?.elementMeta;
+  results.push({
+    name: 'accessibility metadata reaches the step',
+    ok:
+      meta?.source === 'uia' &&
+      meta.ariaLabel === 'Save' &&
+      meta.name === 'SaveButton' &&
+      meta.role === 'button' &&
+      meta.rect.width === 120 &&
+      meta.rect.x === 40,
+    detail: `source ${meta?.source ?? 'none'}, role ${meta?.role ?? 'none'}, named ${meta?.ariaLabel ?? 'none'}`,
+  });
+
+  const page = { x: 0, y: 0, width: 800, height: 600 };
+  const click = { x: 160, y: 66 };
+  const boxed = (rect: ScreenElement['rect']) => targetRect({ ...control, rect }, page, click).width;
+  results.push({
+    name: 'the target box hugs the control',
+    ok:
+      boxed({ x: 100, y: 50, width: 120, height: 32 }) === 120 &&
+      targetRect(null, page, click).width === 28 &&
+      boxed({ x: 0, y: 0, width: 800, height: 600 }) === 28 &&
+      boxed({ x: 700, y: 50, width: 200, height: 32 }) === 28,
+    detail: 'a real rectangle wins; no element, one covering the frame, or one overflowing it falls back to the click box',
   });
 
   activeGuide = await ask<string>(win.webContents, 'mimik:capture:startGuide');

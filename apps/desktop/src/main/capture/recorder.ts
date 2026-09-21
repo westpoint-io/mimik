@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { CaptureImage } from '@mimik/core/capture/sink';
 import type { ElementMeta } from '@mimik/core/guides/types';
 import { screen } from 'electron';
+import { elementAt, type ScreenElement } from './element';
 import { focusedWindow } from './focused-window';
 import { type InputAction, InputHook } from './input-hook';
 import type { Region } from './region';
@@ -63,6 +64,27 @@ export function frameFor(
   return inside(region, point) ? region : display;
 }
 
+export function targetRect(
+  element: ScreenElement | null,
+  framed: Rect,
+  point: { x: number; y: number },
+): ElementMeta['rect'] {
+  const local = { x: point.x - framed.x, y: point.y - framed.y };
+  const box = {
+    x: local.x - TARGET_SIZE / 2,
+    y: local.y - TARGET_SIZE / 2,
+    width: TARGET_SIZE,
+    height: TARGET_SIZE,
+  };
+  const rect = element?.rect;
+  if (!rect) return box;
+  if (rect.width * rect.height > framed.width * framed.height * 0.5) return box;
+  const inner = { x: rect.x - framed.x, y: rect.y - framed.y, width: rect.width, height: rect.height };
+  if (inner.x < 0 || inner.y < 0) return box;
+  if (inner.x + inner.width > framed.width || inner.y + inner.height > framed.height) return box;
+  return inner;
+}
+
 export class DesktopRecorder {
   private hook = new InputHook();
   private queue: Promise<unknown> = Promise.resolve();
@@ -77,6 +99,7 @@ export class DesktopRecorder {
     private readonly grab: (area: Rect) => Promise<Capture> = captureArea,
     private readonly settings: () => CaptureSettings = () => DEFAULT_CAPTURE_SETTINGS,
     private readonly ignores: (point: { x: number; y: number }) => boolean = () => false,
+    private readonly lookup: (point: { x: number; y: number }) => Promise<ScreenElement | null> = elementAt,
   ) {}
 
   async start(): Promise<RecorderStart> {
@@ -129,6 +152,7 @@ export class DesktopRecorder {
 
   async capture(point: { x: number; y: number }): Promise<void> {
     const settings = this.settings();
+    const element = this.lookup(point);
     const region = this.region();
 
     const taken = await this.withHidden(async () => {
@@ -142,23 +166,19 @@ export class DesktopRecorder {
 
     const screenshotId = randomUUID();
     const local = { x: point.x - framed.x, y: point.y - framed.y };
+    const target = await element;
 
     await this.send({
       action: 'click',
       elementMeta: {
-        source: 'screen',
-        textContent: null,
-        ariaLabel: null,
+        source: target ? 'uia' : 'screen',
+        textContent: target?.textContent ?? null,
+        ariaLabel: target?.ariaLabel ?? null,
         placeholder: null,
-        altText: null,
-        name: null,
-        role: null,
-        rect: {
-          x: local.x - TARGET_SIZE / 2,
-          y: local.y - TARGET_SIZE / 2,
-          width: TARGET_SIZE,
-          height: TARGET_SIZE,
-        },
+        altText: target?.altText ?? null,
+        name: target?.name ?? null,
+        role: target?.role ?? null,
+        rect: targetRect(target, framed, point),
         devicePixelRatio: scale,
         clickPoint: local,
         ...(found.ok ? { app: found.window.app, window: { title: found.window.title } } : {}),

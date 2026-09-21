@@ -1,5 +1,13 @@
 import { app, nativeImage, screen } from 'electron';
-import { captureCursorDisplay, cursorPoint, focusedWindow, InputHook, listDisplays } from '../src/main/capture';
+import {
+  captureCursorDisplay,
+  cursorPoint,
+  elementAt,
+  elementLookupAvailable,
+  focusedWindow,
+  InputHook,
+  listDisplays,
+} from '../src/main/capture';
 
 function distinctColours(png: Buffer): number {
   const bitmap = nativeImage.createFromBuffer(png).toBitmap();
@@ -64,6 +72,19 @@ app.whenReady().then(async () => {
     'focused window',
     win.ok ? 'ok' : win.reason === 'unsupported-session' ? 'n/a' : 'fail',
     win.ok ? `${win.window.app.name} — ${win.window.title ?? '(untitled)'}` : `${win.reason}: ${win.detail}`,
+  );
+
+  const lookup = await elementLookupAvailable();
+  const element = lookup ? await elementAt(point) : null;
+  if (lookup && !element) failures++;
+  line(
+    'element at point',
+    lookup ? (element ? 'ok' : 'fail') : 'n/a',
+    lookup
+      ? element
+        ? `${element.role ?? 'no role'} — ${element.ariaLabel ?? '(unnamed)'}`
+        : 'no element resolved under the cursor'
+      : 'the accessibility addon has no build for this platform',
   );
 
   const hook = new InputHook();

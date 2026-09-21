@@ -188,12 +188,20 @@ The identity fields are shared, and every source populates them:
 | Field | DOM | macOS AX | Windows UIAutomation |
 |---|---|---|---|
 | `role` | `role` attribute, else tag name | `AXRole` | `ControlType` |
-| `name` | `name` attribute | `AXTitle` | `Name` |
+| `name` | `name` attribute | `AXIdentifier` | `AutomationId` |
 | `textContent` | trimmed text | `AXValue` / `AXSelectedText` | `Value` |
-| `ariaLabel` | `aria-label` | `AXDescription` / `AXARIAValueText` | `HelpText` |
-| `placeholder` | `placeholder` | `AXPlaceholderValue` | `Placeholder` |
+| `ariaLabel` | `aria-label` | `AXTitle` / `AXDescription` | `Name` |
+| `placeholder` | `placeholder` | `AXPlaceholderValue` | — |
 | `altText` | `img.alt` | `AXHelp` | `HelpText` |
 | `rect` | `getBoundingClientRect()` | `AXPosition` + `AXSize` | `BoundingRectangle` |
+
+The mapping is chosen so the shared precedence in `buildFallbackDescription` — `ariaLabel`,
+`placeholder`, `textContent`, `altText`, `name`, `role` — picks the right string without anyone
+branching on `source`. That is why the accessible name lands in `ariaLabel` rather than `name`:
+`name` sits near the bottom of that list, and a control's accessible name should beat its value.
+`name` therefore holds the stable machine identifier instead, which is what a future desktop replay
+will want. UIAutomation has no placeholder property in the API surface we bind, so that field stays
+null there.
 
 A fourth source, `screen`, knows only where the click landed: it fills `rect` with a fixed box around
 the click point, `clickPoint`, `devicePixelRatio`, `app` and `window`, and leaves every identity field
@@ -233,8 +241,8 @@ app in `apps/desktop/dist`. `electron-builder.yml` targets dmg/zip, nsis and App
 
 ## Desktop Capture Primitives
 
-`apps/desktop/src/main/capture` holds the four things a desktop capture needs. Only one comes from
-Electron; the other three are prebuilt npm packages rather than a crate we maintain.
+`apps/desktop/src/main/capture` holds the five things a desktop capture needs. One comes from
+Electron, three are prebuilt npm packages, and only the last is a crate we maintain.
 
 | Primitive | Source | Native |
 |---|---|---|
@@ -242,6 +250,7 @@ Electron; the other three are prebuilt npm packages rather than a crate we maint
 | Screenshot of a display | `node-screenshots` | prebuilt |
 | Focused foreign window | `get-windows` | prebuilt |
 | Global clicks and keys | `uiohook-napi` | prebuilt |
+| Control under a point | `@mimik/capture-native` | ours |
 
 Screenshots do not go through Electron's `desktopCapturer`. That route asks the xdg desktop portal
 on Wayland and fails outright when the portal does not answer, and it was returning frames that
@@ -250,8 +259,8 @@ has a Wayland path and needs no portal. Monitor identifiers there have nothing t
 display ids, so the monitor is resolved from a point inside the display's bounds rather than matched
 by id.
 
-Anything richer than these four — the accessibility tree in particular — needs an addon we build and
-maintain ourselves, and that is a separate task.
+Anything richer than these four — the accessibility tree in particular — has no prebuilt package
+worth taking, so it is an addon of our own in `packages/capture-native`.
 
 **On Linux, input and window lookup are X11 only; screenshots are not.** `uiohook-napi` links
 `libX11`/`libXtst` and hooks through `XRecord`, with no Wayland path; on a Wayland session the hook
@@ -264,6 +273,38 @@ macOS and Windows are unaffected.
 `pnpm --filter @mimik/desktop check:capture` builds and exercises every primitive, printing `ok`,
 `n/a` for a platform limit, or `FAIL`. Only `FAIL` sets a non-zero exit, so the check is meaningful
 on a machine where half the primitives cannot work.
+
+## Desktop Accessibility Addon
+
+`packages/capture-native` is a napi-rs addon exposing one thing: `elementAtPoint(x, y)`, the
+accessibility metadata for whatever control sits under a screen point. Nothing else belongs in it.
+Displays, screenshots, window lookup and the input hook are all covered by prebuilt npm packages
+already, and the accessibility tree is the only primitive with no usable package behind it — the
+candidates on npm either ship no prebuilt binaries at all, bind the wrong API, or are unmaintained,
+and an addon compiled from source at install time would need a full C++ toolchain on every user's
+machine.
+
+Rust rather than C++ because `node-gyp` cannot cross-compile and `cargo` can. `pnpm --filter
+@mimik/capture-native build:windows` produces `capture-native.win32-x64-msvc.node` on a Linux
+machine through `cargo-xwin`, which downloads the Windows SDK headers and import libraries itself.
+
+Windows only. `is_supported()` answers false everywhere else and `elementAtPoint` resolves to null,
+so the app, the checks and the recording pipeline all behave the same as when the binary is simply
+missing. macOS is the same shape of work against `AXUIElementCopyAttributeValue` and is not done.
+
+The implementation is `IUIAutomation::ElementFromPoint` and six property reads. COM is initialised
+multi-threaded once per worker thread and the `IUIAutomation` instance is cached in a thread local,
+because the call runs on the libuv threadpool through `AsyncTask` rather than on the main thread —
+a cross-process UIAutomation call against a busy application blocks for as long as that application
+takes to answer, and blocking Electron's main thread there would freeze the overlay mid-recording.
+Rectangles come back in physical pixels, so the caller converts the point with `dipToScreenPoint` on
+the way in and the rectangle with `screenToDipRect` on the way out, the same convention
+`focusedWindow` follows.
+
+`ControlType` is translated to the ARIA-ish role vocabulary the rest of the app already speaks, so
+`role === 'checkbox'` means the same thing whether it came from a DOM attribute or from
+`UIA_CheckBoxControlTypeId`. An unmapped control type yields a null role rather than an invented
+name.
 
 ## Desktop Storage
 
@@ -444,9 +485,26 @@ Window bounds come back in the platform's own coordinates. Windows reports physi
 every rectangle elsewhere in the app is in DIP, so `focusedWindow` converts through `screenToDipRect`
 before returning — without it a high-DPI machine crops a rectangle scaled by its own DPI factor.
 
-`elementSource` is `'screen'` for these steps: the click point, the region-relative target rect, the
-display scale factor, and the foreground app and window title are all known, but nothing about the
-control under the cursor is. Reading that needs the accessibility tree and is a later task.
+`elementSource` is `'uia'` when the accessibility lookup answered and `'screen'` when it did not.
+A `screen` step still knows the click point, a fixed target box around it, the display scale factor
+and the foreground app and window title; it just knows nothing about the control. That is what every
+step degrades to where the addon has no build, where the lookup times out, and on every platform but
+Windows.
+
+The lookup starts the moment the click arrives and is awaited after the grab, so it overlaps the
+settle delay and the screenshot instead of adding to them. That it runs early is not only for speed:
+the control has to be read before the click takes effect, or a menu that has opened or a button that
+has vanished is what answers. It is the mirror of the focused-window read, which has to happen late
+for the same reason — the window the click moved to the front is the one being photographed, but the
+control the click landed on is the one that was there before. It is capped at 1500 ms and a miss is
+`null`, never an error — a slow or unresponsive foreign application costs a step its metadata, not
+the recording.
+
+`targetRect` decides what the dashed target in the screenshot encloses. The control's own rectangle
+wins when there is one, which is the whole point of reading the accessibility tree; it falls back to
+a 28 px box around the click when there is no element, when the rectangle covers more than half the
+frame, or when it does not fit inside the frame. Without those two guards an unsupported application
+returns its top-level window and the target outlines the entire screenshot.
 
 `DesktopRecorder` takes the display grab as a constructor argument defaulting to `captureDisplay`, so
 `check:pipeline` feeds it a generated frame. The crop arithmetic, the sink, the step write and all
@@ -456,7 +514,9 @@ this one's.
 
 `pnpm --filter @mimik/desktop check:pipeline` captures two clicks into a throwaway guide, then
 asserts the steps landed on the guide, the screenshot is cropped to the region, the description came
-from the shared heuristic, and HTML, Markdown, PDF and DOCX all export non-empty. It then loads the
+from the shared heuristic, and HTML, Markdown, PDF and DOCX all export non-empty. A stubbed element
+lookup covers the two things the addon feeds: the metadata reaching the written step, and
+`targetRect` preferring the control's rectangle while rejecting an oversized or overflowing one. It then loads the
 real `index.html` and asserts that window answers a capture request and navigates to the finished
 guide, because the checks otherwise run against their own renderer and never exercise the entry
 point the user actually gets.
@@ -470,9 +530,10 @@ rather than the placeholder the extension fills in with AI. Desktop has no AI ti
 comes from the recorded application, or a generic one where no application was identified. Without
 it the guide screen waits forever on a title that is never written.
 
-Step descriptions read as bare actions until the accessibility tree lands. A screen capture knows
-where the click was and which application owned it, so `buildFallbackDescription` has no control
-name to work with and every step reads the same.
+Step descriptions are only as good as the element lookup. With one, `buildFallbackDescription` gets
+a role and an accessible name and writes the same wording it writes for the extension. Without one
+it has nothing but the action, and every step in the guide reads the same — which is what a
+`screen`-sourced recording looks like.
 
 ## Desktop Home Screen
 
