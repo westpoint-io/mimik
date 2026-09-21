@@ -498,6 +498,7 @@ steps:
   toggleSwitch: "Toggle $1"
   clickLink: 'Click link "$1"'
   click: "Click $1"
+  rightClick: "Right-click $1"
   typeIntoField: "Type into $1 field $2"
   typeInto: "Type into $1"
   typeSecret: "Type password"

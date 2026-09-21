@@ -529,7 +529,7 @@ written unless it is a text field with something to show for it. A password fiel
 in the other direction: it reports no value by design, and the step is written anyway with no
 `inputValue`, worded "Type password" rather than naming any contents.
 
-Keys that are not typing get their own step. A shortcut always does; `Enter`, `Tab` and `Escape` do
+Keys that are not typing get their own step, unless `captureKeys` is off. A shortcut always does; `Enter`, `Tab` and `Escape` do
 only when no typing session was open, because the `Enter` that submits a field is part of that
 field's step rather than a step of its own. Auto-repeat is collapsed the way a double click is —
 `isRepeatKey` drops the same keycode within 500 ms, so holding a key down is one step.
@@ -543,7 +543,8 @@ maps to none of those yields no label and therefore no step, rather than a step 
 
 Two sources compete for the text and `chooseTypedText` picks between them. The field's value wins
 by default, because it is what is actually on screen and it survives caret movement, selection and
-autocomplete. The keystroke buffer wins in three cases: the focused element reports no value, the
+autocomplete; turning `typingSmartDetection` off skips that read entirely and always uses the
+buffer. The keystroke buffer wins in three cases: the focused element reports no value, the
 value is empty, or the value runs more than twice the buffer and past 80 characters. That last rule
 is what makes rich text work — in a word processor the "field" is the whole document, so its value
 is the entire text rather than the sentence just typed, and the buffer is the only thing that knows
@@ -645,6 +646,11 @@ read by main rather than by core, because none of them mean anything to the exte
 | `cursorStyle` | `arrow`, `dot` on Linux | Which pointer shape gets drawn |
 | `screenshotDelayMs` | 0, capped at 2000 | Extra wait between the click and the grab |
 | `captureOutsideClicks` | off | Whether clicks beyond the capture area are recorded at all, in `region` mode only |
+| `captureKeys` | on | Whether a shortcut or a named key becomes a step |
+| `captureTyping` | on | Whether typing becomes a step |
+| `typingDebounceMs` | 1200, clamped to 200–5000 | Quiet time that closes a typing session |
+| `typingSmartDetection` | on | Off means the keystroke buffer is used and the field's value is never read |
+| `shortcuts` | three accelerators | Global keys for start/stop, pause/resume and capture now |
 
 `normaliseSettings` runs on every read and write, so an out-of-range delay clamps and an unknown
 cursor style falls back to the platform default rather than reaching the recorder.
@@ -655,6 +661,11 @@ target, not something baked into the stored bytes, so `renderScreenshot` draws i
 and the editor show it with no export-side work. Keeping it out of the file means the capture is
 never decoded and re-encoded on the way to disk, and the pointer can be moved or removed later
 without touching the original.
+
+The mouse button decides the action: the right button records as `auxclick` and everything else as
+`click`, so a right click reads as "Right-click …" rather than being indistinguishable from a left
+one. Middle clicks fall in with left, which is no worse than before and avoids claiming a wheel
+press was a context menu.
 
 A double click is one action, so it is one step. `isRepeatClick` drops a press that lands within
 500 ms of the one before it, and the clock is reset on every press rather than on every capture, so a
@@ -675,6 +686,31 @@ unknown mode falls back, the opt-in rule holds in four positions, a double click
 rectangle for all three modes including both window fallbacks, a 400 ms delay measurably slows the
 grab, and the same synthetic frame renders to a different size once a cursor is drawn over it. It restores whatever
 settings were on disk when it finishes.
+
+## Capture Shortcuts
+
+Three global accelerators, stored in `capture-settings.json` beside everything else: start/stop,
+pause/resume, and capture now. They default to `CommandOrControl+Shift+F9`, `F10` and `F11`, which
+are function keys precisely because a global accelerator is taken from **every** application on the
+machine for as long as it is registered — binding something like `Ctrl+S` would break saving
+everywhere.
+
+That is also why only start/stop is bound all the time. Pause/resume and capture-now can do nothing
+outside a recording, so `shortcutMap` returns them as null until one is running and `applyShortcuts`
+rebinds on every state change. An empty accelerator string clears the binding rather than restoring
+the default, so a shortcut can be turned off; a missing one falls back.
+
+Registration is the part that cannot be trusted. `globalShortcut.register` returns false when
+another application already owns the key and throws on an accelerator Electron cannot parse, so
+`bindShortcuts` catches both and hands back the list it could not take rather than failing the
+launch over a key clash.
+
+Start/stop goes straight from hidden to recording rather than arming first, because a shortcut whose
+job is to start recording should not need a second press. The stored region is used as it stands,
+which is what makes that possible in `region` mode.
+
+Capture-now writes an ordinary click step at the cursor. There is no separate action for it: the
+point of pressing it is that the cursor is already on the thing worth capturing.
 
 ## Export Formats
 

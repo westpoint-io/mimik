@@ -7,6 +7,7 @@ import type { KeyAction } from '../src/main/capture/input-hook';
 import {
   type CaptureRequest,
   chooseTypedText,
+  clickAction,
   comboLabel,
   DesktopRecorder,
   frameFor,
@@ -18,7 +19,14 @@ import {
 } from '../src/main/capture/recorder';
 import { clampToDisplays } from '../src/main/capture/region';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from '../src/main/capture/screenshot-store';
-import { DEFAULT_CAPTURE_SETTINGS, loadSettings, normaliseSettings, saveSettings } from '../src/main/capture/settings';
+import {
+  DEFAULT_CAPTURE_SETTINGS,
+  loadSettings,
+  MAX_TYPING_DEBOUNCE_MS,
+  MIN_TYPING_DEBOUNCE_MS,
+  normaliseSettings,
+  saveSettings,
+} from '../src/main/capture/settings';
 import type { Capture, Rect } from '../src/main/capture/screenshot';
 
 interface CheckResult {
@@ -97,6 +105,30 @@ app.whenReady().then(async () => {
       reloaded.screenshotDelayMs === 750 &&
       reloaded.captureOutsideClicks === stored.captureOutsideClicks,
     detail: `5000 ms clamped to ${clamped.screenshotDelayMs}, unknown style fell back to ${clamped.cursorStyle}, 750 ms reloaded as ${reloaded.screenshotDelayMs}`,
+  });
+
+  const knobs = normaliseSettings({
+    typingDebounceMs: 50,
+    captureKeys: 'yes' as never,
+    shortcuts: { startStop: '  ', pauseResume: null, capture: 'Alt+F2' } as never,
+  });
+  results.push({
+    name: 'toggles, knobs and shortcuts normalise',
+    ok:
+      knobs.typingDebounceMs === MIN_TYPING_DEBOUNCE_MS &&
+      normaliseSettings({ typingDebounceMs: 90_000 }).typingDebounceMs === MAX_TYPING_DEBOUNCE_MS &&
+      knobs.captureKeys === DEFAULT_CAPTURE_SETTINGS.captureKeys &&
+      knobs.shortcuts.startStop === null &&
+      knobs.shortcuts.pauseResume === null &&
+      knobs.shortcuts.capture === 'Alt+F2' &&
+      normaliseSettings({}).shortcuts.startStop === DEFAULT_CAPTURE_SETTINGS.shortcuts.startStop,
+    detail: `50 ms clamped to ${knobs.typingDebounceMs}, a blank accelerator cleared, a missing one kept its default`,
+  });
+
+  results.push({
+    name: 'a right click is its own action',
+    ok: clickAction(1) === 'click' && clickAction(2) === 'auxclick' && clickAction(3) === 'click',
+    detail: 'the right button reads as auxclick, left and middle as click',
   });
   saveSettings(userSettings);
 
@@ -313,6 +345,7 @@ app.whenReady().then(async () => {
     name: 'rich text falls back to the keystrokes',
     ok:
       rich?.inputValue === 'hello' &&
+      chooseTypedText(editor('a short note'), 'a sho', false) === 'a sho' &&
       chooseTypedText(editor('a short note'), 'a sho') === 'a short note' &&
       chooseTypedText(editor(null), 'typed') === 'typed' &&
       chooseTypedText({ ...editor('\uFEFFhi\u200B'), role: 'textbox' }, '') === 'hi' &&

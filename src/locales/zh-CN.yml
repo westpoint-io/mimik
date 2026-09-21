@@ -498,6 +498,7 @@ steps:
   toggleSwitch: "切换 $1"
   clickLink: '点击链接“$1”'
   click: "点击 $1"
+  rightClick: "右键点击 $1"
   typeIntoField: "在 $1 字段中输入 $2"
   typeInto: "在 $1 中输入"
   typeSecret: "输入密码"

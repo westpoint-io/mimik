@@ -22,7 +22,6 @@ import { type CaptureMode, type CaptureSettings, DEFAULT_CAPTURE_SETTINGS } from
 const TARGET_SIZE = 28;
 const SETTLE_MS = 60;
 const REPEAT_CLICK_MS = 500;
-const TYPING_IDLE_MS = 1200;
 const TEXT_MARKERS = /[\uFFF9-\uFFFD\uFEFF\u200B]/g;
 const LONG_FIELD_CHARS = 80;
 
@@ -130,8 +129,13 @@ export function comboLabel(action: KeyAction, key: string): string {
   return [...held, key].join('+');
 }
 
-export function chooseTypedText(field: ScreenElement | null, buffer: string): string | null {
+export function clickAction(button: number): string {
+  return button === 2 ? 'auxclick' : 'click';
+}
+
+export function chooseTypedText(field: ScreenElement | null, buffer: string, smart = true): string | null {
   if (!isTextField(field)) return null;
+  if (!smart) return buffer || null;
   const value = (field?.textContent ?? '').replace(TEXT_MARKERS, '');
   if (!value.trim()) return buffer || null;
   const typed = [...buffer].length;
@@ -249,16 +253,19 @@ export class DesktopRecorder {
     this.lastClickAt = at;
     if (repeat) return;
     this.commitTyping();
-    this.enqueue(() => this.capture(point));
+    const named = clickAction(action.button);
+    this.enqueue(() => this.write(named, point, this.lookup(point)));
   }
 
   private onKey(action: KeyAction): void {
     if (MODIFIER_KEYS.has(action.keycode)) return;
+    const settings = this.settings();
     if (isTypingKey(action)) {
+      if (!settings.captureTyping) return;
       this.typing = true;
       this.buffered(action);
       if (this.idle) clearTimeout(this.idle);
-      this.idle = setTimeout(() => this.commitTyping(), TYPING_IDLE_MS);
+      this.idle = setTimeout(() => this.commitTyping(), settings.typingDebounceMs);
       this.idle.unref?.();
       return;
     }
@@ -271,6 +278,7 @@ export class DesktopRecorder {
     this.lastKey = { keycode: action.keycode, at };
     if (repeat) return;
     if (submitted && !action.ctrl && !action.alt && !action.meta) return;
+    if (!settings.captureKeys) return;
     this.enqueue(() => this.captureKey(action));
   }
 
@@ -314,6 +322,12 @@ export class DesktopRecorder {
     });
   }
 
+  captureNow(point: Point): void {
+    if (!this.isRecording) return;
+    this.commitTyping();
+    this.enqueue(() => this.write('click', point, this.lookup(point)));
+  }
+
   async capture(point: Point): Promise<void> {
     await this.write('click', point, this.lookup(point));
   }
@@ -325,7 +339,7 @@ export class DesktopRecorder {
       await this.write('input', where, Promise.resolve(field));
       return;
     }
-    const typed = chooseTypedText(field, buffer);
+    const typed = chooseTypedText(field, buffer, this.settings().typingSmartDetection);
     if (!typed) return;
     await this.write('input', where, Promise.resolve(field), typed);
   }

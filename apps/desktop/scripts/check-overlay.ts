@@ -1,7 +1,8 @@
-import { app, BrowserWindow, screen, webContents } from 'electron';
+import { app, BrowserWindow, globalShortcut, screen, webContents } from 'electron';
 import { clampToDisplays, defaultRegion, loadRegion, type Region, saveRegion } from '../src/main/capture/region';
 import type { CaptureMode } from '../src/main/capture/settings';
 import { CaptureOverlay } from '../src/main/overlay';
+import { bindShortcuts, shortcutMap, unbindShortcuts } from '../src/main/shortcuts';
 
 interface CheckResult {
   name: string;
@@ -218,6 +219,31 @@ app.whenReady().then(async () => {
     'clicks on the controls never become steps',
     overlay.ignores({ x: (bars?.x ?? 0) + 4, y: (bars?.y ?? 0) + 4 }) && !overlay.ignores(outside),
     'the controls bar is ignored, a point away from it is not',
+  );
+
+  const keys = { startStop: 'Alt+Shift+F13', pauseResume: 'Alt+Shift+F14', capture: 'Alt+Shift+F15' };
+  const fired: string[] = [];
+  const refusedIdle = bindShortcuts(shortcutMap(keys, false), (name) => fired.push(name));
+  const idleOnly =
+    globalShortcut.isRegistered(keys.startStop) &&
+    !globalShortcut.isRegistered(keys.pauseResume) &&
+    !globalShortcut.isRegistered(keys.capture);
+  const refusedRecording = bindShortcuts(shortcutMap(keys, true), (name) => fired.push(name));
+  const allThree = Object.values(keys).every((key) => globalShortcut.isRegistered(key));
+  unbindShortcuts();
+  const released = Object.values(keys).every((key) => !globalShortcut.isRegistered(key));
+  check(
+    'shortcuts bind only while they can act',
+    idleOnly && allThree && released && refusedIdle.length === 0 && refusedRecording.length === 0,
+    'start/stop is always live, pause and capture only while recording, all released on unbind',
+  );
+
+  const clash = bindShortcuts(shortcutMap({ ...keys, startStop: 'NotAKey+@@' }, false), () => {});
+  unbindShortcuts();
+  check(
+    'an unusable accelerator is reported, not thrown',
+    clash.length === 1 && clash[0] === 'NotAKey+@@',
+    `refused ${clash.join(', ') || 'nothing'}`,
   );
 
   overlay.hide();

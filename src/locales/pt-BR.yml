@@ -498,6 +498,7 @@ steps:
   toggleSwitch: "Ligar/desligar $1"
   clickLink: 'Clicar no link "$1"'
   click: "Clicar em $1"
+  rightClick: "Clicar com o botão direito em $1"
   typeIntoField: "Digitar no campo $1 $2"
   typeInto: "Digitar em $1"
   typeSecret: "Digitar senha"

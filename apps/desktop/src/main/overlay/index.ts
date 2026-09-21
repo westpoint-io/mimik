@@ -244,6 +244,10 @@ export class CaptureOverlay {
     for (const win of this.windows()) win.hide();
   }
 
+  run(command: OverlayCommand): void {
+    this.command(command);
+  }
+
   private command(command: OverlayCommand): void {
     if (command.startsWith('mode:')) {
       this.onCommand(command);

@@ -18,8 +18,9 @@ export function buildFallbackDescription(action: string, meta: ElementMeta): str
   }
 
   switch (action) {
-    case 'click':
     case 'auxclick':
+      return i18n.t('steps.rightClick', [target]);
+    case 'click':
       if (meta.tag === 'input' && meta.inputType === 'checkbox') return i18n.t('steps.toggleCheckbox', [target]);
       if (meta.tag === 'input' && meta.inputType === 'radio') return i18n.t('steps.selectRadio', [target]);
       if (meta.role === 'switch') return i18n.t('steps.toggleSwitch', [target]);

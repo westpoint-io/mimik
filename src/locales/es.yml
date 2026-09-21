@@ -498,6 +498,7 @@ steps:
   toggleSwitch: "Alternar $1"
   clickLink: 'Clic en enlace "$1"'
   click: "Clic en $1"
+  rightClick: "Clic derecho en $1"
   typeIntoField: "Escribir en el campo $1 $2"
   typeInto: "Escribir en $1"
   typeSecret: "Escribir contraseña"

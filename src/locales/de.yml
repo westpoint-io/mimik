@@ -429,6 +429,7 @@ steps:
   toggleSwitch: "$1 umschalten"
   clickLink: 'Link "$1" anklicken'
   click: "$1 anklicken"
+  rightClick: "$1 rechtsklicken"
   typeIntoField: "In Feld $1 eingeben $2"
   typeInto: "In $1 eingeben"
   typeSecret: "Passwort eingeben"

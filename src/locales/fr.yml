@@ -498,6 +498,7 @@ steps:
   toggleSwitch: "Activer/désactiver $1"
   clickLink: 'Cliquer sur le lien "$1"'
   click: "Cliquer sur $1"
+  rightClick: "Clic droit sur $1"
   typeIntoField: "Saisir dans le champ $1 $2"
   typeInto: "Saisir dans $1"
   typeSecret: "Saisir le mot de passe"
