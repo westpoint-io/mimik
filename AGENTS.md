@@ -609,10 +609,26 @@ because the products differ: the extension records a tab, has no capture mode to
 wide and has to pick between three framings first. Forcing those two shells together makes both worse.
 Divergence inside the guide is a bug; divergence in how you reach it is not.
 
-The window opens on `HomeScreen`, not on the fullview dashboard. The extension's side panel already
-established the shape and the desktop follows it rather than inventing a second one: the mascot, the
-question, one primary control, then a search field and the library. `sidepanel_heroTitle` and its
-neighbours are reused verbatim, so the two surfaces stay worded the same.
+The header is the exception that proves it. `TopNav` is the extension's own dashboard header, moved
+into `packages/ui` and mounted by both surfaces, because a header is navigation rather than capture
+and there was nothing about it worth diverging on. The desktop had grown its own `TopBar` — a text
+wordmark, a gear, and a green "Ready to record" pill — and every part of that was worse: the mascot
+is the mark everywhere else, and a pill that only ever says the app is idle is chrome that is never
+news. It went, along with the second bar under it, which halved the chrome from 116 px to 64.
+
+`TopNav` takes only a `Route` and reads the rest from `useFullview`, which `GuideContent` already
+fills, so the guide title, the step count and the export data arrive with no desktop wiring at all.
+Its one desktop-only prop is `onSettings`: the extension has a browser options page and the desktop
+does not, so the gear exists here and only on the library route. Moving it brought `SearchModal`,
+`ExportPreviewModal`, `VideoStepPlayer` and two search components with it — each needed exactly two
+import rewrites, `#imports` to `@mimik/core/env` and `@/core/*` to `@mimik/core/*`, because nothing
+in them was ever extension-specific beyond how WXT resolves a module.
+
+Below the header the window opens on `HomeScreen`, not on the fullview dashboard. The extension's
+side panel already established that shape and the desktop follows it rather than inventing a second
+one: the mascot, the question, one primary control, then a search field and the library.
+`sidepanel_heroTitle` and its neighbours are reused verbatim, so the two surfaces stay worded the
+same.
 
 Pressing Start Capture opens `CaptureSheet` rather than arming immediately. The sheet is where the
 capture mode is chosen, because the mode decides what every screenshot in the guide will frame and
@@ -635,8 +651,11 @@ letter and tint from a hash without a second query. A desktop guide has no web a
 only identity available. Star and delete are always visible rather than revealed on hover, matching
 the side panel; the fullview list hides them until hover and that reads as inert in a window this wide.
 
-Starred and Trash have no route on desktop yet. `LibraryContent` supports both and the home screen
-does not reach them.
+Routing is `@mimik/ui/fullview/router`, not a hand-rolled `hashchange` listener. The desktop had one
+matching `#guide/<id>`, which is the same scheme the shared router already parses, so adopting it
+cost nothing and bought Starred and Trash the routes the header needs. `HomeScreen` serves the `all`
+category and `LibraryContent` serves the other two, because the hero and Start Capture belong on the
+screen you land on and nowhere else.
 
 ## Capture Settings
 

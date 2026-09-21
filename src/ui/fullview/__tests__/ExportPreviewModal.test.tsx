@@ -21,7 +21,7 @@ vi.mock('@/core/export/options', async (importOriginal) => ({
   saveExportOptions: async () => {},
 }));
 
-import ExportPreviewModal from '@/ui/fullview/ExportPreviewModal';
+import ExportPreviewModal from '@mimik/ui/fullview/ExportPreviewModal';
 
 const guide: Guide = {
   id: 'guide-1',

@@ -33,6 +33,7 @@
   "include": [
     "src/**/*",
     "scripts/**/*",
-    "electron.vite.config.ts"
+    "electron.vite.config.ts",
+    "../../packages/*/src/**/*.d.ts"
   ]
 }

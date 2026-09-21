@@ -8,9 +8,9 @@ import {
 } from '@vidstack/react';
 import { ChevronLeft, ChevronRight, Maximize, Minimize, Pause, Play } from 'lucide-react';
 import { useEffect, useRef } from 'react';
-import { i18n } from '#imports';
-import type { StepKind, VideoChapter } from '@/core/export/video-export';
-import { FRAME_FILL } from '@/core/export/video-support';
+import { i18n } from '@mimik/core/env';
+import type { StepKind, VideoChapter } from '@mimik/core/export/video-export';
+import { FRAME_FILL } from '@mimik/core/export/video-support';
 
 const RATES = [1, 1.25, 1.5, 2];
 

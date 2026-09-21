@@ -2,9 +2,9 @@ import { Button } from '@mimik/ui/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@mimik/ui/components/ui/dialog';
 import { FileCode, FileDown, FileImage, FileText, Loader2, Video } from 'lucide-react';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { i18n } from '#imports';
-import { downloadBlob, downloadText, safeFilename } from '@/core/export/download';
-import { exportGuideAsHTML } from '@/core/export/html-export';
+import { i18n } from '@mimik/core/env';
+import { downloadBlob, downloadText, safeFilename } from '@mimik/core/export/download';
+import { exportGuideAsHTML } from '@mimik/core/export/html-export';
 import {
   DEFAULT_EXPORT_OPTIONS,
   type ExportOptions,
@@ -13,14 +13,14 @@ import {
   loadExportOptions,
   saveExportOptions,
   VIDEO_RESOLUTIONS,
-} from '@/core/export/options';
-import { exportGuideAsPDF } from '@/core/export/pdf-export';
-import { paginatePreview, withPreviewStyles } from '@/core/export/preview';
-import type { VideoChapter } from '@/core/export/video-export';
-import { canExportVideo, STEP_SECONDS } from '@/core/export/video-support';
-import type { Guide, Screenshot, Step } from '@/core/guides/types';
+} from '@mimik/core/export/options';
+import { exportGuideAsPDF } from '@mimik/core/export/pdf-export';
+import { paginatePreview, withPreviewStyles } from '@mimik/core/export/preview';
+import type { VideoChapter } from '@mimik/core/export/video-export';
+import { canExportVideo, STEP_SECONDS } from '@mimik/core/export/video-support';
+import type { Guide, Screenshot, Step } from '@mimik/core/guides/types';
 
-const VideoStepPlayer = lazy(() => import('@/ui/fullview/VideoStepPlayer'));
+const VideoStepPlayer = lazy(() => import('./VideoStepPlayer'));
 
 const VIDEO_AUTOPLAY_STEP_LIMIT = 25;
 const IMAGE_SCALES: ImageScale[] = ['small', 'medium', 'large'];

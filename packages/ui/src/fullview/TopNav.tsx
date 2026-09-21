@@ -4,14 +4,26 @@ import { navigate } from '@mimik/ui/fullview/router';
 import { logger } from '@mimik/ui/lib/logger';
 import MascotIcon from '@mimik/ui/shared/MascotIcon';
 import { useFullview } from '@mimik/ui/stores/fullview';
-import { Check, ChevronRight, Download, FileText, History, Pencil, Search, Star, Trash2 } from 'lucide-react';
+import {
+  Check,
+  ChevronRight,
+  Download,
+  FileText,
+  History,
+  Pencil,
+  Search,
+  SlidersHorizontal,
+  Star,
+  Trash2,
+} from 'lucide-react';
 import { useState } from 'react';
-import { i18n } from '#imports';
-import { createSnapshot } from '@/core/guides/service';
+import { i18n } from '@mimik/core/env';
+import { createSnapshot } from '@mimik/core/guides/service';
 import ExportPreviewModal from './ExportPreviewModal';
 
 interface TopNavProps {
   route: Route;
+  onSettings?: () => void;
 }
 
 const navItems = [
@@ -22,7 +34,7 @@ const navItems = [
 
 const NAV_CONTROL = 'h-8 rounded-lg border border-border bg-card text-foreground hover:bg-secondary hover:text-accent';
 
-export default function TopNav({ route }: TopNavProps) {
+export default function TopNav({ route, onSettings }: TopNavProps) {
   const {
     counts,
     guideTitle,
@@ -130,6 +142,11 @@ export default function TopNav({ route }: TopNavProps) {
             ⌘K
           </span>
         </Button>
+        {onSettings && (
+          <Button size="sm" variant="ghost" onClick={onSettings} aria-label={i18n.t('settings_title')} className={NAV_CONTROL}>
+            <SlidersHorizontal size={14} />
+          </Button>
+        )}
         {route.page === 'guide' && exportData && (
           <>
             <Button size="sm" variant="ghost" onClick={() => toggleEditing(exportData.guideId)} className={NAV_CONTROL}>
