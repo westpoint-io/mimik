@@ -690,10 +690,13 @@ settings were on disk when it finishes.
 ## Capture Shortcuts
 
 Three global accelerators, stored in `capture-settings.json` beside everything else: start/stop,
-pause/resume, and capture now. They default to `CommandOrControl+Shift+F9`, `F10` and `F11`, which
-are function keys precisely because a global accelerator is taken from **every** application on the
-machine for as long as it is registered — binding something like `Ctrl+S` would break saving
-everywhere.
+pause/resume, and capture now. They default to `Alt+Shift+R`, `Alt+Shift+P` and `Alt+Shift+C`,
+because a global accelerator is taken from **every** application on the machine for as long as it is
+registered: `Ctrl+Shift+R` would break reload everywhere, and `Ctrl+Alt+<letter>` is AltGr on most
+non-US layouts, so it would eat characters people actually type. `Alt+Shift` held with another key
+is rare in applications and does not trigger the Windows layout switch, which fires only on
+`Alt+Shift` pressed and released alone. Function keys were the first choice and are wrong: laptops
+increasingly do not have a usable row.
 
 That is also why only start/stop is bound all the time. Pause/resume and capture-now can do nothing
 outside a recording, so `shortcutMap` returns them as null until one is running and `applyShortcuts`

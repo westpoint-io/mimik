@@ -41,9 +41,9 @@ export const DEFAULT_CAPTURE_SETTINGS: CaptureSettings = {
   typingDebounceMs: 1200,
   typingSmartDetection: true,
   shortcuts: {
-    startStop: 'CommandOrControl+Shift+F9',
-    pauseResume: 'CommandOrControl+Shift+F10',
-    capture: 'CommandOrControl+Shift+F11',
+    startStop: 'Alt+Shift+R',
+    pauseResume: 'Alt+Shift+P',
+    capture: 'Alt+Shift+C',
   },
 };
 
