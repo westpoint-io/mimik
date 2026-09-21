@@ -20,6 +20,7 @@ import { Input } from '@mimik/ui/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@mimik/ui/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui/components/ui/select';
 import { logger } from '@mimik/ui/lib/logger';
+import { changedSettings, type SettingsSnapshot } from '@mimik/ui/lib/settings-autosave';
 import ColorPicker from '@mimik/ui/shared/ColorPicker';
 import {
   ArrowLeft,
@@ -42,7 +43,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { localStorage } from '@/lib/browser-api';
 import { KeyStatusNote, KeyWarningNote, ModelList, SecretInput, useKeyCheck } from '@/ui/shared/key-check';
 import MicrophonePicker from '@/ui/shared/MicrophonePicker';
-import { changedSettings, type SettingsSnapshot } from '@/ui/shared/settings-autosave';
 
 interface SettingsViewProps {
   onBack?: () => void;

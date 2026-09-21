@@ -320,6 +320,23 @@ resolving a scancode against a keyboard layout is a local call with nothing to w
 addon boundary when that flag is set, so a password never reaches our data even though UIAutomation
 already withholds it.
 
+## Which Client Is Running
+
+`configureCore` carries a `client`, `extension` or `desktop`, and `client()` reads it back. Shared
+code that must genuinely behave differently asks at runtime rather than taking a prop for it, which
+is how the surfaces stay one codebase instead of two dressed as one.
+
+The distinction worth holding: a **prop** is right when the app supplies behaviour the shared code
+could not know — `onStartCapture` opens a capture sheet on one surface and a side panel on the
+other, and neither belongs in `packages/ui`. `client()` is right when shared code decides for
+itself, with nothing to pass down.
+
+The rule that keeps `packages/ui` from becoming a filing problem is simpler than a taxonomy:
+anything in it belongs to **both** surfaces. Asking which surface owns a file there means it is in
+the wrong place, and it should live in `apps/desktop` or in the extension's `src/ui`. That is why
+`CaptureSheet`, the capture settings and the overlay have never been shared — they are not shared
+components filed badly, they are the parts of the desktop that have no counterpart at all.
+
 ## Desktop Storage
 
 The desktop app reuses `@mimik/core/guides` for everything except the screenshot bytes — Electron's
@@ -631,11 +648,18 @@ does not, so the gear exists here and only on the library route. Moving it broug
 import rewrites, `#imports` to `@mimik/core/env` and `@/core/*` to `@mimik/core/*`, because nothing
 in them was ever extension-specific beyond how WXT resolves a module.
 
-Below the header the window opens on `HomeScreen`, not on the fullview dashboard. The extension's
-side panel already established that shape and the desktop follows it rather than inventing a second
-one: the mascot, the question, one primary control, then a search field and the library.
-`sidepanel_heroTitle` and its neighbours are reused verbatim, so the two surfaces stay worded the
-same.
+Below the header both surfaces mount the same dashboard. The desktop briefly had its own
+`HomeScreen` — a hero, a question and a Start Capture button — and it existed for one reason: the
+extension's dashboard has no way to start a capture, only its side panel does, so there was nothing
+to inherit and the hero was copied from the side panel into a window five times its width. That one
+missing affordance was the whole of the apparent divergence between the two products.
+
+`LibraryContent` now takes an optional `onStartCapture` and renders the button itself, so the
+dashboard can begin a recording on either surface and `HomeScreen` is gone. What the button does is
+the app's to decide, because the two actions have nothing in common: the desktop opens
+`CaptureSheet`, and the extension opens the side panel, which is where its recording view lives.
+Filling that gap was an improvement to the extension in its own right — browsing the library in a
+tab and wanting to record used to mean going to find the side panel yourself.
 
 Pressing Start Capture opens `CaptureSheet` rather than arming immediately. The sheet is where the
 capture mode is chosen, because the mode decides what every screenshot in the guide will frame and

@@ -6,6 +6,7 @@ import SearchModal from '@mimik/ui/fullview/SearchModal';
 import TopNav from '@mimik/ui/fullview/TopNav';
 import { useFullview } from '@mimik/ui/stores/fullview';
 import { useEffect } from 'react';
+import { openSidebar } from '@/lib/browser-api';
 import UpdateNotice from '@/ui/shared/UpdateNotice';
 import VoiceNotice from './components/VoiceNotice';
 
@@ -36,7 +37,7 @@ export default function FullViewApp() {
 
         {route.page === 'library' && (
           <main className="flex-1 p-8 max-w-6xl mx-auto w-full">
-            <LibraryContent category={route.category} />
+            <LibraryContent category={route.category} onStartCapture={openSidebar} />
           </main>
         )}
 

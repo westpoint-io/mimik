@@ -6,7 +6,6 @@ import SearchModal from '@mimik/ui/fullview/SearchModal';
 import TopNav from '@mimik/ui/fullview/TopNav';
 import { useEffect, useState } from 'react';
 import CaptureSheet from './CaptureSheet';
-import HomeScreen from './HomeScreen';
 import SettingsPanel from './SettingsPanel';
 
 export default function App() {
@@ -39,11 +38,9 @@ export default function App() {
               <GuideContent guideId={route.guideId} initialStepId={route.stepId} initialTool={route.tool} />
             </div>
           </main>
-        ) : route.category === 'all' ? (
-          <HomeScreen onOpen={(id) => navigate({ page: 'guide', guideId: id })} onStart={() => setSheetOpen(true)} />
         ) : (
           <main className="flex-1 py-8 px-6">
-            <LibraryContent category={route.category} />
+            <LibraryContent category={route.category} onStartCapture={() => setSheetOpen(true)} />
           </main>
         )}
         <SearchModal />

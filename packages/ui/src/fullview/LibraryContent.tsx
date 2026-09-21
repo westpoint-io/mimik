@@ -1,4 +1,4 @@
-import { ArrowDownWideNarrow, ChevronDown, ChevronLeft, ChevronRight, LayoutGrid, LayoutList } from 'lucide-react';
+import { ArrowDownWideNarrow, ChevronDown, ChevronLeft, ChevronRight, LayoutGrid, LayoutList, Video } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { i18n } from '@mimik/core/env';
 import {
@@ -22,6 +22,7 @@ import GuideListView from './components/GuideListView';
 
 interface LibraryContentProps {
   category: 'all' | 'starred' | 'trash';
+  onStartCapture?: () => void;
 }
 
 const emptyConfig: Record<string, { titleKey: string; subKey: string }> = {
@@ -141,7 +142,7 @@ function sortGuides(guides: Guide[], sort: SortKey): Guide[] {
   }
 }
 
-export default function LibraryContent({ category }: LibraryContentProps) {
+export default function LibraryContent({ category, onStartCapture }: LibraryContentProps) {
   const {
     setGuides,
     updateGuide,
@@ -288,6 +289,15 @@ export default function LibraryContent({ category }: LibraryContentProps) {
   return (
     <div>
       <div className="flex items-center justify-end gap-2 mb-4">
+        {onStartCapture && category === 'all' && (
+          <button
+            onClick={onStartCapture}
+            className="mr-auto flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <Video size={15} />
+            {i18n.t('sidepanel_startCapture')}
+          </button>
+        )}
         <div ref={sortRef} className="relative">
           <button
             onClick={() => setSortOpen(!sortOpen)}
