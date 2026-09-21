@@ -129,13 +129,15 @@ export class DesktopRecorder {
 
   async capture(point: { x: number; y: number }): Promise<void> {
     const settings = this.settings();
-    const found = await focusedWindow();
-    const framed = frameFor(settings.captureMode, point, this.region(), found.ok ? found.window.bounds : null);
+    const region = this.region();
 
-    const shot = await this.withHidden(async () => {
+    const taken = await this.withHidden(async () => {
       await delay(SETTLE_MS + settings.screenshotDelayMs);
-      return this.grab(framed);
+      const focused = await focusedWindow();
+      const rect = frameFor(settings.captureMode, point, region, focused.ok ? focused.window.bounds : null);
+      return { found: focused, framed: rect, shot: await this.grab(rect) };
     });
+    const { found, framed, shot } = taken;
     const scale = shot.scaleFactor;
 
     const screenshotId = randomUUID();

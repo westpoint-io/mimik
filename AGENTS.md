@@ -423,6 +423,16 @@ Files outlive the rows that point at them, because deleting a guide only removes
 renderer sends every known screenshot id to main at startup and main deletes any file not in that
 set, so an interrupted delete costs disk until the next launch rather than forever.
 
+Which window is focused is read **after** the settle delay, not when the click arrives. The input hook
+fires on the press, and the operating system has not necessarily moved the foreground window yet, so
+asking first frames whatever was in front a moment ago — the recording card included, if that was the
+last thing touched. Reading it beside the grab is the only ordering that describes the screen being
+photographed.
+
+The card itself is not focusable, so clicking Pause or Finish never makes the app frontmost and never
+changes what active-window mode will frame next. The region editors stay focusable because they read
+Enter and Escape; the card has no keyboard of its own to lose.
+
 What a capture frames is `captureMode`'s decision, and `frameFor` owns it: the focused window's
 bounds, the whole display under the cursor, or the drawn region. The window rectangle is resolved on
 every click rather than once at Start, so a window that moves or is resized between steps is followed

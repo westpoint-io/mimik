@@ -107,6 +107,12 @@ app.whenReady().then(async () => {
     `hint is ${parsed.tip}, content ${parsed.body}px in a ${parsed.win}px window`,
   );
 
+  check(
+    'the controls card never takes focus',
+    controls !== null && !controls.isFocusable() && overlayWindows().every((w) => !w.isFocused()),
+    `controls focusable: ${controls?.isFocusable()}, focused overlay windows: ${overlayWindows().filter((w) => w.isFocused()).length}`,
+  );
+
   await controls?.webContents.executeJavaScript("document.querySelector('#primary').click()");
   await settle();
   check(

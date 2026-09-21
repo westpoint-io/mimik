@@ -31,7 +31,12 @@ function protect(win: BrowserWindow): void {
   if (!win.isDestroyed()) win.setContentProtection(true);
 }
 
-function overlayWindow(bounds: Electron.Rectangle, hash: string, interactive: boolean): BrowserWindow {
+function overlayWindow(
+  bounds: Electron.Rectangle,
+  hash: string,
+  interactive: boolean,
+  focusable = interactive,
+): BrowserWindow {
   const win = new BrowserWindow({
     ...bounds,
     show: false,
@@ -44,7 +49,7 @@ function overlayWindow(bounds: Electron.Rectangle, hash: string, interactive: bo
     fullscreenable: false,
     skipTaskbar: true,
     hasShadow: false,
-    focusable: interactive,
+    focusable,
     acceptFirstMouse: true,
     webPreferences: { preload: preloadFile(), contextIsolation: true, nodeIntegration: false },
   });
@@ -186,7 +191,7 @@ export class CaptureOverlay {
   private ensureControls(): void {
     if (this.controls?.isDestroyed()) this.controls = null;
     if (!this.controls) {
-      this.controls = overlayWindow({ x: 0, y: 0, ...this.size }, 'controls', true);
+      this.controls = overlayWindow({ x: 0, y: 0, ...this.size }, 'controls', true, false);
       this.controls.setIgnoreMouseEvents(false);
     }
     this.positionControls();
