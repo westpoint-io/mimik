@@ -202,9 +202,10 @@ if (!app.requestSingleInstanceLock()) {
           overlay?.setBusy(false);
         }
       },
-      undefined,
-      () => captureSettings ?? loadSettings(),
-      (point) => overlay?.ignores(point) ?? false,
+      {
+        settings: () => captureSettings ?? loadSettings(),
+        ignores: (point) => overlay?.ignores(point) ?? false,
+      },
     );
 
     ipcMain.handle('mimik:capture:settings:get', () => captureSettings ?? loadSettings());

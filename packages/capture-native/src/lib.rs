@@ -22,26 +22,28 @@ pub struct UiElement {
   pub automation_id: Option<String>,
   pub value: Option<String>,
   pub help_text: Option<String>,
+  pub is_password: bool,
   pub rect: Option<ElementRect>,
 }
 
-pub struct ElementAtPoint {
-  x: i32,
-  y: i32,
+pub struct ElementLookup {
+  at: Option<(i32, i32)>,
 }
 
-impl Task for ElementAtPoint {
+impl Task for ElementLookup {
   type Output = Option<UiElement>;
   type JsValue = Option<UiElement>;
 
   #[cfg(windows)]
   fn compute(&mut self) -> Result<Self::Output> {
-    win::element_at_point(self.x, self.y)
+    match self.at {
+      Some((x, y)) => win::element_at_point(x, y),
+      None => win::focused_element(),
+    }
   }
 
   #[cfg(not(windows))]
   fn compute(&mut self) -> Result<Self::Output> {
-    let _ = (self.x, self.y);
     Ok(None)
   }
 
@@ -51,8 +53,13 @@ impl Task for ElementAtPoint {
 }
 
 #[napi(ts_return_type = "Promise<UiElement | null>")]
-pub fn element_at_point(x: i32, y: i32) -> AsyncTask<ElementAtPoint> {
-  AsyncTask::new(ElementAtPoint { x, y })
+pub fn element_at_point(x: i32, y: i32) -> AsyncTask<ElementLookup> {
+  AsyncTask::new(ElementLookup { at: Some((x, y)) })
+}
+
+#[napi(ts_return_type = "Promise<UiElement | null>")]
+pub fn focused_element() -> AsyncTask<ElementLookup> {
+  AsyncTask::new(ElementLookup { at: None })
 }
 
 #[napi]

@@ -18,6 +18,8 @@ export interface ElementRect {
   height: number
 }
 
+export declare function focusedElement(): Promise<UiElement | null>
+
 export declare function isSupported(): boolean
 
 export interface UiElement {
@@ -26,5 +28,6 @@ export interface UiElement {
   automationId?: string
   value?: string
   helpText?: string
+  isPassword: boolean
   rect?: ElementRect
 }

@@ -3,11 +3,13 @@ import { join } from 'node:path';
 import { app, BrowserWindow, nativeImage, protocol, screen } from 'electron';
 import { ask } from '../src/main/ask';
 import type { ScreenElement } from '../src/main/capture/element';
+import type { KeyAction } from '../src/main/capture/input-hook';
 import {
   type CaptureRequest,
   DesktopRecorder,
   frameFor,
   isRepeatClick,
+  isTypingKey,
   shouldCapture,
   targetRect,
 } from '../src/main/capture/recorder';
@@ -69,8 +71,7 @@ app.whenReady().then(async () => {
     () => region,
     (fn) => fn(),
     (request) => ask(win.webContents, 'mimik:capture:step', { ...request, guideId: activeGuide }),
-    syntheticDisplay,
-    () => settings,
+    { grab: syntheticDisplay, settings: () => settings },
   );
 
   activeGuide = await ask<string>(win.webContents, 'mimik:capture:startGuide');
@@ -142,7 +143,17 @@ app.whenReady().then(async () => {
     textContent: null,
     ariaLabel: 'Save',
     altText: null,
+    password: false,
     rect: { x: region.x + 40, y: region.y + 30, width: 120, height: 32 },
+  };
+  let field: ScreenElement | null = {
+    role: 'textbox',
+    name: 'SearchBox',
+    textContent: 'hello world',
+    ariaLabel: 'Search',
+    altText: null,
+    password: false,
+    rect: { x: region.x + 20, y: region.y + 20, width: 200, height: 24 },
   };
   let seen: CaptureRequest | null = null;
   const metaRecorder = new DesktopRecorder(
@@ -152,13 +163,16 @@ app.whenReady().then(async () => {
       seen = request;
       return Promise.resolve(null);
     },
-    syntheticDisplay,
-    () => ({ ...REGION_MODE, showCursor: false }),
-    () => false,
-    () => Promise.resolve(control),
+    {
+      grab: syntheticDisplay,
+      settings: () => ({ ...REGION_MODE, showCursor: true }),
+      lookup: () => Promise.resolve(control),
+      focused: () => Promise.resolve(field),
+    },
   );
   await metaRecorder.capture({ x: region.x + 60, y: region.y + 40 });
-  const meta = (seen as CaptureRequest | null)?.elementMeta;
+  const clicked = seen as CaptureRequest | null;
+  const meta = clicked?.elementMeta;
   results.push({
     name: 'accessibility metadata reaches the step',
     ok:
@@ -169,6 +183,79 @@ app.whenReady().then(async () => {
       meta.rect.width === 120 &&
       meta.rect.x === 40,
     detail: `source ${meta?.source ?? 'none'}, role ${meta?.role ?? 'none'}, named ${meta?.ariaLabel ?? 'none'}`,
+  });
+
+  seen = null;
+  await metaRecorder.captureTyping();
+  const typed = seen as CaptureRequest | null;
+
+  seen = null;
+  field = { ...control };
+  await metaRecorder.captureTyping();
+  const onAButton = seen as CaptureRequest | null;
+
+  seen = null;
+  field = {
+    role: 'textbox',
+    name: null,
+    textContent: null,
+    ariaLabel: 'Search',
+    altText: null,
+    password: false,
+    rect: null,
+  };
+  await metaRecorder.captureTyping();
+  const empty = seen as CaptureRequest | null;
+
+  seen = null;
+  field = {
+    role: 'textbox',
+    name: null,
+    textContent: null,
+    ariaLabel: 'Password',
+    altText: null,
+    password: true,
+    rect: { x: region.x + 20, y: region.y + 60, width: 200, height: 24 },
+  };
+  await metaRecorder.captureTyping();
+  const secret = seen as CaptureRequest | null;
+
+  results.push({
+    name: 'typing lands as one input step',
+    ok:
+      typed?.action === 'input' &&
+      typed.inputValue === 'hello world' &&
+      typed.elementMeta.ariaLabel === 'Search' &&
+      typed.cursor === undefined &&
+      clicked?.cursor !== undefined &&
+      onAButton === null &&
+      empty === null,
+    detail: `wrote ${typed?.action ?? 'nothing'} carrying "${typed?.inputValue ?? ''}"; a button and an empty field wrote nothing`,
+  });
+
+  results.push({
+    name: 'a password is a step but never a value',
+    ok:
+      secret?.action === 'input' &&
+      secret.inputValue === undefined &&
+      secret.elementMeta.inputType === 'password' &&
+      secret.elementMeta.textContent === null,
+    detail: `wrote ${secret?.action ?? 'nothing'} with inputValue ${String(secret?.inputValue)} and no captured text`,
+  });
+
+  const press = (keycode: number, held: Partial<KeyAction> = {}) =>
+    isTypingKey({ kind: 'keydown', keycode, shift: false, alt: false, ctrl: false, meta: false, at: 0, ...held });
+  results.push({
+    name: 'only typing keys open a session',
+    ok:
+      press(30) &&
+      press(30, { shift: true }) &&
+      !press(30, { ctrl: true }) &&
+      !press(28) &&
+      !press(15) &&
+      !press(1) &&
+      !press(42),
+    detail: 'a letter types, shift still types, a shortcut does not, and Enter, Tab, Escape and Shift all close the session',
   });
 
   const page = { x: 0, y: 0, width: 800, height: 600 };

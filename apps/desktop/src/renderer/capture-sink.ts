@@ -21,7 +21,7 @@ import type { StoredScreenshot } from '@mimik/core/guides/types';
 import type { CursorMark } from '@mimik/core/screenshot/types';
 import { DEFAULT_TARGET_COLOR } from '@mimik/core/screenshot/types';
 
-export type DesktopCaptureStepData = CaptureStepData & { cursor?: CursorMark };
+export type DesktopCaptureStepData = CaptureStepData & { cursor?: CursorMark; inputValue?: string };
 
 export class DesktopCaptureSink implements CaptureSink {
   async startGuide(): Promise<string> {
@@ -79,6 +79,7 @@ export class DesktopCaptureSink implements CaptureSink {
       screenshotId,
       elementMeta: meta,
       descriptionSource: 'heuristic',
+      ...(data.inputValue === undefined ? {} : { inputValue: data.inputValue }),
     });
     await addStepToGuide(data.guideId, stepId);
 

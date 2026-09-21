@@ -207,8 +207,9 @@ A fourth source, `screen`, knows only where the click landed: it fills `rect` wi
 the click point, `clickPoint`, `devicePixelRatio`, `app` and `window`, and leaves every identity field
 null.
 
-`tag`, `cssSelector`, `href`, `inputType` and `dataTestId` are DOM-only and absent elsewhere.
-`app` and `window` are the reverse — desktop only.
+`tag`, `cssSelector`, `href` and `dataTestId` are DOM-only and absent elsewhere. `app` and `window`
+are the reverse — desktop only. `inputType` is mostly DOM-only, but a desktop typing step sets it to
+`password` when the field says so, because that is the one input type a screen capture can learn.
 
 Consumers must not branch on `source`. Read the shared fields first and treat the DOM-only ones as
 refinements: `buildFallbackDescription` reaches the same wording through `role === 'checkbox'` that
@@ -305,6 +306,11 @@ the way in and the rectangle with `screenToDipRect` on the way out, the same con
 `role === 'checkbox'` means the same thing whether it came from a DOM attribute or from
 `UIA_CheckBoxControlTypeId`. An unmapped control type yields a null role rather than an invented
 name.
+
+`focusedElement()` is the second call, and it is what makes typing capture possible without reading
+keystrokes. It reports `isPassword` alongside the usual fields, and the value is discarded at the
+addon boundary when that flag is set, so a password never reaches our data even though UIAutomation
+already withholds it.
 
 ## Desktop Storage
 
@@ -506,8 +512,32 @@ a 28 px box around the click when there is no element, when the rectangle covers
 frame, or when it does not fit inside the frame. Without those two guards an unsupported application
 returns its top-level window and the target outlines the entire screenshot.
 
-`DesktopRecorder` takes the display grab as a constructor argument defaulting to `captureDisplay`, so
-`check:pipeline` feeds it a generated frame. The crop arithmetic, the sink, the step write and all
+Typing is one step, and the text in it is read rather than reconstructed. The keyboard hook decides
+only *when* a typing session starts and ends; what was typed comes from the focused element's value
+in the accessibility tree at the moment the session closes. That is the whole reason there is no
+keycode table, no layout handling, no dead-key state and no IME composition tracking in this
+codebase — the machinery those need exists to answer a question we do not ask.
+
+A session opens on any key that is not a modifier, not `Enter`, `Tab` or `Escape`, and not held with
+`Ctrl`, `Alt` or `Meta`. It closes on any of those, on a click, on pause, on stop, or after 1200 ms
+with no keys. `Shift` plus a letter still counts as typing, which is why modifiers are tested
+individually rather than as a set.
+
+Closing a session does not guarantee a step. The focused element is read first, and nothing is
+written unless it is a text field with something in it — so pressing `n` in a file manager, or
+typing into a surface that exposes no value, costs nothing. The exception is a password field, which
+by design reports no value at all: there the step is written anyway, with no `inputValue`, and
+`buildFallbackDescription` words it as "Type password" rather than naming the field's contents.
+
+Rich text is the gap. `ValuePattern` is what the value is read through, and a word processor or a
+browser's `contenteditable` exposes `TextPattern` instead, so typing there closes a session and
+writes nothing. Clicks in those applications still capture normally.
+
+`DesktopRecorder` takes its region, its overlay hiding and its sink positionally, and everything
+else — the display grab, the settings, the overlay hit test, the element lookup and the focused
+field — through one optional hooks object, so `check:pipeline` replaces exactly the ones it needs
+and names them at the call site. The grab defaults to `captureDisplay`, and `check:pipeline` feeds
+it a generated frame instead. The crop arithmetic, the sink, the step write and all
 four document exporters then run without a working screen-capture path, which matters because a real
 grab depends on the machine it runs on. Whether a real grab works is `check:capture`'s question, not
 this one's.

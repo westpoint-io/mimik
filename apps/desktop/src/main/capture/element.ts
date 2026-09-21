@@ -10,11 +10,15 @@ export interface ScreenElement {
   textContent: string | null;
   ariaLabel: string | null;
   altText: string | null;
+  password: boolean;
   rect: { x: number; y: number; width: number; height: number } | null;
 }
 
+const TEXT_ROLES = new Set(['textbox', 'combobox']);
+
 type Addon = {
   elementAtPoint(x: number, y: number): Promise<UiElement | null>;
+  focusedElement(): Promise<UiElement | null>;
   isSupported(): boolean;
 };
 
@@ -52,22 +56,36 @@ function toPhysical(point: { x: number; y: number }): { x: number; y: number } {
   }
 }
 
+function describe(found: UiElement): ScreenElement {
+  return {
+    role: found.role ?? null,
+    name: found.automationId ?? null,
+    textContent: found.isPassword ? null : (found.value ?? null),
+    ariaLabel: found.name ?? null,
+    altText: found.helpText ?? null,
+    password: found.isPassword,
+    rect: toDip(found.rect ?? null),
+  };
+}
+
+export function isTextField(element: ScreenElement | null): boolean {
+  return element?.role !== undefined && element?.role !== null && TEXT_ROLES.has(element.role);
+}
+
 export async function elementAt(point: { x: number; y: number }): Promise<ScreenElement | null> {
   const native = await load();
   if (!native) return null;
 
   const at = toPhysical(point);
   const found = await within(native.elementAtPoint(Math.round(at.x), Math.round(at.y)), LOOKUP_TIMEOUT_MS);
-  if (!found) return null;
+  return found ? describe(found) : null;
+}
 
-  return {
-    role: found.role ?? null,
-    name: found.automationId ?? null,
-    textContent: found.value ?? null,
-    ariaLabel: found.name ?? null,
-    altText: found.helpText ?? null,
-    rect: toDip(found.rect ?? null),
-  };
+export async function focusedField(): Promise<ScreenElement | null> {
+  const native = await load();
+  if (!native) return null;
+  const found = await within(native.focusedElement(), LOOKUP_TIMEOUT_MS);
+  return found ? describe(found) : null;
 }
 
 export async function elementLookupAvailable(): Promise<boolean> {

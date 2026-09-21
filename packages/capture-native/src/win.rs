@@ -111,18 +111,30 @@ fn rect_of(element: &IUIAutomationElement) -> Option<ElementRect> {
   })
 }
 
+fn describe(found: &IUIAutomationElement) -> UiElement {
+  UiElement {
+    role: role(unsafe { found.CurrentControlType() }.unwrap_or_default()),
+    name: text(unsafe { found.CurrentName() }),
+    automation_id: text(unsafe { found.CurrentAutomationId() }),
+    value: value_of(found),
+    help_text: text(unsafe { found.CurrentHelpText() }),
+    is_password: unsafe { found.CurrentIsPassword() }
+      .map(|flag| flag.as_bool())
+      .unwrap_or(false),
+    rect: rect_of(found),
+  }
+}
+
 pub fn element_at_point(x: i32, y: i32) -> Result<Option<UiElement>> {
   let found = automation()
     .and_then(|uia| unsafe { uia.ElementFromPoint(POINT { x, y }) })
     .map_err(|error| napi::Error::from_reason(error.message()))?;
+  Ok(Some(describe(&found)))
+}
 
-  let help = text(unsafe { found.CurrentHelpText() });
-  Ok(Some(UiElement {
-    role: role(unsafe { found.CurrentControlType() }.unwrap_or_default()),
-    name: text(unsafe { found.CurrentName() }),
-    automation_id: text(unsafe { found.CurrentAutomationId() }),
-    value: value_of(&found),
-    help_text: help,
-    rect: rect_of(&found),
-  }))
+pub fn focused_element() -> Result<Option<UiElement>> {
+  let found = automation()
+    .and_then(|uia| unsafe { uia.GetFocusedElement() })
+    .map_err(|error| napi::Error::from_reason(error.message()))?;
+  Ok(Some(describe(&found)))
 }

@@ -28,6 +28,7 @@ export function buildFallbackDescription(action: string, meta: ElementMeta): str
       if (meta.href) return i18n.t('steps.clickLink', [target]);
       return i18n.t('steps.click', [target]);
     case 'input':
+      if (meta.inputType === 'password') return i18n.t('steps.typeSecret');
       if (meta.inputType) return i18n.t('steps.typeIntoField', [meta.inputType, target]);
       return i18n.t('steps.typeInto', [target]);
     case 'copy':
