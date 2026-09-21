@@ -211,6 +211,13 @@ null.
 are the reverse — desktop only. `inputType` is mostly DOM-only, but a desktop typing step sets it to
 `password` when the field says so, because that is the one input type a screen capture can learn.
 
+Guide Me is the one place a `source` check is correct, through `isReplayable`. It replays against a
+live DOM, so a step is replayable only when its source is `dom` — or absent, which means it predates
+the field and was therefore a DOM capture. The old test was "does the step have an `elementMeta` at
+all", which was true before desktop existed and is now true of every desktop step; it left a Guide
+Me button on guides that can never be replayed. The button is not rendered at all when nothing is
+replayable, rather than rendered disabled, because on desktop it could never become enabled.
+
 Consumers must not branch on `source`. Read the shared fields first and treat the DOM-only ones as
 refinements: `buildFallbackDescription` reaches the same wording through `role === 'checkbox'` that
 it reaches through `tag === 'input' && inputType === 'checkbox'`. Guide Me is the exception by
