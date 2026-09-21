@@ -24,6 +24,10 @@ export declare function isSupported(): boolean
 
 export declare function keyLabel(keycode: number): string | null
 
+export declare function resetDeadKeyState(): void
+
+export declare function resolveKey(keycode: number, shift: boolean, ctrl: boolean, alt: boolean): string | null
+
 export interface UiElement {
   role?: string
   name?: string

@@ -3,7 +3,15 @@ import type { CaptureImage } from '@mimik/core/capture/sink';
 import type { ElementMeta } from '@mimik/core/guides/types';
 import { screen } from 'electron';
 import { cursorPoint } from './displays';
-import { elementAt, focusedField, isTextField, keyLabel, type ScreenElement } from './element';
+import {
+  elementAt,
+  focusedField,
+  isTextField,
+  keyLabel,
+  resetDeadKeyState,
+  resolveKey,
+  type ScreenElement,
+} from './element';
 import { focusedWindow } from './focused-window';
 import { type InputAction, InputHook, type KeyAction, type PointerAction } from './input-hook';
 import type { Region } from './region';
@@ -15,9 +23,12 @@ const TARGET_SIZE = 28;
 const SETTLE_MS = 60;
 const REPEAT_CLICK_MS = 500;
 const TYPING_IDLE_MS = 1200;
+const TEXT_MARKERS = /[\uFFF9-\uFFFD\uFEFF\u200B]/g;
+const LONG_FIELD_CHARS = 80;
 
 const KEY = {
   escape: 1,
+  backspace: 14,
   tab: 15,
   enter: 28,
   ctrl: 29,
@@ -71,6 +82,8 @@ export interface RecorderHooks {
   lookup?: (point: Point) => Promise<ScreenElement | null>;
   focused?: () => Promise<ScreenElement | null>;
   label?: (keycode: number) => Promise<string | null>;
+  resolve?: (keycode: number, shift: boolean, ctrl: boolean, alt: boolean) => Promise<string | null>;
+  reset?: () => Promise<void>;
 }
 
 export type RecorderStart = { ok: true } | { ok: false; reason: string; detail: string };
@@ -117,6 +130,15 @@ export function comboLabel(action: KeyAction, key: string): string {
   return [...held, key].join('+');
 }
 
+export function chooseTypedText(field: ScreenElement | null, buffer: string): string | null {
+  if (!isTextField(field)) return null;
+  const value = (field?.textContent ?? '').replace(TEXT_MARKERS, '');
+  if (!value.trim()) return buffer || null;
+  const typed = [...buffer].length;
+  if (typed > 0 && [...value].length > Math.max(2 * typed, LONG_FIELD_CHARS)) return buffer;
+  return value;
+}
+
 export function isTypingKey(action: KeyAction): boolean {
   if (MODIFIER_KEYS.has(action.keycode)) return false;
   if (action.ctrl || action.alt || action.meta) return false;
@@ -154,6 +176,8 @@ export class DesktopRecorder {
   private lastClickAt: number | null = null;
   private lastKey: { keycode: number; at: number } | null = null;
   private typing = false;
+  private buffer = '';
+  private appending: Promise<unknown> = Promise.resolve();
   private idle: NodeJS.Timeout | null = null;
   private readonly grab: (area: Rect) => Promise<Capture>;
   private readonly settings: () => CaptureSettings;
@@ -161,6 +185,8 @@ export class DesktopRecorder {
   private readonly lookup: (point: Point) => Promise<ScreenElement | null>;
   private readonly focused: () => Promise<ScreenElement | null>;
   private readonly label: (keycode: number) => Promise<string | null>;
+  private readonly resolve: (keycode: number, shift: boolean, ctrl: boolean, alt: boolean) => Promise<string | null>;
+  private readonly reset: () => Promise<void>;
 
   constructor(
     private readonly region: () => Region,
@@ -174,6 +200,8 @@ export class DesktopRecorder {
     this.lookup = hooks.lookup ?? elementAt;
     this.focused = hooks.focused ?? focusedField;
     this.label = hooks.label ?? keyLabel;
+    this.resolve = hooks.resolve ?? resolveKey;
+    this.reset = hooks.reset ?? resetDeadKeyState;
   }
 
   async start(): Promise<RecorderStart> {
@@ -228,6 +256,7 @@ export class DesktopRecorder {
     if (MODIFIER_KEYS.has(action.keycode)) return;
     if (isTypingKey(action)) {
       this.typing = true;
+      this.buffered(action);
       if (this.idle) clearTimeout(this.idle);
       this.idle = setTimeout(() => this.commitTyping(), TYPING_IDLE_MS);
       this.idle.unref?.();
@@ -252,6 +281,17 @@ export class DesktopRecorder {
     await this.write(`keydown:${comboLabel(action, key)}`, centreOf(field) ?? cursorPoint(), Promise.resolve(field));
   }
 
+  private buffered(action: KeyAction): void {
+    this.appending = this.appending.then(async () => {
+      if (action.keycode === KEY.backspace) {
+        this.buffer = [...this.buffer].slice(0, -1).join('');
+        return;
+      }
+      const typed = await this.resolve(action.keycode, action.shift, action.ctrl, action.alt);
+      if (typed) this.buffer += typed;
+    });
+  }
+
   private commitTyping(): void {
     if (this.idle) {
       clearTimeout(this.idle);
@@ -259,7 +299,13 @@ export class DesktopRecorder {
     }
     if (!this.typing) return;
     this.typing = false;
-    this.enqueue(() => this.captureTyping());
+    this.enqueue(async () => {
+      await this.appending;
+      const buffer = this.buffer;
+      this.buffer = '';
+      await this.reset();
+      await this.captureTyping(buffer);
+    });
   }
 
   private enqueue(job: () => Promise<void>): void {
@@ -272,12 +318,16 @@ export class DesktopRecorder {
     await this.write('click', point, this.lookup(point));
   }
 
-  async captureTyping(): Promise<void> {
+  async captureTyping(buffer = ''): Promise<void> {
     const field = await this.focused();
-    if (!isTextField(field) || !field) return;
-    if (!field.password && !field.textContent) return;
-    const typed = field.password ? undefined : (field.textContent ?? undefined);
-    await this.write('input', centreOf(field) ?? cursorPoint(), Promise.resolve(field), typed);
+    const where = centreOf(field) ?? cursorPoint();
+    if (field?.password) {
+      await this.write('input', where, Promise.resolve(field));
+      return;
+    }
+    const typed = chooseTypedText(field, buffer);
+    if (!typed) return;
+    await this.write('input', where, Promise.resolve(field), typed);
   }
 
   private async write(

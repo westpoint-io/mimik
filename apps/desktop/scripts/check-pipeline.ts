@@ -6,9 +6,10 @@ import type { ScreenElement } from '../src/main/capture/element';
 import type { KeyAction } from '../src/main/capture/input-hook';
 import {
   type CaptureRequest,
+  chooseTypedText,
+  comboLabel,
   DesktopRecorder,
   frameFor,
-  comboLabel,
   isRepeatClick,
   isRepeatKey,
   isTypingKey,
@@ -291,6 +292,32 @@ app.whenReady().then(async () => {
       !isRepeatKey({ keycode: 28, at: 1_000 }, 28, 1_600) &&
       !isRepeatKey({ keycode: 28, at: 1_000 }, 15, 1_100),
     detail: `wrote ${shortcut?.action ?? 'nothing'}; an unnameable key wrote nothing, auto-repeat collapses, a different key does not`,
+  });
+
+  const editor = (value: string | null): ScreenElement => ({
+    role: 'document',
+    name: null,
+    textContent: value,
+    ariaLabel: 'Document',
+    altText: null,
+    password: false,
+    rect: { x: region.x + 10, y: region.y + 10, width: 400, height: 300 },
+  });
+
+  seen = null;
+  field = editor('x'.repeat(500));
+  await metaRecorder.captureTyping('hello');
+  const rich = seen as CaptureRequest | null;
+
+  results.push({
+    name: 'rich text falls back to the keystrokes',
+    ok:
+      rich?.inputValue === 'hello' &&
+      chooseTypedText(editor('a short note'), 'a sho') === 'a short note' &&
+      chooseTypedText(editor(null), 'typed') === 'typed' &&
+      chooseTypedText({ ...editor('\uFEFFhi\u200B'), role: 'textbox' }, '') === 'hi' &&
+      chooseTypedText(control, 'typed') === null,
+    detail: 'a document far longer than the buffer yields the buffer, a short one yields the field, markers are stripped, a button yields nothing',
   });
 
   const page = { x: 0, y: 0, width: 800, height: 600 };

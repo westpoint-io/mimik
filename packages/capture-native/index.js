@@ -782,3 +782,5 @@ module.exports.elementAtPoint = nativeBinding.elementAtPoint
 module.exports.focusedElement = nativeBinding.focusedElement
 module.exports.isSupported = nativeBinding.isSupported
 module.exports.keyLabel = nativeBinding.keyLabel
+module.exports.resetDeadKeyState = nativeBinding.resetDeadKeyState
+module.exports.resolveKey = nativeBinding.resolveKey

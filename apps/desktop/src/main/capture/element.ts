@@ -14,12 +14,14 @@ export interface ScreenElement {
   rect: { x: number; y: number; width: number; height: number } | null;
 }
 
-const TEXT_ROLES = new Set(['textbox', 'combobox']);
+const TEXT_ROLES = new Set(['textbox', 'combobox', 'document']);
 
 type Addon = {
   elementAtPoint(x: number, y: number): Promise<UiElement | null>;
   focusedElement(): Promise<UiElement | null>;
   keyLabel(keycode: number): string | null;
+  resolveKey(keycode: number, shift: boolean, ctrl: boolean, alt: boolean): string | null;
+  resetDeadKeyState(): void;
   isSupported(): boolean;
 };
 
@@ -92,6 +94,16 @@ export async function focusedField(): Promise<ScreenElement | null> {
 export async function keyLabel(keycode: number): Promise<string | null> {
   const native = await load();
   return native?.keyLabel(keycode) ?? null;
+}
+
+export async function resolveKey(keycode: number, shift: boolean, ctrl: boolean, alt: boolean): Promise<string | null> {
+  const native = await load();
+  return native?.resolveKey(keycode, shift, ctrl, alt) ?? null;
+}
+
+export async function resetDeadKeyState(): Promise<void> {
+  const native = await load();
+  native?.resetDeadKeyState();
 }
 
 export async function elementLookupAvailable(): Promise<boolean> {

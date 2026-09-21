@@ -307,9 +307,9 @@ the way in and the rectangle with `screenToDipRect` on the way out, the same con
 `UIA_CheckBoxControlTypeId`. An unmapped control type yields a null role rather than an invented
 name.
 
-`focusedElement()` is the second call, and it is what makes typing capture possible without reading
-keystrokes. `keyLabel()` is the third, and unlike the other two it is synchronous, because resolving
-a scancode against a keyboard layout is a local call with nothing to wait on. It reports `isPassword` alongside the usual fields, and the value is discarded at the
+`focusedElement()` is the second call. The remaining three — `keyLabel`, `resolveKey` and
+`resetDeadKeyState` — are the keyboard, and unlike the first two they are synchronous, because
+resolving a scancode against a keyboard layout is a local call with nothing to wait on. It reports `isPassword` alongside the usual fields, and the value is discarded at the
 addon boundary when that flag is set, so a password never reaches our data even though UIAutomation
 already withholds it.
 
@@ -520,15 +520,14 @@ keycode table, no layout handling, no dead-key state and no IME composition trac
 codebase — the machinery those need exists to answer a question we do not ask.
 
 A session opens on any key that is not a modifier, not `Enter`, `Tab` or `Escape`, and not held with
-`Ctrl`, `Alt` or `Meta`. It closes on any of those, on a click, on pause, on stop, or after 1200 ms
+`Ctrl`, `Alt` or `Meta`, and every such key also appends to a buffer of what was typed. It closes on any of those, on a click, on pause, on stop, or after 1200 ms
 with no keys. `Shift` plus a letter still counts as typing, which is why modifiers are tested
 individually rather than as a set.
 
 Closing a session does not guarantee a step. The focused element is read first, and nothing is
-written unless it is a text field with something in it — so pressing `n` in a file manager, or
-typing into a surface that exposes no value, costs nothing. The exception is a password field, which
-by design reports no value at all: there the step is written anyway, with no `inputValue`, and
-`buildFallbackDescription` words it as "Type password" rather than naming the field's contents.
+written unless it is a text field with something to show for it. A password field is the exception
+in the other direction: it reports no value by design, and the step is written anyway with no
+`inputValue`, worded "Type password" rather than naming any contents.
 
 Keys that are not typing get their own step. A shortcut always does; `Enter`, `Tab` and `Escape` do
 only when no typing session was open, because the `Enter` that submits a field is part of that
@@ -542,9 +541,26 @@ as `Q` on QWERTY and `A` on AZERTY, which is what the application being recorded
 dead-key state as a side effect, and a shortcut only needs the letter, digit or named key. A key that
 maps to none of those yields no label and therefore no step, rather than a step nobody can follow.
 
-Rich text is the gap. `ValuePattern` is what the value is read through, and a word processor or a
-browser's `contenteditable` exposes `TextPattern` instead, so typing there closes a session and
-writes nothing. Clicks in those applications still capture normally.
+Two sources compete for the text and `chooseTypedText` picks between them. The field's value wins
+by default, because it is what is actually on screen and it survives caret movement, selection and
+autocomplete. The keystroke buffer wins in three cases: the focused element reports no value, the
+value is empty, or the value runs more than twice the buffer and past 80 characters. That last rule
+is what makes rich text work — in a word processor the "field" is the whole document, so its value
+is the entire text rather than the sentence just typed, and the buffer is the only thing that knows
+which part is new. A non-text role yields nothing at all, so a keypress in a file manager is not a
+step.
+
+Building that buffer is the only place a keystroke becomes a character. `resolveKey` runs
+`ToUnicodeEx` against the foreground layout with the modifier state the hook reported and the real
+caps-lock state, and appends what comes back; `Backspace` removes one. Dead keys fall out of this
+for free: `ToUnicodeEx` returns nothing for the accent itself and the composed character for the key
+after it, because it keeps that state per thread and every keystroke goes through the same one. The
+cost is that the state is real and can be left armed, so `resetDeadKeyState` flushes it whenever a
+session ends.
+
+Values are stripped of `\uFFF9`–`\uFFFD`, `\uFEFF` and `\u200B` before use. Accessibility
+implementations use those to mark annotations and inline objects, and they arrive as invisible
+garbage in the middle of otherwise ordinary text.
 
 `DesktopRecorder` takes its region, its overlay hiding and its sink positionally, and everything
 else — the display grab, the settings, the overlay hit test, the element lookup and the focused

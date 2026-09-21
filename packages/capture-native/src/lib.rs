@@ -74,6 +74,23 @@ pub fn key_label(keycode: u32) -> Option<String> {
 }
 
 #[napi]
+pub fn resolve_key(keycode: u32, shift: bool, ctrl: bool, alt: bool) -> Option<String> {
+  #[cfg(windows)]
+  return win::resolve_key(keycode, shift, ctrl, alt);
+  #[cfg(not(windows))]
+  {
+    let _ = (keycode, shift, ctrl, alt);
+    None
+  }
+}
+
+#[napi]
+pub fn reset_dead_key_state() {
+  #[cfg(windows)]
+  win::reset_dead_key_state();
+}
+
+#[napi]
 pub fn is_supported() -> bool {
   cfg!(windows)
 }

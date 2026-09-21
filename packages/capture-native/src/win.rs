@@ -8,9 +8,9 @@ use windows::Win32::System::Com::{
 };
 use windows::Win32::UI::Accessibility::*;
 use windows::Win32::UI::Input::KeyboardAndMouse::{
-  GetKeyboardLayout, MapVirtualKeyExW, HKL, MAPVK_VSC_TO_VK_EX, VK_BACK, VK_DELETE, VK_DOWN, VK_END,
-  VK_ESCAPE, VK_F1, VK_F24, VK_HOME, VK_INSERT, VK_LEFT, VK_NEXT, VK_PRIOR, VK_RETURN, VK_RIGHT, VK_SPACE,
-  VK_TAB, VK_UP,
+  GetKeyState, GetKeyboardLayout, MapVirtualKeyExW, ToUnicodeEx, HKL, MAPVK_VK_TO_VSC, MAPVK_VSC_TO_VK_EX,
+  VK_BACK, VK_CAPITAL, VK_CONTROL, VK_DELETE, VK_DOWN, VK_END, VK_ESCAPE, VK_F1, VK_F24, VK_HOME, VK_INSERT,
+  VK_LEFT, VK_MENU, VK_NEXT, VK_PRIOR, VK_RETURN, VK_RIGHT, VK_SHIFT, VK_SPACE, VK_TAB, VK_UP,
 };
 use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId};
 
@@ -192,4 +192,57 @@ pub fn key_label(keycode: u32) -> Option<String> {
     return Some((vk as u8 as char).to_string());
   }
   None
+}
+
+fn virtual_key(keycode: u32, layout: HKL) -> u16 {
+  let extended = keycode >= EXTENDED;
+  let scancode = if extended {
+    0xe000 | (keycode - EXTENDED)
+  } else {
+    keycode
+  };
+  unsafe { MapVirtualKeyExW(scancode, MAPVK_VSC_TO_VK_EX, Some(layout)) as u16 }
+}
+
+pub fn resolve_key(keycode: u32, shift: bool, ctrl: bool, alt: bool) -> Option<String> {
+  let layout = foreground_layout();
+  let vk = virtual_key(keycode, layout);
+  if vk == 0 {
+    return None;
+  }
+  let mut state = [0u8; 256];
+  if shift {
+    state[VK_SHIFT.0 as usize] = 0x80;
+  }
+  if ctrl {
+    state[VK_CONTROL.0 as usize] = 0x80;
+  }
+  if alt {
+    state[VK_MENU.0 as usize] = 0x80;
+  }
+  if unsafe { GetKeyState(VK_CAPITAL.0 as i32) } & 1 == 1 {
+    state[VK_CAPITAL.0 as usize] = 0x01;
+  }
+  let scancode = unsafe { MapVirtualKeyExW(vk as u32, MAPVK_VK_TO_VSC, Some(layout)) };
+  let mut buffer = [0u16; 8];
+  let written = unsafe { ToUnicodeEx(vk as u32, scancode, &state, &mut buffer, 0, Some(layout)) };
+  if written <= 0 {
+    return None;
+  }
+  String::from_utf16(&buffer[..written as usize])
+    .ok()
+    .filter(|found| !found.is_empty())
+}
+
+pub fn reset_dead_key_state() {
+  let layout = foreground_layout();
+  let vk = VK_SPACE.0 as u32;
+  let scancode = unsafe { MapVirtualKeyExW(vk, MAPVK_VK_TO_VSC, Some(layout)) };
+  let state = [0u8; 256];
+  let mut buffer = [0u16; 8];
+  for _ in 0..4 {
+    if unsafe { ToUnicodeEx(vk, scancode, &state, &mut buffer, 0, Some(layout)) } >= 0 {
+      break;
+    }
+  }
 }

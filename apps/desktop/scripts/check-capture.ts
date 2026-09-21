@@ -6,6 +6,7 @@ import {
   elementLookupAvailable,
   focusedWindow,
   keyLabel,
+  resolveKey,
   InputHook,
   listDisplays,
 } from '../src/main/capture';
@@ -89,11 +90,15 @@ app.whenReady().then(async () => {
   );
 
   const named = lookup ? await keyLabel(28) : null;
-  if (lookup && named !== 'Enter') failures++;
+  const typed = lookup ? await resolveKey(30, false, false, false) : null;
+  const keysOk = named === 'Enter' && typed?.length === 1;
+  if (lookup && !keysOk) failures++;
   line(
     'key names',
-    lookup ? (named === 'Enter' ? 'ok' : 'fail') : 'n/a',
-    lookup ? `scancode 28 resolved to ${named ?? 'nothing'} on the foreground layout` : 'no addon on this platform',
+    lookup ? (keysOk ? 'ok' : 'fail') : 'n/a',
+    lookup
+      ? `scancode 28 names ${named ?? 'nothing'}, scancode 30 types ${typed ?? 'nothing'} on the foreground layout`
+      : 'no addon on this platform',
   );
 
   const hook = new InputHook();
