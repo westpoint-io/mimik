@@ -122,6 +122,28 @@ window.mimik.onRequest('mimik:check:verify', async (payload) => {
     ['DOCX', () => exportGuideAsDOCX(guide, steps, screenshots)],
   ];
 
+  try {
+    const { canExportVideo } = await import('@mimik/core/export/video-support');
+    if (!(await canExportVideo())) {
+      results.push({ name: 'video export', ok: true, detail: 'n/a — this build encodes no video' });
+    } else {
+      const { exportGuideAsVideo } = await import('@mimik/core/export/video-export');
+      const out = await exportGuideAsVideo(guide, steps, screenshots);
+      const mime = out.blob.type;
+      results.push({
+        name: 'video export',
+        ok: out.blob.size > 0 && mime === `video/${out.extension}` && out.chapters.length === steps.length,
+        detail: `${out.blob.size} bytes, ${mime}, .${out.extension}, ${out.chapters.length} chapter(s)`,
+      });
+    }
+  } catch (error) {
+    results.push({
+      name: 'video export',
+      ok: false,
+      detail: error instanceof Error ? error.message : String(error),
+    });
+  }
+
   for (const [name, run] of exporters) {
     try {
       const output = await run();

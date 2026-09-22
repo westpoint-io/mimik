@@ -20,6 +20,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@mimik/ui/comp
 import { FileCode, FileDown, FileImage, FileText, Loader2, Video } from 'lucide-react';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 
+import type { VideoMime } from './VideoStepPlayer';
+
 const VideoStepPlayer = lazy(() => import('./VideoStepPlayer'));
 
 const VIDEO_AUTOPLAY_STEP_LIMIT = 25;
@@ -44,6 +46,7 @@ export default function ExportPreviewModal({ open, onOpenChange, guide, steps, s
   const [videoSupported, setVideoSupported] = useState(false);
   const [mode, setMode] = useState<PreviewMode>('document');
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [videoType, setVideoType] = useState<VideoMime>('video/mp4');
   const [videoChapters, setVideoChapters] = useState<VideoChapter[]>([]);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const downloadAbort = useRef<AbortController | null>(null);
@@ -111,6 +114,7 @@ export default function ExportPreviewModal({ open, onOpenChange, guide, steps, s
         );
         if (controller.signal.aborted) return;
         url = URL.createObjectURL(blob);
+        setVideoType(blob.type === 'video/webm' ? 'video/webm' : 'video/mp4');
         setVideoChapters(chapters);
         setVideoUrl(url);
       } catch (error) {
@@ -391,7 +395,7 @@ export default function ExportPreviewModal({ open, onOpenChange, guide, steps, s
                     </div>
                   ) : videoUrl ? (
                     <Suspense fallback={null}>
-                      <VideoStepPlayer key={videoUrl} src={videoUrl} chapters={videoChapters} />
+                      <VideoStepPlayer key={videoUrl} src={videoUrl} type={videoType} chapters={videoChapters} />
                     </Suspense>
                   ) : (
                     <div className="flex flex-col items-center gap-2 bg-card border border-border rounded-xl px-4 py-3">

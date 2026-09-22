@@ -22,8 +22,11 @@ const KIND_DOT: Record<StepKind, string> = {
   note: 'bg-muted-foreground',
 };
 
+export type VideoMime = 'video/mp4' | 'video/webm';
+
 interface VideoStepPlayerProps {
   src: string;
+  type: VideoMime;
   chapters: VideoChapter[];
 }
 
@@ -144,10 +147,10 @@ function PlayerBody({ chapters }: { chapters: VideoChapter[] }) {
   );
 }
 
-export default function VideoStepPlayer({ src, chapters }: VideoStepPlayerProps) {
+export default function VideoStepPlayer({ src, type, chapters }: VideoStepPlayerProps) {
   return (
     <MediaPlayer
-      src={{ src, type: 'video/mp4' }}
+      src={{ src, type }}
       autoPlay
       muted
       playsInline

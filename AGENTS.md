@@ -1016,6 +1016,14 @@ everywhere but macOS.
 | Video | `core/export/video-export.ts` | WebCodecs via mediabunny (lazy), mp4/H.264 with WebM/VP9 fallback |
 | GIF | `core/export/gif-export.ts` | gifenc (lazy), same frame timeline as the video; user picks Small/Medium/Large from `GIF_SPECS` |
 
+The preview player is told the container rather than assuming one. `pickContainer` answers `mp4`
+only when the machine can encode H.264 and falls back to WebM/VP9 otherwise, so a hardcoded
+`type: 'video/mp4'` on the player describes the file wrongly on any machine without an H.264
+encoder — a VM without GPU acceleration, typically. The export itself succeeds and the chapter list
+fills in, so the only symptom is a black frame reading 0:00 / 0:00. `VideoStepPlayer` now takes the
+mime alongside the url and `ExportPreviewModal` reads it off the blob. `check:pipeline` asserts the
+blob's type matches the extension, which is the pairing that was wrong.
+
 Video frames reuse `renderScreenshot`, so the auto-crop, click-target outline, annotations and
 redactions are already baked in. Each step holds 1.5s wide, eases into a crop around the target
 over 0.73s, holds 3s close, and consecutive steps cross-dissolve over 0.33s at 30fps. Capability
