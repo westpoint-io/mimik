@@ -857,6 +857,14 @@ identical on both surfaces, so `AiSettings` lives in `packages/ui` and each app 
 `validate` function — the desktop passes core's `validateApiKey` directly, and the extension goes
 through its background messaging, which is the only part that differs.
 
+All three sections are cards with one shell: the same border, radius, padding and 28px icon header
+`AiSettings` already had. Rows inside a desktop card stay label-left, control-right, which is right
+at this width, while the AI card keeps the stacked 11px labels it needs in 400px of side panel — the
+two are never on screen at once, and matching them would mean branching that shared component on
+`client()`. The shell alone is what makes the three read as siblings. Capturing is two cards,
+Screenshots and Keyboard, because the divider that separated those groups was already doing a card
+boundary's job.
+
 The pane carries no heading and no close button. The left nav already names the section, so a title
 repeating the highlighted item is the same word twice on one screen; and `TopNav` stays visible and
 mounted the whole time settings is open, so All Guides, Starred, Trash and the wordmark are all exits

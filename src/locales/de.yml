@@ -181,6 +181,10 @@ desktop:
   guideCount: $1 Anleitung
   guideCountPlural: $1 Anleitungen
   shortcutsSection: "Tastenkürzel"
+  cardScreenshots: "Screenshots"
+  cardKeyboard: "Tastatur"
+  cardGlobalKeys: "Globale Tasten"
+  cardGlobalKeysHint: "Werden jeder Anwendung entzogen, solange Mimik läuft."
   captureKeys: "Kürzel und benannte Tasten aufzeichnen"
   captureTyping: "Eingaben aufzeichnen"
   typingDebounce: "Eingabeschritt beenden nach"

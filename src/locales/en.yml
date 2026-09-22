@@ -181,6 +181,10 @@ desktop:
   guideCount: $1 guide
   guideCountPlural: $1 guides
   shortcutsSection: "Shortcuts"
+  cardScreenshots: "Screenshots"
+  cardKeyboard: "Keyboard"
+  cardGlobalKeys: "Global keys"
+  cardGlobalKeysHint: "Taken from every application while Mimik is running."
   captureKeys: "Record shortcuts and named keys"
   captureTyping: "Record what you type"
   typingDebounce: "Close a typing step after"

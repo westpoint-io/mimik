@@ -181,6 +181,10 @@ desktop:
   guideCount: $1 个指南
   guideCountPlural: $1 个指南
   shortcutsSection: "快捷键"
+  cardScreenshots: "屏幕截图"
+  cardKeyboard: "键盘"
+  cardGlobalKeys: "全局快捷键"
+  cardGlobalKeysHint: "Mimik 运行期间会从所有应用程序中接管这些按键。"
   captureKeys: "记录快捷键和命名按键"
   captureTyping: "记录输入内容"
   typingDebounce: "输入步骤结束延迟"

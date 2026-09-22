@@ -3,6 +3,8 @@ import { i18n } from '@mimik/core/env';
 import { CURSOR_STYLES } from '@mimik/core/screenshot/types';
 import AiSettings from '@mimik/ui/shared/AiSettings';
 import { useKeyCheck } from '@mimik/ui/shared/key-status';
+import { Command, Keyboard, MonitorPlay } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import type { CaptureSettings, CaptureShortcuts } from '../main/capture/settings';
 import ShortcutRecorder from './ShortcutRecorder';
@@ -27,6 +29,20 @@ const KEYS: { id: keyof CaptureShortcuts; labelKey: string }[] = [
 ];
 
 const SELECT = 'h-9 rounded-[10px] border border-border bg-card px-2.5 text-sm text-foreground';
+
+function Card({ icon: Icon, title, children }: { icon: typeof Command; title: string; children: ReactNode }) {
+  return (
+    <div className="space-y-3.5 rounded-[10px] border border-border bg-card p-3.5">
+      <div className="flex items-center gap-2.5">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-secondary">
+          <Icon size={14} className="text-accent" />
+        </div>
+        <span className="text-xs font-bold text-foreground">{title}</span>
+      </div>
+      {children}
+    </div>
+  );
+}
 
 function Toggle({
   checked,
@@ -86,116 +102,121 @@ export default function SettingsPanel() {
       </nav>
 
       <div className="min-w-0 flex-1 overflow-y-auto px-10 py-8">
-        <div className="mx-auto flex max-w-[640px] flex-col gap-5">
+        <div className="mx-auto flex max-w-[640px] flex-col gap-4">
           {section === 'ai' && <AiSettings keyCheck={keyCheck} />}
 
           {section === 'capture' && settings && (
             <>
-              <label className="flex items-center gap-3 text-sm text-foreground">
-                <span className="mr-auto">{i18n.t('desktop_captureMode')}</span>
-                <select
-                  className={SELECT}
-                  value={settings.captureMode}
-                  onChange={(e) => save({ captureMode: e.target.value as CaptureSettings['captureMode'] })}
-                >
-                  {MODES.map((mode) => (
-                    <option key={mode.id} value={mode.id}>
-                      {i18n.t(mode.labelKey)}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <Card icon={MonitorPlay} title={i18n.t('desktop_cardScreenshots')}>
+                <label className="flex items-center gap-3 text-sm text-foreground">
+                  <span className="mr-auto">{i18n.t('desktop_captureMode')}</span>
+                  <select
+                    className={SELECT}
+                    value={settings.captureMode}
+                    onChange={(e) => save({ captureMode: e.target.value as CaptureSettings['captureMode'] })}
+                  >
+                    {MODES.map((mode) => (
+                      <option key={mode.id} value={mode.id}>
+                        {i18n.t(mode.labelKey)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
 
-              <Toggle
-                checked={settings.showCursor}
-                label={i18n.t('desktop_showCursor')}
-                onChange={(showCursor) => save({ showCursor })}
-              />
-
-              <label className="flex items-center gap-3 text-sm text-foreground">
-                <span className="mr-auto">{i18n.t('desktop_pointerStyle')}</span>
-                <select
-                  className={SELECT}
-                  value={settings.cursorStyle}
-                  disabled={!settings.showCursor}
-                  onChange={(e) => save({ cursorStyle: e.target.value as CaptureSettings['cursorStyle'] })}
-                >
-                  {CURSOR_STYLES.map((style) => (
-                    <option key={style} value={style}>
-                      {style}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="flex items-center gap-3 text-sm text-foreground">
-                <span className="mr-auto">{i18n.t('desktop_screenshotDelay')}</span>
-                <input
-                  type="number"
-                  min={0}
-                  max={2000}
-                  step={50}
-                  className={`${SELECT} w-24`}
-                  value={settings.screenshotDelayMs}
-                  onChange={(e) => save({ screenshotDelayMs: Number(e.target.value) })}
-                />
-                <span className="text-muted-foreground">{i18n.t('desktop_milliseconds')}</span>
-              </label>
-
-              {settings.captureMode === 'region' && (
                 <Toggle
-                  checked={settings.captureOutsideClicks}
-                  label={i18n.t('desktop_captureOutside')}
-                  onChange={(captureOutsideClicks) => save({ captureOutsideClicks })}
+                  checked={settings.showCursor}
+                  label={i18n.t('desktop_showCursor')}
+                  onChange={(showCursor) => save({ showCursor })}
                 />
-              )}
 
-              <div className="my-1 h-px bg-border" />
+                <label className="flex items-center gap-3 text-sm text-foreground">
+                  <span className="mr-auto">{i18n.t('desktop_pointerStyle')}</span>
+                  <select
+                    className={SELECT}
+                    value={settings.cursorStyle}
+                    disabled={!settings.showCursor}
+                    onChange={(e) => save({ cursorStyle: e.target.value as CaptureSettings['cursorStyle'] })}
+                  >
+                    {CURSOR_STYLES.map((style) => (
+                      <option key={style} value={style}>
+                        {style}
+                      </option>
+                    ))}
+                  </select>
+                </label>
 
-              <Toggle
-                checked={settings.captureKeys}
-                label={i18n.t('desktop_captureKeys')}
-                onChange={(captureKeys) => save({ captureKeys })}
-              />
-              <Toggle
-                checked={settings.captureTyping}
-                label={i18n.t('desktop_captureTyping')}
-                onChange={(captureTyping) => save({ captureTyping })}
-              />
-              <Toggle
-                checked={settings.typingSmartDetection}
-                label={i18n.t('desktop_typingSmart')}
-                hint={i18n.t('desktop_typingSmartHint')}
-                onChange={(typingSmartDetection) => save({ typingSmartDetection })}
-              />
+                <label className="flex items-center gap-3 text-sm text-foreground">
+                  <span className="mr-auto">{i18n.t('desktop_screenshotDelay')}</span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={2000}
+                    step={50}
+                    className={`${SELECT} w-24`}
+                    value={settings.screenshotDelayMs}
+                    onChange={(e) => save({ screenshotDelayMs: Number(e.target.value) })}
+                  />
+                  <span className="text-muted-foreground">{i18n.t('desktop_milliseconds')}</span>
+                </label>
 
-              <label className="flex items-center gap-3 text-sm text-foreground">
-                <span className="mr-auto">{i18n.t('desktop_typingDebounce')}</span>
-                <input
-                  type="number"
-                  min={200}
-                  max={5000}
-                  step={100}
-                  disabled={!settings.captureTyping}
-                  className={`${SELECT} w-24`}
-                  value={settings.typingDebounceMs}
-                  onChange={(e) => save({ typingDebounceMs: Number(e.target.value) })}
+                {settings.captureMode === 'region' && (
+                  <Toggle
+                    checked={settings.captureOutsideClicks}
+                    label={i18n.t('desktop_captureOutside')}
+                    onChange={(captureOutsideClicks) => save({ captureOutsideClicks })}
+                  />
+                )}
+              </Card>
+
+              <Card icon={Keyboard} title={i18n.t('desktop_cardKeyboard')}>
+                <Toggle
+                  checked={settings.captureKeys}
+                  label={i18n.t('desktop_captureKeys')}
+                  onChange={(captureKeys) => save({ captureKeys })}
                 />
-                <span className="text-muted-foreground">{i18n.t('desktop_milliseconds')}</span>
-              </label>
+                <Toggle
+                  checked={settings.captureTyping}
+                  label={i18n.t('desktop_captureTyping')}
+                  onChange={(captureTyping) => save({ captureTyping })}
+                />
+                <Toggle
+                  checked={settings.typingSmartDetection}
+                  label={i18n.t('desktop_typingSmart')}
+                  hint={i18n.t('desktop_typingSmartHint')}
+                  onChange={(typingSmartDetection) => save({ typingSmartDetection })}
+                />
+
+                <label className="flex items-center gap-3 text-sm text-foreground">
+                  <span className="mr-auto">{i18n.t('desktop_typingDebounce')}</span>
+                  <input
+                    type="number"
+                    min={200}
+                    max={5000}
+                    step={100}
+                    disabled={!settings.captureTyping}
+                    className={`${SELECT} w-24`}
+                    value={settings.typingDebounceMs}
+                    onChange={(e) => save({ typingDebounceMs: Number(e.target.value) })}
+                  />
+                  <span className="text-muted-foreground">{i18n.t('desktop_milliseconds')}</span>
+                </label>
+              </Card>
             </>
           )}
 
-          {section === 'shortcuts' &&
-            settings &&
-            KEYS.map((key) => (
-              <ShortcutRecorder
-                key={key.id}
-                label={i18n.t(key.labelKey)}
-                value={settings.shortcuts[key.id]}
-                onChange={(next) => save({ shortcuts: { ...settings.shortcuts, [key.id]: next } })}
-              />
-            ))}
+          {section === 'shortcuts' && settings && (
+            <Card icon={Command} title={i18n.t('desktop_cardGlobalKeys')}>
+              <p className="-mt-1 text-xs text-muted-foreground">{i18n.t('desktop_cardGlobalKeysHint')}</p>
+              {KEYS.map((key) => (
+                <ShortcutRecorder
+                  key={key.id}
+                  label={i18n.t(key.labelKey)}
+                  value={settings.shortcuts[key.id]}
+                  onChange={(next) => save({ shortcuts: { ...settings.shortcuts, [key.id]: next } })}
+                />
+              ))}
+            </Card>
+          )}
         </div>
       </div>
     </div>
