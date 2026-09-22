@@ -1,6 +1,8 @@
 import { validateApiKey } from '@mimik/core/capture/ai/validate';
 import { i18n } from '@mimik/core/env';
 import { CURSOR_STYLES } from '@mimik/core/screenshot/types';
+import { Input } from '@mimik/ui/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui/components/ui/select';
 import AiSettings from '@mimik/ui/shared/AiSettings';
 import { useKeyCheck } from '@mimik/ui/shared/key-status';
 import { Command, Keyboard, MonitorPlay } from 'lucide-react';
@@ -28,7 +30,16 @@ const KEYS: { id: keyof CaptureShortcuts; labelKey: string }[] = [
   { id: 'capture', labelKey: 'desktop_shortcutCapture' },
 ];
 
-const SELECT = 'h-9 rounded-[10px] border border-border bg-card px-2.5 text-sm text-foreground';
+const NUMBER = 'h-9 w-24 rounded-lg border-border text-[13px] font-medium';
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label className="flex items-center gap-3 text-sm text-foreground">
+      <span className="mr-auto">{label}</span>
+      {children}
+    </label>
+  );
+}
 
 function Card({ icon: Icon, title, children }: { icon: typeof Command; title: string; children: ReactNode }) {
   return (
@@ -57,7 +68,12 @@ function Toggle({
 }) {
   return (
     <label className="flex cursor-pointer items-start gap-3">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-0.5" />
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="mt-0.5 h-4 w-4 shrink-0 accent-accent"
+      />
       <span className="flex flex-col gap-0.5">
         <span className="text-sm text-foreground">{label}</span>
         {hint && <span className="text-xs text-muted-foreground">{hint}</span>}
@@ -108,20 +124,23 @@ export default function SettingsPanel() {
           {section === 'capture' && settings && (
             <>
               <Card icon={MonitorPlay} title={i18n.t('desktop_cardScreenshots')}>
-                <label className="flex items-center gap-3 text-sm text-foreground">
-                  <span className="mr-auto">{i18n.t('desktop_captureMode')}</span>
-                  <select
-                    className={SELECT}
+                <Field label={i18n.t('desktop_captureMode')}>
+                  <Select
                     value={settings.captureMode}
-                    onChange={(e) => save({ captureMode: e.target.value as CaptureSettings['captureMode'] })}
+                    onValueChange={(v) => save({ captureMode: v as CaptureSettings['captureMode'] })}
                   >
-                    {MODES.map((mode) => (
-                      <option key={mode.id} value={mode.id}>
-                        {i18n.t(mode.labelKey)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                    <SelectTrigger className="h-9 w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {MODES.map((mode) => (
+                        <SelectItem key={mode.id} value={mode.id}>
+                          {i18n.t(mode.labelKey)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
 
                 <Toggle
                   checked={settings.showCursor}
@@ -129,35 +148,37 @@ export default function SettingsPanel() {
                   onChange={(showCursor) => save({ showCursor })}
                 />
 
-                <label className="flex items-center gap-3 text-sm text-foreground">
-                  <span className="mr-auto">{i18n.t('desktop_pointerStyle')}</span>
-                  <select
-                    className={SELECT}
+                <Field label={i18n.t('desktop_pointerStyle')}>
+                  <Select
                     value={settings.cursorStyle}
                     disabled={!settings.showCursor}
-                    onChange={(e) => save({ cursorStyle: e.target.value as CaptureSettings['cursorStyle'] })}
+                    onValueChange={(v) => save({ cursorStyle: v as CaptureSettings['cursorStyle'] })}
                   >
-                    {CURSOR_STYLES.map((style) => (
-                      <option key={style} value={style}>
-                        {style}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                    <SelectTrigger className="h-9 w-48 capitalize">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CURSOR_STYLES.map((style) => (
+                        <SelectItem key={style} value={style} className="capitalize">
+                          {style}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </Field>
 
-                <label className="flex items-center gap-3 text-sm text-foreground">
-                  <span className="mr-auto">{i18n.t('desktop_screenshotDelay')}</span>
-                  <input
+                <Field label={i18n.t('desktop_screenshotDelay')}>
+                  <Input
                     type="number"
                     min={0}
                     max={2000}
                     step={50}
-                    className={`${SELECT} w-24`}
+                    className={NUMBER}
                     value={settings.screenshotDelayMs}
                     onChange={(e) => save({ screenshotDelayMs: Number(e.target.value) })}
                   />
-                  <span className="text-muted-foreground">{i18n.t('desktop_milliseconds')}</span>
-                </label>
+                  <span className="text-sm text-muted-foreground">{i18n.t('desktop_milliseconds')}</span>
+                </Field>
 
                 {settings.captureMode === 'region' && (
                   <Toggle
@@ -186,20 +207,19 @@ export default function SettingsPanel() {
                   onChange={(typingSmartDetection) => save({ typingSmartDetection })}
                 />
 
-                <label className="flex items-center gap-3 text-sm text-foreground">
-                  <span className="mr-auto">{i18n.t('desktop_typingDebounce')}</span>
-                  <input
+                <Field label={i18n.t('desktop_typingDebounce')}>
+                  <Input
                     type="number"
                     min={200}
                     max={5000}
                     step={100}
                     disabled={!settings.captureTyping}
-                    className={`${SELECT} w-24`}
+                    className={NUMBER}
                     value={settings.typingDebounceMs}
                     onChange={(e) => save({ typingDebounceMs: Number(e.target.value) })}
                   />
-                  <span className="text-muted-foreground">{i18n.t('desktop_milliseconds')}</span>
-                </label>
+                  <span className="text-sm text-muted-foreground">{i18n.t('desktop_milliseconds')}</span>
+                </Field>
               </Card>
             </>
           )}

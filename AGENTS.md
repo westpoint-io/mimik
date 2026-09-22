@@ -865,6 +865,13 @@ two are never on screen at once, and matching them would mean branching that sha
 Screenshots and Keyboard, because the divider that separated those groups was already doing a card
 boundary's job.
 
+Every control in there is the shared component — `Select`, `Input`, and a checkbox carrying
+`accent-accent` — never a bare `<select>` or `<input>`. That is the difference the card shell alone
+did not fix: a native select draws the platform's own chevron and popup, a native number field draws
+spinner arrows on Windows, and a native checkbox is the browser's blue, so the section read as a form
+bolted into the app rather than part of it. `styles.css` also kills the number spinners outright,
+because `Input` is a text field's styling wrapped around a control the platform still decorates.
+
 The pane carries no heading and no close button. The left nav already names the section, so a title
 repeating the highlighted item is the same word twice on one screen; and `TopNav` stays visible and
 mounted the whole time settings is open, so All Guides, Starred, Trash and the wordmark are all exits
