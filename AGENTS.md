@@ -613,6 +613,12 @@ already at the wanted level, so the pass writes only what changes.
 `exportData` guard, so the control appears exactly when the rest of the guide toolbar does. The
 extension passes nothing.
 
+The control is a plain `SelectTrigger`, never `asChild` around a `Button`. `SelectTrigger` renders
+its own chevron beside whatever children it is given, so with `asChild` the `Slot` receives two
+children and throws `React.Children.only`, which unmounts the whole renderer — a blank window with
+the guide's name still in the title bar, and nothing in the console of the app itself. `Button` is
+not a `forwardRef` either. Anywhere a Radix trigger needs to look like a button, style the trigger.
+
 `zoomLevel` in capture settings overrides the automatic choice; `null` means derive it. Main cannot
 value-import core, so `settings.ts` carries its own three-line `snapZoom` rather than the one in
 `record.ts` — the same constraint that keeps `clamp` local in `capture/screenshot.ts`. The renderer

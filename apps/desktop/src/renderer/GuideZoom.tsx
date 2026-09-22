@@ -1,7 +1,6 @@
 import { i18n } from '@mimik/core/env';
 import { getGuide, updateScreenshotEdits } from '@mimik/core/guides/service';
 import { MAX_ZOOM, MIN_ZOOM, rezoomEdits, ZOOM_STEP } from '@mimik/core/screenshot/record';
-import { Button } from '@mimik/ui/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@mimik/ui/components/ui/select';
 import { ZoomIn } from 'lucide-react';
 import { useState } from 'react';
@@ -34,13 +33,10 @@ export default function GuideZoom({ guideId, onDone }: { guideId: string; onDone
     <Select disabled={busy} onValueChange={apply}>
       <SelectTrigger
         aria-label={i18n.t('desktop_zoomLevel')}
-        className="h-8 w-auto gap-1.5 rounded-lg border-border bg-card px-3 text-[13px] font-medium hover:bg-secondary"
-        asChild
+        className="h-8 w-auto gap-1.5 rounded-lg border-border bg-card px-3 text-[13px] font-medium text-foreground hover:bg-secondary hover:text-accent"
       >
-        <Button size="sm" variant="ghost">
-          <ZoomIn size={14} />
-          {i18n.t('desktop_zoomGuide')}
-        </Button>
+        <ZoomIn size={14} />
+        {i18n.t('desktop_zoomGuide')}
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="auto">{i18n.t('desktop_zoomAuto')}</SelectItem>
