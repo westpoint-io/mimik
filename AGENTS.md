@@ -604,6 +604,12 @@ rewrites the steps already captured. It recomputes from `clickPoint` and the fra
 already holds, so nothing is re-captured and nothing is lost. A guide therefore stores no zoom of its
 own — the level lives per screenshot and the control simply rewrites each one.
 
+Version history does not report a zoom. `snapshot-diff` counts a changed `edits.viewport` as a crop,
+and zoom writes that same field, so re-zooming a guide read back as "3 images cropped" — the history
+describing the app's own framing as the user's edit. The diff now counts it only when `zoomLevel` is
+absent on one side or the other, which is exactly when a person set the region. Cropping a step by
+hand still registers, including when it replaces an app-set zoom.
+
 Which steps it may touch is `edits.zoomLevel` itself: present means the app chose the region, absent
 means a person did. `AnnotationEditor` clears it whenever the crop tool writes a new viewport, so a
 hand-cropped step survives every later re-zoom. `rezoomEdits` returns null for those, and for a step
