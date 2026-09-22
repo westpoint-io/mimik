@@ -24,6 +24,7 @@ import ExportPreviewModal from './ExportPreviewModal';
 interface TopNavProps {
   route: Route;
   onSettings?: () => void;
+  onNavigate?: () => void;
 }
 
 const navItems = [
@@ -34,7 +35,7 @@ const navItems = [
 
 const NAV_CONTROL = 'h-8 rounded-lg border border-border bg-card text-foreground hover:bg-secondary hover:text-accent';
 
-export default function TopNav({ route, onSettings }: TopNavProps) {
+export default function TopNav({ route, onSettings, onNavigate }: TopNavProps) {
   const {
     counts,
     guideTitle,
@@ -77,7 +78,10 @@ export default function TopNav({ route, onSettings }: TopNavProps) {
     <header className="flex items-center gap-5 px-7 h-16 shrink-0 bg-card border-b border-border">
       {/* Brand */}
       <button
-        onClick={() => navigate({ page: 'library', category: 'all' })}
+        onClick={() => {
+          onNavigate?.();
+          navigate({ page: 'library', category: 'all' });
+        }}
         className="flex items-center gap-2 mr-4 cursor-pointer h-full"
       >
         <div className="mb-1">
@@ -111,7 +115,10 @@ export default function TopNav({ route, onSettings }: TopNavProps) {
             return (
               <button
                 key={item.key}
-                onClick={() => navigate({ page: 'library', category: item.key })}
+                onClick={() => {
+                  onNavigate?.();
+                  navigate({ page: 'library', category: item.key });
+                }}
                 className={`flex items-center gap-1.5 text-[13px] h-8 px-3 rounded-md transition-all
                 ${active ? 'bg-primary text-primary-foreground font-semibold' : 'text-foreground font-medium hover:bg-secondary'}`}
               >

@@ -738,7 +738,12 @@ news. It went, along with the second bar under it, which halved the chrome from 
 `TopNav` takes only a `Route` and reads the rest from `useFullview`, which `GuideContent` already
 fills, so the guide title, the step count and the export data arrive with no desktop wiring at all.
 Its one desktop-only prop is `onSettings`: the extension has a browser options page and the desktop
-does not, so the gear exists here and only on the library route. Moving it brought `SearchModal`,
+does not, so the gear exists here and only on the library route. `onNavigate` is its counterpart and
+exists for one reason: settings is a boolean laid over the route rather than a route of its own, so
+the header could navigate underneath an open settings pane — the pill moved to Trash and the pane
+stayed. Firing it on the click rather than watching the route is deliberate, because clicking the
+already-active item produces no hash change and that is exactly the click that means "get me out of
+here". Moving it brought `SearchModal`,
 `ExportPreviewModal`, `VideoStepPlayer` and two search components with it — each needed exactly two
 import rewrites, `#imports` to `@mimik/core/env` and `@/core/*` to `@mimik/core/*`, because nothing
 in them was ever extension-specific beyond how WXT resolves a module.

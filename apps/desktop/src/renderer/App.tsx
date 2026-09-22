@@ -27,7 +27,11 @@ export default function App() {
   return (
     <TooltipProvider>
       <div className="min-h-screen flex flex-col bg-background">
-        <TopNav route={route} onSettings={library ? () => setSettingsOpen(true) : undefined} />
+        <TopNav
+          route={route}
+          onSettings={library ? () => setSettingsOpen(true) : undefined}
+          onNavigate={() => setSettingsOpen(false)}
+        />
         {settingsOpen ? (
           <main className="flex-1 min-h-0">
             <SettingsPanel onClose={() => setSettingsOpen(false)} />
