@@ -1,15 +1,6 @@
 import { PRESET_LABELS, type PresetKey } from '@mimik/core/blur/regexes';
-import { type AIApiKeys, keyFor, migrateApiKeys, withKeyFor } from '@mimik/core/capture/ai/keys';
-import {
-  AI_PROVIDERS,
-  type AIProviderKey,
-  CUSTOM_MODEL_VALUE,
-  DEFAULT_AI_PROVIDER,
-  isCustomBaseUrl,
-  isCustomModel,
-  providerOrDefault,
-} from '@mimik/core/capture/ai/models';
-import { AI_LANGUAGES, type AILanguageCode } from '@mimik/core/capture/ai/prompts';
+import { keyFor, migrateApiKeys } from '@mimik/core/capture/ai/keys';
+import { type AIProviderKey, providerOrDefault } from '@mimik/core/capture/ai/models';
 import { resolveVoiceApiKey } from '@mimik/core/capture/voice/api-key';
 import type { VoiceProvider } from '@mimik/core/capture/voice/transcribe';
 import { i18n } from '@mimik/core/env';
@@ -21,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@mimik/ui/components/ui
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui/components/ui/select';
 import { logger } from '@mimik/ui/lib/logger';
 import { changedSettings, type SettingsSnapshot } from '@mimik/ui/lib/settings-autosave';
+import AiSettings from '@mimik/ui/shared/AiSettings';
 import ColorPicker from '@mimik/ui/shared/ColorPicker';
 import {
   ArrowLeft,
@@ -29,7 +21,6 @@ import {
   ChevronDown,
   ChevronRight,
   EyeOff,
-  Globe,
   ImageIcon,
   Mic,
   Shield,
@@ -41,7 +32,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { localStorage } from '@/lib/browser-api';
-import { KeyStatusNote, KeyWarningNote, ModelList, SecretInput, useKeyCheck } from '@/ui/shared/key-check';
+import { KeyStatusNote, ModelList, SecretInput, useKeyCheck } from '@/ui/shared/key-check';
 import MicrophonePicker from '@/ui/shared/MicrophonePicker';
 
 interface SettingsViewProps {
@@ -59,20 +50,15 @@ const FOOTER_PRESETS = () => [
 
 export default function SettingsView({ onBack }: SettingsViewProps) {
   const [provider, setProvider] = useState<AIProviderKey>('openai');
-  const [model, setModel] = useState(AI_PROVIDERS.openai.defaultModel);
   const [apiKey, setApiKey] = useState('');
-  const [apiKeys, setApiKeys] = useState<AIApiKeys>({});
-  const [baseUrl, setBaseUrl] = useState('');
   const [saved, setSaved] = useState(false);
   const aiKeyCheck = useKeyCheck();
   const voiceKeyCheck = useKeyCheck();
-  const [customModel, setCustomModel] = useState(false);
-  const [ownServer, setOwnServer] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const savedSnapshot = useRef<SettingsSnapshot | null>(null);
+  const flushRef = useRef<() => Promise<void>>(async () => {});
   const pending = useRef<SettingsSnapshot>({});
   const saveTimer = useRef<number | undefined>(undefined);
-  const [aiLanguage, setAiLanguage] = useState<AILanguageCode>('en');
   const [voiceProvider, setVoiceProvider] = useState<VoiceProvider>('openai');
   const [voiceApiKey, setVoiceApiKey] = useState('');
   const [voiceMicrophoneId, setVoiceMicrophoneId] = useState('');
@@ -111,15 +97,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
       .then((result) => {
         const p = providerOrDefault(result.aiProvider);
         setProvider(p);
-        setModel((result.aiModel as string) || AI_PROVIDERS[p].defaultModel);
-        const keys = migrateApiKeys(result);
-        setApiKeys(keys);
-        setApiKey(keyFor(keys, p));
-        if (isCustomBaseUrl(AI_PROVIDERS[p], result.aiBaseUrl as string)) {
-          setBaseUrl(result.aiBaseUrl as string);
-          setOwnServer(true);
-        }
-        if (result.aiLanguage) setAiLanguage(result.aiLanguage as AILanguageCode);
+        setApiKey(keyFor(migrateApiKeys(result), p));
         if (result.blurPresets) setBlurPresets(result.blurPresets as Record<PresetKey, boolean>);
         setVoiceProvider((result.voiceProvider as VoiceProvider) || 'openai');
         if (result.voiceApiKey) setVoiceApiKey(result.voiceApiKey as string);
@@ -133,12 +111,6 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
   }, []);
 
   const stored = {
-    aiApiKey: apiKey,
-    aiApiKeys: apiKeys,
-    aiProvider: provider,
-    aiModel: model,
-    aiBaseUrl: baseUrl,
-    aiLanguage,
     blurPresets,
     voiceProvider,
     voiceApiKey,
@@ -148,6 +120,12 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     brandFooter,
     brandAttribution,
   };
+
+  const queue = useCallback((patch: SettingsSnapshot) => {
+    Object.assign(pending.current, patch);
+    window.clearTimeout(saveTimer.current);
+    saveTimer.current = window.setTimeout(() => void flushRef.current(), SAVE_DEBOUNCE_MS);
+  }, []);
 
   const flush = useCallback(async () => {
     const patch = pending.current;
@@ -161,6 +139,8 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
       setSaved(false);
     }
   }, []);
+
+  flushRef.current = flush;
 
   useEffect(() => {
     if (!loaded) return;
@@ -198,38 +178,6 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     setBrandLogo(await makeBrandLogo(file));
   };
 
-  const handleProviderChange = (newProvider: AIProviderKey) => {
-    setProvider(newProvider);
-    setApiKey(keyFor(apiKeys, newProvider));
-    aiKeyCheck.reset();
-    setCustomModel(false);
-    setModel(AI_PROVIDERS[newProvider].defaultModel);
-    setOwnServer(false);
-    setBaseUrl('');
-  };
-
-  const handleOwnServerToggle = () => {
-    setOwnServer((on) => {
-      if (on) setBaseUrl('');
-      return !on;
-    });
-    aiKeyCheck.reset();
-  };
-
-  const handleModelChange = (value: string) => {
-    if (value === CUSTOM_MODEL_VALUE) {
-      setCustomModel(true);
-      setModel('');
-      aiKeyCheck.reset();
-      return;
-    }
-    setCustomModel(false);
-    setModel(value);
-    aiKeyCheck.reset();
-  };
-
-  const providerConfig = AI_PROVIDERS[provider] ?? AI_PROVIDERS[DEFAULT_AI_PROVIDER];
-  const usingCustomModel = customModel || isCustomModel(model, providerConfig);
   const voiceKey = resolveVoiceApiKey({ voiceProvider, voiceApiKey, aiProvider: provider, aiApiKey: apiKey });
 
   const BLUR_PRESET_I18N: Record<PresetKey, string> = {
@@ -266,162 +214,14 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
       </div>
 
       <div className="flex-1 px-3 py-4 space-y-3">
-        <div className="border border-border rounded-[10px] p-3.5 space-y-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center">
-              <Sparkles size={14} className="text-accent" />
-            </div>
-            <span className="text-xs font-bold text-foreground">{i18n.t('settings.aiDescriptions')}</span>
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">
-              {i18n.t('settings.provider')}
-            </label>
-            <Select value={provider} onValueChange={(v) => handleProviderChange(v as AIProviderKey)}>
-              <SelectTrigger className="h-8">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(AI_PROVIDERS).map(([key, cfg]) => (
-                  <SelectItem key={key} value={key}>
-                    {cfg.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.model')}</label>
-            <Select value={usingCustomModel ? CUSTOM_MODEL_VALUE : model} onValueChange={handleModelChange}>
-              <SelectTrigger className="h-8">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {providerConfig.models.map((m) => (
-                  <SelectItem key={m.id} value={m.id}>
-                    {m.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {usingCustomModel && (
-              <Input
-                value={model}
-                onChange={(e) => {
-                  setModel(e.target.value);
-                  aiKeyCheck.reset();
-                }}
-                placeholder={providerConfig.defaultModel}
-                aria-label={i18n.t('settings.modelCustom')}
-                className="mt-1.5 h-8 text-[13px] rounded-lg border-border"
-              />
-            )}
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.apiKey')}</label>
-            <div className="flex items-center gap-1.5">
-              <SecretInput
-                value={apiKey}
-                onChange={(next) => {
-                  setApiKey(next);
-                  setApiKeys((prev) => withKeyFor(prev, provider, next));
-                  aiKeyCheck.reset();
-                }}
-                placeholder="sk-..."
-                className="h-8 text-[13px] rounded-lg border-border"
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!apiKey || aiKeyCheck.status === 'checking'}
-                onClick={() => {
-                  if (aiKeyCheck.status !== 'checking') void aiKeyCheck.check(provider, apiKey, baseUrl, model);
-                }}
-                className="h-8 shrink-0 rounded-lg bg-card text-[11px] font-semibold"
-              >
-                {i18n.t('settings.checkKey')}
-              </Button>
-            </div>
-            <KeyStatusNote status={aiKeyCheck.status} />
-            <KeyWarningNote warning={aiKeyCheck.warning} />
-            {aiKeyCheck.models && <ModelList models={aiKeyCheck.models} />}
-            {!apiKey.trim() && (
-              <p className="mt-1.5 flex items-start gap-1.5 text-[10px] text-destructive leading-relaxed" role="alert">
-                <TriangleAlert size={11} className="shrink-0 mt-0.5" />
-                <span>{i18n.t('settings.aiNoKey')}</span>
-              </p>
-            )}
-          </div>
-
-          <div>
-            <div className="flex items-center justify-between gap-3 py-0.5">
-              <span className="text-[11px] font-semibold text-foreground flex items-center gap-1">
-                <Globe size={11} className="-mt-px" />
-                {i18n.t('settings.useOwnServer')}
-              </span>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={ownServer}
-                aria-label={i18n.t('settings.useOwnServer')}
-                onClick={handleOwnServerToggle}
-                className={`w-9 h-5 rounded-full transition-colors relative shrink-0 ${
-                  ownServer ? 'bg-accent' : 'bg-border'
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
-                    ownServer ? 'translate-x-4' : 'translate-x-0'
-                  }`}
-                />
-              </button>
-            </div>
-            {ownServer && (
-              <div className="mt-2 space-y-1.5">
-                <Input
-                  type="text"
-                  value={baseUrl}
-                  onChange={(e) => {
-                    setBaseUrl(e.target.value);
-                    aiKeyCheck.reset();
-                  }}
-                  placeholder={providerConfig.defaultBaseUrl}
-                  aria-label={i18n.t('settings.baseUrl')}
-                  className="h-8 text-[13px] rounded-lg border-border"
-                />
-                <p className="text-[10px] text-muted-foreground leading-relaxed">
-                  {i18n.t(
-                    providerConfig.protocol === 'anthropic'
-                      ? 'settings.ownServerHintAnthropic'
-                      : 'settings.ownServerHintOpenai',
-                  )}
-                </p>
-              </div>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">
-              <Globe size={11} className="inline mr-1 -mt-px" />
-              {i18n.t('settings.aiLanguage')}
-            </label>
-            <Select value={aiLanguage} onValueChange={(v) => setAiLanguage(v as AILanguageCode)}>
-              <SelectTrigger className="h-8">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {AI_LANGUAGES.map((lang) => (
-                  <SelectItem key={lang.code} value={lang.code}>
-                    {lang.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+        <AiSettings
+          keyCheck={aiKeyCheck}
+          onChange={(patch) => {
+            if (typeof patch.aiProvider === 'string') setProvider(patch.aiProvider as AIProviderKey);
+            if (typeof patch.aiApiKey === 'string') setApiKey(patch.aiApiKey);
+            queue(patch);
+          }}
+        />
 
         <div className="border border-border rounded-[10px] p-3.5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">

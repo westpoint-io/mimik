@@ -779,11 +779,25 @@ identical on both surfaces, so `AiSettings` lives in `packages/ui` and each app 
 `validate` function — the desktop passes core's `validateApiKey` directly, and the extension goes
 through its background messaging, which is the only part that differs.
 
-`SettingsView`, the extension's own 699-line settings screen, was deliberately **not** moved. It
-carries voice narration, smart blur, brand logos and a microphone picker, none of which mean
-anything on desktop, and it reaches for `@/lib/browser-api`. Moving it would have dragged all of
-that across for the sake of four fields; extracting the four was less code and leaves the extension
-untouched.
+`AiSettings` is the extension's own AI card, lifted out of `SettingsView` rather than rewritten. A
+parallel implementation was tried first and the wording immediately drifted — the extension said
+"API key verified", the copy said "134 models available", and the spend warning was missing
+altogether, because the extension shows the verdict, the model list and the warning as three
+separate things and the copy collapsed them into one line. Two implementations of the same screen
+diverge by default; one does not.
+
+What moved with it: `KeyStatusNote`, `KeyWarningNote`, `ModelList`, `SecretInput` and `useKeyCheck`,
+all now in `key-status.tsx`. The hook takes its validator as an argument, which is the only part
+that genuinely differs — the extension goes through background messaging because a service worker is
+what has `host_permissions`, and the desktop calls `validateApiKey` directly on top of the main
+process fetch.
+
+The rest of `SettingsView` stayed put. Voice narration, smart blur, brand logos and the microphone
+picker have no desktop meaning, and it reaches for `@/lib/browser-api`. Splitting it did mean the
+autosave had to change shape: the AI fields left the parent's snapshot, so `AiSettings` reports its
+own changes through `onChange` and both halves queue into the same debounced flush. `SettingsView`
+still keeps the provider and key in state for one reason — `resolveVoiceApiKey` falls back to the AI
+key when no voice key is set — and it updates them from the patches the card sends up.
 
 The shortcut recorder reads a keystroke and writes an Electron accelerator. It refuses a bare key,
 because a global accelerator with no modifier takes that key from every application on the machine,
