@@ -1,5 +1,6 @@
 import { validateApiKey } from '@mimik/core/capture/ai/validate';
 import { i18n } from '@mimik/core/env';
+import { CURSOR_STYLES } from '@mimik/core/screenshot/types';
 import AiSettings from '@mimik/ui/shared/AiSettings';
 import { useKeyCheck } from '@mimik/ui/shared/key-status';
 import { useEffect, useState } from 'react';
@@ -14,7 +15,6 @@ const SECTIONS: { id: Section; labelKey: string }[] = [
   { id: 'shortcuts', labelKey: 'desktop_shortcutsSection' },
 ];
 
-const STYLES: CaptureSettings['cursorStyle'][] = ['arrow', 'hand', 'dot'];
 const MODES: { id: CaptureSettings['captureMode']; labelKey: string }[] = [
   { id: 'window', labelKey: 'desktop_modeWindow' },
   { id: 'screen', labelKey: 'desktop_modeScreen' },
@@ -127,7 +127,7 @@ export default function SettingsPanel({ onClose }: { onClose(): void }) {
                   disabled={!settings.showCursor}
                   onChange={(e) => save({ cursorStyle: e.target.value as CaptureSettings['cursorStyle'] })}
                 >
-                  {STYLES.map((style) => (
+                  {CURSOR_STYLES.map((style) => (
                     <option key={style} value={style}>
                       {style}
                     </option>

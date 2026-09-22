@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { CaptureImage } from '@mimik/core/capture/sink';
 import type { ElementMeta } from '@mimik/core/guides/types';
+import type { CursorMark } from '@mimik/core/screenshot/types';
 import { screen } from 'electron';
 import { cursorPoint } from './displays';
 import {
@@ -59,11 +60,6 @@ const COMMIT_KEYS: ReadonlySet<number> = new Set([KEY.enter, KEY.numpadEnter, KE
 export interface Point {
   x: number;
   y: number;
-}
-
-export interface CursorMark extends Point {
-  style: CaptureSettings['cursorStyle'];
-  scale: number;
 }
 
 export interface CaptureRequest {
@@ -187,7 +183,7 @@ export function targetRect(element: ScreenElement | null, framed: Rect, point: P
   return inner;
 }
 
-export function centreOf(element: ScreenElement | null): Point | null {
+function centreOf(element: ScreenElement | null): Point | null {
   const rect = element?.rect;
   if (!rect) return null;
   return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };

@@ -1,11 +1,13 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import type { CursorStyle } from '@mimik/core/screenshot/types';
 import { app } from 'electron';
 
-export type CursorStyle = 'arrow' | 'hand' | 'dot';
+export type { CursorStyle };
 export type CaptureMode = 'window' | 'screen' | 'region';
 
-export const CURSOR_STYLES: CursorStyle[] = ['arrow', 'hand', 'dot'];
+const EVERY_CURSOR_STYLE: Record<CursorStyle, true> = { arrow: true, hand: true, dot: true };
+export const CURSOR_STYLES = Object.keys(EVERY_CURSOR_STYLE) as CursorStyle[];
 export const CAPTURE_MODES: CaptureMode[] = ['window', 'screen', 'region'];
 export const MAX_SCREENSHOT_DELAY_MS = 2000;
 export const MIN_TYPING_DEBOUNCE_MS = 200;

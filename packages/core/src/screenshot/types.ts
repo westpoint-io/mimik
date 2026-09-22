@@ -140,6 +140,8 @@ export type Annotation =
 
 export type CursorStyle = 'arrow' | 'hand' | 'dot';
 
+export const CURSOR_STYLES: CursorStyle[] = ['arrow', 'hand', 'dot'];
+
 export interface CursorMark {
   x: number;
   y: number;
