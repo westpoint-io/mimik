@@ -10,8 +10,7 @@ import { Button } from '@mimik/ui/components/ui/button';
 import { Input } from '@mimik/ui/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@mimik/ui/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui/components/ui/select';
-import { logger } from '@mimik/ui/lib/logger';
-import { changedSettings, type SettingsSnapshot } from '@mimik/ui/lib/settings-autosave';
+import { useSettingsAutosave } from '@mimik/ui/lib/use-settings-autosave';
 import AiSettings from '@mimik/ui/shared/AiSettings';
 import ColorPicker from '@mimik/ui/shared/ColorPicker';
 import {
@@ -30,7 +29,7 @@ import {
   Trash2,
   TriangleAlert,
 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { localStorage } from '@/lib/browser-api';
 import { KeyStatusNote, ModelList, SecretInput, useKeyCheck } from '@/ui/shared/key-check';
 import MicrophonePicker from '@/ui/shared/MicrophonePicker';
@@ -38,9 +37,6 @@ import MicrophonePicker from '@/ui/shared/MicrophonePicker';
 interface SettingsViewProps {
   onBack?: () => void;
 }
-
-const SAVE_DEBOUNCE_MS = 400;
-const SAVED_BADGE_MS = 1600;
 
 const FOOTER_PRESETS = () => [
   defaultFooterLine(),
@@ -51,14 +47,9 @@ const FOOTER_PRESETS = () => [
 export default function SettingsView({ onBack }: SettingsViewProps) {
   const [provider, setProvider] = useState<AIProviderKey>('openai');
   const [apiKey, setApiKey] = useState('');
-  const [saved, setSaved] = useState(false);
   const aiKeyCheck = useKeyCheck();
   const voiceKeyCheck = useKeyCheck();
   const [loaded, setLoaded] = useState(false);
-  const savedSnapshot = useRef<SettingsSnapshot | null>(null);
-  const flushRef = useRef<() => Promise<void>>(async () => {});
-  const pending = useRef<SettingsSnapshot>({});
-  const saveTimer = useRef<number | undefined>(undefined);
   const [voiceProvider, setVoiceProvider] = useState<VoiceProvider>('openai');
   const [voiceApiKey, setVoiceApiKey] = useState('');
   const [voiceMicrophoneId, setVoiceMicrophoneId] = useState('');
@@ -121,51 +112,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     brandAttribution,
   };
 
-  const flush = useCallback(async () => {
-    const patch = pending.current;
-    pending.current = {};
-    if (Object.keys(patch).length === 0) return;
-    try {
-      await localStorage.set(patch);
-      setSaved(true);
-    } catch (err) {
-      logger.error('Settings autosave failed', err);
-      setSaved(false);
-    }
-  }, []);
-
-  flushRef.current = flush;
-
-  useEffect(() => {
-    if (!loaded) return;
-    const snapshot = savedSnapshot.current;
-    if (!snapshot) {
-      savedSnapshot.current = stored;
-      return;
-    }
-
-    const patch = changedSettings(stored, snapshot);
-    if (!patch) return;
-
-    savedSnapshot.current = stored;
-    Object.assign(pending.current, patch);
-    window.clearTimeout(saveTimer.current);
-    saveTimer.current = window.setTimeout(() => void flush(), SAVE_DEBOUNCE_MS);
-  });
-
-  useEffect(
-    () => () => {
-      window.clearTimeout(saveTimer.current);
-      void flush();
-    },
-    [flush],
-  );
-
-  useEffect(() => {
-    if (!saved) return;
-    const timer = window.setTimeout(() => setSaved(false), SAVED_BADGE_MS);
-    return () => window.clearTimeout(timer);
-  }, [saved]);
+  const { saved } = useSettingsAutosave(stored, loaded);
 
   const handleLogoPick = async (file: File | undefined) => {
     if (!file) return;

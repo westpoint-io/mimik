@@ -755,6 +755,34 @@ a role and an accessible name and writes the same wording it writes for the exte
 it has nothing but the action, and every step in the guide reads the same — which is what a
 `screen`-sourced recording looks like.
 
+## Feature Hooks
+
+A cluster of `useState` that moves as one thing is a hook, not a pile of state in a component.
+`ExportPreviewModal` held fourteen, of which eleven were two jobs wearing one coat: `useGuideExport`
+owns the document preview and every download, `useVideoPreview` owns the encode, its progress, its
+container and the deferral past twenty-five steps. The modal keeps three — the options, the tab, and
+nothing else.
+
+The shape repeats wherever an async job meets a component: `data`, `loading`, `error`, `progress`
+spread across four `useState` and one long effect. `useGuideDescription`, `useSnapshots`,
+`useSettingsAutosave`, `useEditHistory` and `useTextStyle` are the same extraction, and
+`useAiSettings` and `useKeyCheck` were already it before the pattern had a name.
+
+What stays a `useState` is state one component owns and nothing else reads: a dialog's open flag, an
+input draft, a hover. Grouping those into a hook adds indirection and removes nothing. The test is
+whether the values change together and are read together, not how many there are.
+
+`useSettingsAutosave` is the odd one: it holds no settings at all. The fields stay in the view
+because each is bound to its own control; what the hook owns is the machinery around them — the
+snapshot, the diff, the debounce, the flush on unmount and the saved badge — which is the part that
+was subtle and the part nobody should have to read twice.
+
+`AnnotationEditor` resisted a bulk rewrite and is worth saying so: twenty-eight states, most of them
+genuinely interdependent canvas state. Undo/redo and the text style came out cleanly because both
+are self-contained; a regex pass across the rest broke the file's syntax and was reverted. The
+drawing gesture — `draft`, `cropDraft`, `grabbing`, `hovering`, `anchor` — is still a cluster, and
+still wants a careful hand rather than a script.
+
 ## Fullview Store
 
 One Zustand store, four slices — `library`, `search`, `guide`, `editor` — merged in
