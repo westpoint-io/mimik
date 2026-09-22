@@ -857,10 +857,12 @@ identical on both surfaces, so `AiSettings` lives in `packages/ui` and each app 
 `validate` function — the desktop passes core's `validateApiKey` directly, and the extension goes
 through its background messaging, which is the only part that differs.
 
-The pane carries no heading of its own. The left nav already names the section, and a title repeating
-the highlighted nav item is the same word twice on one screen. Closing is an X in the pane's top
-right, as in `CaptureSheet`; it was briefly a "Close" entry under the three sections, styled like
-them, which read as a fourth section that happens to quit.
+The pane carries no heading and no close button. The left nav already names the section, so a title
+repeating the highlighted item is the same word twice on one screen; and `TopNav` stays visible and
+mounted the whole time settings is open, so All Guides, Starred, Trash and the wordmark are all exits
+already. Both were tried and removed — first a "Close" entry under the three sections, styled like
+them, which read as a fourth section that happens to quit, then an X in the pane corner, which by
+then duplicated the header it sat beneath.
 
 `AiSettings` is the extension's own AI card, lifted out of `SettingsView` rather than rewritten. A
 parallel implementation was tried first and the wording immediately drifted — the extension said

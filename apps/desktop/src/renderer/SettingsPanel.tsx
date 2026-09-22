@@ -3,7 +3,6 @@ import { i18n } from '@mimik/core/env';
 import { CURSOR_STYLES } from '@mimik/core/screenshot/types';
 import AiSettings from '@mimik/ui/shared/AiSettings';
 import { useKeyCheck } from '@mimik/ui/shared/key-status';
-import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { CaptureSettings, CaptureShortcuts } from '../main/capture/settings';
 import ShortcutRecorder from './ShortcutRecorder';
@@ -51,7 +50,7 @@ function Toggle({
   );
 }
 
-export default function SettingsPanel({ onClose }: { onClose(): void }) {
+export default function SettingsPanel() {
   const [section, setSection] = useState<Section>('capture');
   const keyCheck = useKeyCheck(validateApiKey);
   const [settings, setSettings] = useState<CaptureSettings | null>(null);
@@ -88,17 +87,6 @@ export default function SettingsPanel({ onClose }: { onClose(): void }) {
 
       <div className="min-w-0 flex-1 overflow-y-auto px-10 py-8">
         <div className="mx-auto flex max-w-[640px] flex-col gap-5">
-          <div className="flex justify-end">
-            <button
-              type="button"
-              aria-label={i18n.t('common_close')}
-              onClick={onClose}
-              className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-            >
-              <X size={17} />
-            </button>
-          </div>
-
           {section === 'ai' && <AiSettings keyCheck={keyCheck} />}
 
           {section === 'capture' && settings && (
