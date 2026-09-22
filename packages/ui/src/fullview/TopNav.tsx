@@ -18,6 +18,7 @@ import {
   Star,
   Trash2,
 } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useState } from 'react';
 import ExportPreviewModal from './ExportPreviewModal';
 
@@ -25,6 +26,7 @@ interface TopNavProps {
   route: Route;
   onSettings?: () => void;
   onNavigate?: () => void;
+  guideActions?: ReactNode;
 }
 
 const navItems = [
@@ -35,7 +37,7 @@ const navItems = [
 
 const NAV_CONTROL = 'h-8 rounded-lg border border-border bg-card text-foreground hover:bg-secondary hover:text-accent';
 
-export default function TopNav({ route, onSettings, onNavigate }: TopNavProps) {
+export default function TopNav({ route, onSettings, onNavigate, guideActions }: TopNavProps) {
   const {
     counts,
     guideTitle,
@@ -162,6 +164,7 @@ export default function TopNav({ route, onSettings, onNavigate }: TopNavProps) {
         )}
         {route.page === 'guide' && exportData && (
           <>
+            {guideActions}
             <Button size="sm" variant="ghost" onClick={() => toggleEditing(exportData.guideId)} className={NAV_CONTROL}>
               {editing ? <Check size={14} /> : <Pencil size={14} />}
               {editing ? i18n.t('editor.done') : i18n.t('editor.edit')}

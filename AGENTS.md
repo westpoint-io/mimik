@@ -599,6 +599,20 @@ gives 2.25, a 1200 px window gives 1, and a small one gives 1 — the same butto
 every page of the guide, which a fixed fraction of the frame cannot do. The level is stored beside
 the region in `edits.zoomLevel`, so it can be re-derived or overridden later without recapturing.
 
+A setting only seeds new recordings, so the guide view carries its own Zoom control and `rezoomEdits`
+rewrites the steps already captured. It recomputes from `clickPoint` and the frame, which every row
+already holds, so nothing is re-captured and nothing is lost. A guide therefore stores no zoom of its
+own — the level lives per screenshot and the control simply rewrites each one.
+
+Which steps it may touch is `edits.zoomLevel` itself: present means the app chose the region, absent
+means a person did. `AnnotationEditor` clears it whenever the crop tool writes a new viewport, so a
+hand-cropped step survives every later re-zoom. `rezoomEdits` returns null for those, and for a step
+already at the wanted level, so the pass writes only what changes.
+
+`guideActions` on `TopNav` is the slot it mounts into, beside Edit and Export and under the same
+`exportData` guard, so the control appears exactly when the rest of the guide toolbar does. The
+extension passes nothing.
+
 `zoomLevel` in capture settings overrides the automatic choice; `null` means derive it. Main cannot
 value-import core, so `settings.ts` carries its own three-line `snapZoom` rather than the one in
 `record.ts` — the same constraint that keeps `clamp` local in `capture/screenshot.ts`. The renderer

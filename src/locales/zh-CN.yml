@@ -188,6 +188,7 @@ desktop:
   zoomLevel: "向点击处缩放"
   zoomLevelHint: "新录制从这里开始。自动会让每一步保持相同大小。"
   zoomAuto: "自动"
+  zoomGuide: "缩放"
   captureKeys: "记录快捷键和命名按键"
   captureTyping: "记录输入内容"
   typingDebounce: "输入步骤结束延迟"

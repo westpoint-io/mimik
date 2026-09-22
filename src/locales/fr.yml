@@ -188,6 +188,7 @@ desktop:
   zoomLevel: "Zoomer vers le clic"
   zoomLevelHint: "Les nouveaux enregistrements partent d’ici. Automatique garde toutes les étapes à la même taille."
   zoomAuto: "Automatique"
+  zoomGuide: "Zoom"
   captureKeys: "Enregistrer les raccourcis et touches nommées"
   captureTyping: "Enregistrer ce que vous tapez"
   typingDebounce: "Clôturer l'étape de saisie après"

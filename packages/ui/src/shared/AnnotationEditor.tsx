@@ -880,7 +880,12 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
       annotations: annotations.filter((a) => a.id !== TARGET_ID),
       target: nextTarget,
     };
-    if (viewport) nextEdits.viewport = viewport;
+    if (viewport && viewport !== screenshot.edits?.viewport) {
+      nextEdits.viewport = viewport;
+      nextEdits.zoomLevel = undefined;
+    } else if (viewport) {
+      nextEdits.viewport = viewport;
+    }
     await updateScreenshotEdits(screenshot.id, nextEdits);
     onDone(nextEdits);
   };

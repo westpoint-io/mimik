@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ElementMeta } from '@/core/guides/types';
 import { resolveViewport } from '@/core/screenshot/geometry';
-import { autoZoom, clickZoomViewport, screenshotForElement, snapZoom } from '@/core/screenshot/record';
+import { autoZoom, clickZoomViewport, rezoomEdits, screenshotForElement, snapZoom } from '@/core/screenshot/record';
 
 const meta: ElementMeta = {
   textContent: null,
@@ -91,5 +91,29 @@ describe('clickZoomViewport', () => {
     expect(clickZoomViewport(2560, 1440, { x: 1600, y: 900 }, 2)).toMatchObject({ x: 960, y: 540 });
     expect(clickZoomViewport(2560, 1440, { x: 10, y: 10 }, 2)).toMatchObject({ x: 0, y: 0 });
     expect(clickZoomViewport(2560, 1440, { x: 2550, y: 1430 }, 2)).toMatchObject({ x: 1280, y: 720 });
+  });
+});
+
+describe('rezoomEdits', () => {
+  const auto = screenshotForElement({ ...bytes, width: 2560, height: 1440, zoom: 'click' }, meta);
+
+  it('recomputes the region at a new level', () => {
+    const next = rezoomEdits(auto, 3);
+    expect(next?.zoomLevel).toBe(3);
+    expect(next?.viewport?.width).toBeCloseTo(2560 / 3, 1);
+  });
+
+  it('re-derives the automatic level when given null', () => {
+    const next = rezoomEdits({ ...auto, edits: { ...auto.edits, zoomLevel: 4 } }, null);
+    expect(next?.zoomLevel).toBe(autoZoom(2560, 2));
+  });
+
+  it('leaves a step alone when nothing would change', () => {
+    expect(rezoomEdits(auto, auto.edits?.zoomLevel ?? 0)).toBeNull();
+  });
+
+  it('leaves a hand-cropped step alone', () => {
+    const cropped = { ...auto, edits: { ...auto.edits, zoomLevel: undefined } };
+    expect(rezoomEdits(cropped, 3)).toBeNull();
   });
 });

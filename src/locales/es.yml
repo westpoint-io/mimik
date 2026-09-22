@@ -188,6 +188,7 @@ desktop:
   zoomLevel: "Acercar hacia el clic"
   zoomLevelHint: "Las grabaciones nuevas empiezan aquí. Automático mantiene todos los pasos del mismo tamaño."
   zoomAuto: "Automático"
+  zoomGuide: "Zoom"
   captureKeys: "Registrar atajos y teclas con nombre"
   captureTyping: "Registrar lo que escribes"
   typingDebounce: "Cerrar el paso de escritura tras"
