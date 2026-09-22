@@ -777,11 +777,15 @@ because each is bound to its own control; what the hook owns is the machinery ar
 snapshot, the diff, the debounce, the flush on unmount and the saved badge — which is the part that
 was subtle and the part nobody should have to read twice.
 
-`AnnotationEditor` resisted a bulk rewrite and is worth saying so: twenty-eight states, most of them
-genuinely interdependent canvas state. Undo/redo and the text style came out cleanly because both
-are self-contained; a regex pass across the rest broke the file's syntax and was reverted. The
-drawing gesture — `draft`, `cropDraft`, `grabbing`, `hovering`, `anchor` — is still a cluster, and
-still wants a careful hand rather than a script.
+`AnnotationEditor` went from twenty-eight states to sixteen across three hooks — `useEditHistory`,
+`useTextStyle` and `usePointerGesture`, the last holding everything the pointer is doing right now:
+the shape being drawn, the crop being dragged, the hover and grab cursors and the floating toolbar's
+anchor. What is left is genuinely interdependent canvas state.
+
+How it was done matters more than the count. A regex pass over the style names rewrote object keys
+and type members as well as reads and broke the file's syntax; it was reverted and redone as a list
+of exact string replacements. Every later cluster was done the same way. A file this size does not
+take a search and replace.
 
 ## Fullview Store
 
