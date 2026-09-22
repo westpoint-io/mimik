@@ -581,17 +581,28 @@ control the click landed on is the one that was there before. It is capped at 15
 `null`, never an error — a slow or unresponsive foreign application costs a step its metadata, not
 the recording.
 
-A desktop step shows its whole frame. `resolveViewport` zooms to `bounds` when a screenshot has
-them, padded by `PAD_RATIO` of the image but never more than `MAX_PAD_MULTIPLE` times the element —
-a cap that suits a browser page, where a control is a real fraction of the viewport, and fails on a
-screen grab, where a 30 px window button against 2560 px yields a crop a few hundred pixels wide that
-the card then stretches. So `screenshotForElement` takes `zoomToTarget` and the desktop sink passes
-false, which writes no `bounds` at all; `resolveViewport` falls back to the full image and
-`edits.target` still marks where the click landed. It is written into the data rather than branched
-on `client()`, so a desktop guide frames the same way in whatever opens it, exports included, and the
-extension keeps its zoom because `zoomToTarget` defaults to true. `check:pipeline` asserts the
-viewport equals the frame, and reverting the flag makes it report a 196 × 196 crop of an 800 × 600
-capture — the failure in its own numbers.
+A desktop step zooms toward the click, never into it. `screenshotForElement` takes a `zoom` mode:
+`element` writes `bounds` and is what the extension keeps, `click` writes an explicit
+`edits.viewport`, and `none` writes neither.
+
+The extension's rule cannot serve both. `resolveViewport` pads `bounds` by `PAD_RATIO` of the image
+but never beyond `MAX_PAD_MULTIPLE` times the element, which suits a page where a control is a real
+fraction of the viewport and collapses on a screen grab: a 30 px window button against 2560 px gives
+a crop a few hundred pixels wide, which the card then stretches. Magnification past 1:1 cannot look
+good, because the detail is not in the file.
+
+So `clickZoomViewport` sizes the region from the frame rather than the control — 55% of its width,
+floored at 1100 px and capped at the frame — centred on the click and clamped inside. A 2560 × 1440
+capture yields 1408 × 792, about 1.8×, which still lands at or below the size it is displayed at; a
+1200 px window yields 1100, barely a zoom; anything at or under 1100 px yields the whole frame. Zoom
+appears only where there are spare pixels to spend on it.
+
+It goes in `edits.viewport` rather than `bounds` because `resolveViewport` returns that verbatim, so
+the region is exactly what was computed rather than what the padding rule makes of it, and
+`resolveFrameViewport` gives the video exporter the same starting frame before it eases toward
+`edits.target`. The mode is written into the data rather than branched on `client()`, so a desktop
+guide frames the same way in whatever opens it, exports included, and nothing shared changes for the
+extension. `check:pipeline` asserts the viewport sits inside the frame at between 1× and 2×.
 
 `targetRect` decides what the dashed target in the screenshot encloses. The control's own rectangle
 wins when there is one, which is the whole point of reading the accessibility tree; it falls back to

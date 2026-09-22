@@ -88,17 +88,22 @@ window.mimik.onRequest('mimik:check:verify', async (payload) => {
   });
 
   const viewport = shot ? resolveViewport(shot) : null;
+  const zoom = shot && viewport ? shot.width / viewport.width : 0;
   results.push({
-    name: 'a desktop step shows its whole frame',
+    name: 'a desktop step zooms without upscaling',
     ok:
       shot !== undefined &&
       shot.bounds === undefined &&
       viewport !== null &&
-      viewport.width === shot.width &&
-      viewport.height === shot.height &&
+      viewport.x >= 0 &&
+      viewport.y >= 0 &&
+      viewport.x + viewport.width <= shot.width &&
+      viewport.y + viewport.height <= shot.height &&
+      zoom >= 1 &&
+      zoom <= 2 &&
       (shot.edits?.target?.width ?? 0) > 0,
     detail: shot
-      ? `viewport ${viewport?.width} × ${viewport?.height} of ${shot.width} × ${shot.height}, target still drawn`
+      ? `${zoom.toFixed(2)}x — viewport ${viewport?.width} × ${viewport?.height} of ${shot.width} × ${shot.height}, inside the frame`
       : 'no screenshot',
   });
 
