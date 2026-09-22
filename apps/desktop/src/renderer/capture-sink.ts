@@ -18,9 +18,8 @@ import {
   saveScreenshot,
   updateStepDescription,
 } from '@mimik/core/guides/service';
-import type { StoredScreenshot } from '@mimik/core/guides/types';
+import { screenshotForElement } from '@mimik/core/screenshot/record';
 import type { CursorMark } from '@mimik/core/screenshot/types';
-import { DEFAULT_TARGET_COLOR } from '@mimik/core/screenshot/types';
 import { describeStep } from './ai';
 
 export type DesktopCaptureStepData = CaptureStepData & { cursor?: CursorMark; inputValue?: string };
@@ -39,29 +38,19 @@ export class DesktopCaptureSink implements CaptureSink {
     let screenshotId: string | undefined;
     if (data.image) {
       const { targetColor } = await localStorage.get(['targetColor']);
-      const ratio = meta.devicePixelRatio;
-      const screenshot: StoredScreenshot = {
-        id: data.image.screenshotId,
-        src: data.image.src,
-        stepId,
-        mimeType: 'image/png',
-        width: data.image.width,
-        height: data.image.height,
-        bounds: { x: meta.rect.x, y: meta.rect.y, width: meta.rect.width, height: meta.rect.height },
-        pixelRatio: ratio,
-        clickPoint: meta.clickPoint,
-        edits: {
+      const screenshot = screenshotForElement(
+        {
+          id: data.image.screenshotId,
+          src: data.image.src,
+          stepId,
+          mimeType: 'image/png',
+          width: data.image.width,
+          height: data.image.height,
           cursor: data.cursor ?? null,
-          target: {
-            x: meta.rect.x * ratio,
-            y: meta.rect.y * ratio,
-            width: meta.rect.width * ratio,
-            height: meta.rect.height * ratio,
-            border: 'dashed',
-            color: targetColor || DEFAULT_TARGET_COLOR,
-          },
+          targetColor,
         },
-      };
+        meta,
+      );
       await saveScreenshot(screenshot);
       screenshotId = screenshot.id;
     }

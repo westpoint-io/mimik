@@ -496,6 +496,16 @@ cannot interleave. For each click it hides the overlays, grabs the display, crop
 implements `CaptureSink` and writes through `@mimik/core/guides/service`, exactly as the extension's
 `step-pipeline.ts` does.
 
+The two surfaces reach that write by different routes but build the screenshot row the same way, so
+`screenshotForElement` owns it. It turns an `ElementMeta` and whatever holds the bytes — a `Blob` in
+the extension, a `src` on the desktop — into a row with the bounds in CSS pixels, the pixel ratio,
+the click point, and the dashed target scaled by that ratio. Scaling the target is the part worth
+having once: a rectangle multiplied in one surface and not the other puts the dashed box on the wrong
+thing, and nothing about that fails a build. Everything else about the two paths genuinely differs —
+voice narration, the deferred-description queue and the input finalisation exist only in the
+extension, and the cursor mark, the application name and the fire-and-forget description exist only
+on the desktop — so only the row builder is shared.
+
 Main cannot `invoke` a renderer, so `ask()` sends a request with a generated reply channel and waits
 for `ipcMain.once` on it, with a timeout. The preload's `onRequest` is the other half. Guide creation
 and step writes both ride it, because both need IndexedDB, which only the renderer has.
