@@ -320,6 +320,23 @@ resolving a scancode against a keyboard layout is a local call with nothing to w
 addon boundary when that flag is set, so a password never reaches our data even though UIAutomation
 already withholds it.
 
+## Overlays We Put In The Page
+
+Five things draw into a page someone else owns: the hover ring, the blur picker, the blur panel, the
+Guide Me overlay and the recording notification. All five are the same construction — an element
+carrying `data-mimik-ignore` with a closed shadow root and one `<style>` — and `createOverlayRoot`
+builds it.
+
+Both attributes are load-bearing and neither fails loudly. Without `data-mimik-ignore` the overlay
+becomes a capture target and a blur candidate, so recording the page records our own chrome; with an
+open shadow root the page's CSS reaches in and restyles it. Five hand-written copies meant five
+chances to forget one, and three of the five had no test at all. One function has one test, and it
+asserts both invariants by construction: a closed root reads back as `null` through `host.shadowRoot`,
+which is the assertion for `mode: 'closed'`.
+
+Reading the attribute back is `isMimikElement`, in `capture/dom/element-utils.ts`. The blur picker
+had grown a private copy of it, identical line for line.
+
 ## Boundaries The Linter Holds
 
 `biome.json` covers `src`, `packages/core`, `packages/ui` and `apps/desktop`. `packages/ui` was
@@ -786,6 +803,13 @@ read by main rather than by core, because none of them mean anything to the exte
 
 `normaliseSettings` runs on every read and write, so an out-of-range delay clamps and an unknown
 cursor style falls back to the platform default rather than reaching the recorder.
+
+`CursorStyle` and `CursorMark` are core's, not main's. The mark is written in main, crosses IPC, and
+is stored as `edits.cursor`, which the renderer reads through core's type — so two declarations had to
+agree by hand, and did only by luck. Main cannot value-import core, so the runtime list of styles
+still lives there, but `Record<CursorStyle, true>` makes the compiler reject it the moment core's
+union grows. That is the general shape of the fix wherever main needs one of core's closed sets: take
+the type, keep the value, let the type check the value.
 
 Electron exposes no way to read the real system cursor bitmap and a screen grab never includes the
 pointer, so the shapes are drawn as canvas paths. The cursor is an entry in `edits` beside the click

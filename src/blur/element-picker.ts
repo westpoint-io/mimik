@@ -1,4 +1,6 @@
 import { i18n } from '#imports';
+import { isMimikElement } from '@/core/capture/dom/element-utils';
+import { createOverlayRoot } from '@/core/capture/dom/overlay-root';
 import { HoverRing } from '@/lib/hover-ring';
 
 const MANUAL_CLASS = 'mimik-manual-blur';
@@ -85,13 +87,8 @@ export class ElementPicker {
   }
 
   private mount() {
-    this.host = document.createElement('div');
-    this.host.setAttribute('data-mimik-ignore', '');
-
-    const shadow = this.host.attachShadow({ mode: 'closed' });
-    const style = document.createElement('style');
-    style.textContent = STYLES;
-    shadow.appendChild(style);
+    const { host, shadow } = createOverlayRoot(STYLES);
+    this.host = host;
 
     const bar = document.createElement('div');
     bar.className = 'bar';
@@ -111,19 +108,15 @@ export class ElementPicker {
     document.documentElement.appendChild(this.host);
   }
 
-  private isMimikElement(el: Element): boolean {
-    return !!el.closest('[data-mimik-ignore]');
-  }
-
   private suppress(e: Event) {
-    if (e.target instanceof Element && this.isMimikElement(e.target)) return;
+    if (e.target instanceof Element && isMimikElement(e.target)) return;
     e.stopImmediatePropagation();
   }
 
   private onClick(e: Event) {
     const raw = (e as MouseEvent).target;
     if (!raw || !(raw instanceof HTMLElement)) return;
-    if (this.isMimikElement(raw)) return;
+    if (isMimikElement(raw)) return;
     e.preventDefault();
     e.stopImmediatePropagation();
     this.toggleBlur(raw);
@@ -141,7 +134,7 @@ export class ElementPicker {
 
   private onMouseOver(e: Event) {
     const raw = (e as MouseEvent).target;
-    if (!raw || !(raw instanceof HTMLElement) || this.isMimikElement(raw)) return;
+    if (!raw || !(raw instanceof HTMLElement) || isMimikElement(raw)) return;
     this.ring.show(raw);
   }
 
