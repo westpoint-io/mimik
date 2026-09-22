@@ -1,4 +1,4 @@
-export { cursorPoint, type DisplayInfo, displayAt, listDisplays } from './displays';
+export { cursorPoint, type DisplayInfo, listDisplays } from './displays';
 export {
   elementAt,
   elementLookupAvailable,

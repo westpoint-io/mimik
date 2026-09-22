@@ -19,11 +19,6 @@ export function listDisplays(): DisplayInfo[] {
   }));
 }
 
-export function displayAt(point: { x: number; y: number }): DisplayInfo | null {
-  const match = screen.getDisplayNearestPoint(point);
-  return listDisplays().find((d) => d.id === match.id) ?? null;
-}
-
 export function cursorPoint(): { x: number; y: number } {
   return screen.getCursorScreenPoint();
 }
