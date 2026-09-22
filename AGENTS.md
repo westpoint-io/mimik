@@ -599,6 +599,12 @@ gives 2.25, a 1200 px window gives 1, and a small one gives 1 — the same butto
 every page of the guide, which a fixed fraction of the frame cannot do. The level is stored beside
 the region in `edits.zoomLevel`, so it can be re-derived or overridden later without recapturing.
 
+`zoomLevel` in capture settings overrides the automatic choice; `null` means derive it. Main cannot
+value-import core, so `settings.ts` carries its own three-line `snapZoom` rather than the one in
+`record.ts` — the same constraint that keeps `clamp` local in `capture/screenshot.ts`. The renderer
+has no such limit and reads `MIN_ZOOM`, `MAX_ZOOM` and `ZOOM_STEP` from core to build the picker, so
+the list of levels cannot drift from the snapping.
+
 It goes in `edits.viewport` rather than `bounds` because `resolveViewport` returns that verbatim, so
 the region is exactly what was computed rather than what the padding rule makes of it, and
 `resolveFrameViewport` gives the video exporter the same starting frame before it eases toward
@@ -829,6 +835,7 @@ read by main rather than by core, because none of them mean anything to the exte
 | `captureTyping` | on | Whether typing becomes a step |
 | `typingDebounceMs` | 1200, clamped to 200–5000 | Quiet time that closes a typing session |
 | `typingSmartDetection` | on | Off means the keystroke buffer is used and the field's value is never read |
+| `zoomLevel` | automatic | How far a step zooms toward the click: `null` derives it, or 1–5 in 0.25 steps |
 | `shortcuts` | three accelerators | Global keys for start/stop, pause/resume and capture now |
 
 `normaliseSettings` runs on every read and write, so an out-of-range delay clamps and an unknown

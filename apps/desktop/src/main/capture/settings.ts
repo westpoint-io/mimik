@@ -10,6 +10,9 @@ const EVERY_CURSOR_STYLE: Record<CursorStyle, true> = { arrow: true, hand: true,
 export const CURSOR_STYLES = Object.keys(EVERY_CURSOR_STYLE) as CursorStyle[];
 export const CAPTURE_MODES: CaptureMode[] = ['window', 'screen', 'region'];
 export const MAX_SCREENSHOT_DELAY_MS = 2000;
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 5;
+const ZOOM_STEP = 0.25;
 export const MIN_TYPING_DEBOUNCE_MS = 200;
 export const MAX_TYPING_DEBOUNCE_MS = 5000;
 
@@ -29,6 +32,7 @@ export interface CaptureSettings {
   captureTyping: boolean;
   typingDebounceMs: number;
   typingSmartDetection: boolean;
+  zoomLevel: number | null;
   shortcuts: CaptureShortcuts;
 }
 
@@ -42,6 +46,7 @@ export const DEFAULT_CAPTURE_SETTINGS: CaptureSettings = {
   captureTyping: true,
   typingDebounceMs: 1200,
   typingSmartDetection: true,
+  zoomLevel: null,
   shortcuts: {
     startStop: 'Alt+Shift+R',
     pauseResume: 'Alt+Shift+P',
@@ -74,6 +79,10 @@ function file(): string {
   return join(app.getPath('userData'), 'capture-settings.json');
 }
 
+function snapZoom(zoom: number): number {
+  return Math.min(Math.max(Math.round(zoom / ZOOM_STEP) * ZOOM_STEP, MIN_ZOOM), MAX_ZOOM);
+}
+
 export function normaliseSettings(input: Partial<CaptureSettings>): CaptureSettings {
   const delay = Number(input.screenshotDelayMs);
   const debounce = input.typingDebounceMs === undefined ? Number.NaN : Number(input.typingDebounceMs);
@@ -93,6 +102,7 @@ export function normaliseSettings(input: Partial<CaptureSettings>): CaptureSetti
       ? Math.min(Math.max(Math.round(debounce), MIN_TYPING_DEBOUNCE_MS), MAX_TYPING_DEBOUNCE_MS)
       : DEFAULT_CAPTURE_SETTINGS.typingDebounceMs,
     typingSmartDetection: flag(input.typingSmartDetection, DEFAULT_CAPTURE_SETTINGS.typingSmartDetection),
+    zoomLevel: Number.isFinite(Number(input.zoomLevel)) ? snapZoom(Number(input.zoomLevel)) : null,
     shortcuts: shortcuts(input.shortcuts),
   };
 }

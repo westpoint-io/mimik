@@ -1,5 +1,6 @@
 import { validateApiKey } from '@mimik/core/capture/ai/validate';
 import { i18n } from '@mimik/core/env';
+import { MAX_ZOOM, MIN_ZOOM, ZOOM_STEP } from '@mimik/core/screenshot/record';
 import { CURSOR_STYLES } from '@mimik/core/screenshot/types';
 import { Input } from '@mimik/ui/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui/components/ui/select';
@@ -31,6 +32,11 @@ const KEYS: { id: keyof CaptureShortcuts; labelKey: string }[] = [
 ];
 
 const NUMBER = 'h-9 w-24 rounded-lg border-border text-[13px] font-medium';
+
+const ZOOM_LEVELS = Array.from(
+  { length: Math.round((MAX_ZOOM - MIN_ZOOM) / ZOOM_STEP) + 1 },
+  (_, i) => MIN_ZOOM + i * ZOOM_STEP,
+);
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -179,6 +185,29 @@ export default function SettingsPanel() {
                   />
                   <span className="text-sm text-muted-foreground">{i18n.t('desktop_milliseconds')}</span>
                 </Field>
+
+                <label className="flex items-center gap-3 text-sm text-foreground">
+                  <span className="mr-auto flex flex-col gap-0.5">
+                    {i18n.t('desktop_zoomLevel')}
+                    <span className="text-xs text-muted-foreground">{i18n.t('desktop_zoomLevelHint')}</span>
+                  </span>
+                  <Select
+                    value={settings.zoomLevel === null ? 'auto' : String(settings.zoomLevel)}
+                    onValueChange={(v) => save({ zoomLevel: v === 'auto' ? null : Number(v) })}
+                  >
+                    <SelectTrigger className="h-9 w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="auto">{i18n.t('desktop_zoomAuto')}</SelectItem>
+                      {ZOOM_LEVELS.map((level) => (
+                        <SelectItem key={level} value={String(level)}>
+                          {String(level)}&times;
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </label>
 
                 {settings.captureMode === 'region' && (
                   <Toggle

@@ -68,6 +68,7 @@ export interface CaptureRequest {
   image: CaptureImage;
   inputValue?: string;
   cursor?: CursorMark;
+  zoomLevel?: number;
 }
 
 export interface RecorderHooks {
@@ -411,6 +412,7 @@ export class DesktopRecorder {
       ...(settings.showCursor && action === 'click'
         ? { cursor: { x: local.x, y: local.y, style: settings.cursorStyle, scale } }
         : {}),
+      ...(settings.zoomLevel === null ? {} : { zoomLevel: settings.zoomLevel }),
     });
   }
 
