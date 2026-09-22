@@ -100,10 +100,12 @@ window.mimik.onRequest('mimik:check:verify', async (payload) => {
       viewport.x + viewport.width <= shot.width &&
       viewport.y + viewport.height <= shot.height &&
       zoom >= 1 &&
-      zoom <= 2 &&
+      zoom <= 5 &&
+      (shot.edits?.zoomLevel ?? 0) >= 1 &&
+      Math.abs((shot.edits?.zoomLevel ?? 0) * 4 - Math.round((shot.edits?.zoomLevel ?? 0) * 4)) < 1e-9 &&
       (shot.edits?.target?.width ?? 0) > 0,
     detail: shot
-      ? `${zoom.toFixed(2)}x — viewport ${viewport?.width} × ${viewport?.height} of ${shot.width} × ${shot.height}, inside the frame`
+      ? `level ${shot.edits?.zoomLevel}, ${zoom.toFixed(2)}x — viewport ${viewport?.width} × ${viewport?.height} of ${shot.width} × ${shot.height}, inside the frame`
       : 'no screenshot',
   });
 

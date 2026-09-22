@@ -151,6 +151,7 @@ export interface CursorMark {
 
 export interface ScreenshotEdits {
   viewport?: ScreenshotBounds;
+  zoomLevel?: number;
   target?: ClickTarget | null;
   annotations?: Annotation[];
   cursor?: CursorMark | null;

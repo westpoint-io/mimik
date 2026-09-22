@@ -3,8 +3,11 @@ import { type CursorMark, DEFAULT_TARGET_COLOR } from '@/core/screenshot/types';
 
 export type ZoomMode = 'element' | 'click' | 'none';
 
-const CLICK_ZOOM_FRACTION = 0.55;
-const MIN_CLICK_ZOOM_WIDTH = 1100;
+export const MIN_ZOOM = 1;
+export const MAX_ZOOM = 5;
+export const ZOOM_STEP = 0.25;
+
+const GUIDE_CONTENT_WIDTH = 780;
 
 export interface ScreenshotBytes {
   id: string;
@@ -17,15 +20,29 @@ export interface ScreenshotBytes {
   cursor?: CursorMark | null;
   targetColor?: string;
   zoom?: ZoomMode;
+  zoomLevel?: number;
 }
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
-export function clickZoomViewport(width: number, height: number, click: { x: number; y: number }): ScreenshotBounds {
-  const visWidth = Math.min(width, Math.max(width * CLICK_ZOOM_FRACTION, MIN_CLICK_ZOOM_WIDTH));
-  const visHeight = Math.min(height, (visWidth * height) / width);
+export function snapZoom(zoom: number): number {
+  return clamp(Math.round(zoom / ZOOM_STEP) * ZOOM_STEP, MIN_ZOOM, MAX_ZOOM);
+}
+
+export function autoZoom(width: number, pixelRatio: number): number {
+  return snapZoom(width / (GUIDE_CONTENT_WIDTH * (pixelRatio || 1)));
+}
+
+export function clickZoomViewport(
+  width: number,
+  height: number,
+  click: { x: number; y: number },
+  zoom: number,
+): ScreenshotBounds {
+  const visWidth = width / snapZoom(zoom);
+  const visHeight = (visWidth * height) / width;
   return {
     x: clamp(click.x - visWidth / 2, 0, width - visWidth),
     y: clamp(click.y - visHeight / 2, 0, height - visHeight),
@@ -35,9 +52,10 @@ export function clickZoomViewport(width: number, height: number, click: { x: num
 }
 
 export function screenshotForElement(bytes: ScreenshotBytes, meta: ElementMeta): StoredScreenshot {
-  const { cursor, targetColor, zoom = 'element', ...rest } = bytes;
+  const { cursor, targetColor, zoom = 'element', zoomLevel, ...rest } = bytes;
   const ratio = meta.devicePixelRatio;
   const click = meta.clickPoint ?? { x: meta.rect.x + meta.rect.width / 2, y: meta.rect.y + meta.rect.height / 2 };
+  const level = zoomLevel ?? autoZoom(rest.width, ratio);
   return {
     ...rest,
     ...(zoom === 'element'
@@ -48,7 +66,10 @@ export function screenshotForElement(bytes: ScreenshotBytes, meta: ElementMeta):
     edits: {
       ...(cursor === undefined ? {} : { cursor }),
       ...(zoom === 'click'
-        ? { viewport: clickZoomViewport(rest.width, rest.height, { x: click.x * ratio, y: click.y * ratio }) }
+        ? {
+            zoomLevel: level,
+            viewport: clickZoomViewport(rest.width, rest.height, { x: click.x * ratio, y: click.y * ratio }, level),
+          }
         : {}),
       target: {
         x: meta.rect.x * ratio,

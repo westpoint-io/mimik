@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ElementMeta } from '@/core/guides/types';
 import { resolveViewport } from '@/core/screenshot/geometry';
-import { clickZoomViewport, screenshotForElement } from '@/core/screenshot/record';
+import { autoZoom, clickZoomViewport, screenshotForElement, snapZoom } from '@/core/screenshot/record';
 
 const meta: ElementMeta = {
   textContent: null,
@@ -56,22 +56,40 @@ describe('screenshotForElement', () => {
   });
 });
 
+describe('snapZoom', () => {
+  it('snaps to quarter steps between 1 and 5', () => {
+    expect(snapZoom(2.19)).toBe(2.25);
+    expect(snapZoom(1.02)).toBe(1);
+    expect(snapZoom(0.4)).toBe(1);
+    expect(snapZoom(9)).toBe(5);
+    expect(snapZoom(3.37)).toBe(3.25);
+  });
+});
+
+describe('autoZoom', () => {
+  it('picks the level that renders content the same size whatever the capture', () => {
+    expect(autoZoom(2560, 1.5)).toBe(2.25);
+    expect(autoZoom(1200, 1.5)).toBe(1);
+    expect(autoZoom(800, 1)).toBe(1);
+    expect(autoZoom(3840, 2)).toBe(2.5);
+  });
+});
+
 describe('clickZoomViewport', () => {
-  it('zooms a large screen but never past what its pixels support', () => {
-    const big = clickZoomViewport(2560, 1440, { x: 1280, y: 720 });
-    expect(big.width).toBe(1408);
-    expect(big.height).toBe(792);
-    expect(2560 / big.width).toBeCloseTo(1.82, 2);
+  it('divides the frame by the zoom level', () => {
+    const big = clickZoomViewport(2560, 1440, { x: 1280, y: 720 }, 2.25);
+    expect(big.width).toBeCloseTo(1137.8, 1);
+    expect(big.height).toBeCloseTo(640, 1);
   });
 
-  it('barely zooms a window-sized frame and not at all a small one', () => {
-    expect(clickZoomViewport(1200, 800, { x: 600, y: 400 }).width).toBe(1100);
-    expect(clickZoomViewport(800, 600, { x: 400, y: 300 })).toEqual({ x: 0, y: 0, width: 800, height: 600 });
+  it('shows the whole frame at 1x and clamps a level past the range', () => {
+    expect(clickZoomViewport(1200, 800, { x: 600, y: 400 }, 1)).toEqual({ x: 0, y: 0, width: 1200, height: 800 });
+    expect(clickZoomViewport(1200, 800, { x: 600, y: 400 }, 9).width).toBe(240);
   });
 
   it('centres on the click and stays inside the frame', () => {
-    expect(clickZoomViewport(2560, 1440, { x: 1600, y: 900 })).toMatchObject({ x: 896, y: 504 });
-    expect(clickZoomViewport(2560, 1440, { x: 10, y: 10 })).toMatchObject({ x: 0, y: 0 });
-    expect(clickZoomViewport(2560, 1440, { x: 2550, y: 1430 })).toMatchObject({ x: 1152, y: 648 });
+    expect(clickZoomViewport(2560, 1440, { x: 1600, y: 900 }, 2)).toMatchObject({ x: 960, y: 540 });
+    expect(clickZoomViewport(2560, 1440, { x: 10, y: 10 }, 2)).toMatchObject({ x: 0, y: 0 });
+    expect(clickZoomViewport(2560, 1440, { x: 2550, y: 1430 }, 2)).toMatchObject({ x: 1280, y: 720 });
   });
 });

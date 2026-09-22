@@ -591,11 +591,13 @@ fraction of the viewport and collapses on a screen grab: a 30 px window button a
 a crop a few hundred pixels wide, which the card then stretches. Magnification past 1:1 cannot look
 good, because the detail is not in the file.
 
-So `clickZoomViewport` sizes the region from the frame rather than the control — 55% of its width,
-floored at 1100 px and capped at the frame — centred on the click and clamped inside. A 2560 × 1440
-capture yields 1408 × 792, about 1.8×, which still lands at or below the size it is displayed at; a
-1200 px window yields 1100, barely a zoom; anything at or under 1100 px yields the whole frame. Zoom
-appears only where there are spare pixels to spend on it.
+So the zoom is a level between 1 and 5 in steps of 0.25, `snapZoom` holds it there, and
+`clickZoomViewport` divides the frame by it and centres the result on the click, clamped inside the
+edges. The level itself is `autoZoom`'s: the capture's width over the guide column's, so every step
+renders its content at the same size however it was framed. A 2560 px screen grab at 1.5× scaling
+gives 2.25, a 1200 px window gives 1, and a small one gives 1 — the same button is the same size on
+every page of the guide, which a fixed fraction of the frame cannot do. The level is stored beside
+the region in `edits.zoomLevel`, so it can be re-derived or overridden later without recapturing.
 
 It goes in `edits.viewport` rather than `bounds` because `resolveViewport` returns that verbatim, so
 the region is exactly what was computed rather than what the padding rule makes of it, and
