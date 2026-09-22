@@ -1,15 +1,6 @@
-import { type AIApiKeys, keyFor, migrateApiKeys, withKeyFor } from '@mimik/core/capture/ai/keys';
-import {
-  AI_PROVIDERS,
-  type AIProviderKey,
-  CUSTOM_MODEL_VALUE,
-  DEFAULT_AI_PROVIDER,
-  isCustomBaseUrl,
-  isCustomModel,
-  providerOrDefault,
-} from '@mimik/core/capture/ai/models';
+import { AI_PROVIDERS, type AIProviderKey, CUSTOM_MODEL_VALUE } from '@mimik/core/capture/ai/models';
 import { AI_LANGUAGES, type AILanguageCode } from '@mimik/core/capture/ai/prompts';
-import { i18n, localStorage } from '@mimik/core/env';
+import { i18n } from '@mimik/core/env';
 import { Button } from '@mimik/ui/components/ui/button';
 import { Input } from '@mimik/ui/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui/components/ui/select';
@@ -21,8 +12,8 @@ import {
   ModelList,
   SecretInput,
 } from '@mimik/ui/shared/key-status';
+import { useAiSettings } from '@mimik/ui/shared/use-ai-settings';
 import { Globe, Sparkles, TriangleAlert } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
 export interface KeyCheck {
   status: KeyStatus;
@@ -34,72 +25,31 @@ export interface KeyCheck {
 
 interface AiSettingsProps {
   keyCheck: KeyCheck;
-  onChange(patch: Record<string, unknown>): void;
+  onChange?: (patch: Record<string, unknown>) => void;
 }
 
 export default function AiSettings({ keyCheck: aiKeyCheck, onChange }: AiSettingsProps) {
-  const [provider, setProvider] = useState<AIProviderKey>(DEFAULT_AI_PROVIDER);
-  const [model, setModel] = useState(AI_PROVIDERS[DEFAULT_AI_PROVIDER].defaultModel);
-  const [apiKey, setApiKey] = useState('');
-  const [apiKeys, setApiKeys] = useState<AIApiKeys>({});
-  const [baseUrl, setBaseUrl] = useState('');
-  const [customModel, setCustomModel] = useState(false);
-  const [ownServer, setOwnServer] = useState(false);
-  const [aiLanguage, setAiLanguage] = useState<AILanguageCode>('en');
-
-  useEffect(() => {
-    localStorage.get(['aiApiKey', 'aiApiKeys', 'aiProvider', 'aiModel', 'aiBaseUrl', 'aiLanguage']).then((result) => {
-      const p = providerOrDefault(result.aiProvider);
-      const keys = migrateApiKeys(result);
-      setProvider(p);
-      setApiKeys(keys);
-      setApiKey(keyFor(keys, p));
-      setModel((result.aiModel as string) || AI_PROVIDERS[p].defaultModel);
-      if (isCustomBaseUrl(AI_PROVIDERS[p], result.aiBaseUrl as string)) {
-        setBaseUrl(result.aiBaseUrl as string);
-        setOwnServer(true);
-      }
-      if (result.aiLanguage) setAiLanguage(result.aiLanguage as AILanguageCode);
-    });
-  }, []);
-
-  const handleProviderChange = (newProvider: AIProviderKey) => {
-    setProvider(newProvider);
-    setApiKey(keyFor(apiKeys, newProvider));
-    aiKeyCheck.reset();
-    setCustomModel(false);
-    setModel(AI_PROVIDERS[newProvider].defaultModel);
-    setOwnServer(false);
-    setBaseUrl('');
-    onChange({ aiProvider: newProvider, aiModel: AI_PROVIDERS[newProvider].defaultModel, aiBaseUrl: '' });
-  };
-
-  const handleOwnServerToggle = () => {
-    setOwnServer((on) => {
-      if (on) {
-        setBaseUrl('');
-        onChange({ aiBaseUrl: '' });
-      }
-      return !on;
-    });
-    aiKeyCheck.reset();
-  };
-
-  const handleModelChange = (value: string) => {
-    if (value === CUSTOM_MODEL_VALUE) {
-      setCustomModel(true);
-      setModel('');
+  const {
+    provider,
+    model,
+    apiKey,
+    baseUrl,
+    language: aiLanguage,
+    ownServer,
+    usingCustomModel,
+    providerConfig,
+    setProvider: handleProviderChange,
+    setModel: handleModelChange,
+    setApiKey: handleApiKeyChange,
+    setBaseUrl: handleBaseUrlChange,
+    setLanguage: handleLanguageChange,
+    toggleOwnServer: handleOwnServerToggle,
+  } = useAiSettings({
+    onDirty: (patch) => {
       aiKeyCheck.reset();
-      return;
-    }
-    setCustomModel(false);
-    setModel(value);
-    aiKeyCheck.reset();
-    onChange({ aiModel: value });
-  };
-
-  const providerConfig = AI_PROVIDERS[provider] ?? AI_PROVIDERS[DEFAULT_AI_PROVIDER];
-  const usingCustomModel = customModel || isCustomModel(model, providerConfig);
+      onChange?.(patch);
+    },
+  });
 
   return (
     <div className="border border-border rounded-[10px] p-3.5 space-y-3">
@@ -143,11 +93,7 @@ export default function AiSettings({ keyCheck: aiKeyCheck, onChange }: AiSetting
         {usingCustomModel && (
           <Input
             value={model}
-            onChange={(e) => {
-              setModel(e.target.value);
-              onChange({ aiModel: e.target.value });
-              aiKeyCheck.reset();
-            }}
+            onChange={(e) => handleModelChange(e.target.value)}
             placeholder={providerConfig.defaultModel}
             aria-label={i18n.t('settings.modelCustom')}
             className="mt-1.5 h-8 text-[13px] rounded-lg border-border"
@@ -160,15 +106,7 @@ export default function AiSettings({ keyCheck: aiKeyCheck, onChange }: AiSetting
         <div className="flex items-center gap-1.5">
           <SecretInput
             value={apiKey}
-            onChange={(next) => {
-              setApiKey(next);
-              setApiKeys((prev) => {
-                const keys = withKeyFor(prev, provider, next);
-                onChange({ aiApiKeys: keys, aiApiKey: next });
-                return keys;
-              });
-              aiKeyCheck.reset();
-            }}
+            onChange={handleApiKeyChange}
             placeholder="sk-..."
             className="h-8 text-[13px] rounded-lg border-border"
           />
@@ -223,10 +161,7 @@ export default function AiSettings({ keyCheck: aiKeyCheck, onChange }: AiSetting
             <Input
               type="text"
               value={baseUrl}
-              onChange={(e) => {
-                setBaseUrl(e.target.value);
-                aiKeyCheck.reset();
-              }}
+              onChange={(e) => handleBaseUrlChange(e.target.value)}
               placeholder={providerConfig.defaultBaseUrl}
               aria-label={i18n.t('settings.baseUrl')}
               className="h-8 text-[13px] rounded-lg border-border"
@@ -247,13 +182,7 @@ export default function AiSettings({ keyCheck: aiKeyCheck, onChange }: AiSetting
           <Globe size={11} className="inline mr-1 -mt-px" />
           {i18n.t('settings.aiLanguage')}
         </label>
-        <Select
-          value={aiLanguage}
-          onValueChange={(v) => {
-            setAiLanguage(v as AILanguageCode);
-            onChange({ aiLanguage: v });
-          }}
-        >
+        <Select value={aiLanguage} onValueChange={(v) => handleLanguageChange(v as AILanguageCode)}>
           <SelectTrigger className="h-8">
             <SelectValue />
           </SelectTrigger>

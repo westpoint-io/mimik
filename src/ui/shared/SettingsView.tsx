@@ -121,12 +121,6 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
     brandAttribution,
   };
 
-  const queue = useCallback((patch: SettingsSnapshot) => {
-    Object.assign(pending.current, patch);
-    window.clearTimeout(saveTimer.current);
-    saveTimer.current = window.setTimeout(() => void flushRef.current(), SAVE_DEBOUNCE_MS);
-  }, []);
-
   const flush = useCallback(async () => {
     const patch = pending.current;
     pending.current = {};
@@ -219,7 +213,6 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
           onChange={(patch) => {
             if (typeof patch.aiProvider === 'string') setProvider(patch.aiProvider as AIProviderKey);
             if (typeof patch.aiApiKey === 'string') setApiKey(patch.aiApiKey);
-            queue(patch);
           }}
         />
 

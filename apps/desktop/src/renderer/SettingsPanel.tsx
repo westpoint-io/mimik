@@ -1,5 +1,5 @@
 import { validateApiKey } from '@mimik/core/capture/ai/validate';
-import { i18n, localStorage } from '@mimik/core/env';
+import { i18n } from '@mimik/core/env';
 import AiSettings from '@mimik/ui/shared/AiSettings';
 import { useKeyCheck } from '@mimik/ui/shared/key-status';
 import { useEffect, useState } from 'react';
@@ -94,9 +94,7 @@ export default function SettingsPanel({ onClose }: { onClose(): void }) {
 
       <div className="min-w-0 flex-1 overflow-y-auto px-10 py-8">
         <div className="mx-auto flex max-w-[640px] flex-col gap-5">
-          {section === 'ai' && (
-            <AiSettings keyCheck={keyCheck} onChange={(patch) => void localStorage.set(patch as never)} />
-          )}
+          {section === 'ai' && <AiSettings keyCheck={keyCheck} />}
 
           {section === 'capture' && settings && (
             <>

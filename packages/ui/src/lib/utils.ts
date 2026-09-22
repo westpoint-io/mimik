@@ -37,11 +37,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDate(ts: number): string {
-  const locale = getDayjsLocale();
-  const d = locale ? dayjs(ts).locale(locale) : dayjs(ts);
-  return d.format('MMM D, YYYY');
-}
+export { formatDate } from '@mimik/core/export/utils';
 
 export function formatDateShort(ts: number): string {
   const locale = getDayjsLocale();

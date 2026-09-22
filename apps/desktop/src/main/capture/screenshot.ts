@@ -1,6 +1,10 @@
 import { screen } from 'electron';
 import { Monitor } from 'node-screenshots';
 
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
 export interface Capture {
   png: Buffer;
   width: number;
@@ -14,10 +18,6 @@ export interface Rect {
   y: number;
   width: number;
   height: number;
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
 }
 
 function monitorAt(x: number, y: number): Monitor {

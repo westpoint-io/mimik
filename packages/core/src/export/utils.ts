@@ -72,7 +72,7 @@ export function formatDate(timestamp: number): string {
   } catch {}
   return new Date(timestamp).toLocaleDateString(locale, {
     month: 'short',
-    day: '2-digit',
+    day: 'numeric',
     year: 'numeric',
   });
 }

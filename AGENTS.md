@@ -320,6 +320,25 @@ resolving a scancode against a keyboard layout is a local call with nothing to w
 addon boundary when that flag is set, so a password never reaches our data even though UIAutomation
 already withholds it.
 
+## Boundaries The Linter Holds
+
+`biome.json` covers `src`, `packages/core`, `packages/ui` and `apps/desktop`. `packages/ui` was
+missing from that list for a long time and nobody noticed, which is how forty-odd files reached it
+unchecked; adding it produced forty-one fixes on the first run.
+
+A `noRestrictedImports` override forbids anything under `packages/**` from importing `@/lib/*`,
+`@/ui/*`, `@/entrypoints/*`, `#imports` or any path through `apps/`. Shared code may never depend on
+an app. It is the rule that keeps `packages/ui` genuinely shared rather than quietly coupled to one
+surface, and it is also the licence seam: an MIT package that imports from a copyleft app is no
+longer MIT.
+
+One boundary the linter does **not** hold, and it bites: main-process code may only take `type`
+imports from `@mimik/core`. The renderer aliases the package to its source and bundles it, while
+`electron-vite`'s `externalizeDepsPlugin` leaves it external in main, so a value import resolves at
+runtime to a path with no file and the app dies on launch with `ERR_MODULE_NOT_FOUND`. That is why
+`capture/screenshot.ts` keeps its own three-line `clamp` rather than importing core's: deduplicating
+a one-liner is not worth a cross-boundary dependency that does not work.
+
 ## Which Client Is Running
 
 `configureCore` carries a `client`, `extension` or `desktop`, and `client()` reads it back. Shared
