@@ -1,4 +1,5 @@
 import { i18n } from '@mimik/core/env';
+import { Button } from '@mimik/ui/components/ui/button';
 import { X } from 'lucide-react';
 import { useState } from 'react';
 
@@ -48,15 +49,17 @@ export default function ShortcutRecorder({ label, value, onChange }: ShortcutRec
       >
         {listening ? i18n.t('desktop_shortcutPress') : (value ?? '—')}
       </button>
-      <button
+      <Button
         type="button"
+        variant="outline"
+        size="icon"
         aria-label={i18n.t('desktop_shortcutClear')}
         onClick={() => onChange(null)}
         disabled={!value}
-        className="flex size-9 items-center justify-center rounded-[10px] border border-border bg-card text-muted-foreground hover:text-accent disabled:opacity-35"
+        className="rounded-lg text-muted-foreground hover:text-accent"
       >
         <X size={15} />
-      </button>
+      </Button>
     </div>
   );
 }
