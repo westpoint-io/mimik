@@ -1,3 +1,4 @@
+import { coreFetch } from '@/core/env';
 import { logger } from '@/core/logger';
 import {
   type AIProtocol,
@@ -44,7 +45,7 @@ function parseModelIds(body: unknown): string[] | undefined {
 
 async function fetchModelsFromUrl(url: string, headers: Record<string, string>): Promise<string[] | undefined> {
   try {
-    const res = await fetch(url, {
+    const res = await coreFetch(url, {
       headers,
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
@@ -60,7 +61,7 @@ type AuthProbe = { valid: true; body: unknown } | { valid: false; reason: 'rejec
 
 async function probeAuth(url: string, headers: Record<string, string>): Promise<AuthProbe> {
   try {
-    const res = await fetch(url, {
+    const res = await coreFetch(url, {
       headers,
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
@@ -103,7 +104,7 @@ async function probeWithInference(
       ? { model, max_tokens: 8, messages: [{ role: 'user', content: 'Reply with OK.' }] }
       : { model, messages: [{ role: 'user', content: 'Reply with OK.' }], max_tokens: 8, stream: false };
   try {
-    const res = await fetch(url, {
+    const res = await coreFetch(url, {
       method: 'POST',
       headers: { ...headers, 'Content-Type': 'application/json' },
       body: JSON.stringify(body),

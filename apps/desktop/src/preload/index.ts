@@ -27,6 +27,9 @@ const api = {
       );
     },
   },
+  ai: {
+    fetch: (request: unknown): Promise<unknown> => ipcRenderer.invoke('mimik:ai:fetch', request),
+  },
   onRequest: (channel: string, handler: (payload: unknown) => Promise<unknown>): void => {
     ipcRenderer.on(channel, async (_event, replyChannel: string, payload: unknown) => {
       try {

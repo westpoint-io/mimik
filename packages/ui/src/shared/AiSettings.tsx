@@ -1,4 +1,4 @@
-import { keyFor, withKeyFor } from '@mimik/core/capture/ai/keys';
+import { keyFor, migrateApiKeys, withKeyFor } from '@mimik/core/capture/ai/keys';
 import { AI_PROVIDERS, type AIProviderKey, CUSTOM_MODEL_VALUE, DEFAULT_AI_PROVIDER } from '@mimik/core/capture/ai/models';
 import { AI_LANGUAGES } from '@mimik/core/capture/ai/prompts';
 import type { KeyValidation } from '@mimik/core/capture/ai/validate';
@@ -31,7 +31,7 @@ export default function AiSettings({ validate }: AiSettingsProps) {
     localStorage.get(['aiProvider', 'aiApiKeys', 'aiModel', 'aiBaseUrl', 'aiLanguage']).then((stored) => {
       const next = (stored.aiProvider as AIProviderKey) || DEFAULT_AI_PROVIDER;
       setProvider(next);
-      setKeys((stored.aiApiKeys as AIApiKeys) ?? {});
+      setKeys(migrateApiKeys(stored));
       setModel((stored.aiModel as string) || AI_PROVIDERS[next].defaultModel);
       setBaseUrl((stored.aiBaseUrl as string) || '');
       setLanguage((stored.aiLanguage as string) || 'en');
@@ -177,10 +177,11 @@ function KeyResult({ result }: { result: KeyValidation }) {
       </p>
     );
   }
+  const unreachable = result.reason === 'network';
   return (
     <p className="flex items-center gap-1.5 text-xs font-medium text-destructive">
       <TriangleAlert size={14} />
-      {i18n.t('settings_keyInvalid')}
+      {i18n.t(unreachable ? 'settings_keyUnreachable' : 'settings_keyInvalid')}
     </p>
   );
 }

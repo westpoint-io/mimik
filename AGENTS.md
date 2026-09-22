@@ -618,6 +618,20 @@ rather than the placeholder the extension fills in with AI. Desktop has no AI ti
 comes from the recorded application, or a generic one where no application was identified. Without
 it the guide screen waits forever on a title that is never written.
 
+**Every AI request goes through the main process.** A renderer is an ordinary web origin, so a
+`fetch` to `api.anthropic.com` is blocked by CORS and throws — which reads as a rejected key when it
+is really a request that never left. The extension never hits this because it validates in the
+background service worker, where `host_permissions` exempts it, and that is the thing the desktop had
+no equivalent of. `CoreEnv` therefore carries an optional `fetch` and core calls it through
+`coreFetch`, so `validateApiKey`, `getAIDescription` and `generateGuideMeta` all route through
+whatever the surface supplies. The desktop supplies a wrapper over `mimik:ai:fetch`, which runs
+Electron's `net.fetch` in main. It refuses any url that is not `http:` or `https:`, because the
+renderer names the url and main is the one holding the network.
+
+A failed key check says which failure it was. `reason: 'network'` is worded "could not reach the
+provider", not "rejected" — the two are indistinguishable to a user and only one of them is their
+key's fault.
+
 Descriptions and the guide's name are written by the user's own provider key when there is one, and
 by rule when there is not. `getAIDescription` takes a serialised context string rather than a
 `DOMContext`, because the desktop has no DOM to hand it: `serializeScreenContext` writes the same
