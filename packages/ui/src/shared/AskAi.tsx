@@ -1,12 +1,12 @@
+import { REWRITE_PRESETS, type RewritePreset } from '@mimik/core/capture/ai/prompts';
+import { i18n } from '@mimik/core/env';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
+import { send } from '@mimik/ui/env';
+import { rewriteErrorMessage } from '@mimik/ui/shared/rewrite-error';
+import Toast from '@mimik/ui/shared/Toast';
 import { Loader2, Sparkles, Wand2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { i18n } from '@mimik/core/env';
-import { REWRITE_PRESETS, type RewritePreset } from '@mimik/core/capture/ai/prompts';
-import { send } from '@mimik/ui/env';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
-import { rewriteErrorMessage } from '@mimik/ui/shared/rewrite-error';
-import Toast from '@mimik/ui/shared/Toast';
 
 const PRESET_LABEL_KEYS = {
   shorter: 'editor.rewriteShorter',

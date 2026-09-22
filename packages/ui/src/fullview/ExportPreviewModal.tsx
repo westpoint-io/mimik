@@ -1,7 +1,3 @@
-import { Button } from '@mimik/ui/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@mimik/ui/components/ui/dialog';
-import { FileCode, FileDown, FileImage, FileText, Loader2, Video } from 'lucide-react';
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { i18n } from '@mimik/core/env';
 import { downloadBlob, downloadText, safeFilename } from '@mimik/core/export/download';
 import { exportGuideAsHTML } from '@mimik/core/export/html-export';
@@ -19,6 +15,10 @@ import { paginatePreview, withPreviewStyles } from '@mimik/core/export/preview';
 import type { VideoChapter } from '@mimik/core/export/video-export';
 import { canExportVideo, STEP_SECONDS } from '@mimik/core/export/video-support';
 import type { Guide, Screenshot, Step } from '@mimik/core/guides/types';
+import { Button } from '@mimik/ui/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@mimik/ui/components/ui/dialog';
+import { FileCode, FileDown, FileImage, FileText, Loader2, Video } from 'lucide-react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 
 const VideoStepPlayer = lazy(() => import('./VideoStepPlayer'));
 

@@ -1,3 +1,5 @@
+import { i18n } from '@mimik/core/env';
+import { createSnapshot } from '@mimik/core/guides/service';
 import { Button } from '@mimik/ui/components/ui/button';
 import type { Route } from '@mimik/ui/fullview/router';
 import { navigate } from '@mimik/ui/fullview/router';
@@ -17,8 +19,6 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useState } from 'react';
-import { i18n } from '@mimik/core/env';
-import { createSnapshot } from '@mimik/core/guides/service';
 import ExportPreviewModal from './ExportPreviewModal';
 
 interface TopNavProps {
@@ -143,7 +143,13 @@ export default function TopNav({ route, onSettings }: TopNavProps) {
           </span>
         </Button>
         {onSettings && (
-          <Button size="sm" variant="ghost" onClick={onSettings} aria-label={i18n.t('settings_title')} className={NAV_CONTROL}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={onSettings}
+            aria-label={i18n.t('settings_title')}
+            className={NAV_CONTROL}
+          >
             <SlidersHorizontal size={14} />
           </Button>
         )}

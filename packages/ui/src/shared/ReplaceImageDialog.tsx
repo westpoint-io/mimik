@@ -1,8 +1,8 @@
-import { ImageUp } from 'lucide-react';
-import { useRef, useState } from 'react';
 import { i18n } from '@mimik/core/env';
 import { Button } from '@mimik/ui/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@mimik/ui/components/ui/dialog';
+import { ImageUp } from 'lucide-react';
+import { useRef, useState } from 'react';
 
 interface ReplaceImageDialogProps {
   open: boolean;

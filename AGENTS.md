@@ -652,6 +652,26 @@ a role and an accessible name and writes the same wording it writes for the exte
 it has nothing but the action, and every step in the guide reads the same — which is what a
 `screen`-sourced recording looks like.
 
+## Fullview Store
+
+One Zustand store, four slices — `library`, `search`, `guide`, `editor` — merged in
+`stores/fullview.ts`. Consumers see no difference: `useFullviewStore` and `useFullview` are the same
+exports they always were, and `useFullview` still wraps `useShallow`, which is what makes the
+object-returning selectors all over the fullview safe rather than a re-render trap.
+
+Slices rather than separate stores because one cross-domain write genuinely exists: opening a
+different guide has to close the editor and its history panel. As a flat store that lived inside
+`setGuideExportData` as three stray field resets and was invisible. As a slice it is
+`{ guideExportData, ...CLOSED_EDITOR }`, with `CLOSED_EDITOR` owned and named by the editor slice —
+the coupling still happens, it just says so. Four separate stores would have made it a subscription
+between stores, which is worse.
+
+Two things in here are deliberate and look wrong at a glance. `flushFocusedField` reaches for
+`document.activeElement` from inside the store, because leaving edit mode has to commit whatever is
+in the focused input before the component unmounts and the keystrokes are lost. `scrollToStep` sets
+an id and clears it 100 ms later, because it is a signal rather than state — the alternative is an
+event emitter beside the store for one interaction.
+
 ## Desktop Home Screen
 
 **A guide looks the same everywhere; getting to one does not have to.** Viewing, editing, annotating

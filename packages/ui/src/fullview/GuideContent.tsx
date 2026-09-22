@@ -1,10 +1,7 @@
-import { History, Loader2, Play, Sparkles } from 'lucide-react';
+import { i18n, localStorage } from '@mimik/core/env';
 import { isReplayable } from '@mimik/core/guideme/session';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { TypeAnimation } from 'react-type-animation';
-import { i18n } from '@mimik/core/env';
-
 import { actionSteps } from '@mimik/core/guides/blocks';
+import { getMostCommonDomain } from '@mimik/core/guides/domain';
 import {
   deleteStep,
   getGuide,
@@ -17,18 +14,19 @@ import {
 import type { SnapshotLike } from '@mimik/core/guides/snapshot-diff';
 import type { Guide, Screenshot, Snapshot, Step } from '@mimik/core/guides/types';
 import type { ScreenshotEdits } from '@mimik/core/screenshot/types';
-import { localStorage } from '@mimik/core/env';
-import { logger } from '@mimik/ui/lib/logger';
-import { panel, send, tabs } from '@mimik/ui/env';
-import { getMostCommonDomain } from '@mimik/core/guides/domain';
-import { formatDate } from '@mimik/ui/lib/utils';
-import { useFullview } from '@mimik/ui/stores/fullview';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
+import { panel, send, tabs } from '@mimik/ui/env';
+import { logger } from '@mimik/ui/lib/logger';
+import { formatDate } from '@mimik/ui/lib/utils';
 import AnnotationEditor from '@mimik/ui/shared/AnnotationEditor';
 import { useAskAi } from '@mimik/ui/shared/AskAi';
 import FaviconImg from '@mimik/ui/shared/FaviconImg';
 import { guideDescriptionErrorMessage } from '@mimik/ui/shared/guide-description-error';
 import Toast from '@mimik/ui/shared/Toast';
+import { useFullview } from '@mimik/ui/stores/fullview';
+import { History, Loader2, Play, Sparkles } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { TypeAnimation } from 'react-type-animation';
 import GuideStepList from './components/GuideStepList';
 import VersionHistoryPanel from './components/VersionHistoryPanel';
 

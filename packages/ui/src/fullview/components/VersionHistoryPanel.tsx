@@ -1,17 +1,17 @@
-import { ChevronRight, MoreVertical, RotateCcw, X } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
 import { i18n } from '@mimik/core/env';
 import { getSnapshots, renameSnapshot, revertToSnapshot } from '@mimik/core/guides/service';
 import { diffSnapshots, type SnapshotDiff, type SnapshotLike } from '@mimik/core/guides/snapshot-diff';
 import { groupSnapshots } from '@mimik/core/guides/snapshot-groups';
 import type { Snapshot } from '@mimik/core/guides/types';
-import { formatDateTime } from '@mimik/ui/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@mimik/ui/components/ui/dropdown-menu';
+import { formatDateTime } from '@mimik/ui/lib/utils';
+import { ChevronRight, MoreVertical, RotateCcw, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 function isQuotaError(e: unknown): boolean {
   return e instanceof Error && (e.name === 'QuotaExceededError' || e.name === 'DexieError2QuotaExceededError');

@@ -1,5 +1,5 @@
-import { i18n } from '@mimik/core/env';
 import type { RewriteError } from '@mimik/core/capture/ai/rewrite';
+import { i18n } from '@mimik/core/env';
 
 const REWRITE_ERROR_KEYS = {
   'no-api-key': 'editor.rewriteErrorNoApiKey',

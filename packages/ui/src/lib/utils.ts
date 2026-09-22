@@ -8,8 +8,8 @@ import 'dayjs/locale/pt-br';
 import 'dayjs/locale/fr';
 import 'dayjs/locale/de';
 import 'dayjs/locale/zh-cn';
-import { twMerge } from 'tailwind-merge';
 import { i18n } from '@mimik/core/env';
+import { twMerge } from 'tailwind-merge';
 
 dayjs.extend(relativeTime);
 

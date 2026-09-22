@@ -11,6 +11,8 @@
       "src/**/*.tsx",
       "packages/core/src/**/*.ts",
       "packages/core/src/**/*.tsx",
+      "packages/ui/src/**/*.ts",
+      "packages/ui/src/**/*.tsx",
       "apps/desktop/src/**/*.ts",
       "apps/desktop/src/**/*.tsx",
       "*.json"

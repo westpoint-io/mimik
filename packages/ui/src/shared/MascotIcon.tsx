@@ -51,24 +51,11 @@ export default function MascotIcon({ size = 22, pose = 'happy', tone = 'brand' }
       ) : (
         <>
           {face.eyes.map((eye) => (
-            <path
-              key={eye}
-              d={eye}
-              className={feature}
-              strokeWidth={face.eyeWidth}
-              fill="none"
-              strokeLinecap="round"
-            />
+            <path key={eye} d={eye} className={feature} strokeWidth={face.eyeWidth} fill="none" strokeLinecap="round" />
           ))}
         </>
       )}
-      <path
-        d={face.mouth}
-        className={feature}
-        strokeWidth={face.mouthWidth}
-        fill="none"
-        strokeLinecap="round"
-      />
+      <path d={face.mouth} className={feature} strokeWidth={face.mouthWidth} fill="none" strokeLinecap="round" />
     </svg>
   );
 }

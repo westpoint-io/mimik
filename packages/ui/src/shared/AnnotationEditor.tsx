@@ -1,25 +1,4 @@
-import {
-  ArrowUpRight,
-  ChevronDown,
-  Circle as CircleIcon,
-  CopyPlus,
-  Crop,
-  EyeOff,
-  Minus,
-  MousePointer2,
-  MousePointerClick,
-  MoveVertical,
-  Redo2,
-  RotateCcw,
-  Square,
-  SquareDashed,
-  Trash2,
-  Type,
-  Undo2,
-} from 'lucide-react';
-import type { ComponentType, ReactNode } from 'react';
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { i18n } from '@mimik/core/env';
+import { i18n, localStorage } from '@mimik/core/env';
 import { updateScreenshotEdits } from '@mimik/core/guides/service';
 import type { Screenshot, ScreenshotBounds } from '@mimik/core/guides/types';
 import { shadeOf } from '@mimik/core/screenshot/color';
@@ -55,7 +34,6 @@ import {
   MIN_FONT_SIZE,
   MIN_LINE_HEIGHT,
 } from '@mimik/core/screenshot/types';
-import { localStorage } from '@mimik/core/env';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -64,6 +42,27 @@ import {
 } from '@mimik/ui/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@mimik/ui/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
+import {
+  ArrowUpRight,
+  ChevronDown,
+  Circle as CircleIcon,
+  CopyPlus,
+  Crop,
+  EyeOff,
+  Minus,
+  MousePointer2,
+  MousePointerClick,
+  MoveVertical,
+  Redo2,
+  RotateCcw,
+  Square,
+  SquareDashed,
+  Trash2,
+  Type,
+  Undo2,
+} from 'lucide-react';
+import type { ComponentType, ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import ColorPicker, { swatchStyle } from './ColorPicker';
 
 type EditorMode = 'crop' | 'annotate' | 'redact';

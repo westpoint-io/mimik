@@ -1,9 +1,9 @@
-import { MoreVertical, RotateCcw, Star, StarOff, Trash2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 import { i18n } from '@mimik/core/env';
 import { formatDate } from '@mimik/ui/lib/utils';
-import { useFullview } from '@mimik/ui/stores/fullview';
 import ScreenshotView from '@mimik/ui/shared/ScreenshotView';
+import { useFullview } from '@mimik/ui/stores/fullview';
+import { MoreVertical, RotateCcw, Star, StarOff, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { navigate } from '../router';
 
 interface GuideGridViewProps {
