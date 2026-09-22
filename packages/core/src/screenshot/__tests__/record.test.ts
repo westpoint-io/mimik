@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ElementMeta } from '@/core/guides/types';
+import { resolveViewport } from '@/core/screenshot/geometry';
 import { screenshotForElement } from '@/core/screenshot/record';
 
 const meta: ElementMeta = {
@@ -38,5 +39,12 @@ describe('screenshotForElement', () => {
   it('only writes a cursor when one is supplied', () => {
     expect(screenshotForElement(bytes, meta).edits).not.toHaveProperty('cursor');
     expect(screenshotForElement({ ...bytes, cursor: null }, meta).edits?.cursor).toBeNull();
+  });
+
+  it('drops bounds when the target should not be zoomed to, keeping the target itself', () => {
+    const shot = screenshotForElement({ ...bytes, zoomToTarget: false }, meta);
+    expect(shot.bounds).toBeUndefined();
+    expect(shot.edits?.target).toMatchObject({ x: 20, y: 40, width: 200, height: 80 });
+    expect(resolveViewport({ ...shot, blob: new Blob() })).toEqual({ x: 0, y: 0, width: 800, height: 600 });
   });
 });

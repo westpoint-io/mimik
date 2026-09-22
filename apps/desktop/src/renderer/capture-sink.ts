@@ -48,6 +48,7 @@ export class DesktopCaptureSink implements CaptureSink {
           height: data.image.height,
           cursor: data.cursor ?? null,
           targetColor,
+          zoomToTarget: false,
         },
         meta,
       );

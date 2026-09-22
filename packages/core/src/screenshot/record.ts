@@ -11,14 +11,17 @@ export interface ScreenshotBytes {
   src?: string;
   cursor?: CursorMark | null;
   targetColor?: string;
+  zoomToTarget?: boolean;
 }
 
 export function screenshotForElement(bytes: ScreenshotBytes, meta: ElementMeta): StoredScreenshot {
-  const { cursor, targetColor, ...rest } = bytes;
+  const { cursor, targetColor, zoomToTarget = true, ...rest } = bytes;
   const ratio = meta.devicePixelRatio;
   return {
     ...rest,
-    bounds: { x: meta.rect.x, y: meta.rect.y, width: meta.rect.width, height: meta.rect.height },
+    ...(zoomToTarget
+      ? { bounds: { x: meta.rect.x, y: meta.rect.y, width: meta.rect.width, height: meta.rect.height } }
+      : {}),
     pixelRatio: ratio,
     clickPoint: meta.clickPoint,
     edits: {

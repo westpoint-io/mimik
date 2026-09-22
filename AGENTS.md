@@ -581,6 +581,18 @@ control the click landed on is the one that was there before. It is capped at 15
 `null`, never an error — a slow or unresponsive foreign application costs a step its metadata, not
 the recording.
 
+A desktop step shows its whole frame. `resolveViewport` zooms to `bounds` when a screenshot has
+them, padded by `PAD_RATIO` of the image but never more than `MAX_PAD_MULTIPLE` times the element —
+a cap that suits a browser page, where a control is a real fraction of the viewport, and fails on a
+screen grab, where a 30 px window button against 2560 px yields a crop a few hundred pixels wide that
+the card then stretches. So `screenshotForElement` takes `zoomToTarget` and the desktop sink passes
+false, which writes no `bounds` at all; `resolveViewport` falls back to the full image and
+`edits.target` still marks where the click landed. It is written into the data rather than branched
+on `client()`, so a desktop guide frames the same way in whatever opens it, exports included, and the
+extension keeps its zoom because `zoomToTarget` defaults to true. `check:pipeline` asserts the
+viewport equals the frame, and reverting the flag makes it report a 196 × 196 crop of an 800 × 600
+capture — the failure in its own numbers.
+
 `targetRect` decides what the dashed target in the screenshot encloses. The control's own rectangle
 wins when there is one, which is the whole point of reading the accessibility tree; it falls back to
 a 28 px box around the click when there is no element, when the rectangle covers more than half the

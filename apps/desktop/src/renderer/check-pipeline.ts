@@ -6,6 +6,7 @@ import { exportGuideAsMarkdown } from '@mimik/core/export/markdown-export';
 import { exportGuideAsPDF } from '@mimik/core/export/pdf-export';
 import { allScreenshotIds, getGuide, permanentlyDeleteGuide } from '@mimik/core/guides/service';
 import { elementSource } from '@mimik/core/guides/types';
+import { resolveViewport } from '@mimik/core/screenshot/geometry';
 import { renderScreenshot } from '@mimik/core/screenshot/render';
 import { DesktopCaptureSink } from './capture-sink';
 
@@ -84,6 +85,21 @@ window.mimik.onRequest('mimik:check:verify', async (payload) => {
     name: 'screenshot cropped to the region',
     ok: shot !== undefined && shot.blob.size > 0,
     detail: shot ? `${shot.width} × ${shot.height}, ${shot.blob.size} bytes` : 'no screenshot',
+  });
+
+  const viewport = shot ? resolveViewport(shot) : null;
+  results.push({
+    name: 'a desktop step shows its whole frame',
+    ok:
+      shot !== undefined &&
+      shot.bounds === undefined &&
+      viewport !== null &&
+      viewport.width === shot.width &&
+      viewport.height === shot.height &&
+      (shot.edits?.target?.width ?? 0) > 0,
+    detail: shot
+      ? `viewport ${viewport?.width} × ${viewport?.height} of ${shot.width} × ${shot.height}, target still drawn`
+      : 'no screenshot',
   });
 
   results.push({
