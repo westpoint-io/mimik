@@ -88,10 +88,7 @@ export default function SettingsPanel({ onClose }: { onClose(): void }) {
 
       <div className="min-w-0 flex-1 overflow-y-auto px-10 py-8">
         <div className="mx-auto flex max-w-[640px] flex-col gap-5">
-          <div className="flex items-center border-b border-secondary pb-4">
-            <h2 className="mr-auto text-base font-semibold text-foreground">
-              {i18n.t(SECTIONS.find((item) => item.id === section)?.labelKey ?? 'settings_title')}
-            </h2>
+          <div className="flex justify-end">
             <button
               type="button"
               aria-label={i18n.t('common_close')}
