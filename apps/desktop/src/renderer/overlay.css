@@ -518,6 +518,10 @@ body.controls #keyHint p {
   color: var(--deep);
 }
 
+body.controls #keyHint strong {
+  font-weight: 600;
+}
+
 body.controls #hintKey {
   padding: 1px 6px;
   border: 1px solid var(--lavender);

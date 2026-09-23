@@ -51,7 +51,12 @@ export function controls(): void {
   const tip = el('p', { id: 'tip' });
   const hintKey = el('kbd', { id: 'hintKey' });
   const hintText = el('span', {});
-  const hint = el('div', { id: 'keyHint' }, icon('keyboard', 14), el('p', {}, 'You can press ', hintKey, hintText));
+  const hint = el(
+    'div',
+    { id: 'keyHint' },
+    icon('keyboard', 14),
+    el('p', {}, el('strong', {}, 'Tip:'), ' you can press ', hintKey, hintText),
+  );
   const intro = el('div', { id: 'intro' }, el('div', { id: 'mascot' }, cameraMascot(56)), tip);
   const body = el('div', { id: 'body' }, preview, stepTitle, writing, skeleton, stepMeta, intro, hint);
 
