@@ -10,7 +10,7 @@ You click "Record," perform a workflow in your browser, and Mimik automatically 
 
 ## Architecture
 
-**Everything runs in the Chrome extension. No backend.**
+**Everything runs on the user's machine — in the Chrome extension or the desktop app. No backend.**
 
 - Storage: IndexedDB via Dexie.js (browser-local)
 - AI descriptions: optional, user provides their own API key in settings
@@ -20,71 +20,23 @@ You click "Record," perform a workflow in your browser, and Mimik automatically 
 ### Directory Structure
 
 ```
-src/
-├── core/                    # Business logic (no UI dependencies)
-│   ├── capture/             # Recording pipeline
-│   │   ├── ai/              # AI description + title generation (Vercel AI SDK)
-│   │   │   ├── description.ts   # getAIDescription (DOM context → AI → step text)
-│   │   │   ├── title.ts         # generateGuideTitle (steps → AI → guide name)
-│   │   │   ├── models.ts        # AI_PROVIDERS config (OpenAI/Anthropic model lists)
-│   │   │   ├── prompts.ts       # Prompt templates
-│   │   │   └── provider.ts      # createModel factory (OpenAI/Anthropic)
-│   │   ├── dom/              # DOM extraction utilities
-│   │   │   ├── context.ts       # DOMContext extraction + serialization
-│   │   │   ├── element-meta.ts  # extractElementMeta (selector, text, aria, rect)
-│   │   │   └── element-utils.ts # findFocusableAncestor, isTextField, etc.
-│   │   ├── events/           # Event capture system
-│   │   │   ├── handlers.ts      # CaptureController class + startCapture
-│   │   │   └── input-session.ts # InputSession (typing lifecycle)
-│   │   ├── machine.ts        # xstate capture state machine
-│   │   ├── session.ts        # CaptureSession (lifecycle manager)
-│   │   ├── spa-nav.ts        # SPA navigation tracking
-│   │   ├── start-notification.ts # Recording notification overlay
-│   │   └── step-description.ts   # Fallback rule-based descriptions
-│   ├── blur/                # Smart blur: regex presets, DOM scanner, element picker, panel UI
-│   ├── export/              # HTML, PDF, DOCX, Markdown, video generators + shared utils
-│   └── guides/              # Data layer: types, Dexie DB, CRUD service
-├── entrypoints/             # Chrome extension entry points (WXT)
-│   ├── background/          # Service worker: state machine, message handlers, tab management
-│   ├── content.ts           # Content script: CaptureSession, event listeners
-│   ├── sidepanel/           # Side panel React mount
-│   ├── fullview/            # Full-page view React mount
-│   ├── onboarding/          # Onboarding wizard (opens on first install)
-│   └── options/             # Settings page React mount
-├── lib/                     # Shared utilities
-│   ├── messaging.ts         # Extension messaging protocol (webext-core)
-│   ├── port.ts              # Long-lived port: background ↔ sidepanel
-│   ├── browser-api.ts       # Chrome API wrappers
-│   ├── tab-messages.ts      # Content script message types
-│   ├── logger.ts            # Logging utility
-│   └── utils.ts             # Shared helpers (dates, URLs, cn)
-├── stores/                  # Zustand state stores
-│   └── fullview.ts          # Fullview UI state (search, counts, guide data)
-└── ui/                      # React components
-    ├── components/ui/       # shadcn/ui primitives (button, input, dialog, badge)
-    ├── fullview/            # Full-page dashboard
-    │   ├── components/      # Extracted sub-components (grid, list, search, etc.)
-    │   ├── App.tsx
-    │   ├── TopNav.tsx
-    │   ├── SearchModal.tsx
-    │   ├── GuideContent.tsx
-    │   ├── LibraryContent.tsx
-    │   └── router.ts
-    ├── sidepanel/           # Side panel UI
-    │   ├── App.tsx
-    │   ├── LibraryView.tsx
-    │   ├── GuideEditor.tsx
-    │   ├── RecordingView.tsx
-    │   ├── StepCard.tsx
-    │   ├── ExportMenu.tsx
-    │   ├── BlurCanvas.tsx
-    │   └── ZoomScreenshot.tsx
-    ├── onboarding/          # Onboarding wizard UI
-    │   └── App.tsx          # 5-step wizard (welcome, AI, blur, pin, done)
-    ├── shared/              # Shared UI components
-    │   └── SettingsView.tsx  # AI settings (provider, model, API key)
-    └── options/             # Settings page
-        └── App.tsx
+src/                     the Chrome extension (WXT)
+├── entrypoints/         background, content, sidepanel, fullview, onboarding, options, offscreen, mic-permission
+├── capture/             capture session, DOM event handlers and the capture sink, in the content script
+├── blur/                smart blur picker and manager in the page
+├── guideme/             Guide Me in the page
+├── lib/                 extension plumbing: browser-api/, port/, offscreen/, voice/, update-notice/, messaging
+├── ui/                  extension screens: sidepanel/, fullview/, onboarding/, options/, mic-permission/, shared/
+└── locales/
+packages/
+├── core/src/            logic both surfaces share: capture, guides, export, screenshot, blur, guideme, i18n, env
+├── ui/src/              React both surfaces share, grouped by feature
+└── capture-native/      the Windows UIAutomation addon, in Rust
+apps/desktop/src/
+├── main/                Electron main: window, tray, capture pipeline, overlay windows, shortcuts
+├── preload/             the contextBridge API
+└── renderer/            the app window, the overlay renderer, settings/, ai/ and the checks
+scripts/                 repository checks that pnpm lint runs
 ```
 
 ## State Management
@@ -339,7 +291,7 @@ had grown a private copy of it, identical line for line.
 
 ## Boundaries The Linter Holds
 
-`biome.json` covers `src`, `packages/core`, `packages/ui` and `apps/desktop`. `packages/ui` was
+`biome.json` covers `src`, `packages/core`, `packages/ui`, `apps/desktop` and `scripts`. `packages/ui` was
 missing from that list for a long time and nobody noticed, which is how forty-odd files reached it
 unchecked; adding it produced forty-one fixes on the first run.
 
@@ -356,7 +308,7 @@ runtime to a path with no file and the app dies on launch with `ERR_MODULE_NOT_F
 `capture/screenshot.ts` keeps its own three-line `clamp` rather than importing core's: deduplicating
 a one-liner is not worth a cross-boundary dependency that does not work.
 
-## UI Package Layout
+## Code Layout
 
 `packages/ui/src` is grouped by feature, not by the surface that first used a file: `ai`,
 `annotation`, `common`, `export`, `guide`, `history`, `library`, `navigation` and `search`. Inside a
@@ -364,31 +316,52 @@ feature, components sit in `components/`, hooks in `hooks/`, plain functions in 
 slice in `store/`, and a `types.ts` only when several files share a type. `components/ui` holds the
 shadcn primitives as the generator writes them, and `stores/` merges the slices.
 
+The apps take the same shape one surface at a time. Each of `src/ui/sidepanel`, `fullview`,
+`onboarding`, `mic-permission`, `shared` and `apps/desktop/src/renderer` keeps its components side by
+side, its functions in `lib/` and its hooks in `hooks/`. `src/lib` is already a lib folder, so a
+module there that held several functions became a folder named after it — `browser-api/`, `port/`,
+`offscreen/`, `update-notice/` — and the voice pieces share `voice/`. An entry script such as
+`overlay.ts` or `check-storage.ts` keeps only its dispatch and imports the rest from a folder of the
+same name.
+
 A file exports one thing — a component, a hook or a function — and is named after it. A hook or a
 `lib/` function may keep one private helper that nothing else calls; a component file keeps none, so
-its helpers live in the feature's `lib/`. Constants and types may sit beside the export they serve.
+its helpers live in `lib/`. Constants, types and objects of functions may sit beside the export they
+serve. That rule holds in all four roots: `packages/ui/src`, `src/ui`, `src/lib` and
+`apps/desktop/src/renderer`.
+
+Exports are named. A default export can be imported under any name, so one component can read
+differently at every import site; a named one is found by the same search everywhere. WXT
+entrypoints and the config files keep their defaults because the framework reads them, and the one
+`React.lazy` maps a named export onto the `default` it needs.
 
 The apps import from `'@mimik/ui'` and nowhere deeper, except `@mimik/ui/env` and
-`@mimik/ui/global.css`. `src/index.ts` is the one file allowed to re-export, and code inside the
-package never imports through it — that would be a cycle. Adding a public component means adding a
-line there. The extension build was diffed against the pre-entry baseline: the service worker and
-the content script came out byte-identical, because neither imports the package, and the rest moved
-by a few hundred bytes.
+`@mimik/ui/global.css`. `src/index.ts` is the one file allowed to re-export. Inside the package every
+import is relative — it never names itself, through the entry or otherwise, so it cannot cycle
+through its own index. The extension build was diffed against the baseline from before the entry
+existed: the content script came out byte-identical, and the whole build within a few hundred bytes.
 
-The linter holds all of it. `noRestrictedImports` rejects a deep `@mimik/ui/*` import from the apps
-and a bare `'@mimik/ui'` from anything under `packages/`. `noBarrelFile` rejects any other
-re-exporting file, and `useComponentExportOnlyModules` rejects a component file that also exports a
-function or a hook. The shadcn primitives are excused from the last rule, since they export their
-`*Variants` beside the component and regenerating them would bring that back. Nothing checks
-that a `lib/` file holds one function; that part is review.
+State that several functions share lives in a `{ current }` holder — `localVoiceHost`, the offscreen
+document's `creating` promise, `lastVoice` in `port/state.ts` — because an imported `let` is
+read-only in the module that imports it, so a getter and setter pair could not be split without one.
+The UI package's env adapter is the same idea for functions: `tabs`, `panel` and `messages` are
+objects of accessors over the one configured adapter, which leaves `configureUi` its only export.
+
+The linter holds it. `noRestrictedImports` rejects a deep `@mimik/ui/*` import from the apps and any
+`@mimik/ui` import from inside `packages/`. `noBarrelFile`, `useComponentExportOnlyModules` and
+`noDefaultExport` cover the four roots, with the shadcn primitives excused from the second since they
+export their `*Variants` beside the component. `scripts/check-exports.mjs` runs after Biome in
+`pnpm lint` and catches what no Biome rule can: a second exported function, a helper declared in a
+component file, a second private helper anywhere else, and any re-export outside the package entry.
 
 Three things break quietly when files move here. The root `tsconfig.json` declares its own `paths`,
 which replace the ones in `.wxt/tsconfig.json` rather than extending them, so the bare `@mimik/ui`
 entry has to be listed in the root config and in `apps/desktop/tsconfig.json` alike. A `vi.mock`
-path is a string the refactoring tools do not rewrite, and a stale one mocks nothing without
-failing. And `sideEffects` in the package's `package.json` names `common/lib/dayjs-locale.ts`,
-because that file registers the dayjs locales by importing them; renaming it without updating
-the entry lets a bundler drop the translations.
+path is a string the refactoring tools do not rewrite; a stale one mocks nothing without failing,
+and once a module is split each mock has to name the file its function now lives in —
+`vi.mock('@/lib/browser-api/local-storage')`, not the folder. And `sideEffects` in the package's
+`package.json` names `common/lib/dayjs-locale.ts`, because that file registers the dayjs locales by
+importing them; renaming it without updating the entry lets a bundler drop the translations.
 
 ## Which Client Is Running
 
@@ -1017,7 +990,7 @@ what has `host_permissions`, and the desktop calls `validateApiKey` directly on 
 process fetch.
 
 The rest of `SettingsView` stayed put. Voice narration, smart blur, brand logos and the microphone
-picker have no desktop meaning, and it reaches for `@/lib/browser-api`. Splitting it did mean the
+picker have no desktop meaning, and it reaches into `@/lib/browser-api/`. Splitting it did mean the
 autosave had to change shape: the AI fields left the parent's snapshot, so `AiSettings` reports its
 own changes through `onChange` and both halves queue into the same debounced flush. `SettingsView`
 still keeps the provider and key in state for one reason — `resolveVoiceApiKey` falls back to the AI
@@ -1127,7 +1100,7 @@ unexplained.
 
 ## Design System
 
-All colors are defined as CSS variables in `src/ui/global.css` and used via Tailwind classes:
+All colors are defined as CSS variables in `packages/ui/src/global.css` and used via Tailwind classes:
 
 | Token | Color | Usage |
 |-------|-------|-------|
