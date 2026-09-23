@@ -6,10 +6,14 @@ export { SecretInput } from './ai/components/SecretInput';
 export { useAiSettings } from './ai/hooks/use-ai-settings';
 export { useKeyCheck } from './ai/hooks/use-key-check';
 export { ColorPicker } from './annotation/components/ColorPicker';
+export { CameraMascot } from './common/components/CameraMascot';
 export { FaviconImg } from './common/components/FaviconImg';
 export { getDomainInitial } from './common/lib/domain-initial';
 export { formatRelativeTime } from './common/lib/format-relative-time';
 export {
+  CAMERA_MASCOT_DROP,
+  CAMERA_MASCOT_PARTS,
+  CAMERA_MASCOT_VIEW_BOX,
   MASCOT_ASPECT,
   MASCOT_BODY,
   MASCOT_CROWN,
