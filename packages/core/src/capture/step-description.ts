@@ -28,17 +28,20 @@ const HOST_SURFACES = new Set([
   'intermediate d3d window',
 ]);
 const NAME_LIMIT = 200;
+const INVISIBLE = /[\p{Cf}\uFFFC\uFFFD]/gu;
+const IDENTIFIER = /^(?=.*(?:[\d_.:[\]-]|[a-z][A-Z]))\S+$/;
 
 function elementName(meta: ElementMeta): string {
   const usable = (value: string | null | undefined) => {
-    const text = (value ?? '').trim();
+    const text = (value ?? '').replace(INVISIBLE, '').trim();
     const lower = text.toLowerCase();
     return HOST_SURFACES.has(lower) || lower.startsWith('chrome_widgetwin_') ? '' : text;
   };
   const role = meta.role ?? '';
   const value = usable(meta.textContent?.slice(0, 80));
   const hideValue = VERB_BY_ROLE[role] === 'enter' || (BOUNDARIES.has(role) && /^\d+$/.test(value));
-  const own = [meta.ariaLabel, meta.placeholder, hideValue ? null : value, meta.altText, meta.name]
+  const handle = IDENTIFIER.test(meta.name ?? '') ? null : meta.name;
+  const own = [meta.ariaLabel, meta.placeholder, hideValue ? null : value, meta.altText, handle]
     .map(usable)
     .find(Boolean);
   if (own) return own.slice(0, NAME_LIMIT);
@@ -55,7 +58,7 @@ function elementName(meta: ElementMeta): string {
   return around ? usable(around.name).slice(0, NAME_LIMIT) : '';
 }
 
-export function buildFallbackDescription(action: string, meta: ElementMeta): string {
+export function buildFallbackDescription(action: string, meta: ElementMeta, typed?: string): string {
   const name = elementName(meta);
   const target = name || meta.role || meta.tag || '';
 
@@ -79,6 +82,7 @@ export function buildFallbackDescription(action: string, meta: ElementMeta): str
       return i18n.t('steps.click', [name]);
     case 'input':
       if (meta.inputType === 'password') return i18n.t('steps.typeSecret');
+      if (typed?.trim()) return i18n.t('steps.type', [typed.replace(/\s+/g, ' ').trim().slice(0, NAME_LIMIT)]);
       if (meta.inputType) return i18n.t('steps.typeIntoField', [meta.inputType, target]);
       return i18n.t('steps.typeInto', [target]);
     case 'copy':

@@ -524,6 +524,7 @@ steps:
   rightClickHere: "Right-click here"
   typeIntoField: 'Type into $1 field "$2"'
   typeInto: 'Type into "$1"'
+  type: 'Type "$1"'
   typeSecret: "Type password"
   copyFrom: 'Copy from "$1"'
   pasteInto: 'Paste into "$1"'

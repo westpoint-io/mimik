@@ -524,6 +524,7 @@ steps:
   rightClickHere: "Clic droit ici"
   typeIntoField: 'Saisir dans le champ $1 "$2"'
   typeInto: 'Saisir dans "$1"'
+  type: 'Saisir "$1"'
   typeSecret: "Saisir le mot de passe"
   copyFrom: 'Copier depuis "$1"'
   pasteInto: 'Coller dans "$1"'

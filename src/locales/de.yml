@@ -455,6 +455,7 @@ steps:
   rightClickHere: "Hier rechtsklicken"
   typeIntoField: 'In Feld $1 eingeben "$2"'
   typeInto: 'In "$1" eingeben'
+  type: '"$1" eingeben'
   typeSecret: "Passwort eingeben"
   copyFrom: 'Aus "$1" kopieren'
   pasteInto: 'In "$1" einfügen'

@@ -192,6 +192,25 @@ describe('accessibility-tree sources', () => {
     expect(buildFallbackDescription('click', axMeta({ role: 'pane', textContent: '42' }))).toBe('steps.clickHere');
   });
 
+  it('never names a control by an identifier', () => {
+    for (const name of ['fl-post-111', 'SaveButton', 'btn_submit', 'item3']) {
+      expect(buildFallbackDescription('click', axMeta({ role: 'button', name }))).toBe('steps.clickHere');
+    }
+    expect(buildFallbackDescription('click', axMeta({ role: 'button', name: 'Save' }))).toBe('steps.click[Save]');
+  });
+
+  it('names what was typed when the value is known', () => {
+    const meta = axMeta({ role: 'textbox', ariaLabel: 'Search box' });
+    expect(buildFallbackDescription('input', meta, '  noticias\nde   hoy ')).toBe('steps.type[noticias de hoy]');
+    expect(buildFallbackDescription('input', meta)).toBe('steps.typeInto[Search box]');
+    expect(buildFallbackDescription('input', { ...meta, inputType: 'password' }, 'hunter2')).toBe('steps.typeSecret');
+  });
+
+  it('drops invisible characters from names', () => {
+    const meta = axMeta({ role: 'link', ariaLabel: '\u2068Policía\u2069 \u2068abate\u200b\u2069' });
+    expect(buildFallbackDescription('click', meta)).toBe('steps.click[Policía abate]');
+  });
+
   it('describes typing without an inputType', () => {
     expect(buildFallbackDescription('input', axMeta({ name: 'Cell B4' }))).toBe('steps.typeInto[Cell B4]');
   });

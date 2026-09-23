@@ -64,7 +64,7 @@ export class DesktopCaptureSink implements CaptureSink {
       screenshotId = screenshot.id;
     }
 
-    const description = buildFallbackDescription(data.action, meta);
+    const description = buildFallbackDescription(data.action, meta, data.inputValue);
     const pending = (await credentials()) !== null;
 
     await createStep({

@@ -524,6 +524,7 @@ steps:
   rightClickHere: "Clicar com o botão direito aqui"
   typeIntoField: 'Digitar no campo $1 "$2"'
   typeInto: 'Digitar em "$1"'
+  type: 'Digitar "$1"'
   typeSecret: "Digitar senha"
   copyFrom: 'Copiar de "$1"'
   pasteInto: 'Colar em "$1"'
