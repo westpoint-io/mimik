@@ -400,6 +400,8 @@ export class DesktopRecorder {
         ...(target?.password ? { inputType: 'password' } : {}),
         devicePixelRatio: scale,
         clickPoint: local,
+        ...(target?.ancestors.length ? { ancestors: target.ancestors } : {}),
+        ...(target?.children.length ? { children: target.children } : {}),
         ...(found.ok ? { app: found.window.app, window: { title: found.window.title } } : {}),
       },
       image: {

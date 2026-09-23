@@ -97,6 +97,11 @@ export type SettingsKey = keyof Settings;
 
 export type ElementSource = 'dom' | 'ax' | 'uia' | 'screen';
 
+export interface ElementNode {
+  role: string | null;
+  name: string | null;
+}
+
 export interface ElementMeta {
   source?: ElementSource;
   textContent: string | null;
@@ -115,6 +120,8 @@ export interface ElementMeta {
   dataTestId?: string | null;
   app?: { name: string; id?: string };
   window?: { title: string | null };
+  ancestors?: ElementNode[];
+  children?: ElementNode[];
 }
 
 export function elementSource(meta: ElementMeta): ElementSource {

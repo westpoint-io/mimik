@@ -16,6 +16,12 @@ pub struct ElementRect {
 }
 
 #[napi(object)]
+pub struct ElementNode {
+  pub role: Option<String>,
+  pub name: Option<String>,
+}
+
+#[napi(object)]
 pub struct UiElement {
   pub role: Option<String>,
   pub name: Option<String>,
@@ -24,6 +30,8 @@ pub struct UiElement {
   pub help_text: Option<String>,
   pub is_password: bool,
   pub rect: Option<ElementRect>,
+  pub ancestors: Vec<ElementNode>,
+  pub children: Vec<ElementNode>,
 }
 
 pub struct ElementLookup {

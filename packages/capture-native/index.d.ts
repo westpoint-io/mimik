@@ -11,6 +11,11 @@ export declare const __napiBindingTarget: 'native' | 'wasm32-wasi' | 'wasm32-was
 
 export declare function elementAtPoint(x: number, y: number): Promise<UiElement | null>
 
+export interface ElementNode {
+  role?: string
+  name?: string
+}
+
 export interface ElementRect {
   x: number
   y: number
@@ -36,4 +41,6 @@ export interface UiElement {
   helpText?: string
   isPassword: boolean
   rect?: ElementRect
+  ancestors: Array<ElementNode>
+  children: Array<ElementNode>
 }

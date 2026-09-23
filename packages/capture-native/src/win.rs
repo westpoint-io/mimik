@@ -14,7 +14,7 @@ use windows::Win32::UI::Input::KeyboardAndMouse::{
 };
 use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId};
 
-use crate::{ElementRect, UiElement};
+use crate::{ElementNode, ElementRect, UiElement};
 
 const ROLES: &[(UIA_CONTROLTYPE_ID, &str)] = &[
   (UIA_ButtonControlTypeId, "button"),
@@ -128,14 +128,59 @@ fn describe(found: &IUIAutomationElement) -> UiElement {
       .map(|flag| flag.as_bool())
       .unwrap_or(false),
     rect: rect_of(found),
+    ancestors: Vec::new(),
+    children: Vec::new(),
   }
 }
 
+const MAX_ANCESTORS: usize = 4;
+const MAX_CHILDREN: usize = 12;
+
+fn node(element: &IUIAutomationElement) -> ElementNode {
+  ElementNode {
+    role: role(unsafe { element.CurrentControlType() }.unwrap_or_default()),
+    name: text(unsafe { element.CurrentName() }),
+  }
+}
+
+fn ancestors(walker: &IUIAutomationTreeWalker, element: &IUIAutomationElement) -> Vec<ElementNode> {
+  let mut out = Vec::new();
+  let mut current = element.clone();
+  while out.len() < MAX_ANCESTORS {
+    let Ok(parent) = (unsafe { walker.GetParentElement(&current) }) else {
+      break;
+    };
+    out.push(node(&parent));
+    current = parent;
+  }
+  out
+}
+
+fn children(walker: &IUIAutomationTreeWalker, element: &IUIAutomationElement) -> Vec<ElementNode> {
+  let mut out = Vec::new();
+  let mut next = unsafe { walker.GetFirstChildElement(element) };
+  while let Ok(child) = next {
+    if out.len() == MAX_CHILDREN {
+      break;
+    }
+    out.push(node(&child));
+    next = unsafe { walker.GetNextSiblingElement(&child) };
+  }
+  out
+}
+
 pub fn element_at_point(x: i32, y: i32) -> Result<Option<UiElement>> {
-  let found = automation()
-    .and_then(|uia| unsafe { uia.ElementFromPoint(POINT { x, y }) })
+  let uia = automation().map_err(|error| napi::Error::from_reason(error.message()))?;
+  let found = unsafe { uia.ElementFromPoint(POINT { x, y }) }
     .map_err(|error| napi::Error::from_reason(error.message()))?;
-  Ok(Some(describe(&found)))
+  let mut element = describe(&found);
+  if element.name.is_none() {
+    if let Ok(walker) = unsafe { uia.ControlViewWalker() } {
+      element.ancestors = ancestors(&walker, &found);
+      element.children = children(&walker, &found);
+    }
+  }
+  Ok(Some(element))
 }
 
 pub fn focused_element() -> Result<Option<UiElement>> {

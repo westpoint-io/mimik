@@ -180,6 +180,8 @@ app.whenReady().then(async () => {
     ariaLabel: 'Save',
     altText: null,
     password: false,
+    ancestors: [],
+    children: [],
     rect: { x: region.x + 40, y: region.y + 30, width: 120, height: 32 },
   };
   let field: ScreenElement | null = {
@@ -189,6 +191,8 @@ app.whenReady().then(async () => {
     ariaLabel: 'Search',
     altText: null,
     password: false,
+    ancestors: [],
+    children: [],
     rect: { x: region.x + 20, y: region.y + 20, width: 200, height: 24 },
   };
   let seen: CaptureRequest | null = null;
@@ -243,6 +247,8 @@ app.whenReady().then(async () => {
     ariaLabel: 'Search',
     altText: null,
     password: false,
+    ancestors: [],
+    children: [],
     rect: null,
   };
   await metaRecorder.captureTyping();
@@ -256,6 +262,8 @@ app.whenReady().then(async () => {
     ariaLabel: 'Password',
     altText: null,
     password: true,
+    ancestors: [],
+    children: [],
     rect: { x: region.x + 20, y: region.y + 60, width: 200, height: 24 },
   };
   await metaRecorder.captureTyping();
@@ -355,6 +363,8 @@ app.whenReady().then(async () => {
     ariaLabel: 'Document',
     altText: null,
     password: false,
+    ancestors: [],
+    children: [],
     rect: { x: region.x + 10, y: region.y + 10, width: 400, height: 300 },
   });
 

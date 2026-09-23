@@ -1,4 +1,4 @@
-import type { UiElement } from '@mimik/capture-native';
+import type { ElementNode, UiElement } from '@mimik/capture-native';
 import { screen } from 'electron';
 import { toDip } from './focused-window';
 
@@ -12,6 +12,8 @@ export interface ScreenElement {
   altText: string | null;
   password: boolean;
   rect: { x: number; y: number; width: number; height: number } | null;
+  ancestors: { role: string | null; name: string | null }[];
+  children: { role: string | null; name: string | null }[];
 }
 
 const TEXT_ROLES = new Set(['textbox', 'combobox', 'document']);
@@ -59,6 +61,8 @@ function toPhysical(point: { x: number; y: number }): { x: number; y: number } {
   }
 }
 
+const node = (found: ElementNode) => ({ role: found.role ?? null, name: found.name ?? null });
+
 function describe(found: UiElement): ScreenElement {
   return {
     role: found.role ?? null,
@@ -68,6 +72,8 @@ function describe(found: UiElement): ScreenElement {
     altText: found.helpText ?? null,
     password: found.isPassword,
     rect: toDip(found.rect ?? null),
+    ancestors: (found.ancestors ?? []).map(node),
+    children: (found.children ?? []).map(node),
   };
 }
 
