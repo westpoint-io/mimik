@@ -15,7 +15,7 @@ import {
 import { isReplayedClick, replayClick, replayInit, shouldInterceptClick } from '@/core/capture/events/click-intercept';
 import type { CaptureSink } from '@/core/capture/sink';
 import { DEFAULT_TARGET_COLOR } from '@/core/screenshot/types';
-import { localStorage } from '@/lib/browser-api';
+import { localStorage } from '@/lib/browser-api/local-storage';
 import { HoverRing } from '@/lib/hover-ring';
 import { InputSession } from './input-session';
 

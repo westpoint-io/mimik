@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { browser } from '#imports';
-import { dismissUpdateNotice, readUpdateNotice, recordUpdate, UPDATE_NOTICE_KEY } from '../update-notice';
+import { UPDATE_NOTICE_KEY } from '../update-notice/constants';
+import { dismissUpdateNotice } from '../update-notice/dismiss-update-notice';
+import { readUpdateNotice } from '../update-notice/read-update-notice';
+import { recordUpdate } from '../update-notice/record-update';
 
 describe('update notice', () => {
   beforeEach(async () => {

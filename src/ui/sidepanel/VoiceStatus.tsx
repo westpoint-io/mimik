@@ -1,8 +1,8 @@
 import { TriangleAlert } from 'lucide-react';
 import { i18n } from '#imports';
-import type { PanelVoiceUpdate } from '@/lib/port';
+import type { PanelVoiceUpdate } from '@/lib/port/types';
+import { voiceErrorKey } from './lib/voice-error-key';
 import { MicMeter } from './MicMeter';
-import { voiceErrorKey } from './voice-status';
 
 interface VoiceStatusProps {
   update: PanelVoiceUpdate;

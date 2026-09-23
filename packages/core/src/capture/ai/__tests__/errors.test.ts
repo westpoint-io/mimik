@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { APICallError, RetryError } from 'ai';
 import { describe, expect, it } from 'vitest';
-import { aiActionKey, aiFailureKey } from '@/ui/sidepanel/ai-status';
+import { aiActionKey } from '@/ui/sidepanel/lib/ai-action-key';
+import { aiFailureKey } from '@/ui/sidepanel/lib/ai-failure-key';
 import { type AiFailureReason, describeAiFailure } from '../errors';
 
 const LOCALES = ['en', 'de', 'es', 'fr', 'pt-BR', 'zh-CN'];

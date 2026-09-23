@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { changedSettings } from '../settings-autosave';
+import { changedSettings } from '../lib/changed-settings';
 
 describe('changedSettings', () => {
   it('writes nothing when a render changed no value', () => {

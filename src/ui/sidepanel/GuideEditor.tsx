@@ -8,7 +8,11 @@ import { actionSteps, isBlock, stepNumbers } from '@/core/guides/blocks';
 import { getGuide, onGuidesChanged } from '@/core/guides/service';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
 import { dominantRatio } from '@/core/screenshot/geometry';
-import { createTab, focusWindow, getExtensionURL, queryTabs, updateTab } from '@/lib/browser-api';
+import { createTab } from '@/lib/browser-api/create-tab';
+import { focusWindow } from '@/lib/browser-api/focus-window';
+import { getExtensionURL } from '@/lib/browser-api/get-extension-url';
+import { queryTabs } from '@/lib/browser-api/query-tabs';
+import { updateTab } from '@/lib/browser-api/update-tab';
 import { sendMessage } from '@/lib/messaging';
 
 interface GuideEditorProps {

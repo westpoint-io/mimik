@@ -1,13 +1,11 @@
 import { logger } from '@mimik/core/logger';
 import { CaptureState } from '@/core/capture/machine';
-import {
-  getTab,
-  onHistoryStateUpdated,
-  onNavigationCompleted,
-  onTabActivated,
-  onTabUpdated,
-  sendMessageToTab,
-} from '@/lib/browser-api';
+import { getTab } from '@/lib/browser-api/get-tab';
+import { onHistoryStateUpdated } from '@/lib/browser-api/on-history-state-updated';
+import { onNavigationCompleted } from '@/lib/browser-api/on-navigation-completed';
+import { onTabActivated } from '@/lib/browser-api/on-tab-activated';
+import { onTabUpdated } from '@/lib/browser-api/on-tab-updated';
+import { sendMessageToTab } from '@/lib/browser-api/send-message-to-tab';
 import { TabMessage } from '@/lib/tab-messages';
 import { getActor, waitUntilReady } from './actor';
 import { injectContentScript, isInjectableTab } from './tab-manager';

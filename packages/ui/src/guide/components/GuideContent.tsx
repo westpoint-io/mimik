@@ -24,7 +24,7 @@ import { AnnotationEditor } from '../../annotation/components/AnnotationEditor';
 import { FaviconImg } from '../../common/components/FaviconImg';
 import { Toast } from '../../common/components/Toast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
-import { panel, send, tabs } from '../../env';
+import { messages, panel, tabs } from '../../env';
 import { VersionHistoryPanel } from '../../history/components/VersionHistoryPanel';
 import { useFullview } from '../../stores/use-fullview';
 import { buildPreview } from '../lib/build-preview';
@@ -416,7 +416,7 @@ export function GuideContent({ guideId, initialStepId, initialTool }: GuideConte
               <button
                 onClick={() => {
                   panel.open();
-                  void send('startGuideMe', { guideId });
+                  void messages.send('startGuideMe', { guideId });
                 }}
                 className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary-foreground bg-primary hover:bg-primary/90 px-3 py-0.5 rounded-full transition-colors ml-auto"
               >

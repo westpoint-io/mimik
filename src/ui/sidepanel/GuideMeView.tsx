@@ -10,6 +10,7 @@ import { actionSteps } from '@/core/guides/blocks';
 import { getGuide } from '@/core/guides/service';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
 import { sendMessage } from '@/lib/messaging';
+import { ExitConfirmation } from './ExitConfirmation';
 
 interface GuideMeViewProps {
   guideId: string;
@@ -21,47 +22,6 @@ interface GuideData {
   guide: Guide;
   steps: Step[];
   screenshots: Map<string, Screenshot>;
-}
-
-function SadMascot() {
-  return (
-    <svg width="64" height="54" viewBox="20 55 160 108">
-      <rect x="30" y="95" width="140" height="68" rx="8" fill="#1E1B4B" />
-      <path d="M30 95 L30 80 Q30 58, 100 58 Q170 58, 170 80 L170 95 Z" fill="#3730A3" />
-      <rect x="30" y="93" width="140" height="3" fill="#C7D2FE" />
-      <circle cx="74" cy="118" r="10" fill="#0F0E2A" />
-      <circle cx="126" cy="118" r="10" fill="#0F0E2A" />
-      <circle cx="74" cy="120" r="6" fill="#C7D2FE" />
-      <circle cx="126" cy="120" r="6" fill="#C7D2FE" />
-      <path d="M88 146 Q100 138 112 146" stroke="#C7D2FE" strokeWidth="2.5" fill="none" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function ExitConfirmation({ onCancel, onConfirm }: { onCancel: () => void; onConfirm: () => void }) {
-  return (
-    <div className="fixed inset-0 z-20 flex items-center justify-center bg-card/80 backdrop-blur-[2px]">
-      <div className="bg-card rounded-2xl border border-border shadow-lg p-6 w-[280px] text-center flex flex-col items-center">
-        <SadMascot />
-        <h3 className="text-[15px] font-bold text-foreground mt-3 mb-1">{i18n.t('guideme.exitTitle')}</h3>
-        <p className="text-[12px] text-muted-foreground leading-relaxed mb-5">{i18n.t('guideme.exitMessage')}</p>
-        <div className="flex gap-2.5 w-full">
-          <button
-            onClick={onCancel}
-            className="flex-1 py-2.5 rounded-lg font-semibold text-sm bg-secondary text-foreground hover:bg-secondary/80 transition-colors"
-          >
-            {i18n.t('guideme.stay')}
-          </button>
-          <button
-            onClick={onConfirm}
-            className="flex-1 py-2.5 rounded-lg font-semibold text-sm bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            {i18n.t('guideme.exit')}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 export function GuideMeView({ guideId, onExit, onComplete }: GuideMeViewProps) {

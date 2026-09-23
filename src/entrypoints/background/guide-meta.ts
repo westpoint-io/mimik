@@ -11,7 +11,7 @@ import {
   updateGuideDescription,
   updateGuideTitle,
 } from '@/core/guides/service';
-import { localStorage } from '@/lib/browser-api';
+import { localStorage } from '@/lib/browser-api/local-storage';
 import type { GenerateGuideDescriptionResponse, GuideDescriptionError } from '@/lib/messaging';
 import { drainDescriptions } from './description-queue';
 import { whenNarrationSettled } from './voice';

@@ -5,10 +5,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { browser, i18n } from '#imports';
 import { deleteStep, getScreenshotsForSteps, getStepsForGuide } from '@/core/guides/service';
 import type { Screenshot, Step } from '@/core/guides/types';
-import { getActiveTab, localStorage } from '@/lib/browser-api';
+import { getActiveTab } from '@/lib/browser-api/get-active-tab';
+import { localStorage } from '@/lib/browser-api/local-storage';
 import { sendMessage } from '@/lib/messaging';
-import type { PanelAiUpdate, PanelVoiceUpdate } from '@/lib/port';
+import type { PanelAiUpdate, PanelVoiceUpdate } from '@/lib/port/types';
 import { AiStatus } from './AiStatus';
+import { timeAgo } from './lib/time-ago';
 import { MicToggle } from './MicToggle';
 import { VoiceStatus } from './VoiceStatus';
 
@@ -17,13 +19,6 @@ interface RecordingViewProps {
   onStop: () => void;
   voice: PanelVoiceUpdate;
   aiFailure: PanelAiUpdate | null;
-}
-
-function timeAgo(createdAt: number): string {
-  const diff = Math.floor((Date.now() - createdAt) / 1000);
-  if (diff < 3) return i18n.t('recording.justNow');
-  if (diff < 60) return i18n.t('recording.secondsAgo', [String(diff)]);
-  return i18n.t('recording.minutesAgo', [String(Math.floor(diff / 60))]);
 }
 
 interface LiveStep {

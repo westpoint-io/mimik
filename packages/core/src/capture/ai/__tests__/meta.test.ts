@@ -13,10 +13,6 @@ vi.mock('ai', () => ({
 
 vi.mock('../provider', () => ({ createModel: () => ({ id: 'test-model' }) }));
 
-vi.mock('@/lib/browser-api', () => ({
-  localStorage: { get: vi.fn().mockResolvedValue({ aiLanguage: 'en' }) },
-}));
-
 import { generateGuideMeta, parseGuideMeta } from '../meta';
 
 const steps = [{ description: 'Click Directory', url: 'https://admin.okta.com/users' }];

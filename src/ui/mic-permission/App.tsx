@@ -1,59 +1,12 @@
 import { Check, Mic, MicOff } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { browser, i18n } from '#imports';
-import {
-  VOICE_BACKGROUND_TARGET,
-  VoiceMessage,
-  type VoicePermissionResultEvent,
-  type VoicePermissionState,
-  voiceMessage,
-} from '@/lib/voice-messages';
+import { i18n } from '#imports';
+import { MICROPHONE, queryState } from './lib/query-state';
+import { report } from './lib/report';
+import { requestMicrophone } from './lib/request-microphone';
+import { returnToOpener } from './lib/return-to-opener';
 
 type Phase = 'checking' | 'prompting' | 'granted' | 'denied';
-
-const MICROPHONE: PermissionDescriptor = { name: 'microphone' as PermissionName };
-
-async function queryState(): Promise<VoicePermissionState> {
-  try {
-    const status = await navigator.permissions.query(MICROPHONE);
-    return status.state as VoicePermissionState;
-  } catch {
-    return 'unknown';
-  }
-}
-
-async function requestMicrophone(): Promise<boolean> {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    for (const track of stream.getTracks()) track.stop();
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function report(state: 'granted' | 'denied'): void {
-  const event = voiceMessage<VoicePermissionResultEvent>({
-    type: VoiceMessage.VOICE_PERMISSION_RESULT,
-    target: VOICE_BACKGROUND_TARGET,
-    state,
-  });
-  browser.runtime.sendMessage(event).catch(() => undefined);
-}
-
-function openerTabId(): number | null {
-  const raw = new URLSearchParams(window.location.search).get('tabId');
-  const id = raw === null ? Number.NaN : Number(raw);
-  return Number.isInteger(id) && id >= 0 ? id : null;
-}
-
-async function returnToOpener(): Promise<void> {
-  const tabId = openerTabId();
-  if (tabId !== null) await browser.tabs.update(tabId, { active: true }).catch(() => undefined);
-  const self = await browser.tabs.getCurrent().catch(() => undefined);
-  if (self?.id !== undefined) await browser.tabs.remove(self.id).catch(() => undefined);
-  else window.close();
-}
 
 export function MicPermissionApp() {
   const [phase, setPhase] = useState<Phase>('checking');

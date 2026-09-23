@@ -1,6 +1,6 @@
 import { GuideContent, LibraryContent, SearchModal, TooltipProvider, TopNav, useFullview, useRoute } from '@mimik/ui';
 import { useEffect } from 'react';
-import { openSidebar } from '@/lib/browser-api';
+import { openSidebar } from '@/lib/browser-api/open-sidebar';
 import { UpdateNotice } from '@/ui/shared/UpdateNotice';
 import { VoiceNotice } from './components/VoiceNotice';
 

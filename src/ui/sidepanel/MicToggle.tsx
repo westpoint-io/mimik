@@ -4,25 +4,17 @@ import { Mic, MicOff } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';
 import { hasVoiceApiKey, VOICE_KEY_SETTINGS } from '@/core/capture/voice/api-key';
-import { getActiveTab, localStorage } from '@/lib/browser-api';
+import { getActiveTab } from '@/lib/browser-api/get-active-tab';
+import { localStorage } from '@/lib/browser-api/local-storage';
 import { sendMessage } from '@/lib/messaging';
-import { abortVoiceCapture, openMicPermissionPage } from '@/lib/offscreen';
+import { abortVoiceCapture } from '@/lib/offscreen/abort-voice-capture';
+import { openMicPermissionPage } from '@/lib/offscreen/open-mic-permission-page';
+import { microphoneGranted } from './lib/microphone-granted';
 
 interface MicToggleProps {
   enabled: boolean;
   live: boolean;
   onChange: (enabled: boolean) => void;
-}
-
-const MICROPHONE: PermissionDescriptor = { name: 'microphone' as PermissionName };
-
-async function microphoneGranted(): Promise<boolean> {
-  try {
-    const status = await navigator.permissions.query(MICROPHONE);
-    return status.state === 'granted';
-  } catch {
-    return false;
-  }
 }
 
 export function MicToggle({ enabled, live, onChange }: MicToggleProps) {

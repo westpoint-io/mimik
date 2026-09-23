@@ -15,7 +15,8 @@ import {
 } from '@/core/guides/service';
 import type { ElementMeta } from '@/core/guides/types';
 import { screenshotForElement } from '@/core/screenshot/record';
-import { captureVisibleTab, localStorage } from '@/lib/browser-api';
+import { captureVisibleTab } from '@/lib/browser-api/capture-visible-tab';
+import { localStorage } from '@/lib/browser-api/local-storage';
 import type { CaptureStepData, CaptureStepResponse } from '@/lib/messaging';
 import { getActor } from './actor';
 import { generateAiDescription } from './ai-description';

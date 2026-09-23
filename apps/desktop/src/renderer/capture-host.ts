@@ -7,7 +7,7 @@ import {
   updateGuideDescription,
   updateGuideTitle,
 } from '@mimik/core/guides/service';
-import { nameGuide } from './ai';
+import { nameGuide } from './ai/name-guide';
 import { DesktopCaptureSink } from './capture-sink';
 
 const sink = new DesktopCaptureSink();

@@ -4,8 +4,8 @@ import { describeAiFailure } from '@/core/capture/ai/errors';
 import { resolveAiKey } from '@/core/capture/ai/keys';
 import { AI_PROVIDERS } from '@/core/capture/ai/models';
 import { type DOMContext, serializeDOMContext } from '@/core/capture/dom/context';
-import { localStorage } from '@/lib/browser-api';
-import { broadcastAiToPanel } from '@/lib/port';
+import { localStorage } from '@/lib/browser-api/local-storage';
+import { broadcastAiToPanel } from '@/lib/port/broadcast-ai-to-panel';
 
 export async function generateAiDescription(domContext: DOMContext): Promise<string | undefined> {
   const settings = await localStorage.get(['aiApiKeys', 'aiApiKey', 'aiProvider', 'aiModel', 'aiBaseUrl']);

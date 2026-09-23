@@ -40,20 +40,15 @@ import {
   TriangleAlert,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { localStorage } from '@/lib/browser-api';
-import { useKeyCheck } from '@/ui/shared/key-check';
+import { localStorage } from '@/lib/browser-api/local-storage';
+import { useKeyCheck } from '@/ui/shared/hooks/use-key-check';
+import { useSettingsAutosave } from '@/ui/shared/hooks/use-settings-autosave';
 import { MicrophonePicker } from '@/ui/shared/MicrophonePicker';
-import { useSettingsAutosave } from '@/ui/shared/use-settings-autosave';
+import { footerPresets } from './lib/footer-presets';
 
 interface SettingsViewProps {
   onBack?: () => void;
 }
-
-const FOOTER_PRESETS = () => [
-  defaultFooterLine(),
-  i18n.t('settings.footerPresetConfidential'),
-  i18n.t('settings.footerPresetNoDistribute'),
-];
 
 export function SettingsView({ onBack }: SettingsViewProps) {
   const [provider, setProvider] = useState<AIProviderKey>('openai');
@@ -261,7 +256,7 @@ export function SettingsView({ onBack }: SettingsViewProps) {
               className="h-8 text-[13px] rounded-lg border-border"
             />
             <div className="flex flex-wrap gap-1.5 mt-2">
-              {FOOTER_PRESETS().map((preset) => (
+              {footerPresets().map((preset) => (
                 <button
                   key={preset}
                   type="button"

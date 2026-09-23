@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, it } from 'vitest';
 import type { Settings } from '@/core/guides/types';
-import { localStorage } from '@/lib/browser-api';
+import { localStorage } from '@/lib/browser-api/local-storage';
 
 describe('storage access is checked against the declared settings', () => {
   it('returns the declared type for a key, not unknown', async () => {

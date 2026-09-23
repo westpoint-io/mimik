@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import type { PanelVoiceUpdate, VoicePhase } from '@/lib/port';
-import { VOICE_CONFIRM_MS, voiceNotice, voiceSignature } from '../voice-notice';
+import type { PanelVoiceUpdate, VoicePhase } from '@/lib/port/types';
+import { VOICE_CONFIRM_MS, voiceNotice } from '../lib/voice-notice';
+import { voiceSignature } from '../lib/voice-signature';
 
 const LOCALES = ['en', 'es', 'fr', 'pt-BR', 'zh-CN'];
 

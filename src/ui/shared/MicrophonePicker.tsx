@@ -1,23 +1,18 @@
 import { i18n } from '@mimik/core/env';
 import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui';
-import { Check, ChevronRight, Mic, MicOff, Square, TriangleAlert } from 'lucide-react';
+import { ChevronRight, Mic, Square, TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { getActiveTab } from '@/lib/browser-api';
-import { openMicPermissionPage } from '@/lib/offscreen';
-import {
-  isMicrophoneMissing,
-  type MicrophoneDevice,
-  type MicrophonePermission,
-  type MicrophoneStatus,
-  microphoneListState,
-  microphoneStatus,
-  nextMicLevel,
-  SPEAKING_LEVEL,
-  SYSTEM_DEFAULT_VALUE,
-  toMicrophoneOptions,
-  toSelectValue,
-  toStoredMicrophoneId,
-} from './microphones';
+import { getActiveTab } from '@/lib/browser-api/get-active-tab';
+import { openMicPermissionPage } from '@/lib/offscreen/open-mic-permission-page';
+import { isMicrophoneMissing } from './lib/is-microphone-missing';
+import { microphoneListState } from './lib/microphone-list-state';
+import { type MicrophonePermission, microphoneStatus } from './lib/microphone-status';
+import { nextMicLevel, SPEAKING_LEVEL } from './lib/next-mic-level';
+import { toMicrophoneOptions } from './lib/to-microphone-options';
+import { SYSTEM_DEFAULT_VALUE, toSelectValue } from './lib/to-select-value';
+import { toStoredMicrophoneId } from './lib/to-stored-microphone-id';
+import { StatusBadge } from './StatusBadge';
+import type { MicrophoneDevice } from './types';
 
 interface MicrophonePickerProps {
   triggerClassName?: string;
@@ -34,30 +29,6 @@ interface MicTest {
 const MICROPHONE: PermissionDescriptor = { name: 'microphone' as PermissionName };
 const ANALYSER_FFT_SIZE = 2048;
 const METER_INTERVAL_MS = 80;
-
-const STATUS_STYLES: Record<MicrophoneStatus, string> = {
-  allowed: 'bg-success/10 text-success',
-  blocked: 'bg-destructive/10 text-destructive',
-  pending: 'bg-secondary text-muted-foreground',
-};
-
-const STATUS_LABELS: Record<MicrophoneStatus, string> = {
-  allowed: 'settings.microphoneStatusAllowed',
-  blocked: 'settings.microphoneStatusBlocked',
-  pending: 'settings.microphoneStatusPending',
-};
-
-function StatusBadge({ status }: { status: MicrophoneStatus }) {
-  const Icon = status === 'allowed' ? Check : status === 'blocked' ? MicOff : Mic;
-  return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[9px] font-semibold ${STATUS_STYLES[status]}`}
-    >
-      <Icon size={9} />
-      {i18n.t(STATUS_LABELS[status])}
-    </span>
-  );
-}
 
 export function MicrophonePicker({ value, onChange, triggerClassName }: MicrophonePickerProps) {
   const [devices, setDevices] = useState<MicrophoneDevice[]>([]);

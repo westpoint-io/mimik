@@ -1,8 +1,9 @@
 import { TriangleAlert } from 'lucide-react';
 import { i18n } from '#imports';
 import { findProvider } from '@/core/capture/ai/models';
-import type { PanelAiUpdate } from '@/lib/port';
-import { aiActionKey, aiFailureKey } from './ai-status';
+import type { PanelAiUpdate } from '@/lib/port/types';
+import { aiActionKey } from './lib/ai-action-key';
+import { aiFailureKey } from './lib/ai-failure-key';
 
 interface AiStatusProps {
   update: PanelAiUpdate | null;

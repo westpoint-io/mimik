@@ -20,7 +20,7 @@ import {
 } from '@mimik/core/guides/service';
 import { screenshotForElement } from '@mimik/core/screenshot/record';
 import type { CursorMark } from '@mimik/core/screenshot/types';
-import { describeStep } from './ai';
+import { describeStep } from './ai/describe-step';
 
 export type DesktopCaptureStepData = CaptureStepData & {
   cursor?: CursorMark;

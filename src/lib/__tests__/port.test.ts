@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, type Mock, vi } from 'vitest';
-import type { PanelStateUpdate, PanelVoiceUpdate } from '../port';
+import type { PanelStateUpdate, PanelVoiceUpdate } from '../port/types';
 
 type PanelMessage = PanelStateUpdate | PanelVoiceUpdate;
 
@@ -34,7 +34,9 @@ const DONE: PanelVoiceUpdate = { type: 'VOICE_UPDATE', phase: 'idle', narrated: 
 
 const connectListeners: Array<(port: FakePort) => void> = [];
 
-let port: typeof import('../port');
+let port: typeof import('../port/setup-port-listener') &
+  typeof import('../port/broadcast-state-to-panel') &
+  typeof import('../port/broadcast-voice-to-panel');
 let onPanelConnect: Mock<(port: unknown) => void>;
 
 async function loadBackground() {
@@ -49,7 +51,11 @@ async function loadBackground() {
     connectListeners.push(handler);
   };
 
-  port = await import('../port');
+  port = {
+    ...(await import('../port/setup-port-listener')),
+    ...(await import('../port/broadcast-state-to-panel')),
+    ...(await import('../port/broadcast-voice-to-panel')),
+  };
   onPanelConnect = vi.fn<(port: unknown) => void>();
   port.setupPortListener(onPanelConnect);
 }

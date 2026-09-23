@@ -2,8 +2,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui';
 import { Check, Loader2, TriangleAlert, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { i18n } from '#imports';
-import type { PanelVoiceUpdate } from '@/lib/port';
-import { narratedKey, voiceErrorKey } from './voice-status';
+import type { PanelVoiceUpdate } from '@/lib/port/types';
+import { voiceSignature } from '@/ui/fullview/lib/voice-signature';
+import { narratedKey } from './lib/narrated-key';
+import { voiceErrorKey } from './lib/voice-error-key';
 
 const CONFIRM_MS = 7000;
 
@@ -13,13 +15,9 @@ interface VoiceToastProps {
   onOpenSettings: () => void;
 }
 
-function signatureOf(update: PanelVoiceUpdate): string {
-  return `${update.phase}:${update.reason ?? ''}:${update.narrated ?? ''}`;
-}
-
 export function VoiceToast({ update, confirmable, onOpenSettings }: VoiceToastProps) {
   const [dismissed, setDismissed] = useState<string | null>(null);
-  const signature = signatureOf(update);
+  const signature = voiceSignature(update);
   const confirming = update.phase === 'idle' && update.narrated !== undefined && confirmable;
 
   useEffect(() => {

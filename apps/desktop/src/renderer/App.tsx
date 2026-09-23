@@ -2,7 +2,7 @@ import { GuideContent, LibraryContent, navigate, SearchModal, TooltipProvider, T
 import { useEffect, useState } from 'react';
 import { CaptureSheet } from './CaptureSheet';
 import { GuideZoom } from './GuideZoom';
-import { SettingsPanel } from './SettingsPanel';
+import { SettingsPanel } from './settings/SettingsPanel';
 
 export function App() {
   const route = useRoute();

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
+import { isVoiceMessageFor } from '../voice/is-voice-message-for';
 import {
-  isVoiceMessageFor,
   VOICE_BACKGROUND_TARGET,
   VOICE_OFFSCREEN_TARGET,
   VoiceMessage,
   type VoiceStartRequest,
   voiceMessage,
-} from '../voice-messages';
+} from '../voice/voice-message';
 
 describe('voiceMessage', () => {
   it('stamps a timestamp so webext-core ignores the message instead of throwing', () => {
