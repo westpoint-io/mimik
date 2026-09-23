@@ -436,6 +436,21 @@ a wrong capture mode is discovered after twenty steps rather than after one. Mai
 screenshot's URL when it tells the overlay a step was captured, so the card reads it over the same
 `mimik-screenshot://` scheme the app window uses and no image data crosses IPC.
 
+Under the title the card says where the words came from, with the same Basic and AI badges the guide
+uses, and while a description is still being written it shows that instead of a title that is about
+to change. The heuristic text is known the moment the step is written; the AI rewrite arrives later
+in the renderer, which sends `mimik:capture:described` so main can update the step it is holding and
+the badge flips without a reload. A capture in flight lays the camera mascot over the last
+screenshot with the number of the step being taken, which is the card's loader. A Remove button on the
+preview drops the step just taken: main keeps the recording's steps in order, asks the renderer to
+delete the last one and puts the card back on the one before, so a wrong capture is undone where it
+was noticed. The Ready and waiting states name the start/stop and capture-now shortcuts, read from the
+settings, because the card is the one place someone looks while deciding how to begin.
+
+Everything the card draws arrives as one `OverlayView` — state, region, step, mode, busy, starting
+and the shortcut labels — through `view()` and `onUpdate`, rather than five positional arguments that
+every new field would have lengthened.
+
 All three roles are one HTML file and one stylesheet, told apart only by `body.editor`,
 `body.boundary` and `body.controls`, so an id is shared across three documents. The card's rules are
 scoped under `body.controls` for that reason: an unscoped `#hint` already existed for the region
@@ -482,7 +497,9 @@ the day it was written.
 
 The mascot's geometry lives once, in `packages/ui/src/common/lib/mascot-shapes.ts`. `MascotIcon` renders it
 as React with Tailwind classes so it themes with tokens; the overlay builds the same paths as DOM nodes
-with CSS variables, because that renderer has neither React nor Tailwind. Two renderers, one set of
+with CSS variables, because that renderer has neither React nor Tailwind. The camera-holding variant
+is the same mascot dropped by `CAMERA_MASCOT_DROP` with `CAMERA_MASCOT_PARTS` over it, rendered by
+`CameraMascot` in the extension's recording view and by `cameraMascot` on the card. Two renderers, one set of
 coordinates — copying the paths into the overlay would have made it the fifth copy of this drawing in
 the repository.
 
@@ -502,7 +519,11 @@ screenshot and the row that points at it.
 `pnpm --filter @mimik/desktop check:overlay` asserts persistence, clamping, one editor per display,
 controls clearing the region, whole-screen mode dropping the boundary, clicks on the bar being
 ignored, and the state changes — driving Start and Pause through a real renderer
-click so the preload and IPC path is covered rather than the main-process methods alone. On Linux it
+click so the preload and IPC path is covered rather than the main-process methods alone. Start is
+asserted twice: the intro window opens over the capture area with the card saying "Starting…" and no
+start reaching the host, and then, once the real animation has finished, the recording begins. The
+card's states are asserted from the rendered DOM — the waiting prompt, the badge moving from Basic to
+AI, the writing state, the capture veil and the Remove command. On Linux it
 runs under `xvfb-run` when available (`xorg-server-xvfb`), so the check does not throw always-on-top
 windows over whatever you are doing.
 
@@ -754,10 +775,12 @@ by rule when there is not. `getAIDescription` takes a serialised context string 
 shape of thing from the application, the window title, the control's role and name, and the value,
 which is what UIAutomation knows. No screenshot is ever sent.
 
-A step is written with its heuristic description immediately and `aiPending` set, then rewritten
-when the model answers. The flag is cleared **whichever way that goes** — a miss, a failure and a
-missing key all clear it — because a pending flag that only clears on success is the same trap as a
-title placeholder that only resolves with AI: without a key it stays there forever.
+A step is written with its heuristic description immediately and, when a provider key is saved,
+with `aiPending` set; then it is rewritten when the model answers. Saving a key is what enabling AI
+means here, so without one the flag is never set and nothing on the card claims a description is
+coming. With one, the flag is cleared **whichever way the request goes** — a miss and a failure both
+clear it — because a pending flag that only clears on success is the same trap as a title
+placeholder that only resolves with AI.
 
 Stopping a recording names the guide twice. The application name lands first so the view never opens
 on a placeholder, and `generateGuideMeta` replaces it if a key is configured. Ordering it that way
@@ -1051,6 +1074,15 @@ reaches the rebind through IPC rather than from inside a global shortcut.
 Start/stop goes straight from hidden to recording rather than arming first, because a shortcut whose
 job is to start recording should not need a second press. The stored region is used as it stands,
 which is what makes that possible in `region` mode.
+
+Starting, from the card or the shortcut, plays the extension's start animation first, and the
+recording begins when it ends. The overlay opens a click-through, content-protected window over what
+is about to be framed — the region, the focused window or the display, the same `frameFor` decision a
+capture makes — and that window calls core's `showStartNotification`, so both surfaces run one
+animation from one module. The host hears `start` only after the animation's `animationend`, which
+is the ordering the extension uses too: nothing clicked during it is recorded, so the animation never
+lands in a step, including on Linux where content protection does nothing. Closing the card during it
+cancels the start. A six-second limit ends a stalled intro rather than leaving the recording unstarted.
 
 Capture-now writes an ordinary click step at the cursor. There is no separate action for it: the
 point of pressing it is that the cursor is already on the thing worth capturing.
