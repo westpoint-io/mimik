@@ -1,4 +1,4 @@
-import { cn } from '@mimik/ui/common/lib/utils';
+import { cn } from '@mimik/ui/common/lib/cn';
 import { Check, ChevronDown } from 'lucide-react';
 import { Select as SelectPrimitive } from 'radix-ui';
 import type * as React from 'react';

@@ -11,7 +11,7 @@ import CaptureTabDialog from '@mimik/ui/guide/components/CaptureTabDialog';
 import EmptyGuideState from '@mimik/ui/guide/components/EmptyGuideState';
 import InsertBlockMenu from '@mimik/ui/guide/components/InsertBlockMenu';
 import StepCard from '@mimik/ui/guide/components/StepCard';
-import { useFullview } from '@mimik/ui/stores/fullview';
+import { useFullview } from '@mimik/ui/stores/use-fullview';
 import { Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 

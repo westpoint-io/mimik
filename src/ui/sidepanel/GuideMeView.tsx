@@ -1,4 +1,5 @@
-import { extractDomain, FaviconImg, ScreenshotView } from '@mimik/ui';
+import { extractDomain } from '@mimik/core/guides/domain';
+import { FaviconImg, ScreenshotView } from '@mimik/ui';
 import { ArrowLeft, Check, ChevronLeft, ChevronRight, TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';

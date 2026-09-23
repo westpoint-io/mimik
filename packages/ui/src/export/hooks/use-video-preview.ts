@@ -4,7 +4,7 @@ import { canExportVideo } from '@mimik/core/export/video-support';
 import type { Guide, Screenshot, Step } from '@mimik/core/guides/types';
 import { useEffect, useState } from 'react';
 
-import type { VideoMime } from '../components/VideoStepPlayer';
+import type { VideoMime } from '../types';
 
 const AUTOPLAY_STEP_LIMIT = 25;
 

@@ -1,5 +1,6 @@
-import { getDomainInitial, getFaviconUrl } from '@mimik/ui/common/lib/utils';
 import { useState } from 'react';
+import { getDomainInitial } from '../lib/domain-initial';
+import { getFaviconUrl } from '../lib/favicon-url';
 
 interface FaviconImgProps {
   domain: string;

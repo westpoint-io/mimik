@@ -1,8 +1,14 @@
 export { default as AiSettings } from './ai/components/AiSettings';
-export { KeyStatusNote, KeyWarningNote, ModelList, SecretInput, useKeyCheck } from './ai/components/key-status';
+export { KeyStatusNote } from './ai/components/KeyStatusNote';
+export { KeyWarningNote } from './ai/components/KeyWarningNote';
+export { ModelList } from './ai/components/ModelList';
+export { SecretInput } from './ai/components/SecretInput';
 export { useAiSettings } from './ai/hooks/use-ai-settings';
+export { useKeyCheck } from './ai/hooks/use-key-check';
 export { default as ColorPicker } from './annotation/components/ColorPicker';
 export { default as FaviconImg } from './common/components/FaviconImg';
+export { getDomainInitial } from './common/lib/domain-initial';
+export { formatRelativeTime } from './common/lib/format-relative-time';
 export {
   MASCOT_ASPECT,
   MASCOT_BODY,
@@ -12,7 +18,6 @@ export {
   MASCOT_SEAM,
   MASCOT_VIEW_BOX,
 } from './common/lib/mascot-shapes';
-export { extractDomain, formatRelativeTime, getDomainInitial, getMostCommonDomain } from './common/lib/utils';
 export { Button } from './components/ui/button';
 export { Input } from './components/ui/input';
 export { Popover, PopoverContent, PopoverTrigger } from './components/ui/popover';
@@ -27,6 +32,7 @@ export { default as StepCard } from './guide/components/StepCard';
 export { default as StepSourceBadge } from './guide/components/StepSourceBadge';
 export { default as LibraryContent } from './library/components/LibraryContent';
 export { default as TopNav } from './navigation/components/TopNav';
-export { navigate, useRoute } from './navigation/lib/router';
+export { useRoute } from './navigation/hooks/use-route';
+export { navigate } from './navigation/lib/navigate';
 export { default as SearchModal } from './search/components/SearchModal';
-export { useFullview } from './stores/fullview';
+export { useFullview } from './stores/use-fullview';

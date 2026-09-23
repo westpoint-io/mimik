@@ -1,11 +1,5 @@
-import { GripVertical } from 'lucide-react';
 import { useRef } from 'react';
-
-export interface DragHandleProps {
-  onDragStart: (e: React.DragEvent) => void;
-  onDragOver: (e: React.DragEvent) => void;
-  onDragEnd: () => void;
-}
+import type { DragHandleProps } from '../types';
 
 export function useCardDrag(dragHandleProps?: DragHandleProps) {
   const pressedHandle = useRef(false);
@@ -22,16 +16,4 @@ export function useCardDrag(dragHandleProps?: DragHandleProps) {
       dragHandleProps?.onDragStart(e);
     },
   };
-}
-
-export function DragGrip() {
-  return (
-    <span
-      data-drag-handle=""
-      aria-hidden="true"
-      className="shrink-0 p-1 -m-1 cursor-grab text-border hover:text-muted-foreground"
-    >
-      <GripVertical size={14} />
-    </span>
-  );
 }

@@ -1,13 +1,5 @@
 import { useEffect, useState } from 'react';
-
-export type Route =
-  | { page: 'library'; category: 'all' | 'starred' | 'trash' }
-  | {
-      page: 'guide';
-      guideId: string;
-      stepId?: string;
-      tool?: 'annotate' | 'redact' | 'crop' | 'target';
-    };
+import type { Route } from '../types';
 
 function parseHash(hash: string): Route {
   const h = hash.replace(/^#\/?/, '');
@@ -18,16 +10,6 @@ function parseHash(hash: string): Route {
   if (h === 'library/starred') return { page: 'library', category: 'starred' };
   if (h === 'library/trash') return { page: 'library', category: 'trash' };
   return { page: 'library', category: 'all' };
-}
-
-export function navigate(route: Route) {
-  if (route.page === 'guide') {
-    window.location.hash = `#guide/${route.guideId}`;
-  } else if (route.category === 'all') {
-    window.location.hash = '#library';
-  } else {
-    window.location.hash = `#library/${route.category}`;
-  }
 }
 
 export function useRoute(): Route {

@@ -1,11 +1,11 @@
 import { i18n, localStorage } from '@mimik/core/env';
+import { formatDate } from '@mimik/core/export/utils';
 import { isReplayable } from '@mimik/core/guideme/session';
 import { actionSteps } from '@mimik/core/guides/blocks';
 import { getMostCommonDomain } from '@mimik/core/guides/domain';
 import {
   deleteStep,
   getGuide,
-  getScreenshotsForSteps,
   onGuidesChanged,
   updateGuideDescription,
   updateGuideTitle,
@@ -19,15 +19,16 @@ import { useAskAi } from '@mimik/ui/ai/hooks/use-ask-ai';
 import AnnotationEditor from '@mimik/ui/annotation/components/AnnotationEditor';
 import FaviconImg from '@mimik/ui/common/components/FaviconImg';
 import Toast from '@mimik/ui/common/components/Toast';
-import { formatDate } from '@mimik/ui/common/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
 import { panel, send, tabs } from '@mimik/ui/env';
-import { useFullview } from '@mimik/ui/stores/fullview';
+import { useFullview } from '@mimik/ui/stores/use-fullview';
 import { History, Loader2, Play, Sparkles } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TypeAnimation } from 'react-type-animation';
 import { useGuideDescription } from '../../ai/hooks/use-guide-description';
 import VersionHistoryPanel from '../../history/components/VersionHistoryPanel';
+import { buildPreview } from '../lib/build-preview';
+import type { PreviewData } from '../types';
 import GuideStepList from './GuideStepList';
 
 interface GuideContentProps {
@@ -40,27 +41,6 @@ interface GuideData {
   guide: Guide;
   steps: Step[];
   screenshots: Map<string, Screenshot>;
-}
-
-interface PreviewData {
-  snapshotId: string;
-  steps: Step[];
-  screenshots: Map<string, Screenshot>;
-}
-
-async function buildPreview(snapshot: Snapshot): Promise<PreviewData> {
-  const rows = new Map(snapshot.screenshots.map((row) => [row.id, row]));
-  const steps = [...snapshot.steps].sort((a, b) => a.index - b.index);
-  const wanted = steps.map((s) => s.screenshotId).filter((id): id is string => !!id && rows.has(id));
-  const live = await getScreenshotsForSteps(wanted);
-  const blobs = new Map([...live.values()].map((row) => [row.id, row.blob]));
-  const screenshots = new Map<string, Screenshot>();
-  for (const step of steps) {
-    const row = step.screenshotId ? rows.get(step.screenshotId) : undefined;
-    const blob = row ? blobs.get(row.id) : undefined;
-    if (row && blob) screenshots.set(step.id, { ...row, blob });
-  }
-  return { snapshotId: snapshot.id, steps, screenshots };
 }
 
 export default function GuideContent({ guideId, initialStepId, initialTool }: GuideContentProps) {

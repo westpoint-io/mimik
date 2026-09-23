@@ -6,12 +6,14 @@ import { imageDimensions, renderScreenshot } from '@mimik/core/screenshot/render
 import { useAskAi } from '@mimik/ui/ai/hooks/use-ask-ai';
 import ConfirmDialog from '@mimik/ui/common/components/ConfirmDialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
-import { DragGrip, type DragHandleProps, useCardDrag } from '@mimik/ui/guide/components/card-drag';
+import { DragGrip } from '@mimik/ui/guide/components/DragGrip';
 import ImagePlaceholder from '@mimik/ui/guide/components/ImagePlaceholder';
 import ScreenshotView from '@mimik/ui/guide/components/ScreenshotView';
 import StepSourceBadge from '@mimik/ui/guide/components/StepSourceBadge';
 import { Check, Copy, Loader2, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useCardDrag } from '../hooks/use-card-drag';
+import type { DragHandleProps } from '../types';
 
 interface StepCardProps {
   step: Step;

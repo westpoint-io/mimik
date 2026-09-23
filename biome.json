@@ -108,6 +108,29 @@
           }
         }
       }
+    },
+    {
+      "includes": ["packages/ui/src/**/*.ts", "packages/ui/src/**/*.tsx", "!packages/ui/src/components/ui/**"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noBarrelFile": "error"
+          },
+          "style": {
+            "useComponentExportOnlyModules": "error"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/ui/src/index.ts"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noBarrelFile": "off"
+          }
+        }
+      }
     }
   ]
 }

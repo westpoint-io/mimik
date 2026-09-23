@@ -42,7 +42,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@mimik/ui/components/ui/dropdown-menu';
-import { Popover, PopoverContent, PopoverTrigger } from '@mimik/ui/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
 import {
   ArrowUpRight,
@@ -63,12 +62,20 @@ import {
   Type,
   Undo2,
 } from 'lucide-react';
-import type { ComponentType, ReactNode } from 'react';
+import type { ComponentType } from 'react';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import ColorPicker, { swatchStyle } from './ColorPicker';
-
-type EditorMode = 'crop' | 'annotate' | 'redact';
-type EditorTool = 'select' | 'crop' | 'box' | 'ellipse' | 'arrow' | 'line' | 'text' | 'redact';
+import { cursorFor } from '../lib/cursor-for';
+import { handleCorners } from '../lib/handle-corners';
+import { hitHandle } from '../lib/hit-handle';
+import { modeForTool } from '../lib/mode-for-tool';
+import { selectionBounds } from '../lib/selection-bounds';
+import { swatchStyle } from '../lib/swatch-style';
+import type { EditorTool } from '../types';
+import { ArrowEndGlyph } from './ArrowEndGlyph';
+import { ColorPopover } from './ColorPopover';
+import { MenuPopover } from './MenuPopover';
+import { Stepper } from './Stepper';
+import { Tip } from './Tip';
 
 interface AnnotationEditorProps {
   screenshot: Screenshot;
@@ -101,137 +108,8 @@ const MIN_CROP_SIZE = 20;
 const HANDLE_DISPLAY_SIZE = 10;
 const HANDLE_HIT_PX = 10;
 
-function clampNumber(raw: string | number, min: number, max: number): number {
-  const n = Number(raw);
-  if (!Number.isFinite(n)) return min;
-  return Math.min(max, Math.max(min, n));
-}
-
-interface StepperProps {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  step: number;
-  decimals?: number;
-  width: string;
-  prefix?: ReactNode;
-  suffix?: ReactNode;
-  onChange: (value: number) => void;
-}
-
-function Stepper({ label, value, min, max, step, decimals = 0, width, prefix, suffix, onChange }: StepperProps) {
-  const round = (n: number) => Number(n.toFixed(decimals));
-  return (
-    <Tip label={label}>
-      <div className="flex items-center gap-0.5 rounded-md bg-primary-foreground/10 h-6 px-1">
-        {prefix}
-        <button
-          type="button"
-          aria-label="-"
-          onClick={() => onChange(round(clampNumber(value - step, min, max)))}
-          className="w-4 h-5 rounded text-primary-foreground/70 hover:bg-primary-foreground/15 text-[13px] leading-none"
-        >
-          &minus;
-        </button>
-        <input
-          value={value}
-          inputMode="decimal"
-          aria-label={label}
-          onChange={(e) => onChange(round(clampNumber(e.target.value, min, max)))}
-          className={`${width} bg-transparent text-center text-[11px] tabular-nums text-primary-foreground outline-none`}
-        />
-        <button
-          type="button"
-          aria-label="+"
-          onClick={() => onChange(round(clampNumber(value + step, min, max)))}
-          className="w-4 h-5 rounded text-primary-foreground/70 hover:bg-primary-foreground/15 text-[13px] leading-none"
-        >
-          +
-        </button>
-        {suffix}
-      </div>
-    </Tip>
-  );
-}
-
 const TOOLBAR_TRIGGER =
   'flex items-center gap-1 h-6 rounded-md bg-primary-foreground/10 px-1.5 text-primary-foreground hover:bg-primary-foreground/20';
-
-function Tip({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>{children}</TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
-    </Tooltip>
-  );
-}
-
-interface ColorPopoverProps {
-  label: string;
-  value: string;
-  allowNone?: boolean;
-  onChange: (color: string) => void;
-  children: ReactNode;
-}
-
-function ColorPopover({ label, value, allowNone, onChange, children }: ColorPopoverProps) {
-  return (
-    <Popover>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <PopoverTrigger asChild>{children}</PopoverTrigger>
-        </TooltipTrigger>
-        <TooltipContent>{label}</TooltipContent>
-      </Tooltip>
-      <PopoverContent align="center" className="w-56 p-2.5">
-        <ColorPicker value={value} allowNone={allowNone} onChange={onChange} />
-      </PopoverContent>
-    </Popover>
-  );
-}
-
-function MenuPopover({ label, children, items }: { label: string; children: ReactNode; items: ReactNode }) {
-  return (
-    <DropdownMenu>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
-        </TooltipTrigger>
-        <TooltipContent>{label}</TooltipContent>
-      </Tooltip>
-      <DropdownMenuContent align="center">{items}</DropdownMenuContent>
-    </DropdownMenu>
-  );
-}
-
-const ARROW_END_MARKS: Record<ArrowEnd, ReactNode> = {
-  none: null,
-  bar: <line x1="25" y1="2" x2="25" y2="10" />,
-  arrow: <polyline points="19,2 25,6 19,10" fill="none" />,
-  'arrow-solid': <polygon points="26,6 18,2 18,10" stroke="none" />,
-  circle: <circle cx="22" cy="6" r="3.5" fill="none" />,
-  'circle-solid': <circle cx="22" cy="6" r="3.5" stroke="none" />,
-  square: <rect x="18.5" y="2.5" width="7" height="7" fill="none" />,
-  'square-solid': <rect x="18.5" y="2.5" width="7" height="7" stroke="none" />,
-};
-
-function ArrowEndGlyph({ end }: { end: ArrowEnd }) {
-  return (
-    <svg
-      width="30"
-      height="12"
-      viewBox="0 0 30 12"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <line x1="3" y1="6" x2={end === 'none' ? 27 : 19} y2="6" />
-      {ARROW_END_MARKS[end]}
-    </svg>
-  );
-}
 
 const TARGET_DASH = [8, 5];
 const TARGET_MARCH = [26, 10];
@@ -249,7 +127,6 @@ const TARGET_SWEEP: [number, number, number][] = [
   [1, 0.35, 0.9],
 ];
 
-const SELECTION_GAP = 6;
 const DRAFT_ID = 'draft';
 const TARGET_ID = 'click-target';
 
@@ -263,43 +140,6 @@ const TOOLS: { id: EditorTool; icon: ComponentType<{ size?: number }>; labelKey:
   { id: 'text', icon: Type, labelKey: 'annotationEditor.toolText' },
   { id: 'redact', icon: EyeOff, labelKey: 'annotationEditor.toolRedact' },
 ];
-
-function modeForTool(tool: EditorTool): EditorMode {
-  if (tool === 'crop') return 'crop';
-  if (tool === 'redact') return 'redact';
-  return 'annotate';
-}
-
-function cursorFor(mode: EditorMode, tool: EditorTool, hovering: boolean, grabbing: boolean): string {
-  if (grabbing) return 'grabbing';
-  if (mode !== 'annotate') return 'crosshair';
-  if (hovering) return 'grab';
-  if (tool === 'select') return 'default';
-  if (tool === 'text') return 'text';
-  return 'crosshair';
-}
-
-function handleCorners(b: ScreenshotBounds): [Handle, number, number][] {
-  return [
-    ['nw', b.x, b.y],
-    ['ne', b.x + b.width, b.y],
-    ['sw', b.x, b.y + b.height],
-    ['se', b.x + b.width, b.y + b.height],
-  ];
-}
-
-function selectionBounds(a: Annotation, scale: number): ScreenshotBounds {
-  const inset = SELECTION_GAP * scale;
-  const b = annotationBounds(a);
-  return { x: b.x - inset, y: b.y - inset, width: b.width + inset * 2, height: b.height + inset * 2 };
-}
-
-function hitHandle(b: ScreenshotBounds, x: number, y: number, radius: number): Handle | null {
-  for (const [handle, hx, hy] of handleCorners(b)) {
-    if (Math.abs(x - hx) <= radius && Math.abs(y - hy) <= radius) return handle;
-  }
-  return null;
-}
 
 export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }: AnnotationEditorProps) {
   const [activeTool, setActiveTool] = useState<EditorTool>(

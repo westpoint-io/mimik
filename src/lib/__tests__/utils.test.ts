@@ -1,4 +1,5 @@
-import { extractDomain, getDomainInitial, getMostCommonDomain } from '@mimik/ui';
+import { extractDomain, getMostCommonDomain } from '@mimik/core/guides/domain';
+import { getDomainInitial } from '@mimik/ui';
 import { describe, expect, it } from 'vitest';
 
 describe('extractDomain', () => {

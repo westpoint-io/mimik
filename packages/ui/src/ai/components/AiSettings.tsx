@@ -1,19 +1,16 @@
 import { AI_PROVIDERS, type AIProviderKey, CUSTOM_MODEL_VALUE } from '@mimik/core/capture/ai/models';
 import { AI_LANGUAGES, type AILanguageCode } from '@mimik/core/capture/ai/prompts';
 import { i18n } from '@mimik/core/env';
-import {
-  type KeyStatus,
-  KeyStatusNote,
-  type KeyWarning,
-  KeyWarningNote,
-  ModelList,
-  SecretInput,
-} from '@mimik/ui/ai/components/key-status';
+import { KeyStatusNote } from '@mimik/ui/ai/components/KeyStatusNote';
+import { KeyWarningNote } from '@mimik/ui/ai/components/KeyWarningNote';
+import { SecretInput } from '@mimik/ui/ai/components/SecretInput';
 import { useAiSettings } from '@mimik/ui/ai/hooks/use-ai-settings';
 import { Button } from '@mimik/ui/components/ui/button';
 import { Input } from '@mimik/ui/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui/components/ui/select';
 import { Globe, Sparkles, TriangleAlert } from 'lucide-react';
+import type { KeyStatus, KeyWarning } from '../types';
+import { ModelList } from './ModelList';
 
 export interface KeyCheck {
   status: KeyStatus;

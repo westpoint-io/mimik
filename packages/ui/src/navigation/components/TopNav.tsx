@@ -3,9 +3,7 @@ import { createSnapshot } from '@mimik/core/guides/service';
 import { logger } from '@mimik/core/logger';
 import MascotIcon from '@mimik/ui/common/components/MascotIcon';
 import { Button } from '@mimik/ui/components/ui/button';
-import type { Route } from '@mimik/ui/navigation/lib/router';
-import { navigate } from '@mimik/ui/navigation/lib/router';
-import { useFullview } from '@mimik/ui/stores/fullview';
+import { useFullview } from '@mimik/ui/stores/use-fullview';
 import {
   Check,
   ChevronRight,
@@ -21,6 +19,8 @@ import {
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import ExportPreviewModal from '../../export/components/ExportPreviewModal';
+import { navigate } from '../lib/navigate';
+import type { Route } from '../types';
 
 interface TopNavProps {
   route: Route;

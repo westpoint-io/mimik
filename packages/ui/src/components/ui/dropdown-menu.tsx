@@ -1,4 +1,4 @@
-import { cn } from '@mimik/ui/common/lib/utils';
+import { cn } from '@mimik/ui/common/lib/cn';
 import { ChevronRight } from 'lucide-react';
 import { DropdownMenu as DropdownMenuPrimitive } from 'radix-ui';
 import type * as React from 'react';

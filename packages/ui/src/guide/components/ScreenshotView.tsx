@@ -21,6 +21,7 @@ import ImagePlaceholder from '@mimik/ui/guide/components/ImagePlaceholder';
 import ReplaceImageDialog from '@mimik/ui/guide/components/ReplaceImageDialog';
 import { Download, ImageUp, Pencil, Trash2, ZoomIn, ZoomOut } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { withFullViewport } from '../lib/with-full-viewport';
 
 interface ScreenshotViewProps {
   screenshot: Screenshot;
@@ -50,13 +51,6 @@ const VIEWPORT_EPSILON = 0.5;
 const FRAME_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
 const FRAME_TRANSITION = `width 0.4s ${FRAME_EASING}, height 0.4s ${FRAME_EASING}, left 0.4s ${FRAME_EASING}, top 0.4s ${FRAME_EASING}`;
 const FRAME_RATIO_EPSILON = 0.01;
-
-function withFullViewport(screenshot: Screenshot): Screenshot {
-  return {
-    ...screenshot,
-    edits: { ...screenshot.edits, viewport: { x: 0, y: 0, width: screenshot.width, height: screenshot.height } },
-  };
-}
 
 export default function ScreenshotView({
   screenshot,

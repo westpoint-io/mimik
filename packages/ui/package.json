@@ -8,6 +8,6 @@
   },
   "sideEffects": [
     "**/*.css",
-    "./src/common/lib/utils.ts"
+    "./src/common/lib/dayjs-locale.ts"
   ]
 }
