@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import type { DescriptionSource } from '@mimik/core/guides/types';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import StepSourceBadge from '../StepSourceBadge';
+import { StepSourceBadge } from '../StepSourceBadge';
 
 const SOURCES: DescriptionSource[] = ['ai', 'narration', 'heuristic', 'manual'];
 const LOCALES = ['en', 'de', 'es', 'fr', 'pt-BR', 'zh-CN'];

@@ -15,9 +15,9 @@ import {
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
-import MascotIcon from '../../common/components/MascotIcon';
+import { MascotIcon } from '../../common/components/MascotIcon';
 import { Button } from '../../components/ui/button';
-import ExportPreviewModal from '../../export/components/ExportPreviewModal';
+import { ExportPreviewModal } from '../../export/components/ExportPreviewModal';
 import { useFullview } from '../../stores/use-fullview';
 import { navigate } from '../lib/navigate';
 import type { Route } from '../types';
@@ -37,7 +37,7 @@ const navItems = [
 
 const NAV_CONTROL = 'h-8 rounded-lg border border-border bg-card text-foreground hover:bg-secondary hover:text-accent';
 
-export default function TopNav({ route, onSettings, onNavigate, guideActions }: TopNavProps) {
+export function TopNav({ route, onSettings, onNavigate, guideActions }: TopNavProps) {
   const {
     counts,
     guideTitle,

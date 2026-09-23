@@ -14,7 +14,7 @@ vi.mock('@/core/guides/service', () => ({
   revertToSnapshot: vi.fn(),
 }));
 
-import VersionHistoryPanel from '../VersionHistoryPanel';
+import { VersionHistoryPanel } from '../VersionHistoryPanel';
 
 const box: Annotation = { id: 'a1', type: 'box', x: 0, y: 0, w: 10, h: 10, color: '#000000' };
 const otherBox: Annotation = { id: 'a1', type: 'box', x: 4, y: 4, w: 10, h: 10, color: '#000000' };

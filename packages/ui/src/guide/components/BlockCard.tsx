@@ -4,7 +4,7 @@ import { updateCallout } from '@mimik/core/guides/service';
 import type { CalloutVariant, Step } from '@mimik/core/guides/types';
 import { Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import ConfirmDialog from '../../common/components/ConfirmDialog';
+import { ConfirmDialog } from '../../common/components/ConfirmDialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
 import { useCardDrag } from '../hooks/use-card-drag';
 import type { DragHandleProps } from '../types';
@@ -19,7 +19,7 @@ interface BlockCardProps {
   readOnly?: boolean;
 }
 
-export default function BlockCard({
+export function BlockCard({
   step,
   onDescriptionChange,
   onDelete,

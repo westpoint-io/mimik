@@ -10,7 +10,7 @@ interface ReplaceImageDialogProps {
   onCancel: () => void;
 }
 
-export default function ReplaceImageDialog({ open, onSelect, onCancel }: ReplaceImageDialogProps) {
+export function ReplaceImageDialog({ open, onSelect, onCancel }: ReplaceImageDialogProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
 

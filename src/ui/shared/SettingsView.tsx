@@ -42,7 +42,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { localStorage } from '@/lib/browser-api';
 import { useKeyCheck } from '@/ui/shared/key-check';
-import MicrophonePicker from '@/ui/shared/MicrophonePicker';
+import { MicrophonePicker } from '@/ui/shared/MicrophonePicker';
 import { useSettingsAutosave } from '@/ui/shared/use-settings-autosave';
 
 interface SettingsViewProps {
@@ -55,7 +55,7 @@ const FOOTER_PRESETS = () => [
   i18n.t('settings.footerPresetNoDistribute'),
 ];
 
-export default function SettingsView({ onBack }: SettingsViewProps) {
+export function SettingsView({ onBack }: SettingsViewProps) {
   const [provider, setProvider] = useState<AIProviderKey>('openai');
   const [apiKey, setApiKey] = useState('');
   const aiKeyCheck = useKeyCheck();

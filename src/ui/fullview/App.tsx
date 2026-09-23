@@ -1,10 +1,10 @@
 import { GuideContent, LibraryContent, SearchModal, TooltipProvider, TopNav, useFullview, useRoute } from '@mimik/ui';
 import { useEffect } from 'react';
 import { openSidebar } from '@/lib/browser-api';
-import UpdateNotice from '@/ui/shared/UpdateNotice';
-import VoiceNotice from './components/VoiceNotice';
+import { UpdateNotice } from '@/ui/shared/UpdateNotice';
+import { VoiceNotice } from './components/VoiceNotice';
 
-export default function FullViewApp() {
+export function FullViewApp() {
   const route = useRoute();
   const { toggleSearch, historyOpen } = useFullview((s) => ({
     toggleSearch: s.toggleSearch,

@@ -9,7 +9,7 @@ interface InsertBlockMenuProps {
   onRecord?: () => void;
 }
 
-export default function InsertBlockMenu({ onInsert, onRecord }: InsertBlockMenuProps) {
+export function InsertBlockMenu({ onInsert, onRecord }: InsertBlockMenuProps) {
   const [open, setOpen] = useState(false);
   const rowRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);

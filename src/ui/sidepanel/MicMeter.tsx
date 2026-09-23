@@ -13,7 +13,7 @@ import {
 
 const SWEEP_MS = 300;
 
-export default function MicMeter() {
+export function MicMeter() {
   const bars = useRef<Array<HTMLSpanElement | null>>([]);
   const levelAt = useRef<number | null>(null);
   const speakingAt = useRef<number | null>(null);

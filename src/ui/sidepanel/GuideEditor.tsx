@@ -28,7 +28,7 @@ interface GuideData {
   screenshots: Map<string, Screenshot>;
 }
 
-export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorProps) {
+export function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorProps) {
   const [data, setData] = useState<GuideData | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);

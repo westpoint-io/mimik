@@ -13,7 +13,7 @@ interface GuideListViewProps {
   onPermanentDelete: (e: React.MouseEvent, id: string) => void;
 }
 
-export default function GuideListView({ category, onStar, onTrash, onRestore, onPermanentDelete }: GuideListViewProps) {
+export function GuideListView({ category, onStar, onTrash, onRestore, onPermanentDelete }: GuideListViewProps) {
   const { guides } = useFullview((s) => ({ guides: s.guides }));
 
   return (

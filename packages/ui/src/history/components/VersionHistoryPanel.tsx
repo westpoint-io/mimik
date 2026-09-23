@@ -25,7 +25,7 @@ interface VersionHistoryPanelProps {
   onClose: () => void;
 }
 
-export default function VersionHistoryPanel({
+export function VersionHistoryPanel({
   guideId,
   selectedId,
   refreshKey,

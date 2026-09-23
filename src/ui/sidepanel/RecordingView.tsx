@@ -8,9 +8,9 @@ import type { Screenshot, Step } from '@/core/guides/types';
 import { getActiveTab, localStorage } from '@/lib/browser-api';
 import { sendMessage } from '@/lib/messaging';
 import type { PanelAiUpdate, PanelVoiceUpdate } from '@/lib/port';
-import AiStatus from './AiStatus';
-import MicToggle from './MicToggle';
-import VoiceStatus from './VoiceStatus';
+import { AiStatus } from './AiStatus';
+import { MicToggle } from './MicToggle';
+import { VoiceStatus } from './VoiceStatus';
 
 interface RecordingViewProps {
   guideId: string;
@@ -31,7 +31,7 @@ interface LiveStep {
   screenshot?: Screenshot;
 }
 
-export default function RecordingView({ guideId, onStop, voice, aiFailure }: RecordingViewProps) {
+export function RecordingView({ guideId, onStop, voice, aiFailure }: RecordingViewProps) {
   const [steps, setSteps] = useState<LiveStep[]>([]);
   const [siteUrl, setSiteUrl] = useState('');
   const [isBlurring, setIsBlurring] = useState(false);

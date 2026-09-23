@@ -6,7 +6,7 @@ import { imageDimensions, renderScreenshot } from '@mimik/core/screenshot/render
 import type { ScreenshotEdits } from '@mimik/core/screenshot/types';
 import { Download, ImageUp, Pencil, Trash2, ZoomIn, ZoomOut } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import ConfirmDialog from '../../common/components/ConfirmDialog';
+import { ConfirmDialog } from '../../common/components/ConfirmDialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,8 +20,8 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
 import { withFullViewport } from '../lib/with-full-viewport';
-import ImagePlaceholder from './ImagePlaceholder';
-import ReplaceImageDialog from './ReplaceImageDialog';
+import { ImagePlaceholder } from './ImagePlaceholder';
+import { ReplaceImageDialog } from './ReplaceImageDialog';
 
 interface ScreenshotViewProps {
   screenshot: Screenshot;
@@ -52,7 +52,7 @@ const FRAME_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
 const FRAME_TRANSITION = `width 0.4s ${FRAME_EASING}, height 0.4s ${FRAME_EASING}, left 0.4s ${FRAME_EASING}, top 0.4s ${FRAME_EASING}`;
 const FRAME_RATIO_EPSILON = 0.01;
 
-export default function ScreenshotView({
+export function ScreenshotView({
   screenshot,
   className = '',
   alt = '',

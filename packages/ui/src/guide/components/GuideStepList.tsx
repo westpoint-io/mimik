@@ -6,14 +6,14 @@ import { logger } from '@mimik/core/logger';
 import { dominantRatio } from '@mimik/core/screenshot/geometry';
 import { Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import ConfirmDialog from '../../common/components/ConfirmDialog';
+import { ConfirmDialog } from '../../common/components/ConfirmDialog';
 import { Button } from '../../components/ui/button';
 import { useFullview } from '../../stores/use-fullview';
-import BlockCard from './BlockCard';
-import CaptureTabDialog from './CaptureTabDialog';
-import EmptyGuideState from './EmptyGuideState';
-import InsertBlockMenu from './InsertBlockMenu';
-import StepCard from './StepCard';
+import { BlockCard } from './BlockCard';
+import { CaptureTabDialog } from './CaptureTabDialog';
+import { EmptyGuideState } from './EmptyGuideState';
+import { InsertBlockMenu } from './InsertBlockMenu';
+import { StepCard } from './StepCard';
 
 interface GuideStepListProps {
   guideId: string;
@@ -29,7 +29,7 @@ interface GuideStepListProps {
   onInsertRecording?: (guideId: string, insertAtIndex: number, tabId: number) => void;
 }
 
-export default function GuideStepList({
+export function GuideStepList({
   guideId,
   steps,
   screenshots,

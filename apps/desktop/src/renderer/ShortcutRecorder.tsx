@@ -23,7 +23,7 @@ interface ShortcutRecorderProps {
   onChange: (accelerator: string | null) => void;
 }
 
-export default function ShortcutRecorder({ label, value, onChange }: ShortcutRecorderProps) {
+export function ShortcutRecorder({ label, value, onChange }: ShortcutRecorderProps) {
   const [listening, setListening] = useState(false);
 
   return (

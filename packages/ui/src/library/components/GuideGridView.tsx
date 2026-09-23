@@ -1,6 +1,6 @@
 import { i18n } from '@mimik/core/env';
 import { formatDate } from '@mimik/core/export/utils';
-import ScreenshotView from '../../guide/components/ScreenshotView';
+import { ScreenshotView } from '../../guide/components/ScreenshotView';
 import { navigate } from '../../navigation/lib/navigate';
 import { useFullview } from '../../stores/use-fullview';
 import { CardMenu } from './CardMenu';
@@ -14,7 +14,7 @@ interface GuideGridViewProps {
   onPermanentDelete: (e: React.MouseEvent, id: string) => void;
 }
 
-export default function GuideGridView({ category, onStar, onTrash, onRestore, onPermanentDelete }: GuideGridViewProps) {
+export function GuideGridView({ category, onStar, onTrash, onRestore, onPermanentDelete }: GuideGridViewProps) {
   const { guides, thumbnails } = useFullview((s) => ({
     guides: s.guides,
     thumbnails: s.thumbnails,

@@ -10,7 +10,7 @@ interface VideoStepPlayerProps {
   chapters: VideoChapter[];
 }
 
-export default function VideoStepPlayer({ src, type, chapters }: VideoStepPlayerProps) {
+export function VideoStepPlayer({ src, type, chapters }: VideoStepPlayerProps) {
   return (
     <MediaPlayer
       src={{ src, type }}

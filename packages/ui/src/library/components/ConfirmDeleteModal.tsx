@@ -8,7 +8,7 @@ interface ConfirmDeleteModalProps {
   onConfirm: () => void;
 }
 
-export default function ConfirmDeleteModal({ open, onClose, onConfirm }: ConfirmDeleteModalProps) {
+export function ConfirmDeleteModal({ open, onClose, onConfirm }: ConfirmDeleteModalProps) {
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent showCloseButton={false} className="max-w-[320px] p-7 text-center border-none">

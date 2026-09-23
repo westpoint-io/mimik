@@ -23,7 +23,7 @@ interface GuideWithMeta extends Guide {
   domain: string;
 }
 
-export default function LibraryView({ onOpen, searchQuery = '' }: LibraryViewProps) {
+export function LibraryView({ onOpen, searchQuery = '' }: LibraryViewProps) {
   const [guides, setGuides] = useState<GuideWithMeta[]>([]);
   const [loading, setLoading] = useState(true);
 

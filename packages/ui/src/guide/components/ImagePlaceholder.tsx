@@ -1,8 +1,8 @@
 import { i18n } from '@mimik/core/env';
 import { ImageUp } from 'lucide-react';
 import { useState } from 'react';
-import MascotIcon from '../../common/components/MascotIcon';
-import ReplaceImageDialog from './ReplaceImageDialog';
+import { MascotIcon } from '../../common/components/MascotIcon';
+import { ReplaceImageDialog } from './ReplaceImageDialog';
 
 interface ImagePlaceholderProps {
   label: string;
@@ -13,12 +13,7 @@ interface ImagePlaceholderProps {
 
 const DEFAULT_RATIO = 16 / 10;
 
-export default function ImagePlaceholder({
-  label,
-  ratio = DEFAULT_RATIO,
-  className = '',
-  onUpload,
-}: ImagePlaceholderProps) {
+export function ImagePlaceholder({ label, ratio = DEFAULT_RATIO, className = '', onUpload }: ImagePlaceholderProps) {
   const [uploadOpen, setUploadOpen] = useState(false);
 
   return (

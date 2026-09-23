@@ -8,7 +8,7 @@ interface FaviconImgProps {
   className?: string;
 }
 
-export default function FaviconImg({ domain, size = 20, className = '' }: FaviconImgProps) {
+export function FaviconImg({ domain, size = 20, className = '' }: FaviconImgProps) {
   const [failed, setFailed] = useState(false);
   const src = domain ? getFaviconUrl(domain, size > 32 ? 64 : 32) : '';
 

@@ -20,7 +20,7 @@ const TONE_CLASSES = {
   failed: 'text-destructive',
 };
 
-export default function VoiceNotice() {
+export function VoiceNotice() {
   const [update, setUpdate] = useState<PanelVoiceUpdate>(IDLE);
   const [seenLive, setSeenLive] = useState(false);
   const [dismissed, setDismissed] = useState<string | null>(null);

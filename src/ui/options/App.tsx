@@ -1,6 +1,6 @@
-import SettingsView from '@/ui/shared/SettingsView';
+import { SettingsView } from '@/ui/shared/SettingsView';
 
-export default function App() {
+export function App() {
   return (
     <div
       style={{

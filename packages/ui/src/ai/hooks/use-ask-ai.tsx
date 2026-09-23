@@ -3,7 +3,7 @@ import { i18n } from '@mimik/core/env';
 import { Loader2, Sparkles, Wand2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import Toast from '../../common/components/Toast';
+import { Toast } from '../../common/components/Toast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
 import { send } from '../../env';
 import { rewriteErrorMessage } from '../lib/rewrite-error';

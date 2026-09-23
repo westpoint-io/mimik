@@ -19,14 +19,14 @@ import {
 import { sendMessage } from '@/lib/messaging';
 import { getVoiceStatus } from '@/lib/offscreen';
 import { connectToBackground, type PanelAiUpdate, type PanelVoiceUpdate } from '@/lib/port';
-import SettingsView from '@/ui/shared/SettingsView';
-import UpdateNotice from '@/ui/shared/UpdateNotice';
-import GuideEditor from './GuideEditor';
-import GuideMeCompletion from './GuideMeCompletion';
-import GuideMeView from './GuideMeView';
-import LibraryView from './LibraryView';
-import RecordingView from './RecordingView';
-import VoiceToast from './VoiceToast';
+import { SettingsView } from '@/ui/shared/SettingsView';
+import { UpdateNotice } from '@/ui/shared/UpdateNotice';
+import { GuideEditor } from './GuideEditor';
+import { GuideMeCompletion } from './GuideMeCompletion';
+import { GuideMeView } from './GuideMeView';
+import { LibraryView } from './LibraryView';
+import { RecordingView } from './RecordingView';
+import { VoiceToast } from './VoiceToast';
 
 type View =
   | { name: 'library' }
@@ -85,7 +85,7 @@ function MascotIcon({ size = 44 }: { size?: number }) {
   );
 }
 
-export default function App() {
+export function App() {
   const [isAlive, setIsAlive] = useState(false);
   const [_isRecording, setIsRecording] = useState(false);
   const [view, setView] = useState<View>({ name: 'library' });

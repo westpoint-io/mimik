@@ -20,7 +20,7 @@ import { AI_LANGUAGES, type AILanguageCode } from '@/core/capture/ai/prompts';
 import type { VoiceProvider } from '@/core/capture/voice/transcribe';
 import { localStorage, openSidebar, requestHostPermissions } from '@/lib/browser-api';
 import { useKeyCheck } from '@/ui/shared/key-check';
-import MicrophonePicker from '@/ui/shared/MicrophonePicker';
+import { MicrophonePicker } from '@/ui/shared/MicrophonePicker';
 
 interface StepProps {
   onNext: () => void;
@@ -976,7 +976,7 @@ const CONFIG_STEPS =
     ? [AISetupStep, SmartBlurStep, PinExtensionStep, GitHubStarStep]
     : [AISetupStep, VoiceStep, SmartBlurStep, PinExtensionStep, GitHubStarStep];
 
-export default function OnboardingApp() {
+export function OnboardingApp() {
   const [step, setStep] = useState(0);
 
   const lastStep = CONFIG_STEPS.length + 1;

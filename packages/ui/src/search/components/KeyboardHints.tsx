@@ -6,7 +6,7 @@ const hints = [
   { key: 'esc', labelKey: 'keyboard_close' as const },
 ];
 
-export default function KeyboardHints() {
+export function KeyboardHints() {
   return (
     <div className="flex items-center gap-3 px-4 py-2 border-t border-border">
       {hints.map((h) => (

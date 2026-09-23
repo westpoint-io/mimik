@@ -26,10 +26,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/too
 import { useFullview } from '../../stores/use-fullview';
 import { sortGuides } from '../lib/sort-guides';
 import type { SortKey } from '../types';
-import ConfirmDeleteModal from './ConfirmDeleteModal';
+import { ConfirmDeleteModal } from './ConfirmDeleteModal';
 import { EmptyMascot } from './EmptyMascot';
-import GuideGridView from './GuideGridView';
-import GuideListView from './GuideListView';
+import { GuideGridView } from './GuideGridView';
+import { GuideListView } from './GuideListView';
 
 interface LibraryContentProps {
   category: 'all' | 'starred' | 'trash';
@@ -51,7 +51,7 @@ const sortLabelKeys: Record<SortKey, string> = {
 
 const PAGE_SIZE = 9;
 
-export default function LibraryContent({ category, onStartCapture }: LibraryContentProps) {
+export function LibraryContent({ category, onStartCapture }: LibraryContentProps) {
   const {
     setGuides,
     updateGuide,

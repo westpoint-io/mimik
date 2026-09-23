@@ -1,6 +1,6 @@
 import { i18n } from '@mimik/core/env';
 import type { Guide } from '@mimik/core/guides/types';
-import FaviconImg from '../../common/components/FaviconImg';
+import { FaviconImg } from '../../common/components/FaviconImg';
 import { formatDateShort } from '../../common/lib/format-date-short';
 
 interface GuideResult {
@@ -16,7 +16,7 @@ interface SearchResultsProps {
   onHover: (index: number) => void;
 }
 
-export default function SearchResults({ results, query, selected, onSelect, onHover }: SearchResultsProps) {
+export function SearchResults({ results, query, selected, onSelect, onHover }: SearchResultsProps) {
   if (results.length === 0) {
     return (
       <div className="py-8 text-center">

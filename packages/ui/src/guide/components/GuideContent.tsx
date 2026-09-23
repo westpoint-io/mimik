@@ -20,16 +20,16 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TypeAnimation } from 'react-type-animation';
 import { useAskAi } from '../../ai/hooks/use-ask-ai';
 import { useGuideDescription } from '../../ai/hooks/use-guide-description';
-import AnnotationEditor from '../../annotation/components/AnnotationEditor';
-import FaviconImg from '../../common/components/FaviconImg';
-import Toast from '../../common/components/Toast';
+import { AnnotationEditor } from '../../annotation/components/AnnotationEditor';
+import { FaviconImg } from '../../common/components/FaviconImg';
+import { Toast } from '../../common/components/Toast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
 import { panel, send, tabs } from '../../env';
-import VersionHistoryPanel from '../../history/components/VersionHistoryPanel';
+import { VersionHistoryPanel } from '../../history/components/VersionHistoryPanel';
 import { useFullview } from '../../stores/use-fullview';
 import { buildPreview } from '../lib/build-preview';
 import type { PreviewData } from '../types';
-import GuideStepList from './GuideStepList';
+import { GuideStepList } from './GuideStepList';
 
 interface GuideContentProps {
   guideId: string;
@@ -43,7 +43,7 @@ interface GuideData {
   screenshots: Map<string, Screenshot>;
 }
 
-export default function GuideContent({ guideId, initialStepId, initialTool }: GuideContentProps) {
+export function GuideContent({ guideId, initialStepId, initialTool }: GuideContentProps) {
   const {
     setGuideTitle,
     setGuideStepCount,

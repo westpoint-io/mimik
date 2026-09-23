@@ -5,7 +5,7 @@ import { dismissUpdateNotice, readUpdateNotice } from '@/lib/update-notice';
 
 const RELEASES_URL = 'https://github.com/westpoint-io/mimik/releases';
 
-export default function UpdateNotice({ className = '' }: { className?: string }) {
+export function UpdateNotice({ className = '' }: { className?: string }) {
   const [version, setVersion] = useState<string>();
 
   useEffect(() => {

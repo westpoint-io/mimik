@@ -59,7 +59,7 @@ function StatusBadge({ status }: { status: MicrophoneStatus }) {
   );
 }
 
-export default function MicrophonePicker({ value, onChange, triggerClassName }: MicrophonePickerProps) {
+export function MicrophonePicker({ value, onChange, triggerClassName }: MicrophonePickerProps) {
   const [devices, setDevices] = useState<MicrophoneDevice[]>([]);
   const [testing, setTesting] = useState(false);
   const [level, setLevel] = useState(0);

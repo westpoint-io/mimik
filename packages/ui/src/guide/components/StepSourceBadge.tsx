@@ -15,7 +15,7 @@ const LABELS: Record<DescriptionSource, string> = {
   manual: 'stepSource.edited',
 };
 
-export default function StepSourceBadge({ source }: { source: DescriptionSource | undefined }) {
+export function StepSourceBadge({ source }: { source: DescriptionSource | undefined }) {
   if (!source) return null;
 
   return (

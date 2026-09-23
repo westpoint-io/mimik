@@ -17,7 +17,7 @@ function signatureOf(update: PanelVoiceUpdate): string {
   return `${update.phase}:${update.reason ?? ''}:${update.narrated ?? ''}`;
 }
 
-export default function VoiceToast({ update, confirmable, onOpenSettings }: VoiceToastProps) {
+export function VoiceToast({ update, confirmable, onOpenSettings }: VoiceToastProps) {
   const [dismissed, setDismissed] = useState<string | null>(null);
   const signature = signatureOf(update);
   const confirming = update.phase === 'idle' && update.narrated !== undefined && confirmable;

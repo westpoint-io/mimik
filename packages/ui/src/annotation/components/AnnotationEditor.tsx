@@ -141,7 +141,7 @@ const TOOLS: { id: EditorTool; icon: ComponentType<{ size?: number }>; labelKey:
   { id: 'redact', icon: EyeOff, labelKey: 'annotationEditor.toolRedact' },
 ];
 
-export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }: AnnotationEditorProps) {
+export function AnnotationEditor({ screenshot, tool, onDone, onCancel }: AnnotationEditorProps) {
   const [activeTool, setActiveTool] = useState<EditorTool>(
     tool === 'crop' ? 'crop' : tool === 'redact' ? 'redact' : 'box',
   );

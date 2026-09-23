@@ -64,7 +64,7 @@ function ExitConfirmation({ onCancel, onConfirm }: { onCancel: () => void; onCon
   );
 }
 
-export default function GuideMeView({ guideId, onExit, onComplete }: GuideMeViewProps) {
+export function GuideMeView({ guideId, onExit, onComplete }: GuideMeViewProps) {
   const [data, setData] = useState<GuideData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeStepIndex, setActiveStepIndex] = useState(0);

@@ -7,15 +7,15 @@ import { Dialog, DialogPortal } from '../../components/ui/dialog';
 import { Input } from '../../components/ui/input';
 import { navigate } from '../../navigation/lib/navigate';
 import { useFullview } from '../../stores/use-fullview';
-import KeyboardHints from './KeyboardHints';
-import SearchResults from './SearchResults';
+import { KeyboardHints } from './KeyboardHints';
+import { SearchResults } from './SearchResults';
 
 interface GuideResult {
   guide: Guide;
   domain: string;
 }
 
-export default function SearchModal() {
+export function SearchModal() {
   const { searchOpen: open, setSearchOpen } = useFullview((s) => ({
     searchOpen: s.searchOpen,
     setSearchOpen: s.setSearchOpen,

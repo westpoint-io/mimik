@@ -25,7 +25,7 @@ async function microphoneGranted(): Promise<boolean> {
   }
 }
 
-export default function MicToggle({ enabled, live, onChange }: MicToggleProps) {
+export function MicToggle({ enabled, live, onChange }: MicToggleProps) {
   const [keyed, setKeyed] = useState(false);
 
   useEffect(() => {

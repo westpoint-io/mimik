@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
-import ColorPicker from './ColorPicker';
+import { ColorPicker } from './ColorPicker';
 
 export interface ColorPopoverProps {
   label: string;

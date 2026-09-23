@@ -19,7 +19,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../componen
 import { type ExportFormat, useGuideExport } from '../hooks/use-guide-export';
 import { useVideoPreview } from '../hooks/use-video-preview';
 
-const VideoStepPlayer = lazy(() => import('./VideoStepPlayer'));
+const VideoStepPlayer = lazy(() => import('./VideoStepPlayer').then((m) => ({ default: m.VideoStepPlayer })));
 
 const _VIDEO_AUTOPLAY_STEP_LIMIT = 25;
 const IMAGE_SCALES: ImageScale[] = ['small', 'medium', 'large'];
@@ -34,7 +34,7 @@ interface ExportPreviewModalProps {
 
 type PreviewMode = 'document' | 'video';
 
-export default function ExportPreviewModal({ open, onOpenChange, guide, steps, screenshots }: ExportPreviewModalProps) {
+export function ExportPreviewModal({ open, onOpenChange, guide, steps, screenshots }: ExportPreviewModalProps) {
   const [options, setOptions] = useState<ExportOptions>(DEFAULT_EXPORT_OPTIONS);
   const [mode, setMode] = useState<PreviewMode>('document');
 

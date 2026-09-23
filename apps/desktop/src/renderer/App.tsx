@@ -1,10 +1,10 @@
 import { GuideContent, LibraryContent, navigate, SearchModal, TooltipProvider, TopNav, useRoute } from '@mimik/ui';
 import { useEffect, useState } from 'react';
-import CaptureSheet from './CaptureSheet';
-import GuideZoom from './GuideZoom';
-import SettingsPanel from './SettingsPanel';
+import { CaptureSheet } from './CaptureSheet';
+import { GuideZoom } from './GuideZoom';
+import { SettingsPanel } from './SettingsPanel';
 
-export default function App() {
+export function App() {
   const route = useRoute();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);

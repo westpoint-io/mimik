@@ -1,7 +1,7 @@
 import { TriangleAlert } from 'lucide-react';
 import { i18n } from '#imports';
 import type { PanelVoiceUpdate } from '@/lib/port';
-import MicMeter from './MicMeter';
+import { MicMeter } from './MicMeter';
 import { voiceErrorKey } from './voice-status';
 
 interface VoiceStatusProps {
@@ -9,7 +9,7 @@ interface VoiceStatusProps {
   enabled: boolean;
 }
 
-export default function VoiceStatus({ update, enabled }: VoiceStatusProps) {
+export function VoiceStatus({ update, enabled }: VoiceStatusProps) {
   if (update.phase === 'error') {
     return (
       <div className="px-4 pt-2.5 flex items-start gap-2" role="status">

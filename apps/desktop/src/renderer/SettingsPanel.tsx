@@ -16,7 +16,7 @@ import { Command, Keyboard, MonitorPlay } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import type { CaptureSettings, CaptureShortcuts } from '../main/capture/settings';
-import ShortcutRecorder from './ShortcutRecorder';
+import { ShortcutRecorder } from './ShortcutRecorder';
 
 type Section = 'capture' | 'ai' | 'shortcuts';
 
@@ -94,7 +94,7 @@ function Toggle({
   );
 }
 
-export default function SettingsPanel() {
+export function SettingsPanel() {
   const [section, setSection] = useState<Section>('capture');
   const keyCheck = useKeyCheck(validateApiKey);
   const [settings, setSettings] = useState<CaptureSettings | null>(null);

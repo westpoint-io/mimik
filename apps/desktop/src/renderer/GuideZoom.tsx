@@ -10,7 +10,7 @@ const LEVELS = Array.from(
   (_, i) => MIN_ZOOM + i * ZOOM_STEP,
 );
 
-export default function GuideZoom({ guideId, onDone }: { guideId: string; onDone: () => void }) {
+export function GuideZoom({ guideId, onDone }: { guideId: string; onDone: () => void }) {
   const [busy, setBusy] = useState(false);
 
   const apply = async (value: string) => {

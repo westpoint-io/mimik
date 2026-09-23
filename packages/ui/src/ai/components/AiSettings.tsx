@@ -25,7 +25,7 @@ interface AiSettingsProps {
   onChange?: (patch: Record<string, unknown>) => void;
 }
 
-export default function AiSettings({ keyCheck: aiKeyCheck, onChange }: AiSettingsProps) {
+export function AiSettings({ keyCheck: aiKeyCheck, onChange }: AiSettingsProps) {
   const {
     provider,
     model,

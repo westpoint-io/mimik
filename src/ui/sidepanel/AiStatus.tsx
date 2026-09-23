@@ -8,7 +8,7 @@ interface AiStatusProps {
   update: PanelAiUpdate | null;
 }
 
-export default function AiStatus({ update }: AiStatusProps) {
+export function AiStatus({ update }: AiStatusProps) {
   if (!update) return null;
 
   const label = findProvider(update.provider)?.label ?? update.provider;

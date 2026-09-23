@@ -11,7 +11,7 @@ interface ColorPickerProps {
   onChange: (color: string) => void;
 }
 
-export default function ColorPicker({ value, allowNone, presets = SHAPE_COLORS, onChange }: ColorPickerProps) {
+export function ColorPicker({ value, allowNone, presets = SHAPE_COLORS, onChange }: ColorPickerProps) {
   const [draft, setDraft] = useState(value);
   const areaRef = useRef<HTMLDivElement>(null);
   const hueRef = useRef<HTMLDivElement>(null);

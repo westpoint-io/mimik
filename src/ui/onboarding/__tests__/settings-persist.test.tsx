@@ -21,7 +21,7 @@ vi.mock('@/lib/browser-api', () => ({
 vi.mock('@/lib/offscreen', () => ({ openMicPermissionPage: vi.fn().mockResolvedValue(undefined) }));
 
 import { fakeBrowser } from 'wxt/testing';
-import OnboardingApp from '../App';
+import { OnboardingApp } from '../App';
 
 // the AI step persists through @mimik/core, which vitest.setup backs with fakeBrowser storage
 const aiStore = async () => (await fakeBrowser.storage.local.get('aiApiKey')).aiApiKey;

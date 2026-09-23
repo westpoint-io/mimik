@@ -33,7 +33,7 @@ function CheckIcon() {
   );
 }
 
-export default function GuideMeCompletion({ guideId, onDone, onRunAgain }: GuideMeCompletionProps) {
+export function GuideMeCompletion({ guideId, onDone, onRunAgain }: GuideMeCompletionProps) {
   const [steps, setSteps] = useState<Step[]>([]);
 
   useEffect(() => {

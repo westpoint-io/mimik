@@ -19,7 +19,7 @@ interface ExportMenuProps {
 
 type ExportType = 'docx' | 'gif' | 'html' | 'markdown' | 'pdf' | 'video';
 
-export default function ExportMenu({
+export function ExportMenu({
   guideId,
   guide: guideProp,
   steps: stepsProp,

@@ -55,7 +55,7 @@ async function returnToOpener(): Promise<void> {
   else window.close();
 }
 
-export default function MicPermissionApp() {
+export function MicPermissionApp() {
   const [phase, setPhase] = useState<Phase>('checking');
   const settled = useRef(false);
   const reportedDenied = useRef(false);

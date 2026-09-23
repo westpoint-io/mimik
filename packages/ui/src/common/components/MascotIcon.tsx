@@ -15,7 +15,7 @@ interface MascotIconProps {
   tone?: 'brand' | 'muted';
 }
 
-export default function MascotIcon({ size = 22, pose = 'happy', tone = 'brand' }: MascotIconProps) {
+export function MascotIcon({ size = 22, pose = 'happy', tone = 'brand' }: MascotIconProps) {
   const muted = tone === 'muted';
   const body = muted ? 'fill-current opacity-55' : 'fill-primary';
   const crown = muted ? 'fill-current opacity-80' : 'fill-violet-mid';

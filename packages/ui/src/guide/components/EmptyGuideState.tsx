@@ -1,6 +1,6 @@
 import { i18n } from '@mimik/core/env';
 
-export default function EmptyGuideState() {
+export function EmptyGuideState() {
   return (
     <div className="flex flex-col items-center justify-center flex-1 min-h-[300px]">
       <div className="relative">

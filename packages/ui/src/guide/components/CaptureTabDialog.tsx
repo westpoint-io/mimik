@@ -18,7 +18,7 @@ interface CaptureTabDialogProps {
   onStart: (tabId: number) => void;
 }
 
-export default function CaptureTabDialog({ open, onCancel, onStart }: CaptureTabDialogProps) {
+export function CaptureTabDialog({ open, onCancel, onStart }: CaptureTabDialogProps) {
   const [tabs, setTabs] = useState<RecordableTab[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
 

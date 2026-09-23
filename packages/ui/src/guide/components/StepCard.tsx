@@ -6,14 +6,14 @@ import { imageDimensions, renderScreenshot } from '@mimik/core/screenshot/render
 import { Check, Copy, Loader2, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAskAi } from '../../ai/hooks/use-ask-ai';
-import ConfirmDialog from '../../common/components/ConfirmDialog';
+import { ConfirmDialog } from '../../common/components/ConfirmDialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
 import { useCardDrag } from '../hooks/use-card-drag';
 import type { DragHandleProps } from '../types';
 import { DragGrip } from './DragGrip';
-import ImagePlaceholder from './ImagePlaceholder';
-import ScreenshotView from './ScreenshotView';
-import StepSourceBadge from './StepSourceBadge';
+import { ImagePlaceholder } from './ImagePlaceholder';
+import { ScreenshotView } from './ScreenshotView';
+import { StepSourceBadge } from './StepSourceBadge';
 
 interface StepCardProps {
   step: Step;
@@ -31,7 +31,7 @@ interface StepCardProps {
   hasApiKey?: boolean;
 }
 
-export default function StepCard({
+export function StepCard({
   step,
   number,
   screenshot,

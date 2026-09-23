@@ -135,6 +135,16 @@
           }
         }
       }
+    },
+    {
+      "includes": ["packages/ui/src/**", "src/ui/**", "src/lib/**", "apps/desktop/src/renderer/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "error"
+          }
+        }
+      }
     }
   ]
 }

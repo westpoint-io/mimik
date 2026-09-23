@@ -12,7 +12,7 @@ const MODES: { id: Mode; label: string; Icon: typeof AppWindow }[] = [
   { id: 'region', label: 'desktop_modeRegion', Icon: Crop },
 ];
 
-export default function CaptureSheet({ onClose }: { onClose(): void }) {
+export function CaptureSheet({ onClose }: { onClose(): void }) {
   const [settings, setSettings] = useState<CaptureSettings | null>(null);
 
   useEffect(() => {
