@@ -271,7 +271,7 @@ the way in and the rectangle with `screenToDipRect` on the way out, the same con
 name.
 
 `focusedElement()` is the second call. The remaining three — `keyLabel`, `resolveKey` and
-`resetDeadKeyState` — are the keyboard, and unlike the first two they are synchronous, because
+`clearDeadKey` — are the keyboard, and unlike the first two they are synchronous, because
 resolving a scancode against a keyboard layout is a local call with nothing to wait on. It reports `isPassword` alongside the usual fields, and the value is discarded at the
 addon boundary when that flag is set, so a password never reaches our data even though UIAutomation
 already withholds it.
@@ -671,7 +671,7 @@ written unless it is a text field with something to show for it. A password fiel
 in the other direction: it reports no value by design, and the step is written anyway with no
 `inputValue`, worded "Type password" rather than naming any contents.
 
-Keys that are not typing get their own step, unless `captureKeys` is off. A shortcut always does; `Enter`, `Tab` and `Escape` do
+Keys that are not typing get their own step, unless `recordKeys` is off. A shortcut always does; `Enter`, `Tab` and `Escape` do
 only when no typing session was open, because the `Enter` that submits a field is part of that
 field's step rather than a step of its own. Auto-repeat is collapsed the way a double click is —
 `isRepeatKey` drops the same keycode within 500 ms, so holding a key down is one step.
@@ -683,14 +683,16 @@ as `Q` on QWERTY and `A` on AZERTY, which is what the application being recorded
 dead-key state as a side effect, and a shortcut only needs the letter, digit or named key. A key that
 maps to none of those yields no label and therefore no step, rather than a step nobody can follow.
 
-Two sources compete for the text and `chooseTypedText` picks between them. The field's value wins
+Two sources compete for the text and `typedTextFor` picks between them. The field's value wins
 by default, because it is what is actually on screen and it survives caret movement, selection and
-autocomplete; turning `typingSmartDetection` off skips that read entirely and always uses the
-buffer. The keystroke buffer wins in three cases: the focused element reports no value, the
-value is empty, or the value runs more than twice the buffer and past 80 characters. That last rule
-is what makes rich text work — in a word processor the "field" is the whole document, so its value
-is the entire text rather than the sentence just typed, and the buffer is the only thing that knows
-which part is new. A non-text role yields nothing at all, so a keypress in a file manager is not a
+autocomplete; turning `readFieldText` off skips that read entirely and always uses the buffer. The
+keystroke buffer wins in three cases: the focused element reports no value, the value is empty, or
+the field holds more than was typed by a margin that depends on its type — 24 characters for a
+document, 120 for anything else. That last rule is what makes rich text work — in a word processor
+the "field" is the whole document, so its value is the entire text rather than the sentence just
+typed, and the buffer is the only thing that knows which part is new. A document gets the small
+margin because holding text beyond this session is what a document normally does, while a single
+field holding far more than was typed is the exception. A non-text role yields nothing at all, so a keypress in a file manager is not a
 step.
 
 Building that buffer is the only place a keystroke becomes a character. `resolveKey` runs
@@ -698,7 +700,7 @@ Building that buffer is the only place a keystroke becomes a character. `resolve
 caps-lock state, and appends what comes back; `Backspace` removes one. Dead keys fall out of this
 for free: `ToUnicodeEx` returns nothing for the accent itself and the composed character for the key
 after it, because it keeps that state per thread and every keystroke goes through the same one. The
-cost is that the state is real and can be left armed, so `resetDeadKeyState` flushes it whenever a
+cost is that the state is real and can be left armed, so `clearDeadKey` flushes it whenever a
 session ends.
 
 Values are stripped of `\uFFF9`–`\uFFFD`, `\uFEFF` and `\u200B` before use. Accessibility
@@ -876,13 +878,13 @@ that is worth one deliberate choice before recording rather than a control disco
 Picking a mode writes `captureMode` straight through to `capture-settings.json`, so the sheet reopens
 on whatever was used last and the recording bar's own picker reads the same value.
 
-The sheet holds the mode and nothing else. `captureOutsideClicks` was tried there and taken out: read
+The sheet holds the mode and nothing else. `keepClicksBeyondArea` was tried there and taken out: read
 beside a rectangle the user has just chosen, an option that falls back to the whole screen reads as
 undoing that choice, when what it really decides is whether a click outside the rectangle is dropped
 or kept. It stays in Settings, where there is room to say so. Nothing in the sheet is editable in two
 places.
 
-Start on Selected Region opens the region editor first and arming happens when the rectangle is
+Starting in Area mode opens the region editor first and arming happens when the rectangle is
 confirmed. The other two modes arm directly, because they have no rectangle to draw.
 
 Guide rows carry an avatar built from the guide title through `getDomainInitial`, which gives a stable
@@ -908,16 +910,18 @@ read by main rather than by core, because none of them mean anything to the exte
 | `showCursor` | on | A pointer is drawn into the screenshot at the click point |
 | `cursorStyle` | `arrow`, `dot` on Linux | Which pointer shape gets drawn |
 | `screenshotDelayMs` | 0, capped at 2000 | Extra wait between the click and the grab |
-| `captureOutsideClicks` | off | Whether clicks beyond the capture area are recorded at all, in `region` mode only |
-| `captureKeys` | on | Whether a shortcut or a named key becomes a step |
-| `captureTyping` | on | Whether typing becomes a step |
+| `keepClicksBeyondArea` | off | Whether clicks beyond the capture area are recorded at all, in `region` mode only |
+| `recordKeys` | on | Whether a shortcut or a named key becomes a step |
+| `recordTyping` | on | Whether typing becomes a step |
 | `typingDebounceMs` | 1200, clamped to 200–5000 | Quiet time that closes a typing session |
-| `typingSmartDetection` | on | Off means the keystroke buffer is used and the field's value is never read |
+| `readFieldText` | on | Off means the keystroke buffer is used and the field's value is never read |
 | `zoomLevel` | automatic | How far a step zooms toward the click: `null` derives it, or 1–5 in 0.25 steps |
 | `shortcuts` | three accelerators | Global keys for start/stop, pause/resume and capture now |
 
 `normaliseSettings` runs on every read and write, so an out-of-range delay clamps and an unknown
-cursor style falls back to the platform default rather than reaching the recorder.
+cursor style falls back to the platform default rather than reaching the recorder. It also reads four
+settings under the names an earlier build saved them as, so a file written before the rename keeps
+its choices; the next save writes only the current names.
 
 `CursorStyle` and `CursorMark` are core's, not main's. The mark is written in main, crosses IPC, and
 is stored as `edits.cursor`, which the renderer reads through core's type — so two declarations had to
@@ -944,8 +948,9 @@ burst of clicks stays suppressed until there is a real gap. The rule is time onl
 takes its timestamps as arguments rather than reading the clock, so it is exercised without a mouse.
 
 The cost is that two deliberate presses on different controls less than 500 ms apart become one step.
-Matching on position as well would separate them, and that was tried and dropped in favour of keeping
-the rule identical to the one this behaviour was modelled on.
+Matching on position as well would separate them, and that was tried and dropped: a position check
+needs a distance tolerance, and one that fits a 1× display is wrong on a 2× one, while time alone
+needs no tuning.
 
 A click outside the capture area cannot be framed by a region that does not contain it, so those
 captures fall back to the whole display the click landed on. `shouldCapture` is exported for that
@@ -1052,7 +1057,7 @@ point of pressing it is that the cursor is already on the thing worth capturing.
 
 The keystroke that drives a shortcut must not also be recorded as one. Without that check, pausing a
 recording writes "Press Alt+Shift+P on Mimik" as a step, which is both wrong and confusing, and
-resuming writes another. `matchesShortcut` compares a keystroke against each configured accelerator
+resuming writes another. `isBoundShortcut` compares a keystroke against each configured accelerator
 before `captureKey` writes anything, and it compares by parts rather than by string so
 `Shift+Alt+P` and `Alt+Shift+P` are the same shortcut. `CommandOrControl` resolves to Control
 everywhere but macOS.
