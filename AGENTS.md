@@ -152,7 +152,9 @@ The mapping is chosen so the shared precedence in `buildFallbackDescription` —
 branching on `source`. That is why the accessible name lands in `ariaLabel` rather than `name`:
 `name` sits near the bottom of that list, and a control's accessible name should beat its value.
 `name` therefore holds the stable machine identifier instead, which is what a future desktop replay
-will want. UIAutomation has no placeholder property in the API surface we bind, so that field stays
+will want. A description never quotes one that reads as an identifier — no spaces, and a digit, a
+separator or a camel-case join, like `fl-post-111` or `SaveButton` — because that is an id attribute,
+not something a reader can find on screen. UIAutomation has no placeholder property in the API surface we bind, so that field stays
 null there.
 
 A fourth source, `screen`, knows only where the click landed: it fills `rect` with a fixed box around
@@ -256,7 +258,18 @@ missing. macOS is the same shape of work against `AXUIElementCopyAttributeValue`
 
 The implementation is `IUIAutomation::ElementFromPoint` and six property reads, plus a walk of the
 control view when the element has no name. Named elements skip the walk, because every step of it is
-another cross-process call into the application being recorded. COM is initialised
+another cross-process call into the application being recorded.
+
+The hit test alone is not the answer. It returns whatever the application's provider says is at the
+point, and some providers answer with a layer rather than a control: the Windows 11 search panel
+reports a pane called "CoreInput" covering every result, so each click on a result was named after
+it. Whenever the hit has children, its whole subtree is fetched with `FindAllBuildCache`, the
+rectangles cached so the lookup is one cross-process call rather than one per element, and the
+smallest element whose rectangle holds the point is used instead. A tie keeps the outer element,
+since `FindAll` lists a parent before its children and the parent is the control. A text field is
+left alone, because narrowing it would land on the text run inside and turn "Enter" into "Click".
+`smallest_under` in `hit.rs` is that rule with no COM in it, which is why it is the one part of the
+addon with tests that run on Linux. COM is initialised
 multi-threaded once per worker thread and the `IUIAutomation` instance is cached in a thread local,
 because the call runs on the libuv threadpool through `AsyncTask` rather than on the main thread —
 a cross-process UIAutomation call against a busy application blocks for as long as that application
@@ -480,8 +493,11 @@ screenshots it was displaying.
 `overlay.withHidden(fn)` is the fallback for Linux, where content protection is a no-op. It hides
 every visible overlay for the duration of `fn` and restores exactly the ones it hid, reapplying
 protection on the way back. Hiding a window is visible as a blink once per captured step, so it is
-used only where nothing else works. `setOpacity(0)` is not an alternative: it stopped captures
-happening at all.
+used only where nothing else works. It waits 60 ms after hiding before running `fn`, since a grab
+taken straight after `hide()` can beat the compositor and still contain the card. Grabs can overlap —
+a click that closes a typing session starts two — so overlapping calls share one hide and the
+windows come back when the last of them finishes. `setOpacity(0)` is
+not an alternative: it stopped captures happening at all.
 
 Anything the card hides is hidden with the `hidden` property, and `body.controls [hidden]` forces
 `display: none` because several of those elements are flex containers whose author rule outranks the
@@ -540,8 +556,8 @@ they came from.
 The work splits across the process boundary the way the extension splits across content script and
 service worker. `DesktopRecorder` in main owns the global input hook, discards clicks outside the
 capture region or while paused, and serialises the rest through a single promise chain so two clicks
-cannot interleave. For each click it hides the overlays, grabs the display, crops to the region with
-`nativeImage.crop`, and writes the result to disk. `DesktopCaptureSink` in the renderer
+cannot interleave. For each click it hides the overlays, grabs the display, crops to what the capture
+mode frames, and writes the result to disk. `DesktopCaptureSink` in the renderer
 implements `CaptureSink` and writes through `@mimik/core/guides/service`, exactly as the extension's
 `step-pipeline.ts` does.
 
@@ -577,11 +593,23 @@ Files outlive the rows that point at them, because deleting a guide only removes
 renderer sends every known screenshot id to main at startup and main deletes any file not in that
 set, so an interrupted delete costs disk until the next launch rather than forever.
 
-Which window is focused is read **after** the settle delay, not when the click arrives. The input hook
-fires on the press, and the operating system has not necessarily moved the foreground window yet, so
-asking first frames whatever was in front a moment ago — the recording card included, if that was the
-last thing touched. Reading it beside the grab is the only ordering that describes the screen being
-photographed.
+A click is the press, not the release. The hook listens for `mousedown`, and the element lookup and
+the display grab both start in that handler rather than when the capture queue reaches the step.
+By the release the application has already acted — the new tab exists and its close button is under
+the pointer, the popup the pointer was on has closed, the skipped ad has become the next button —
+and every one of those read back as a confidently wrong step name. Starting them in the queue was
+the same mistake with a longer delay, because a click that lands while the previous step is still
+being written waits for it. A press that turns into a drag is therefore a click as well.
+
+The display is grabbed first and cropped last. `grabDisplay` takes the whole display under the click
+and hands back a function that crops it, and the frame is chosen only afterwards, so neither a
+window lookup nor a delay sits between the press and the picture.
+
+Which window is focused is read **after** the grab and at least the settle delay after the click,
+never when the click arrives, because the operating system has not necessarily moved the foreground
+window yet — asking first frames whatever was in front a moment ago, the recording card included if
+that was the last thing touched. The settle delay runs beside the grab rather than before it, so it
+costs the screenshot nothing.
 
 The card itself is not focusable, so clicking Pause or Finish never makes the app frontmost and never
 changes what active-window mode will frame next. The region editors stay focusable because they read
@@ -604,8 +632,8 @@ and the foreground app and window title; it just knows nothing about the control
 step degrades to where the addon has no build, where the lookup times out, and on every platform but
 Windows.
 
-The lookup starts the moment the click arrives and is awaited after the grab, so it overlaps the
-settle delay and the screenshot instead of adding to them. That it runs early is not only for speed:
+The lookup starts on the press and is awaited after the grab, so it overlaps the settle delay and
+the screenshot instead of adding to them. That it runs early is not only for speed:
 the control has to be read before the click takes effect, or a menu that has opened or a button that
 has vanished is what answers. It is the mirror of the focused-window read, which has to happen late
 for the same reason — the window the click moved to the front is the one being photographed, but the
@@ -678,7 +706,7 @@ returns its top-level window and the target outlines the entire screenshot.
 
 Typing is one step, and the text in it is read rather than reconstructed. The keyboard hook decides
 only *when* a typing session starts and ends; what was typed comes from the focused element's value
-in the accessibility tree at the moment the session closes. That is the whole reason there is no
+in the accessibility tree. That is the whole reason there is no
 keycode table, no layout handling, no dead-key state and no IME composition tracking in this
 codebase — the machinery those need exists to answer a question we do not ask.
 
@@ -686,6 +714,20 @@ A session opens on any key that is not a modifier, not `Enter`, `Tab` or `Escape
 `Ctrl`, `Alt` or `Meta`, and every such key also appends to a buffer of what was typed. It closes on any of those, on a click, on pause, on stop, or after 1200 ms
 with no keys. `Shift` plus a letter still counts as typing, which is why modifiers are tested
 individually rather than as a set.
+
+When the value is read depends on what closed the session. The idle timeout and `Enter`, `Tab` or
+`Escape` read it then, because the field still has focus and the last keys are only in the live
+value. A click, pause, stop or capture-now reads a snapshot instead: 400 ms after each key the
+focused element is read again, because by the time a click closes the session the focus has moved
+to whatever was clicked — a search suggestion, say — and a read then finds no text field and drops
+the step. A key typed after the snapshot makes its value stale, so the snapshot still says which
+field it was but the text comes from the keystroke buffer. No snapshot at all, a click within
+400 ms of the first key, falls back to reading at the close.
+
+Whichever read it is starts when the session closes, and so does the typing step's grab, which
+follows the field read so it frames the right display. Neither waits for the queue. `Enter` in a
+browser's address bar is why: by the time a queued read ran, the page had navigated, focus had
+moved to the document, and the step named the new tab page and photographed its wallpaper.
 
 Closing a session does not guarantee a step. The focused element is read first, and nothing is
 written unless it is a text field with something to show for it. A password field is the exception
@@ -788,12 +830,17 @@ means the guide is always named, and the AI title is an improvement rather than 
 
 Step descriptions are only as good as the element lookup. `buildFallbackDescription` picks the verb
 from the role — a text field is entered, a combo box, radio button or menu item is selected, anything
-else is clicked — and quotes the name it finds. The name is the accessible name first; a text field
+else is clicked — and quotes the name it finds. A desktop typing step quotes what was typed instead,
+`Type "…"`, collapsed to one line and cut at 200 characters, because the text is the instruction
+and the field is usually obvious from the screenshot; the extension still names the field. The name
+is the accessible name first; a text field
 then falls back to its placeholder and help text but never its value, which is what was typed into
-it. An element with no name of its own borrows one: a group or pane from the first named control
+it, and the machine identifier is used only when it does not read as one. An element with no name of its own borrows one: a group or pane from the first named control
 inside it, anything else from its nearest named ancestor, stopping at the window, because naming
 the window as the click target would be wrong. Chrome's internal window class names and bare numbers
-on panes are discarded, since the accessibility tree reports both as names. When nothing is left the
+on panes are discarded, since the accessibility tree reports both as names, and invisible format
+characters are stripped from every name — web pages wrap words in direction isolates and
+zero-width marks that the PDF font draws as boxes. When nothing is left the
 step reads "Click here" rather than "Click treeitem" — the control type is not a name. A
 `screen`-sourced recording, with no lookup at all, is every step reading "Click here".
 
