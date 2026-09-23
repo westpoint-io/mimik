@@ -1,40 +1,58 @@
 import { i18n } from '@/core/env';
 import type { ElementMeta, ElementNode } from '@/core/guides/types';
 
-const FIELD_ROLES = new Set(['textbox', 'searchbox']);
-const SELECT_ROLES = new Set(['combobox', 'radio', 'menuitem', 'option']);
-const CONTAINER_ROLES = new Set(['group', 'pane']);
-const OUTER_ROLES = new Set(['document', 'window', 'pane', 'application']);
-const CHILD_ROLES = new Set(['textbox', 'searchbox', 'combobox', 'button', 'link', 'checkbox', 'radio', 'slider']);
-const HOST_WINDOW =
-  /^(Chrome_RenderWidgetHostHWND|Chrome_WidgetWin_\d*|CefBrowserWindow|Intermediate D3D Window|Chrome Legacy Window)$/i;
-const MAX_NAME = 200;
+const VERB_BY_ROLE: Record<string, 'enter' | 'select'> = {
+  combobox: 'select',
+  menuitem: 'select',
+  option: 'select',
+  radio: 'select',
+  searchbox: 'enter',
+  textbox: 'enter',
+};
+const WRAPPERS = new Set(['group', 'pane']);
+const BOUNDARIES = new Set(['application', 'document', 'pane', 'window']);
+const LABELLING_CONTROLS = new Set([
+  'button',
+  'checkbox',
+  'combobox',
+  'link',
+  'radio',
+  'searchbox',
+  'slider',
+  'textbox',
+]);
+const HOST_SURFACES = new Set([
+  'cefbrowserwindow',
+  'chrome legacy window',
+  'chrome_renderwidgethosthwnd',
+  'intermediate d3d window',
+]);
+const NAME_LIMIT = 200;
 
 function elementName(meta: ElementMeta): string {
-  const clean = (value: string | null | undefined) => {
-    const text = value?.trim() ?? '';
-    return HOST_WINDOW.test(text) ? '' : text;
+  const usable = (value: string | null | undefined) => {
+    const text = (value ?? '').trim();
+    const lower = text.toLowerCase();
+    return HOST_SURFACES.has(lower) || lower.startsWith('chrome_widgetwin_') ? '' : text;
   };
   const role = meta.role ?? '';
-  const value = clean(meta.textContent?.slice(0, 80));
-  const shown = OUTER_ROLES.has(role) && /^\d+$/.test(value) ? '' : value;
-  const own = FIELD_ROLES.has(role)
-    ? clean(meta.ariaLabel) || clean(meta.placeholder) || clean(meta.altText) || clean(meta.name)
-    : clean(meta.ariaLabel) || clean(meta.placeholder) || shown || clean(meta.altText) || clean(meta.name);
-  if (own) return own.slice(0, MAX_NAME);
+  const value = usable(meta.textContent?.slice(0, 80));
+  const hideValue = VERB_BY_ROLE[role] === 'enter' || (BOUNDARIES.has(role) && /^\d+$/.test(value));
+  const own = [meta.ariaLabel, meta.placeholder, hideValue ? null : value, meta.altText, meta.name]
+    .map(usable)
+    .find(Boolean);
+  if (own) return own.slice(0, NAME_LIMIT);
 
-  const named = (node: ElementNode | undefined) => clean(node?.name);
-  if (CONTAINER_ROLES.has(role)) {
-    const child =
-      meta.children?.find((node) => CHILD_ROLES.has(node.role ?? '') && named(node)) ??
-      meta.children?.find((node) => node.role === 'text' && named(node));
-    if (child) return named(child).slice(0, MAX_NAME);
-  }
-  for (const ancestor of meta.ancestors ?? []) {
-    if (OUTER_ROLES.has(ancestor.role ?? '')) break;
-    if (named(ancestor)) return named(ancestor).slice(0, MAX_NAME);
-  }
-  return '';
+  const rank = (node: ElementNode) => (LABELLING_CONTROLS.has(node.role ?? '') ? 0 : node.role === 'text' ? 1 : 2);
+  const inside = WRAPPERS.has(role)
+    ? (meta.children ?? []).filter((node) => rank(node) < 2 && usable(node.name)).sort((a, b) => rank(a) - rank(b))[0]
+    : undefined;
+  if (inside) return usable(inside.name).slice(0, NAME_LIMIT);
+
+  const ancestors = meta.ancestors ?? [];
+  const boundary = ancestors.findIndex((node) => BOUNDARIES.has(node.role ?? ''));
+  const around = (boundary === -1 ? ancestors : ancestors.slice(0, boundary)).find((node) => usable(node.name));
+  return around ? usable(around.name).slice(0, NAME_LIMIT) : '';
 }
 
 export function buildFallbackDescription(action: string, meta: ElementMeta): string {
@@ -55,8 +73,8 @@ export function buildFallbackDescription(action: string, meta: ElementMeta): str
       if (meta.tag === 'input' && meta.inputType === 'radio') return i18n.t('steps.select', [name]);
       if (meta.role === 'switch') return i18n.t('steps.toggleSwitch', [name]);
       if (meta.role === 'checkbox') return i18n.t('steps.toggleCheckbox', [name]);
-      if (SELECT_ROLES.has(meta.role ?? '')) return i18n.t('steps.select', [name]);
-      if (FIELD_ROLES.has(meta.role ?? '')) return i18n.t('steps.enter', [name]);
+      if (VERB_BY_ROLE[meta.role ?? ''] === 'select') return i18n.t('steps.select', [name]);
+      if (VERB_BY_ROLE[meta.role ?? ''] === 'enter') return i18n.t('steps.enter', [name]);
       if (meta.href) return i18n.t('steps.clickLink', [name]);
       return i18n.t('steps.click', [name]);
     case 'input':
