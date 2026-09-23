@@ -5,5 +5,9 @@
   "type": "module",
   "exports": {
     "./*": "./src/*"
-  }
+  },
+  "sideEffects": [
+    "**/*.css",
+    "./src/lib/utils.ts"
+  ]
 }
