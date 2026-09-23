@@ -14,10 +14,44 @@ export type OverlayCommand =
   | 'stop'
   | 'mode:window'
   | 'mode:screen'
-  | 'mode:region';
+  | 'mode:region'
+  | 'remove'
+  | 'intro:done';
+
+export interface OverlayStep {
+  id: string;
+  index: number;
+  title: string;
+  src: string;
+  source: 'heuristic' | 'ai';
+  pending: boolean;
+  app: string | null;
+}
+
+export interface OverlayShortcuts {
+  startStop: string | null;
+  capture: string | null;
+}
+
+export interface OverlayView {
+  state: OverlayState;
+  region: Region;
+  step: OverlayStep | null;
+  mode: CaptureMode;
+  busy: boolean;
+  starting: boolean;
+  shortcuts: OverlayShortcuts;
+}
+
+export interface OverlayOptions {
+  introFrame?: () => Promise<Region>;
+  shortcuts?: () => OverlayShortcuts;
+}
 
 const BORDER = 3;
 const CONTROLS = { width: 300, height: 190, margin: 24 };
+const INTRO_LIMIT_MS = 6000;
+const NO_SHORTCUTS: OverlayShortcuts = { startStop: null, capture: null };
 
 function rendererFile(): string {
   return join(__dirname, '../renderer/overlay.html');
@@ -70,22 +104,23 @@ export class CaptureOverlay {
   private editors: BrowserWindow[] = [];
   private boundary: BrowserWindow | null = null;
   private controls: BrowserWindow | null = null;
+  private intro: BrowserWindow | null = null;
+  private introDone: ((finished: boolean) => void) | null = null;
   private current: OverlayState = 'hidden';
   private rect: Region;
-  private last: { index: number; title: string; src: string } | null = null;
+  private step: OverlayStep | null = null;
   private size = { width: CONTROLS.width, height: CONTROLS.height };
   private busy = false;
+  private starting = false;
 
   constructor(
     private onCommand: (command: OverlayCommand) => void,
     private mode: () => CaptureMode = () => 'region',
+    private options: OverlayOptions = {},
   ) {
     this.rect = loadRegion();
     ipcMain.handle('mimik:overlay:region', () => this.rect);
-    ipcMain.handle('mimik:overlay:state', () => this.current);
-    ipcMain.handle('mimik:overlay:last', () => this.last);
-    ipcMain.handle('mimik:overlay:mode', () => this.mode());
-    ipcMain.handle('mimik:overlay:busy', () => this.busy);
+    ipcMain.handle('mimik:overlay:view', () => this.view());
     ipcMain.on('mimik:overlay:setRegion', (_event, next: Region) => this.setRegion(next));
     ipcMain.on('mimik:overlay:command', (_event, command: OverlayCommand) => this.command(command));
     ipcMain.on('mimik:overlay:size', (_event, width: number, height: number) => this.resize(width, height));
@@ -105,9 +140,25 @@ export class CaptureOverlay {
     );
   }
 
+  get introWindow(): BrowserWindow | null {
+    return this.intro && !this.intro.isDestroyed() ? this.intro : null;
+  }
+
+  private view(): OverlayView {
+    return {
+      state: this.current,
+      region: this.rect,
+      step: this.step,
+      mode: this.mode(),
+      busy: this.busy,
+      starting: this.starting,
+      shortcuts: this.options.shortcuts?.() ?? NO_SHORTCUTS,
+    };
+  }
+
   private broadcast(): void {
-    for (const win of this.windows())
-      win.webContents.send('mimik:overlay:update', this.current, this.rect, this.last, this.mode(), this.busy);
+    const view = this.view();
+    for (const win of this.windows()) win.webContents.send('mimik:overlay:update', view);
   }
 
   refresh(): void {
@@ -123,8 +174,8 @@ export class CaptureOverlay {
     });
   }
 
-  stepCaptured(index: number, title: string, src: string): void {
-    this.last = { index, title, src };
+  showStep(step: OverlayStep | null): void {
+    this.step = step ? { ...step } : null;
     this.broadcast();
   }
 
@@ -238,7 +289,51 @@ export class CaptureOverlay {
     this.show('paused');
   }
 
+  private async begin(): Promise<void> {
+    if (this.starting) return;
+    this.starting = true;
+    this.show('armed');
+    const frame = await (this.options.introFrame?.() ?? Promise.resolve(this.displayUnderCursor())).catch(() =>
+      this.displayUnderCursor(),
+    );
+    const finished = await this.playIntro(frame);
+    this.starting = false;
+    if (!finished) return;
+    this.record();
+    this.onCommand('start');
+  }
+
+  private displayUnderCursor(): Region {
+    return screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).bounds;
+  }
+
+  private playIntro(frame: Region): Promise<boolean> {
+    return new Promise((resolve) => {
+      const win = overlayWindow(frame, 'intro', false);
+      this.intro = win;
+      let settled = false;
+      const done = (finished: boolean) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(limit);
+        this.introDone = null;
+        this.intro = null;
+        if (!win.isDestroyed()) win.destroy();
+        resolve(finished);
+      };
+      const limit = setTimeout(() => done(true), INTRO_LIMIT_MS);
+      this.introDone = done;
+      win.once('ready-to-show', () => {
+        win.showInactive();
+        protect(win);
+      });
+      win.once('closed', () => done(true));
+    });
+  }
+
   hide(): void {
+    this.introDone?.(false);
+    this.starting = false;
     this.current = 'hidden';
     this.closeEditors();
     for (const win of this.windows()) win.hide();
@@ -253,12 +348,25 @@ export class CaptureOverlay {
       this.onCommand(command);
       return;
     }
+    if (command === 'intro:done') {
+      this.introDone?.(true);
+      return;
+    }
+    if (command === 'start') {
+      void this.begin();
+      return;
+    }
+    if (command === 'remove') {
+      if (!this.busy) this.onCommand(command);
+      return;
+    }
+    if (this.starting && command !== 'cancel' && command !== 'stop') return;
     if (command === 'edit') this.edit();
     else if (command === 'arm') this.arm();
-    else if (command === 'start' || command === 'resume') this.record();
+    else if (command === 'resume') this.record();
     else if (command === 'pause') this.pause();
     else {
-      this.last = null;
+      this.step = null;
       this.hide();
     }
     this.onCommand(command);
@@ -281,18 +389,12 @@ export class CaptureOverlay {
 
   destroy(): void {
     this.closeEditors();
+    this.introDone?.(false);
     for (const win of [this.boundary, this.controls]) if (win && !win.isDestroyed()) win.destroy();
     this.boundary = null;
     this.controls = null;
     this.current = 'hidden';
-    for (const channel of [
-      'mimik:overlay:region',
-      'mimik:overlay:state',
-      'mimik:overlay:last',
-      'mimik:overlay:mode',
-      'mimik:overlay:busy',
-    ])
-      ipcMain.removeHandler(channel);
+    for (const channel of ['mimik:overlay:region', 'mimik:overlay:view']) ipcMain.removeHandler(channel);
     ipcMain.removeAllListeners('mimik:overlay:setRegion');
     ipcMain.removeAllListeners('mimik:overlay:command');
     ipcMain.removeAllListeners('mimik:overlay:size');

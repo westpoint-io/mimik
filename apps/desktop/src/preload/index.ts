@@ -14,6 +14,8 @@ const api = {
     region: (): Promise<Region> => ipcRenderer.invoke('mimik:capture:region'),
     edit: (): Promise<void> => ipcRenderer.invoke('mimik:capture:edit'),
     arm: (): Promise<void> => ipcRenderer.invoke('mimik:capture:arm'),
+    described: (stepId: string, description: string | null): void =>
+      ipcRenderer.send('mimik:capture:described', stepId, description),
     settings: {
       get: (): Promise<CaptureSettings> => ipcRenderer.invoke('mimik:capture:settings:get'),
       set: (patch: Partial<CaptureSettings>): Promise<CaptureSettings> =>

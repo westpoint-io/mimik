@@ -108,7 +108,7 @@ export function editor(origin: { x: number; y: number }): void {
     rect = current;
     paint();
   });
-  window.mimikOverlay.onUpdate((_state, current) => {
+  window.mimikOverlay.onUpdate(({ region: current }) => {
     rect = current;
     paint();
   });
