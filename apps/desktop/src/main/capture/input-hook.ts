@@ -46,7 +46,7 @@ export class InputHook {
       const { uIOhook } = await import('uiohook-napi');
       this.hook = uIOhook;
 
-      uIOhook.on('click', (event) => {
+      uIOhook.on('mousedown', (event) => {
         onAction({
           kind: 'click',
           button: Number(event.button ?? 1),

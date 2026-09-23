@@ -51,6 +51,7 @@ export interface OverlayOptions {
 const BORDER = 3;
 const CONTROLS = { width: 300, height: 190, margin: 24 };
 const INTRO_LIMIT_MS = 6000;
+const HIDE_SETTLE_MS = 60;
 const NO_SHORTCUTS: OverlayShortcuts = { startStop: null, capture: null };
 
 function rendererFile(): string {
@@ -111,6 +112,7 @@ export class CaptureOverlay {
   private step: OverlayStep | null = null;
   private size = { width: CONTROLS.width, height: CONTROLS.height };
   private busy = false;
+  private hiding: { shown: BrowserWindow[]; ready: Promise<unknown>; users: number } | null = null;
   private starting = false;
 
   constructor(
@@ -374,15 +376,26 @@ export class CaptureOverlay {
 
   async withHidden<T>(fn: () => Promise<T>): Promise<T> {
     if (process.platform !== 'linux') return fn();
-    const shown = this.windows().filter((win) => win.isVisible());
-    for (const win of shown) win.hide();
+    if (!this.hiding) {
+      const shown = this.windows().filter((win) => win.isVisible());
+      for (const win of shown) win.hide();
+      const ready = new Promise((resolve) => setTimeout(resolve, shown.length > 0 ? HIDE_SETTLE_MS : 0));
+      this.hiding = { shown, ready, users: 0 };
+    }
+    const hiding = this.hiding;
+    hiding.users += 1;
     try {
+      await hiding.ready;
       return await fn();
     } finally {
-      for (const win of shown) {
-        if (win.isDestroyed()) continue;
-        win.showInactive();
-        protect(win);
+      hiding.users -= 1;
+      if (hiding.users === 0) {
+        this.hiding = null;
+        for (const win of hiding.shown) {
+          if (win.isDestroyed()) continue;
+          win.showInactive();
+          protect(win);
+        }
       }
     }
   }

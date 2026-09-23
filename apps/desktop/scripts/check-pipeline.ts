@@ -83,7 +83,7 @@ app.whenReady().then(async () => {
     () => region,
     (fn) => fn(),
     (request) => ask(win.webContents, 'mimik:capture:step', { ...request, guideId: activeGuide }),
-    { grab: syntheticDisplay, settings: () => settings },
+    { grab: async () => syntheticDisplay, settings: () => settings },
   );
 
   activeGuide = await ask<string>(win.webContents, 'mimik:capture:startGuide');
@@ -221,7 +221,7 @@ app.whenReady().then(async () => {
       return Promise.resolve(null);
     },
     {
-      grab: syntheticDisplay,
+      grab: async () => syntheticDisplay,
       settings: () => ({
         ...REGION_MODE,
         showCursor: true,
@@ -400,6 +400,95 @@ app.whenReady().then(async () => {
       typedTextFor({ ...editor('\uFEFFhi\u200B'), role: 'textbox' }, '') === 'hi' &&
       typedTextFor(control, 'typed') === null,
     detail: 'a document far longer than the buffer yields the buffer, a short one yields the field, markers are stripped, a button yields nothing',
+  });
+
+  const typedThenClicked = async (keysAfterSnapshot: number) => {
+    const sent: CaptureRequest[] = [];
+    let focus: ScreenElement | null = { ...editor('whats is my ip'), role: 'textbox', ariaLabel: 'Address' };
+    const typist = new DesktopRecorder(
+      () => region,
+      (fn) => fn(),
+      (request) => {
+        sent.push(request);
+        return Promise.resolve(null);
+      },
+      {
+        grab: async () => syntheticDisplay,
+        settings: () => REGION_MODE,
+        lookup: () => Promise.resolve(control),
+        focused: () => Promise.resolve(focus),
+        resolve: () => Promise.resolve('x'),
+        reset: () => Promise.resolve(),
+      },
+    );
+    const key = () => typist.onAction(pressed(30));
+    for (let i = 0; i < 3; i++) key();
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    for (let i = 0; i < keysAfterSnapshot; i++) key();
+    focus = { ...control };
+    typist.onAction({ kind: 'click', button: 1, x: region.x + 60, y: region.y + 40, clicks: 1, at: Date.now() });
+    await typist.drain();
+    return sent.find((request) => request.action === 'input');
+  };
+  const settledTyping = await typedThenClicked(0);
+  const hurriedTyping = await typedThenClicked(1);
+  results.push({
+    name: 'typing survives a click that moves the focus',
+    ok:
+      settledTyping?.inputValue === 'whats is my ip' &&
+      settledTyping.elementMeta.ariaLabel === 'Address' &&
+      hurriedTyping?.inputValue === 'xxxx' &&
+      hurriedTyping.elementMeta.ariaLabel === 'Address',
+    detail: `a settled field gave "${settledTyping?.inputValue ?? ''}", a key after the snapshot gave "${hurriedTyping?.inputValue ?? ''}"`,
+  });
+
+  const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  const calls: string[] = [];
+  let release = () => {};
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const busy = new DesktopRecorder(
+    () => region,
+    (fn) => fn(),
+    async () => {
+      await gate;
+      return null;
+    },
+    {
+      grab: async () => {
+        calls.push('grab');
+        return syntheticDisplay;
+      },
+      settings: () => REGION_MODE,
+      lookup: () => {
+        calls.push('lookup');
+        return Promise.resolve(control);
+      },
+      focused: () => {
+        calls.push('focused');
+        return Promise.resolve(field);
+      },
+      resolve: () => Promise.resolve('x'),
+      reset: () => Promise.resolve(),
+    },
+  );
+  const tap = (x: number) =>
+    busy.onAction({ kind: 'click', button: 1, x: region.x + x, y: region.y + 40, clicks: 1, at: Date.now() });
+  tap(60);
+  await wait(600);
+  tap(200);
+  for (let i = 0; i < 3; i++) busy.onAction(pressed(30));
+  busy.onAction(pressed(28));
+  await wait(50);
+  const early = [...calls];
+  release();
+  await busy.drain();
+  const count = (name: string) => early.filter((call) => call === name).length;
+  results.push({
+    name: 'a press is read when it happens, not when the queue gets to it',
+    ok: count('lookup') === 2 && count('grab') === 3 && count('focused') === 1,
+    detail: `with the first step still being written: ${count('lookup')} lookups, ${count('grab')} grabs, ${count('focused')} field reads`,
   });
 
   const page = { x: 0, y: 0, width: 800, height: 600 };
