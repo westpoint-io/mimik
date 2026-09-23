@@ -5,15 +5,15 @@
   "tsx": true,
   "tailwind": {
     "config": "",
-    "css": "src/ui/sidepanel/index.css",
+    "css": "packages/ui/src/global.css",
     "baseColor": "neutral",
     "cssVariables": true
   },
   "aliases": {
-    "components": "@/ui/components",
-    "utils": "@/lib/utils",
-    "hooks": "@/lib/hooks",
-    "ui": "@/ui/components/ui"
+    "components": "@mimik/ui/components",
+    "utils": "@mimik/ui/common/lib/cn",
+    "hooks": "@mimik/ui/common/hooks",
+    "ui": "@mimik/ui/components/ui"
   },
   "iconLibrary": "lucide"
 }
