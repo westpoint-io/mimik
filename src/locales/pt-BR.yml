@@ -512,20 +512,23 @@ onboarding:
   openMimik: Abrir Mimik
 
 steps:
-  pressKey: "Pressionar $1 em $2"
-  toggleCheckbox: "Marcar $1"
-  selectRadio: "Selecionar $1"
-  toggleSwitch: "Ligar/desligar $1"
+  pressKey: 'Pressionar $1 em "$2"'
+  toggleCheckbox: 'Marcar "$1"'
+  select: 'Selecionar "$1"'
+  enter: 'Digitar em "$1"'
+  toggleSwitch: 'Ligar/desligar "$1"'
   clickLink: 'Clicar no link "$1"'
-  click: "Clicar em $1"
-  rightClick: "Clicar com o botão direito em $1"
-  typeIntoField: "Digitar no campo $1 $2"
-  typeInto: "Digitar em $1"
+  click: 'Clicar em "$1"'
+  clickHere: "Clicar aqui"
+  rightClick: 'Clicar com o botão direito em "$1"'
+  rightClickHere: "Clicar com o botão direito aqui"
+  typeIntoField: 'Digitar no campo $1 "$2"'
+  typeInto: 'Digitar em "$1"'
   typeSecret: "Digitar senha"
-  copyFrom: "Copiar de $1"
-  pasteInto: "Colar em $1"
-  cutFrom: "Recortar de $1"
-  drag: "Arrastar $1"
+  copyFrom: 'Copiar de "$1"'
+  pasteInto: 'Colar em "$1"'
+  cutFrom: 'Recortar de "$1"'
+  drag: 'Arrastar "$1"'
   navigate: Ir pra página
   defaultAction: "$1 $2"
 

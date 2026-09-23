@@ -512,20 +512,23 @@ onboarding:
   openMimik: Ouvrir Mimik
 
 steps:
-  pressKey: "Appuyer sur $1 dans $2"
-  toggleCheckbox: "Cocher $1"
-  selectRadio: "Sélectionner $1"
-  toggleSwitch: "Activer/désactiver $1"
+  pressKey: 'Appuyer sur $1 dans "$2"'
+  toggleCheckbox: 'Cocher "$1"'
+  select: 'Sélectionner "$1"'
+  enter: 'Saisir dans "$1"'
+  toggleSwitch: 'Activer/désactiver "$1"'
   clickLink: 'Cliquer sur le lien "$1"'
-  click: "Cliquer sur $1"
-  rightClick: "Clic droit sur $1"
-  typeIntoField: "Saisir dans le champ $1 $2"
-  typeInto: "Saisir dans $1"
+  click: 'Cliquer sur "$1"'
+  clickHere: "Cliquer ici"
+  rightClick: 'Clic droit sur "$1"'
+  rightClickHere: "Clic droit ici"
+  typeIntoField: 'Saisir dans le champ $1 "$2"'
+  typeInto: 'Saisir dans "$1"'
   typeSecret: "Saisir le mot de passe"
-  copyFrom: "Copier depuis $1"
-  pasteInto: "Coller dans $1"
-  cutFrom: "Couper depuis $1"
-  drag: "Glisser $1"
+  copyFrom: 'Copier depuis "$1"'
+  pasteInto: 'Coller dans "$1"'
+  cutFrom: 'Couper depuis "$1"'
+  drag: 'Glisser "$1"'
   navigate: "Aller à la page"
   defaultAction: "$1 $2"
 

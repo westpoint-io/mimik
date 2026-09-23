@@ -512,20 +512,23 @@ onboarding:
   openMimik: Open Mimik
 
 steps:
-  pressKey: "Press $1 on $2"
-  toggleCheckbox: "Toggle $1"
-  selectRadio: "Select $1"
-  toggleSwitch: "Toggle $1"
+  pressKey: 'Press $1 on "$2"'
+  toggleCheckbox: 'Toggle "$1"'
+  select: 'Select "$1"'
+  enter: 'Enter "$1"'
+  toggleSwitch: 'Toggle "$1"'
   clickLink: 'Click link "$1"'
-  click: "Click $1"
-  rightClick: "Right-click $1"
-  typeIntoField: "Type into $1 field $2"
-  typeInto: "Type into $1"
+  click: 'Click "$1"'
+  clickHere: "Click here"
+  rightClick: 'Right-click "$1"'
+  rightClickHere: "Right-click here"
+  typeIntoField: 'Type into $1 field "$2"'
+  typeInto: 'Type into "$1"'
   typeSecret: "Type password"
-  copyFrom: "Copy from $1"
-  pasteInto: "Paste into $1"
-  cutFrom: "Cut from $1"
-  drag: "Drag $1"
+  copyFrom: 'Copy from "$1"'
+  pasteInto: 'Paste into "$1"'
+  cutFrom: 'Cut from "$1"'
+  drag: 'Drag "$1"'
   navigate: Navigate to page
   defaultAction: "$1 $2"
 
