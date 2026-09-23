@@ -356,6 +356,40 @@ runtime to a path with no file and the app dies on launch with `ERR_MODULE_NOT_F
 `capture/screenshot.ts` keeps its own three-line `clamp` rather than importing core's: deduplicating
 a one-liner is not worth a cross-boundary dependency that does not work.
 
+## UI Package Layout
+
+`packages/ui/src` is grouped by feature, not by the surface that first used a file: `ai`,
+`annotation`, `common`, `export`, `guide`, `history`, `library`, `navigation` and `search`. Inside a
+feature, components sit in `components/`, hooks in `hooks/`, plain functions in `lib/`, a store
+slice in `store/`, and a `types.ts` only when several files share a type. `components/ui` holds the
+shadcn primitives as the generator writes them, and `stores/` merges the slices.
+
+A file exports one thing — a component, a hook or a function — and is named after it. A hook or a
+`lib/` function may keep one private helper that nothing else calls; a component file keeps none, so
+its helpers live in the feature's `lib/`. Constants and types may sit beside the export they serve.
+
+The apps import from `'@mimik/ui'` and nowhere deeper, except `@mimik/ui/env` and
+`@mimik/ui/global.css`. `src/index.ts` is the one file allowed to re-export, and code inside the
+package never imports through it — that would be a cycle. Adding a public component means adding a
+line there. The extension build was diffed against the pre-entry baseline: the service worker and
+the content script came out byte-identical, because neither imports the package, and the rest moved
+by a few hundred bytes.
+
+The linter holds all of it. `noRestrictedImports` rejects a deep `@mimik/ui/*` import from the apps
+and a bare `'@mimik/ui'` from anything under `packages/`. `noBarrelFile` rejects any other
+re-exporting file, and `useComponentExportOnlyModules` rejects a component file that also exports a
+function or a hook. The shadcn primitives are excused from the last rule, since they export their
+`*Variants` beside the component and regenerating them would bring that back. Nothing checks
+that a `lib/` file holds one function; that part is review.
+
+Three things break quietly when files move here. The root `tsconfig.json` declares its own `paths`,
+which replace the ones in `.wxt/tsconfig.json` rather than extending them, so the bare `@mimik/ui`
+entry has to be listed in the root config and in `apps/desktop/tsconfig.json` alike. A `vi.mock`
+path is a string the refactoring tools do not rewrite, and a stale one mocks nothing without
+failing. And `sideEffects` in the package's `package.json` names `common/lib/dayjs-locale.ts`,
+because that file registers the dayjs locales by importing them; renaming it without updating
+the entry lets a bundler drop the translations.
+
 ## Which Client Is Running
 
 `configureCore` carries a `client`, `extension` or `desktop`, and `client()` reads it back. Shared
@@ -469,7 +503,7 @@ it; `lucide` has no dependencies and hands back an `SVGElement`. Copying path da
 package is not the alternative — that silently pins the overlay to whatever the icons looked like on
 the day it was written.
 
-The mascot's geometry lives once, in `packages/ui/src/shared/mascot-shapes.ts`. `MascotIcon` renders it
+The mascot's geometry lives once, in `packages/ui/src/common/lib/mascot-shapes.ts`. `MascotIcon` renders it
 as React with Tailwind classes so it themes with tokens; the overlay builds the same paths as DOM nodes
 with CSS variables, because that renderer has neither React nor Tailwind. Two renderers, one set of
 coordinates — copying the paths into the overlay would have made it the fifth copy of this drawing in
@@ -789,9 +823,9 @@ take a search and replace.
 
 ## Fullview Store
 
-One Zustand store, four slices — `library`, `search`, `guide`, `editor` — merged in
-`stores/fullview.ts`. Consumers see no difference: `useFullviewStore` and `useFullview` are the same
-exports they always were, and `useFullview` still wraps `useShallow`, which is what makes the
+One Zustand store, four slices — `library`, `search`, `guide`, `editor` — each living in its
+feature's `store/` folder and merged in `stores/fullview.ts`. `useFullview` sits beside it in
+`stores/use-fullview.ts` and wraps `useShallow`, which is what makes the
 object-returning selectors all over the fullview safe rather than a re-render trap.
 
 Slices rather than separate stores because one cross-domain write genuinely exists: opening a
@@ -871,7 +905,7 @@ letter and tint from a hash without a second query. A desktop guide has no web a
 only identity available. Star and delete are always visible rather than revealed on hover, matching
 the side panel; the fullview list hides them until hover and that reads as inert in a window this wide.
 
-Routing is `@mimik/ui/fullview/router`, not a hand-rolled `hashchange` listener. The desktop had one
+Routing is `useRoute` and `navigate` from `@mimik/ui`, not a hand-rolled `hashchange` listener. The desktop had one
 matching `#guide/<id>`, which is the same scheme the shared router already parses, so adopting it
 cost nothing and bought Starred and Trash the routes the header needs. `HomeScreen` serves the `all`
 category and `LibraryContent` serves the other two, because the hero and Start Capture belong on the
@@ -976,8 +1010,8 @@ altogether, because the extension shows the verdict, the model list and the warn
 separate things and the copy collapsed them into one line. Two implementations of the same screen
 diverge by default; one does not.
 
-What moved with it: `KeyStatusNote`, `KeyWarningNote`, `ModelList`, `SecretInput` and `useKeyCheck`,
-all now in `key-status.tsx`. The hook takes its validator as an argument, which is the only part
+What moved with it: `KeyStatusNote`, `KeyWarningNote`, `ModelList` and `SecretInput`, one file each
+under `ai/components`, and `useKeyCheck` in `ai/hooks`. The hook takes its validator as an argument, which is the only part
 that genuinely differs — the extension goes through background messaging because a service worker is
 what has `host_permissions`, and the desktop calls `validateApiKey` directly on top of the main
 process fetch.
