@@ -11,7 +11,7 @@ import {
   resolveBaseUrl,
 } from '../models';
 
-const LOCALES = ['en', 'de', 'es', 'fr', 'pt-BR', 'zh-CN'];
+const LOCALES = ['en', 'de', 'es', 'fr', 'pt-BR', 'zh-CN', 'ru'];
 
 const MODEL_KEYS = ['settings.model', 'settings.modelCustom'];
 

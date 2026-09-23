@@ -68,6 +68,7 @@ export const AI_LANGUAGES = [
   { code: 'pt-BR', label: 'Português (Brasil)' },
   { code: 'fr', label: 'Français' },
   { code: 'de', label: 'Deutsch' },
+  { code: 'ru', label: 'Русский' },
 ] as const;
 
 export type AILanguageCode = (typeof AI_LANGUAGES)[number]['code'];
@@ -77,6 +78,7 @@ const LANGUAGE_NAMES: Record<string, string> = {
   fr: 'French',
   pt: 'Brazilian Portuguese',
   de: 'German',
+  ru: 'Russian',
   ja: 'Japanese',
   ko: 'Korean',
   zh: 'Chinese',

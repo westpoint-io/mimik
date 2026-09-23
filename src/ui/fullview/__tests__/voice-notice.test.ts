@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { PanelVoiceUpdate, VoicePhase } from '@/lib/port';
 import { VOICE_CONFIRM_MS, voiceNotice, voiceSignature } from '../voice-notice';
 
-const LOCALES = ['en', 'es', 'fr', 'pt-BR', 'zh-CN'];
+const LOCALES = ['en', 'es', 'fr', 'pt-BR', 'zh-CN', 'ru'];
 
 function update(phase: VoicePhase, extra: Partial<PanelVoiceUpdate> = {}): PanelVoiceUpdate {
   return { type: 'VOICE_UPDATE', phase, ...extra };
