@@ -160,7 +160,9 @@ the click point, `clickPoint`, `devicePixelRatio`, `app` and `window`, and leave
 null.
 
 `tag`, `cssSelector`, `href` and `dataTestId` are DOM-only and absent elsewhere. `app` and `window`
-are the reverse — desktop only. `inputType` is mostly DOM-only, but a desktop typing step sets it to
+are the reverse — desktop only — and so are `ancestors` and `children`, the role and name of up to
+four elements above the target and twelve directly inside it, filled only when the target has no
+name of its own. `inputType` is mostly DOM-only, but a desktop typing step sets it to
 `password` when the field says so, because that is the one input type a screen capture can learn.
 
 Guide Me is the one place a `source` check is correct, through `isReplayable`. It replays against a
@@ -252,7 +254,9 @@ Windows only. `is_supported()` answers false everywhere else and `elementAtPoint
 so the app, the checks and the recording pipeline all behave the same as when the binary is simply
 missing. macOS is the same shape of work against `AXUIElementCopyAttributeValue` and is not done.
 
-The implementation is `IUIAutomation::ElementFromPoint` and six property reads. COM is initialised
+The implementation is `IUIAutomation::ElementFromPoint` and six property reads, plus a walk of the
+control view when the element has no name. Named elements skip the walk, because every step of it is
+another cross-process call into the application being recorded. COM is initialised
 multi-threaded once per worker thread and the `IUIAutomation` instance is cached in a thread local,
 because the call runs on the libuv threadpool through `AsyncTask` rather than on the main thread —
 a cross-process UIAutomation call against a busy application blocks for as long as that application
@@ -757,10 +761,19 @@ Stopping a recording names the guide twice. The application name lands first so 
 on a placeholder, and `generateGuideMeta` replaces it if a key is configured. Ordering it that way
 means the guide is always named, and the AI title is an improvement rather than a prerequisite.
 
-Step descriptions are only as good as the element lookup. With one, `buildFallbackDescription` gets
-a role and an accessible name and writes the same wording it writes for the extension. Without one
-it has nothing but the action, and every step in the guide reads the same — which is what a
-`screen`-sourced recording looks like.
+Step descriptions are only as good as the element lookup. `buildFallbackDescription` picks the verb
+from the role — a text field is entered, a combo box, radio button or menu item is selected, anything
+else is clicked — and quotes the name it finds. The name is the accessible name first; a text field
+then falls back to its placeholder and help text but never its value, which is what was typed into
+it. An element with no name of its own borrows one: a group or pane from the first named control
+inside it, anything else from its nearest named ancestor, stopping at the window, because naming
+the window as the click target would be wrong. Chrome's internal window class names and bare numbers
+on panes are discarded, since the accessibility tree reports both as names. When nothing is left the
+step reads "Click here" rather than "Click treeitem" — the control type is not a name. A
+`screen`-sourced recording, with no lookup at all, is every step reading "Click here".
+
+The AI rewrite runs only when a provider key is saved, which is what enabling AI means here, and
+the step it rewrites is marked `ai` so the badge says so.
 
 ## Feature Hooks
 
