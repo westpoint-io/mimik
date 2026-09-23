@@ -172,9 +172,9 @@ desktop:
   capturingSection: Capturing
   milliseconds: ms
   captureMode: Qué capturar
-  modeWindow: Ventana activa
-  modeScreen: Pantalla completa
-  modeRegion: Región seleccionada
+  modeWindow: Ventana
+  modeScreen: Pantalla
+  modeRegion: Área
   readyToRecord: Listo para grabar
   startSheetTitle: Iniciar una captura
   startButton: Iniciar

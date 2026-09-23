@@ -74,7 +74,7 @@ export function controls(): void {
     label.textContent = state === 'recording' ? 'Recording' : state === 'paused' ? 'Paused' : 'Ready';
     counter.textContent = last ? String(last.index) : '';
     counter.hidden = !last;
-    badge.textContent = mode === 'screen' ? 'Full screen' : mode === 'region' ? 'Selected area' : 'Active window';
+    badge.textContent = mode === 'screen' ? 'Screen' : mode === 'region' ? 'Area' : 'Window';
     badge.hidden = state !== 'armed';
 
     const chevron = collapsed ? 'up' : 'down';

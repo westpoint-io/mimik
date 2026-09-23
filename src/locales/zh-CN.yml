@@ -172,9 +172,9 @@ desktop:
   capturingSection: Capturing
   milliseconds: ms
   captureMode: 捕获范围
-  modeWindow: 活动窗口
-  modeScreen: 整个屏幕
-  modeRegion: 选定区域
+  modeWindow: 窗口
+  modeScreen: 屏幕
+  modeRegion: 区域
   readyToRecord: 可以开始录制
   startSheetTitle: 开始捕获
   startButton: 开始
