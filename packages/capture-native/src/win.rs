@@ -14,6 +14,7 @@ use windows::Win32::UI::Input::KeyboardAndMouse::{
 };
 use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId};
 
+use crate::hit::smallest_under;
 use crate::{ElementNode, ElementRect, UiElement};
 
 const ROLES: &[(UIA_CONTROLTYPE_ID, &str)] = &[
@@ -169,15 +170,49 @@ fn children(walker: &IUIAutomationTreeWalker, element: &IUIAutomationElement) ->
   out
 }
 
+fn narrowest(
+  uia: &IUIAutomation,
+  walker: &IUIAutomationTreeWalker,
+  hit: &IUIAutomationElement,
+  point: POINT,
+) -> Option<IUIAutomationElement> {
+  if unsafe { hit.CurrentControlType() }.ok()? == UIA_EditControlTypeId {
+    return None;
+  }
+  unsafe { walker.GetFirstChildElement(hit) }.ok()?;
+  let request = unsafe { uia.CreateCacheRequest() }.ok()?;
+  unsafe { request.AddProperty(UIA_BoundingRectanglePropertyId) }.ok()?;
+  let everything = unsafe { uia.CreateTrueCondition() }.ok()?;
+  let found = unsafe { hit.FindAllBuildCache(TreeScope_Subtree, &everything, &request) }.ok()?;
+  let elements: Vec<IUIAutomationElement> = (0..unsafe { found.Length() }.ok()?)
+    .filter_map(|index| unsafe { found.GetElement(index) }.ok())
+    .collect();
+  let boxes: Vec<_> = elements
+    .iter()
+    .map(|element| {
+      unsafe { element.CachedBoundingRectangle() }
+        .map(|rect| (rect.left, rect.top, rect.right, rect.bottom))
+        .unwrap_or_default()
+    })
+    .collect();
+  smallest_under(&boxes, point.x, point.y).map(|index| elements[index].clone())
+}
+
 pub fn element_at_point(x: i32, y: i32) -> Result<Option<UiElement>> {
   let uia = automation().map_err(|error| napi::Error::from_reason(error.message()))?;
-  let found = unsafe { uia.ElementFromPoint(POINT { x, y }) }
-    .map_err(|error| napi::Error::from_reason(error.message()))?;
+  let point = POINT { x, y };
+  let hit =
+    unsafe { uia.ElementFromPoint(point) }.map_err(|error| napi::Error::from_reason(error.message()))?;
+  let walker = unsafe { uia.ControlViewWalker() }.ok();
+  let found = walker
+    .as_ref()
+    .and_then(|walker| narrowest(&uia, walker, &hit, point))
+    .unwrap_or(hit);
   let mut element = describe(&found);
   if element.name.is_none() {
-    if let Ok(walker) = unsafe { uia.ControlViewWalker() } {
-      element.ancestors = ancestors(&walker, &found);
-      element.children = children(&walker, &found);
+    if let Some(walker) = &walker {
+      element.ancestors = ancestors(walker, &found);
+      element.children = children(walker, &found);
     }
   }
   Ok(Some(element))

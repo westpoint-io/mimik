@@ -4,6 +4,8 @@ use napi::bindgen_prelude::AsyncTask;
 use napi::{Env, Result, Task};
 use napi_derive::napi;
 
+#[cfg(any(windows, test))]
+mod hit;
 #[cfg(windows)]
 mod win;
 
