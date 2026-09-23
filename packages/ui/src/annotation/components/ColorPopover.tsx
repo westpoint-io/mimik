@@ -1,6 +1,6 @@
-import { Popover, PopoverContent, PopoverTrigger } from '@mimik/ui/components/ui/popover';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
 import type { ReactNode } from 'react';
+import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/popover';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
 import ColorPicker from './ColorPicker';
 
 export interface ColorPopoverProps {

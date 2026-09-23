@@ -1,7 +1,7 @@
 import { i18n } from '@mimik/core/env';
-import { Input } from '@mimik/ui/components/ui/input';
 import { Eye, EyeOff } from 'lucide-react';
 import { useState } from 'react';
+import { Input } from '../../components/ui/input';
 
 export function SecretInput({
   value,

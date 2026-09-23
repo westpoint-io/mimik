@@ -4,7 +4,9 @@ import type { Screenshot, ScreenshotBounds } from '@mimik/core/guides/types';
 import { panBy, resolveViewport, zoomBy } from '@mimik/core/screenshot/geometry';
 import { imageDimensions, renderScreenshot } from '@mimik/core/screenshot/render';
 import type { ScreenshotEdits } from '@mimik/core/screenshot/types';
-import ConfirmDialog from '@mimik/ui/common/components/ConfirmDialog';
+import { Download, ImageUp, Pencil, Trash2, ZoomIn, ZoomOut } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import ConfirmDialog from '../../common/components/ConfirmDialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,14 +16,12 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from '@mimik/ui/components/ui/dropdown-menu';
-import { Popover, PopoverContent, PopoverTrigger } from '@mimik/ui/components/ui/popover';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
-import ImagePlaceholder from '@mimik/ui/guide/components/ImagePlaceholder';
-import ReplaceImageDialog from '@mimik/ui/guide/components/ReplaceImageDialog';
-import { Download, ImageUp, Pencil, Trash2, ZoomIn, ZoomOut } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+} from '../../components/ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/popover';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
 import { withFullViewport } from '../lib/with-full-viewport';
+import ImagePlaceholder from './ImagePlaceholder';
+import ReplaceImageDialog from './ReplaceImageDialog';
 
 interface ScreenshotViewProps {
   screenshot: Screenshot;

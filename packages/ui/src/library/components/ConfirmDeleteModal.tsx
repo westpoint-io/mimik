@@ -1,6 +1,6 @@
 import { i18n } from '@mimik/core/env';
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@mimik/ui/components/ui/dialog';
 import { Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '../../components/ui/dialog';
 
 interface ConfirmDeleteModalProps {
   open: boolean;

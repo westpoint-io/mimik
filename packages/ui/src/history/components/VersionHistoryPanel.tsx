@@ -2,15 +2,15 @@ import { i18n } from '@mimik/core/env';
 import { diffSnapshots, type SnapshotDiff, type SnapshotLike } from '@mimik/core/guides/snapshot-diff';
 import { groupSnapshots } from '@mimik/core/guides/snapshot-groups';
 import type { Snapshot } from '@mimik/core/guides/types';
-import { formatDateTime } from '@mimik/ui/common/lib/format-date-time';
+import { ChevronRight, MoreVertical, RotateCcw, X } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { formatDateTime } from '../../common/lib/format-date-time';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@mimik/ui/components/ui/dropdown-menu';
-import { ChevronRight, MoreVertical, RotateCcw, X } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+} from '../../components/ui/dropdown-menu';
 import { useSnapshots } from '../hooks/use-snapshots';
 import { changeSummary } from '../lib/change-summary';
 import { filterPill } from '../lib/filter-pill';

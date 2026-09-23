@@ -2,13 +2,13 @@ import { i18n } from '@mimik/core/env';
 import { CALLOUT_VARIANTS, calloutAccent, DEFAULT_CALLOUT_COLOR, tint, variantLabel } from '@mimik/core/guides/blocks';
 import { updateCallout } from '@mimik/core/guides/service';
 import type { CalloutVariant, Step } from '@mimik/core/guides/types';
-import ConfirmDialog from '@mimik/ui/common/components/ConfirmDialog';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
-import { DragGrip } from '@mimik/ui/guide/components/DragGrip';
 import { Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import ConfirmDialog from '../../common/components/ConfirmDialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
 import { useCardDrag } from '../hooks/use-card-drag';
 import type { DragHandleProps } from '../types';
+import { DragGrip } from './DragGrip';
 
 interface BlockCardProps {
   step: Step;

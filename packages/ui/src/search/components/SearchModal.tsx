@@ -1,12 +1,12 @@
 import { i18n } from '@mimik/core/env';
 import { getGuideDomain, getGuides } from '@mimik/core/guides/service';
 import type { Guide } from '@mimik/core/guides/types';
-import { Dialog, DialogPortal } from '@mimik/ui/components/ui/dialog';
-import { Input } from '@mimik/ui/components/ui/input';
-import { navigate } from '@mimik/ui/navigation/lib/navigate';
-import { useFullview } from '@mimik/ui/stores/use-fullview';
 import { Search, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Dialog, DialogPortal } from '../../components/ui/dialog';
+import { Input } from '../../components/ui/input';
+import { navigate } from '../../navigation/lib/navigate';
+import { useFullview } from '../../stores/use-fullview';
 import KeyboardHints from './KeyboardHints';
 import SearchResults from './SearchResults';
 

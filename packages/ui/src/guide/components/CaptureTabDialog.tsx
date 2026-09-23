@@ -1,5 +1,7 @@
 import { i18n } from '@mimik/core/env';
-import { Button } from '@mimik/ui/components/ui/button';
+import { Globe } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Button } from '../../components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -7,10 +9,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@mimik/ui/components/ui/dialog';
-import { type RecordableTab, tabs as tabsApi } from '@mimik/ui/env';
-import { Globe } from 'lucide-react';
-import { useEffect, useState } from 'react';
+} from '../../components/ui/dialog';
+import { type RecordableTab, tabs as tabsApi } from '../../env';
 
 interface CaptureTabDialogProps {
   open: boolean;

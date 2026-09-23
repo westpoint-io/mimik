@@ -78,10 +78,14 @@
                   {
                     "group": ["@/lib/*", "@/ui/*", "@/entrypoints/*", "#imports", "**/apps/**"],
                     "message": "Shared packages must not import from an app. Move the code into the app, or the dependency the other way."
+                  },
+                  {
+                    "group": ["@mimik/ui/**"],
+                    "message": "Import by relative path inside the ui package. Other packages never import it."
                   }
                 ],
                 "paths": {
-                  "@mimik/ui": "Import the file directly. The package entry is for the apps; importing it from inside a package makes a cycle."
+                  "@mimik/ui": "Import by relative path inside the ui package. Other packages never import it."
                 }
               }
             }

@@ -1,8 +1,8 @@
 import { i18n } from '@mimik/core/env';
-import MascotIcon from '@mimik/ui/common/components/MascotIcon';
-import ReplaceImageDialog from '@mimik/ui/guide/components/ReplaceImageDialog';
 import { ImageUp } from 'lucide-react';
 import { useState } from 'react';
+import MascotIcon from '../../common/components/MascotIcon';
+import ReplaceImageDialog from './ReplaceImageDialog';
 
 interface ImagePlaceholderProps {
   label: string;

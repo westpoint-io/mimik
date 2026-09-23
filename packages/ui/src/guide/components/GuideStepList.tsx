@@ -4,16 +4,16 @@ import { createSnapshot, deleteSteps, insertBlock, reorderSteps } from '@mimik/c
 import type { BlockType, Screenshot, Step } from '@mimik/core/guides/types';
 import { logger } from '@mimik/core/logger';
 import { dominantRatio } from '@mimik/core/screenshot/geometry';
-import ConfirmDialog from '@mimik/ui/common/components/ConfirmDialog';
-import { Button } from '@mimik/ui/components/ui/button';
-import BlockCard from '@mimik/ui/guide/components/BlockCard';
-import CaptureTabDialog from '@mimik/ui/guide/components/CaptureTabDialog';
-import EmptyGuideState from '@mimik/ui/guide/components/EmptyGuideState';
-import InsertBlockMenu from '@mimik/ui/guide/components/InsertBlockMenu';
-import StepCard from '@mimik/ui/guide/components/StepCard';
-import { useFullview } from '@mimik/ui/stores/use-fullview';
 import { Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import ConfirmDialog from '../../common/components/ConfirmDialog';
+import { Button } from '../../components/ui/button';
+import { useFullview } from '../../stores/use-fullview';
+import BlockCard from './BlockCard';
+import CaptureTabDialog from './CaptureTabDialog';
+import EmptyGuideState from './EmptyGuideState';
+import InsertBlockMenu from './InsertBlockMenu';
+import StepCard from './StepCard';
 
 interface GuideStepListProps {
   guideId: string;

@@ -1,6 +1,6 @@
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@mimik/ui/components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
 import type { ReactNode } from 'react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '../../components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
 
 export function MenuPopover({ label, children, items }: { label: string; children: ReactNode; items: ReactNode }) {
   return (

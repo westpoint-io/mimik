@@ -1,8 +1,8 @@
 import { i18n } from '@mimik/core/env';
 import { formatDate } from '@mimik/core/export/utils';
-import ScreenshotView from '@mimik/ui/guide/components/ScreenshotView';
-import { navigate } from '@mimik/ui/navigation/lib/navigate';
-import { useFullview } from '@mimik/ui/stores/use-fullview';
+import ScreenshotView from '../../guide/components/ScreenshotView';
+import { navigate } from '../../navigation/lib/navigate';
+import { useFullview } from '../../stores/use-fullview';
 import { CardMenu } from './CardMenu';
 import { MimikEyes } from './MimikEyes';
 

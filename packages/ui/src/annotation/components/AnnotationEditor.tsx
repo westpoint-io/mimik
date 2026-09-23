@@ -33,16 +33,6 @@ import {
   MIN_FONT_SIZE,
   MIN_LINE_HEIGHT,
 } from '@mimik/core/screenshot/types';
-import { useEditHistory } from '@mimik/ui/annotation/hooks/use-edit-history';
-import { usePointerGesture } from '@mimik/ui/annotation/hooks/use-pointer-gesture';
-import { useTextStyle } from '@mimik/ui/annotation/hooks/use-text-style';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@mimik/ui/components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
 import {
   ArrowUpRight,
   ChevronDown,
@@ -64,6 +54,16 @@ import {
 } from 'lucide-react';
 import type { ComponentType } from 'react';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../../components/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../../components/ui/tooltip';
+import { useEditHistory } from '../hooks/use-edit-history';
+import { usePointerGesture } from '../hooks/use-pointer-gesture';
+import { useTextStyle } from '../hooks/use-text-style';
 import { cursorFor } from '../lib/cursor-for';
 import { handleCorners } from '../lib/handle-corners';
 import { hitHandle } from '../lib/hit-handle';

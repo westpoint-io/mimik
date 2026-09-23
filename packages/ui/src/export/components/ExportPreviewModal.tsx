@@ -11,10 +11,10 @@ import {
 import { paginatePreview } from '@mimik/core/export/preview';
 import { STEP_SECONDS } from '@mimik/core/export/video-support';
 import type { Guide, Screenshot, Step } from '@mimik/core/guides/types';
-import { Button } from '@mimik/ui/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@mimik/ui/components/ui/dialog';
 import { FileCode, FileDown, FileImage, FileText, Loader2, Video } from 'lucide-react';
 import { lazy, Suspense, useEffect, useState } from 'react';
+import { Button } from '../../components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 
 import { type ExportFormat, useGuideExport } from '../hooks/use-guide-export';
 import { useVideoPreview } from '../hooks/use-video-preview';

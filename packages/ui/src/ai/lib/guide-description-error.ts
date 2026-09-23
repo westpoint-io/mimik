@@ -1,5 +1,5 @@
 import { i18n } from '@mimik/core/env';
-import type { GuideDescriptionError } from '@mimik/ui/env';
+import type { GuideDescriptionError } from '../../env';
 
 const DESCRIPTION_ERROR_KEYS = {
   'no-api-key': 'editor.descriptionErrorNoApiKey',

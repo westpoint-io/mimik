@@ -1,9 +1,6 @@
 import { i18n } from '@mimik/core/env';
 import { createSnapshot } from '@mimik/core/guides/service';
 import { logger } from '@mimik/core/logger';
-import MascotIcon from '@mimik/ui/common/components/MascotIcon';
-import { Button } from '@mimik/ui/components/ui/button';
-import { useFullview } from '@mimik/ui/stores/use-fullview';
 import {
   Check,
   ChevronRight,
@@ -18,7 +15,10 @@ import {
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useState } from 'react';
+import MascotIcon from '../../common/components/MascotIcon';
+import { Button } from '../../components/ui/button';
 import ExportPreviewModal from '../../export/components/ExportPreviewModal';
+import { useFullview } from '../../stores/use-fullview';
 import { navigate } from '../lib/navigate';
 import type { Route } from '../types';
 

@@ -1,7 +1,7 @@
 import { updateGuideDescription } from '@mimik/core/guides/service';
-import { guideDescriptionErrorMessage } from '@mimik/ui/ai/lib/guide-description-error';
-import { send } from '@mimik/ui/env';
 import { useCallback, useState } from 'react';
+import { send } from '../../env';
+import { guideDescriptionErrorMessage } from '../lib/guide-description-error';
 
 export interface GuideDescription {
   text: string;

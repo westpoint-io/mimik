@@ -1,7 +1,7 @@
-import { cn } from '@mimik/ui/common/lib/cn';
 import { ChevronRight } from 'lucide-react';
 import { DropdownMenu as DropdownMenuPrimitive } from 'radix-ui';
 import type * as React from 'react';
+import { cn } from '../../common/lib/cn';
 
 function DropdownMenu({ modal = false, ...props }: React.ComponentProps<typeof DropdownMenuPrimitive.Root>) {
   return <DropdownMenuPrimitive.Root data-slot="dropdown-menu" modal={modal} {...props} />;

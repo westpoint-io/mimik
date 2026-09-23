@@ -12,8 +12,6 @@ import {
   toggleStar,
 } from '@mimik/core/guides/service';
 import type { Guide, Screenshot } from '@mimik/core/guides/types';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
-import { useFullview } from '@mimik/ui/stores/use-fullview';
 import {
   ArrowDownWideNarrow,
   ChevronDown,
@@ -24,6 +22,8 @@ import {
   Video,
 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
+import { useFullview } from '../../stores/use-fullview';
 import { sortGuides } from '../lib/sort-guides';
 import type { SortKey } from '../types';
 import ConfirmDeleteModal from './ConfirmDeleteModal';

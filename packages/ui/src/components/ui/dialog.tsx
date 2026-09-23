@@ -1,7 +1,7 @@
-import { cn } from '@mimik/ui/common/lib/cn';
 import { XIcon } from 'lucide-react';
 import { Dialog as DialogPrimitive } from 'radix-ui';
 import type * as React from 'react';
+import { cn } from '../../common/lib/cn';
 
 function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />;

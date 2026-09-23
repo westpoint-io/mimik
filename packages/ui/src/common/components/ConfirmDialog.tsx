@@ -1,5 +1,5 @@
 import { i18n } from '@mimik/core/env';
-import { Button } from '@mimik/ui/components/ui/button';
+import { Button } from '../../components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -7,7 +7,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@mimik/ui/components/ui/dialog';
+} from '../../components/ui/dialog';
 
 interface ConfirmDialogProps {
   open: boolean;

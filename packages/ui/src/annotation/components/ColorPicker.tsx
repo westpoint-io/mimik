@@ -1,7 +1,7 @@
 import { hexToHsv, hsvToHex, normalizeHex } from '@mimik/core/screenshot/color';
 import { SHAPE_COLORS } from '@mimik/core/screenshot/types';
-import { Input } from '@mimik/ui/components/ui/input';
 import { useRef, useState } from 'react';
+import { Input } from '../../components/ui/input';
 import { swatchStyle } from '../lib/swatch-style';
 
 interface ColorPickerProps {

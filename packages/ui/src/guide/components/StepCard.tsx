@@ -3,17 +3,17 @@ import { replaceScreenshot } from '@mimik/core/guides/service';
 import type { Screenshot, Step } from '@mimik/core/guides/types';
 import { logger } from '@mimik/core/logger';
 import { imageDimensions, renderScreenshot } from '@mimik/core/screenshot/render';
-import { useAskAi } from '@mimik/ui/ai/hooks/use-ask-ai';
-import ConfirmDialog from '@mimik/ui/common/components/ConfirmDialog';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
-import { DragGrip } from '@mimik/ui/guide/components/DragGrip';
-import ImagePlaceholder from '@mimik/ui/guide/components/ImagePlaceholder';
-import ScreenshotView from '@mimik/ui/guide/components/ScreenshotView';
-import StepSourceBadge from '@mimik/ui/guide/components/StepSourceBadge';
 import { Check, Copy, Loader2, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useAskAi } from '../../ai/hooks/use-ask-ai';
+import ConfirmDialog from '../../common/components/ConfirmDialog';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
 import { useCardDrag } from '../hooks/use-card-drag';
 import type { DragHandleProps } from '../types';
+import { DragGrip } from './DragGrip';
+import ImagePlaceholder from './ImagePlaceholder';
+import ScreenshotView from './ScreenshotView';
+import StepSourceBadge from './StepSourceBadge';
 
 interface StepCardProps {
   step: Step;
