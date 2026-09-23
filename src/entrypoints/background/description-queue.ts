@@ -1,4 +1,4 @@
-import { logger } from '@mimik/ui/lib/logger';
+import { logger } from '@mimik/core/logger';
 import PQueue from 'p-queue';
 
 const DRAIN_TIMEOUT_MS = 20000;

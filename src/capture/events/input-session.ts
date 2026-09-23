@@ -1,4 +1,4 @@
-import { logger } from '@mimik/ui/lib/logger';
+import { logger } from '@mimik/core/logger';
 import { i18n } from '#imports';
 import { extractDOMContext } from '@/core/capture/dom/context';
 import { extractElementMeta, type FrozenRect, freezeRect } from '@/core/capture/dom/element-meta';

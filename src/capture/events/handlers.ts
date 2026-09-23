@@ -1,4 +1,4 @@
-import { logger } from '@mimik/ui/lib/logger';
+import { logger } from '@mimik/core/logger';
 import PQueue from 'p-queue';
 import { extensionCaptureSink } from '@/capture/sink';
 import { extractDOMContext } from '@/core/capture/dom/context';

@@ -1,5 +1,5 @@
+import { logger } from '@mimik/core/logger';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
-import { logger } from '@mimik/ui/lib/logger';
 import { Mic, MicOff } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';

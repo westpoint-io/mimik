@@ -1,5 +1,5 @@
 import { localStorage } from '@mimik/core/env';
-import { logger } from '@mimik/ui/lib/logger';
+import { logger } from '@mimik/core/logger';
 import { changedSettings, type SettingsSnapshot } from '@mimik/ui/lib/settings-autosave';
 import { useCallback, useEffect, useRef, useState } from 'react';
 

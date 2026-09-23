@@ -1,9 +1,9 @@
 import { i18n } from '@mimik/core/env';
 import { replaceScreenshot } from '@mimik/core/guides/service';
 import type { Screenshot, Step } from '@mimik/core/guides/types';
+import { logger } from '@mimik/core/logger';
 import { imageDimensions, renderScreenshot } from '@mimik/core/screenshot/render';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
-import { logger } from '@mimik/ui/lib/logger';
 import { useAskAi } from '@mimik/ui/shared/AskAi';
 import ConfirmDialog from '@mimik/ui/shared/ConfirmDialog';
 import { DragGrip, type DragHandleProps, useCardDrag } from '@mimik/ui/shared/card-drag';

@@ -1,4 +1,4 @@
-import { logger } from '@mimik/ui/lib/logger';
+import { logger } from '@mimik/core/logger';
 import { focusWindow, getTab, requestHostPermissions, updateTab } from '@/lib/browser-api';
 import { sendMessage } from '@/lib/messaging';
 import { isRecordableUrl } from './recordable-tabs';

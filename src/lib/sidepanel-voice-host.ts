@@ -1,4 +1,4 @@
-import { logger } from '@mimik/ui/lib/logger';
+import { logger } from '@mimik/core/logger';
 import { setLocalVoiceHost } from './voice-local';
 
 export function startSidepanelVoiceHost(): void {

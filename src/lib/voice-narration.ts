@@ -1,4 +1,4 @@
-import { logger } from '@mimik/ui/lib/logger';
+import { logger } from '@mimik/core/logger';
 import { resolveVoiceApiKey, VOICE_KEY_SETTINGS } from '@/core/capture/voice/api-key';
 import { detectSpeechByEnergy } from '@/core/capture/voice/energy-gate';
 import { runNarrationPipeline } from '@/core/capture/voice/pipeline';

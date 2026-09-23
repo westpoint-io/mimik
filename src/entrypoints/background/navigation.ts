@@ -1,4 +1,4 @@
-import { logger } from '@mimik/ui/lib/logger';
+import { logger } from '@mimik/core/logger';
 import { CaptureState } from '@/core/capture/machine';
 import {
   getTab,

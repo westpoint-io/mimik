@@ -13,10 +13,10 @@ import {
 } from '@mimik/core/guides/service';
 import type { SnapshotLike } from '@mimik/core/guides/snapshot-diff';
 import type { Guide, Screenshot, Snapshot, Step } from '@mimik/core/guides/types';
+import { logger } from '@mimik/core/logger';
 import type { ScreenshotEdits } from '@mimik/core/screenshot/types';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
 import { panel, send, tabs } from '@mimik/ui/env';
-import { logger } from '@mimik/ui/lib/logger';
 import { formatDate } from '@mimik/ui/lib/utils';
 import AnnotationEditor from '@mimik/ui/shared/AnnotationEditor';
 import { useAskAi } from '@mimik/ui/shared/AskAi';

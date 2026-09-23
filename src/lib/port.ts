@@ -1,4 +1,4 @@
-import { logger } from '@mimik/ui/lib/logger';
+import { logger } from '@mimik/core/logger';
 import { browser } from '#imports';
 import type { AiFailureReason } from '@/core/capture/ai/errors';
 import type { CaptureStateValue } from '@/core/capture/machine';

@@ -1,6 +1,6 @@
 import '@/lib/core-env';
 import '@/lib/ui-env';
-import { logger } from '@mimik/ui/lib/logger';
+import { logger } from '@mimik/core/logger';
 import { browser, defineBackground } from '#imports';
 import { rewriteSelection } from '@/core/capture/ai/rewrite';
 import { validateApiKey } from '@/core/capture/ai/validate';

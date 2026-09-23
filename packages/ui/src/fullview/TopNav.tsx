@@ -1,9 +1,9 @@
 import { i18n } from '@mimik/core/env';
 import { createSnapshot } from '@mimik/core/guides/service';
+import { logger } from '@mimik/core/logger';
 import { Button } from '@mimik/ui/components/ui/button';
 import type { Route } from '@mimik/ui/fullview/router';
 import { navigate } from '@mimik/ui/fullview/router';
-import { logger } from '@mimik/ui/lib/logger';
 import MascotIcon from '@mimik/ui/shared/MascotIcon';
 import { useFullview } from '@mimik/ui/stores/fullview';
 import {

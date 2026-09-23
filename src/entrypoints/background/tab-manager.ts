@@ -1,4 +1,4 @@
-import { logger } from '@mimik/ui/lib/logger';
+import { logger } from '@mimik/core/logger';
 import { executeScript, queryTabs, sendMessageToTab } from '@/lib/browser-api';
 import { TabMessage } from '@/lib/tab-messages';
 

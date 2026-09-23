@@ -1,7 +1,7 @@
+import { logger } from '@mimik/core/logger';
 import { Button } from '@mimik/ui/components/ui/button';
 import { Input } from '@mimik/ui/components/ui/input';
 import { TooltipProvider } from '@mimik/ui/components/ui/tooltip';
-import { logger } from '@mimik/ui/lib/logger';
 import { Globe, Search, Settings, Video } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';

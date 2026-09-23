@@ -1,4 +1,4 @@
-import { logger } from '@mimik/ui/lib/logger';
+import { logger } from '@mimik/core/logger';
 import { getAIDescription } from '@/core/capture/ai/description';
 import { describeAiFailure } from '@/core/capture/ai/errors';
 import { resolveAiKey } from '@/core/capture/ai/keys';
