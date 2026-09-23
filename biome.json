@@ -15,6 +15,7 @@
       "packages/ui/src/**/*.tsx",
       "apps/desktop/src/**/*.ts",
       "apps/desktop/src/**/*.tsx",
+      "scripts/**/*.mjs",
       "*.json"
     ]
   },
@@ -114,7 +115,14 @@
       }
     },
     {
-      "includes": ["packages/ui/src/**/*.ts", "packages/ui/src/**/*.tsx", "!packages/ui/src/components/ui/**"],
+      "includes": [
+        "packages/ui/src/**/*.ts",
+        "packages/ui/src/**/*.tsx",
+        "src/ui/**",
+        "src/lib/**",
+        "apps/desktop/src/renderer/**",
+        "!packages/ui/src/components/ui/**"
+      ],
       "linter": {
         "rules": {
           "performance": {
