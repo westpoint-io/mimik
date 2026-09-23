@@ -458,12 +458,6 @@ body.controls.waiting #intro {
   text-align: center;
 }
 
-body.controls.waiting #intro > div:last-child {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
 body.controls #mascot {
   display: flex;
   flex-shrink: 0;
@@ -503,18 +497,33 @@ body.controls.waiting #tip {
 
 body.controls #keyHint {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 6px 0 0;
-  font-size: 11px;
-  color: var(--muted);
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: #eef2ff;
+}
+
+body.controls #keyHint svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--accent);
+}
+
+body.controls #keyHint p {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--deep);
 }
 
 body.controls #hintKey {
   padding: 1px 6px;
   border: 1px solid var(--lavender);
   border-radius: 5px;
-  background: #eef2ff;
+  background: #fff;
+  white-space: nowrap;
   color: var(--deep);
   font: inherit;
   font-size: 10.5px;

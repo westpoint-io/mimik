@@ -5,6 +5,7 @@ import {
   ChevronUp,
   Crop,
   createElement,
+  Keyboard,
   LoaderCircle,
   Monitor,
   Pause,
@@ -25,6 +26,7 @@ const ICONS = {
   window: AppWindow,
   monitor: Monitor,
   area: Crop,
+  keyboard: Keyboard,
 };
 
 export type IconName = keyof typeof ICONS;

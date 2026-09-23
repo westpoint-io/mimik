@@ -51,9 +51,9 @@ export function controls(): void {
   const tip = el('p', { id: 'tip' });
   const hintKey = el('kbd', { id: 'hintKey' });
   const hintText = el('span', {});
-  const hint = el('p', { id: 'keyHint' }, hintKey, hintText);
-  const intro = el('div', { id: 'intro' }, el('div', { id: 'mascot' }, cameraMascot(56)), el('div', {}, tip, hint));
-  const body = el('div', { id: 'body' }, preview, stepTitle, writing, skeleton, stepMeta, intro);
+  const hint = el('div', { id: 'keyHint' }, icon('keyboard', 14), el('p', {}, 'You can press ', hintKey, hintText));
+  const intro = el('div', { id: 'intro' }, el('div', { id: 'mascot' }, cameraMascot(56)), tip);
+  const body = el('div', { id: 'body' }, preview, stepTitle, writing, skeleton, stepMeta, intro, hint);
 
   const modeLabel = el('p', { id: 'modeLabel' }, 'Capture mode');
   const modeRow = el('div', { id: 'modes' });
@@ -134,13 +134,11 @@ export function controls(): void {
     metaText.textContent = [step ? `Step ${step.index}` : '', step?.app ?? ''].filter(Boolean).join(' · ');
 
     intro.hidden = !(armed || waiting);
-    tip.textContent = armed
-      ? 'Press Start, then work as you normally would. Every click becomes a step.'
-      : 'Waiting for your first click';
+    tip.textContent = armed ? 'Each click is saved as a step.' : 'Your first click will show up here.';
     const key = armed ? shortcuts.startStop : shortcuts.capture;
-    hint.hidden = !key;
+    hint.hidden = intro.hidden || !key;
     hintKey.textContent = key ?? '';
-    hintText.textContent = armed ? 'starts and stops' : 'captures where the pointer is';
+    hintText.textContent = armed ? ' to start and stop.' : ' to capture without clicking.';
     body.hidden = collapsed || (paused && !step);
 
     modes.hidden = collapsed || !paused;

@@ -186,7 +186,7 @@ app.whenReady().then(async () => {
   const mascot = JSON.parse(String(drawn ?? '{}')) as { paths?: number; flash?: number; visible?: boolean; hint?: string };
   check(
     'the armed card draws the camera mascot and the start shortcut',
-    mascot.paths === 4 && mascot.flash === 1 && mascot.visible === true && mascot.hint === 'Alt+Shift+Rstarts and stops',
+    mascot.paths === 4 && mascot.flash === 1 && mascot.visible === true && mascot.hint === 'You can press Alt+Shift+R to start and stop.',
     `${mascot.paths} mascot paths, ${mascot.flash} flash, intro visible: ${mascot.visible}, hint: ${mascot.hint}`,
   );
 
@@ -198,7 +198,7 @@ app.whenReady().then(async () => {
   const idle = await card("tip: document.querySelector('#tip').textContent, hint: document.querySelector('#keyHint').textContent");
   check(
     'recording with no steps waits for the first click',
-    idle.tip === 'Waiting for your first click' && idle.hint === 'Alt+Shift+Ccaptures where the pointer is',
+    idle.tip === 'Your first click will show up here.' && idle.hint === 'You can press Alt+Shift+C to capture without clicking.',
     `tip: ${idle.tip}, hint: ${idle.hint}`,
   );
 
