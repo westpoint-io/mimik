@@ -1,10 +1,4 @@
-import { TooltipProvider } from '@mimik/ui/components/ui/tooltip';
-import GuideContent from '@mimik/ui/guide/components/GuideContent';
-import LibraryContent from '@mimik/ui/library/components/LibraryContent';
-import TopNav from '@mimik/ui/navigation/components/TopNav';
-import { useRoute } from '@mimik/ui/navigation/lib/router';
-import SearchModal from '@mimik/ui/search/components/SearchModal';
-import { useFullview } from '@mimik/ui/stores/fullview';
+import { GuideContent, LibraryContent, SearchModal, TooltipProvider, TopNav, useFullview, useRoute } from '@mimik/ui';
 import { useEffect } from 'react';
 import { openSidebar } from '@/lib/browser-api';
 import UpdateNotice from '@/ui/shared/UpdateNotice';

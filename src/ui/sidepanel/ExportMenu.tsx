@@ -1,4 +1,4 @@
-import { Button } from '@mimik/ui/components/ui/button';
+import { Button } from '@mimik/ui';
 import { Download, FileCode, FileDown, FileImage, FileText, Loader2, Video } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { i18n } from '#imports';

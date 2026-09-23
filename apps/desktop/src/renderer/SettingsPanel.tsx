@@ -2,10 +2,16 @@ import { validateApiKey } from '@mimik/core/capture/ai/validate';
 import { i18n } from '@mimik/core/env';
 import { MAX_ZOOM, MIN_ZOOM, ZOOM_STEP } from '@mimik/core/screenshot/record';
 import { CURSOR_STYLES } from '@mimik/core/screenshot/types';
-import AiSettings from '@mimik/ui/ai/components/AiSettings';
-import { useKeyCheck } from '@mimik/ui/ai/components/key-status';
-import { Input } from '@mimik/ui/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui/components/ui/select';
+import {
+  AiSettings,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  useKeyCheck,
+} from '@mimik/ui';
 import { Command, Keyboard, MonitorPlay } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useEffect, useState } from 'react';

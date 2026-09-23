@@ -1,5 +1,5 @@
 import { i18n } from '@mimik/core/env';
-import { Button } from '@mimik/ui/components/ui/button';
+import { Button } from '@mimik/ui';
 import { X } from 'lucide-react';
 import { useState } from 'react';
 

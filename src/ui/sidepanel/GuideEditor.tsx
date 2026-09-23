@@ -1,9 +1,13 @@
-import FaviconImg from '@mimik/ui/common/components/FaviconImg';
-import { getMostCommonDomain } from '@mimik/ui/common/lib/utils';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
-import BlockCard from '@mimik/ui/guide/components/BlockCard';
-import EmptyGuideState from '@mimik/ui/guide/components/EmptyGuideState';
-import StepCard from '@mimik/ui/guide/components/StepCard';
+import {
+  BlockCard,
+  EmptyGuideState,
+  FaviconImg,
+  getMostCommonDomain,
+  StepCard,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@mimik/ui';
 import { ArrowLeft, Maximize2, Play } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { i18n } from '#imports';

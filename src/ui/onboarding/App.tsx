@@ -1,6 +1,16 @@
-import { useAiSettings } from '@mimik/ui/ai/hooks/use-ai-settings';
-import { Input } from '@mimik/ui/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui/components/ui/select';
+import {
+  Input,
+  KeyStatusNote,
+  KeyWarningNote,
+  ModelList,
+  SecretInput,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  useAiSettings,
+} from '@mimik/ui';
 import { Globe, Mic, MousePointerClick, Shield } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';
@@ -9,7 +19,7 @@ import { AI_PROVIDERS, type AIProviderKey, CUSTOM_MODEL_VALUE } from '@/core/cap
 import { AI_LANGUAGES, type AILanguageCode } from '@/core/capture/ai/prompts';
 import type { VoiceProvider } from '@/core/capture/voice/transcribe';
 import { localStorage, openSidebar, requestHostPermissions } from '@/lib/browser-api';
-import { KeyStatusNote, KeyWarningNote, ModelList, SecretInput, useKeyCheck } from '@/ui/shared/key-check';
+import { useKeyCheck } from '@/ui/shared/key-check';
 import MicrophonePicker from '@/ui/shared/MicrophonePicker';
 
 interface StepProps {

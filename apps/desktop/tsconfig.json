@@ -24,6 +24,7 @@
       "@/core/*": [
         "../../packages/core/src/*"
       ],
+      "@mimik/ui": ["../../packages/ui/src/index.ts"],
       "@mimik/ui/*": [
         "../../packages/ui/src/*"
       ]

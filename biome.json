@@ -79,6 +79,29 @@
                     "group": ["@/lib/*", "@/ui/*", "@/entrypoints/*", "#imports", "**/apps/**"],
                     "message": "Shared packages must not import from an app. Move the code into the app, or the dependency the other way."
                   }
+                ],
+                "paths": {
+                  "@mimik/ui": "Import the file directly. The package entry is for the apps; importing it from inside a package makes a cycle."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/**/*.ts", "src/**/*.tsx", "apps/**/*.ts", "apps/**/*.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@mimik/ui/**", "!@mimik/ui/env", "!@mimik/ui/global.css"],
+                    "message": "Import from '@mimik/ui'. Add the export to packages/ui/src/index.ts if it is missing."
+                  }
                 ]
               }
             }

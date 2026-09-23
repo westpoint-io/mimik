@@ -1,5 +1,5 @@
 import { i18n } from '@mimik/core/env';
-import { Button } from '@mimik/ui/components/ui/button';
+import { Button } from '@mimik/ui';
 import { AppWindow, Crop, Monitor, Video, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { CaptureSettings } from '../main/capture/settings';

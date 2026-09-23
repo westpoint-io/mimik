@@ -1,4 +1,4 @@
-import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui';
 import { Check, Loader2, TriangleAlert, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';

@@ -1,6 +1,5 @@
 import { i18n } from '@mimik/core/env';
-import { Button } from '@mimik/ui/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui/components/ui/select';
+import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui';
 import { Check, ChevronRight, Mic, MicOff, Square, TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { getActiveTab } from '@/lib/browser-api';

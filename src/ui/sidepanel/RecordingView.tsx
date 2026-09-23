@@ -1,8 +1,12 @@
-import { extractDomain } from '@mimik/ui/common/lib/utils';
-import { Button } from '@mimik/ui/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
-import ScreenshotView from '@mimik/ui/guide/components/ScreenshotView';
-import StepSourceBadge from '@mimik/ui/guide/components/StepSourceBadge';
+import {
+  Button,
+  extractDomain,
+  ScreenshotView,
+  StepSourceBadge,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@mimik/ui';
 import { Check, EyeOff, Loader2, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { browser, i18n } from '#imports';

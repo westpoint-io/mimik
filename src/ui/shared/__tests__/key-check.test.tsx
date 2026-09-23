@@ -7,7 +7,8 @@ const { sendMessageMock } = vi.hoisted(() => ({ sendMessageMock: vi.fn() }));
 
 vi.mock('@/lib/messaging', () => ({ sendMessage: sendMessageMock }));
 
-import { KeyStatusNote, SecretInput, useKeyCheck } from '@/ui/shared/key-check';
+import { KeyStatusNote, SecretInput } from '@mimik/ui';
+import { useKeyCheck } from '@/ui/shared/key-check';
 
 describe('useKeyCheck', () => {
   beforeEach(() => {
