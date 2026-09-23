@@ -82,7 +82,7 @@ export class DesktopCaptureSink implements CaptureSink {
     await addStepToGuide(data.guideId, stepId);
 
     void describeStep(data.action, meta).then(async (written) => {
-      if (written) await updateStepDescription(stepId, written);
+      if (written) await updateStepDescription(stepId, written, 'ai');
       await clearStepAiPending(stepId);
     });
 
