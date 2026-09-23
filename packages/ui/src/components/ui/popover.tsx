@@ -1,4 +1,4 @@
-import { cn } from '@mimik/ui/lib/utils';
+import { cn } from '@mimik/ui/common/lib/utils';
 import { Popover as PopoverPrimitive } from 'radix-ui';
 import type * as React from 'react';
 

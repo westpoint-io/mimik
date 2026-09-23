@@ -6,13 +6,12 @@ import type { VoiceProvider } from '@mimik/core/capture/voice/transcribe';
 import { i18n } from '@mimik/core/env';
 import { type BrandLogo, defaultFooterLine, makeBrandLogo } from '@mimik/core/export/branding';
 import { DEFAULT_TARGET_COLOR, TARGET_COLORS } from '@mimik/core/screenshot/types';
+import AiSettings from '@mimik/ui/ai/components/AiSettings';
+import ColorPicker from '@mimik/ui/annotation/components/ColorPicker';
 import { Button } from '@mimik/ui/components/ui/button';
 import { Input } from '@mimik/ui/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@mimik/ui/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui/components/ui/select';
-import { useSettingsAutosave } from '@mimik/ui/lib/use-settings-autosave';
-import AiSettings from '@mimik/ui/shared/AiSettings';
-import ColorPicker from '@mimik/ui/shared/ColorPicker';
 import {
   ArrowLeft,
   Bug,
@@ -33,6 +32,7 @@ import { useEffect, useRef, useState } from 'react';
 import { localStorage } from '@/lib/browser-api';
 import { KeyStatusNote, ModelList, SecretInput, useKeyCheck } from '@/ui/shared/key-check';
 import MicrophonePicker from '@/ui/shared/MicrophonePicker';
+import { useSettingsAutosave } from '@/ui/shared/use-settings-autosave';
 
 interface SettingsViewProps {
   onBack?: () => void;

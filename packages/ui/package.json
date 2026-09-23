@@ -8,6 +8,6 @@
   },
   "sideEffects": [
     "**/*.css",
-    "./src/lib/utils.ts"
+    "./src/common/lib/utils.ts"
   ]
 }

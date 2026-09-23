@@ -1,6 +1,6 @@
+import FaviconImg from '@mimik/ui/common/components/FaviconImg';
+import { formatRelativeTime } from '@mimik/ui/common/lib/utils';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
-import { formatRelativeTime } from '@mimik/ui/lib/utils';
-import FaviconImg from '@mimik/ui/shared/FaviconImg';
 import { Star, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { i18n } from '#imports';

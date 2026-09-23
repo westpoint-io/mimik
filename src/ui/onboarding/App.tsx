@@ -1,6 +1,6 @@
+import { useAiSettings } from '@mimik/ui/ai/hooks/use-ai-settings';
 import { Input } from '@mimik/ui/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui/components/ui/select';
-import { useAiSettings } from '@mimik/ui/shared/use-ai-settings';
 import { Globe, Mic, MousePointerClick, Shield } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';

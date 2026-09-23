@@ -1,9 +1,9 @@
 import { TooltipProvider } from '@mimik/ui/components/ui/tooltip';
-import GuideContent from '@mimik/ui/fullview/GuideContent';
-import LibraryContent from '@mimik/ui/fullview/LibraryContent';
-import { navigate, useRoute } from '@mimik/ui/fullview/router';
-import SearchModal from '@mimik/ui/fullview/SearchModal';
-import TopNav from '@mimik/ui/fullview/TopNav';
+import GuideContent from '@mimik/ui/guide/components/GuideContent';
+import LibraryContent from '@mimik/ui/library/components/LibraryContent';
+import TopNav from '@mimik/ui/navigation/components/TopNav';
+import { navigate, useRoute } from '@mimik/ui/navigation/lib/router';
+import SearchModal from '@mimik/ui/search/components/SearchModal';
 import { useEffect, useState } from 'react';
 import CaptureSheet from './CaptureSheet';
 import GuideZoom from './GuideZoom';

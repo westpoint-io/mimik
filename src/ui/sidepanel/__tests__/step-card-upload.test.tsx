@@ -8,7 +8,7 @@ import type { Step } from '@/core/guides/types';
 vi.mock('@/core/guides/service', () => ({ replaceScreenshot: vi.fn() }));
 vi.mock('@/core/screenshot/render', () => ({ imageDimensions: vi.fn(), renderScreenshot: vi.fn() }));
 
-import StepCard from '@mimik/ui/sidepanel/StepCard';
+import StepCard from '@mimik/ui/guide/components/StepCard';
 
 const step: Step = {
   id: 's1',

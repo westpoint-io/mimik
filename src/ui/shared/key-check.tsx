@@ -1,9 +1,9 @@
-import { useKeyCheck as useSharedKeyCheck } from '@mimik/ui/shared/key-status';
+import { useKeyCheck as useSharedKeyCheck } from '@mimik/ui/ai/components/key-status';
 import { useCallback } from 'react';
 import { sendMessage } from '@/lib/messaging';
 
-export type { KeyStatus, KeyWarning } from '@mimik/ui/shared/key-status';
-export { KeyStatusNote, KeyWarningNote, ModelList, SecretInput } from '@mimik/ui/shared/key-status';
+export type { KeyStatus, KeyWarning } from '@mimik/ui/ai/components/key-status';
+export { KeyStatusNote, KeyWarningNote, ModelList, SecretInput } from '@mimik/ui/ai/components/key-status';
 
 export function useKeyCheck() {
   return useSharedKeyCheck(

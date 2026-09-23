@@ -6,7 +6,7 @@ import {
   MASCOT_FACES,
   MASCOT_SEAM,
   MASCOT_VIEW_BOX,
-} from '@mimik/ui/shared/mascot-shapes';
+} from '@mimik/ui/common/lib/mascot-shapes';
 import { icon } from './icons';
 import './overlay.css';
 
