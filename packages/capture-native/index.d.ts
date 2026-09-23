@@ -9,6 +9,8 @@
  */
 export declare const __napiBindingTarget: 'native' | 'wasm32-wasi' | 'wasm32-wasip1'
 
+export declare function clearDeadKey(): void
+
 export declare function elementAtPoint(x: number, y: number): Promise<UiElement | null>
 
 export interface ElementNode {
@@ -28,8 +30,6 @@ export declare function focusedElement(): Promise<UiElement | null>
 export declare function isSupported(): boolean
 
 export declare function keyLabel(keycode: number): string | null
-
-export declare function resetDeadKeyState(): void
 
 export declare function resolveKey(keycode: number, shift: boolean, ctrl: boolean, alt: boolean): string | null
 

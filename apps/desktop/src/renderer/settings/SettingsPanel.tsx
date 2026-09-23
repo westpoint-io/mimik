@@ -169,29 +169,29 @@ export function SettingsPanel() {
 
                 {settings.captureMode === 'region' && (
                   <Toggle
-                    checked={settings.captureOutsideClicks}
-                    label={i18n.t('desktop_captureOutside')}
-                    onChange={(captureOutsideClicks) => save({ captureOutsideClicks })}
+                    checked={settings.keepClicksBeyondArea}
+                    label={i18n.t('desktop_keepClicksBeyondArea')}
+                    onChange={(keepClicksBeyondArea) => save({ keepClicksBeyondArea })}
                   />
                 )}
               </Card>
 
               <Card icon={Keyboard} title={i18n.t('desktop_cardKeyboard')}>
                 <Toggle
-                  checked={settings.captureKeys}
-                  label={i18n.t('desktop_captureKeys')}
-                  onChange={(captureKeys) => save({ captureKeys })}
+                  checked={settings.recordKeys}
+                  label={i18n.t('desktop_recordKeys')}
+                  onChange={(recordKeys) => save({ recordKeys })}
                 />
                 <Toggle
-                  checked={settings.captureTyping}
-                  label={i18n.t('desktop_captureTyping')}
-                  onChange={(captureTyping) => save({ captureTyping })}
+                  checked={settings.recordTyping}
+                  label={i18n.t('desktop_recordTyping')}
+                  onChange={(recordTyping) => save({ recordTyping })}
                 />
                 <Toggle
-                  checked={settings.typingSmartDetection}
-                  label={i18n.t('desktop_typingSmart')}
-                  hint={i18n.t('desktop_typingSmartHint')}
-                  onChange={(typingSmartDetection) => save({ typingSmartDetection })}
+                  checked={settings.readFieldText}
+                  label={i18n.t('desktop_readFieldText')}
+                  hint={i18n.t('desktop_readFieldTextHint')}
+                  onChange={(readFieldText) => save({ readFieldText })}
                 />
 
                 <Field label={i18n.t('desktop_typingDebounce')}>
@@ -200,7 +200,7 @@ export function SettingsPanel() {
                     min={200}
                     max={5000}
                     step={100}
-                    disabled={!settings.captureTyping}
+                    disabled={!settings.recordTyping}
                     className={NUMBER}
                     value={settings.typingDebounceMs}
                     onChange={(e) => save({ typingDebounceMs: Number(e.target.value) })}

@@ -166,7 +166,7 @@ desktop:
   showCursor: Show the cursor in screenshots
   pointerStyle: Pointer style
   screenshotDelay: Screenshot delay
-  captureOutside: Capture clicks outside the capture area
+  keepClicksBeyondArea: Capture clicks outside the capture area
   guideInApp: "Guide in $1"
   newGuide: New Guide
   capturingSection: Capturing
@@ -189,11 +189,11 @@ desktop:
   zoomLevelHint: "New recordings start here. Automatic keeps every step the same size."
   zoomAuto: "Automatic"
   zoomGuide: "Zoom"
-  captureKeys: "Record shortcuts and named keys"
-  captureTyping: "Record what you type"
+  recordKeys: "Record shortcuts and named keys"
+  recordTyping: "Record what you type"
   typingDebounce: "Close a typing step after"
-  typingSmart: "Read the field's own text when it can"
-  typingSmartHint: "Off means the guide records your keystrokes instead"
+  readFieldText: "Read the field's own text when it can"
+  readFieldTextHint: "Off means the guide records your keystrokes instead"
   shortcutStartStop: "Start or finish a recording"
   shortcutPauseResume: "Pause or resume"
   shortcutCapture: "Capture a step now"

@@ -166,7 +166,7 @@ desktop:
   showCursor: Show the cursor in screenshots
   pointerStyle: Pointer style
   screenshotDelay: Screenshot delay
-  captureOutside: Capture clicks outside the capture area
+  keepClicksBeyondArea: Capture clicks outside the capture area
   guideInApp: "Guide in $1"
   newGuide: New Guide
   capturingSection: Capturing
@@ -189,11 +189,11 @@ desktop:
   zoomLevelHint: "新录制从这里开始。自动会让每一步保持相同大小。"
   zoomAuto: "自动"
   zoomGuide: "缩放"
-  captureKeys: "记录快捷键和命名按键"
-  captureTyping: "记录输入内容"
+  recordKeys: "记录快捷键和命名按键"
+  recordTyping: "记录输入内容"
   typingDebounce: "输入步骤结束延迟"
-  typingSmart: "尽可能读取输入框自身的文本"
-  typingSmartHint: "关闭时改为记录按键"
+  readFieldText: "尽可能读取输入框自身的文本"
+  readFieldTextHint: "关闭时改为记录按键"
   shortcutStartStop: "开始或结束录制"
   shortcutPauseResume: "暂停或继续"
   shortcutCapture: "立即捕获一步"

@@ -93,9 +93,9 @@ pub fn resolve_key(keycode: u32, shift: bool, ctrl: bool, alt: bool) -> Option<S
 }
 
 #[napi]
-pub fn reset_dead_key_state() {
+pub fn clear_dead_key() {
   #[cfg(windows)]
-  win::reset_dead_key_state();
+  win::clear_dead_key();
 }
 
 #[napi]

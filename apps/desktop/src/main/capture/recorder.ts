@@ -5,11 +5,11 @@ import type { CursorMark } from '@mimik/core/screenshot/types';
 import { screen } from 'electron';
 import { cursorPoint } from './displays';
 import {
+  clearDeadKey,
   elementAt,
   focusedField,
   isTextField,
   keyLabel,
-  resetDeadKeyState,
   resolveKey,
   type ScreenElement,
 } from './element';
@@ -23,8 +23,9 @@ import { type CaptureMode, type CaptureSettings, DEFAULT_CAPTURE_SETTINGS } from
 const TARGET_SIZE = 28;
 const SETTLE_MS = 60;
 const REPEAT_CLICK_MS = 500;
-const TEXT_MARKERS = /[\uFFF9-\uFFFD\uFEFF\u200B]/g;
-const LONG_FIELD_CHARS = 80;
+const MARKER_CODE_POINTS = new Set([0x200b, 0xfeff, 0xfff9, 0xfffa, 0xfffb, 0xfffc, 0xfffd]);
+const FIELD_SLACK: Record<string, number> = { document: 24 };
+const DEFAULT_FIELD_SLACK = 120;
 
 const KEY = {
   escape: 1,
@@ -103,7 +104,7 @@ export function isRepeatClick(previousAt: number | null, at: number): boolean {
 
 export function shouldCapture(settings: CaptureSettings, region: Region, point: Point): boolean {
   if (settings.captureMode !== 'region') return true;
-  return inside(region, point) || settings.captureOutsideClicks;
+  return inside(region, point) || settings.keepClicksBeyondArea;
 }
 
 export function frameFor(mode: CaptureMode, point: Point, region: Region, window: Rect | null): Rect {
@@ -130,17 +131,17 @@ export function clickAction(button: number): string {
   return button === 2 ? 'auxclick' : 'click';
 }
 
-export function chooseTypedText(field: ScreenElement | null, buffer: string, smart = true): string | null {
-  if (!isTextField(field)) return null;
-  if (!smart) return buffer || null;
-  const value = (field?.textContent ?? '').replace(TEXT_MARKERS, '');
-  if (!value.trim()) return buffer || null;
+export function typedTextFor(field: ScreenElement | null, buffer: string, readField = true): string | null {
+  if (!field || !isTextField(field)) return null;
+  if (!readField) return buffer || null;
+  const shown = [...(field.textContent ?? '')].filter((char) => !MARKER_CODE_POINTS.has(char.codePointAt(0) ?? 0));
+  if (!shown.join('').trim()) return buffer || null;
   const typed = [...buffer].length;
-  if (typed > 0 && [...value].length > Math.max(2 * typed, LONG_FIELD_CHARS)) return buffer;
-  return value;
+  const slack = FIELD_SLACK[field.role ?? ''] ?? DEFAULT_FIELD_SLACK;
+  return typed > 0 && shown.length > typed + slack ? buffer : shown.join('');
 }
 
-export function matchesShortcut(accelerator: string | null, action: KeyAction, key: string): boolean {
+export function isBoundShortcut(accelerator: string | null, action: KeyAction, key: string): boolean {
   if (!accelerator) return false;
   const parts = accelerator
     .split('+')
@@ -161,7 +162,7 @@ export function matchesShortcut(accelerator: string | null, action: KeyAction, k
   );
 }
 
-export function isTypingKey(action: KeyAction): boolean {
+export function isTextKey(action: KeyAction): boolean {
   if (MODIFIER_KEYS.has(action.keycode)) return false;
   if (action.ctrl || action.alt || action.meta) return false;
   return !COMMIT_KEYS.has(action.keycode);
@@ -223,7 +224,7 @@ export class DesktopRecorder {
     this.focused = hooks.focused ?? focusedField;
     this.label = hooks.label ?? keyLabel;
     this.resolve = hooks.resolve ?? resolveKey;
-    this.reset = hooks.reset ?? resetDeadKeyState;
+    this.reset = hooks.reset ?? clearDeadKey;
   }
 
   async start(): Promise<RecorderStart> {
@@ -278,8 +279,8 @@ export class DesktopRecorder {
   private onKey(action: KeyAction): void {
     if (MODIFIER_KEYS.has(action.keycode)) return;
     const settings = this.settings();
-    if (isTypingKey(action)) {
-      if (!settings.captureTyping) return;
+    if (isTextKey(action)) {
+      if (!settings.recordTyping) return;
       this.typing = true;
       this.buffered(action);
       if (this.idle) clearTimeout(this.idle);
@@ -296,7 +297,7 @@ export class DesktopRecorder {
     this.lastKey = { keycode: action.keycode, at };
     if (repeat) return;
     if (submitted && !action.ctrl && !action.alt && !action.meta) return;
-    if (!settings.captureKeys) return;
+    if (!settings.recordKeys) return;
     this.enqueue(() => this.captureKey(action));
   }
 
@@ -304,7 +305,7 @@ export class DesktopRecorder {
     const key = await this.label(action.keycode);
     if (!key) return;
     const { shortcuts } = this.settings();
-    if (Object.values(shortcuts).some((accelerator) => matchesShortcut(accelerator, action, key))) return;
+    if (Object.values(shortcuts).some((accelerator) => isBoundShortcut(accelerator, action, key))) return;
     const field = await this.focused();
     await this.write(`keydown:${comboLabel(action, key)}`, centreOf(field) ?? cursorPoint(), Promise.resolve(field));
   }
@@ -332,7 +333,7 @@ export class DesktopRecorder {
       const buffer = this.buffer;
       this.buffer = '';
       await this.reset();
-      await this.captureTyping(buffer);
+      await this.writeTyping(buffer);
     });
   }
 
@@ -352,14 +353,14 @@ export class DesktopRecorder {
     await this.write('click', point, this.lookup(point));
   }
 
-  async captureTyping(buffer = ''): Promise<void> {
+  async writeTyping(buffer = ''): Promise<void> {
     const field = await this.focused();
     const where = centreOf(field) ?? cursorPoint();
     if (field?.password) {
       await this.write('input', where, Promise.resolve(field));
       return;
     }
-    const typed = chooseTypedText(field, buffer, this.settings().typingSmartDetection);
+    const typed = typedTextFor(field, buffer, this.settings().readFieldText);
     if (!typed) return;
     await this.write('input', where, Promise.resolve(field), typed);
   }

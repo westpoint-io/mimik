@@ -279,7 +279,7 @@ pub fn resolve_key(keycode: u32, shift: bool, ctrl: bool, alt: bool) -> Option<S
     .filter(|found| !found.is_empty())
 }
 
-pub fn reset_dead_key_state() {
+pub fn clear_dead_key() {
   let layout = foreground_layout();
   let vk = VK_SPACE.0 as u32;
   let scancode = unsafe { MapVirtualKeyExW(vk, MAPVK_VK_TO_VSC, Some(layout)) };

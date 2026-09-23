@@ -1,11 +1,11 @@
 export { cursorPoint, type DisplayInfo, listDisplays } from './displays';
 export {
+  clearDeadKey,
   elementAt,
   elementLookupAvailable,
   focusedField,
   isTextField,
   keyLabel,
-  resetDeadKeyState,
   resolveKey,
   type ScreenElement,
 } from './element';

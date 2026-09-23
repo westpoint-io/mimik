@@ -23,7 +23,7 @@ type Addon = {
   focusedElement(): Promise<UiElement | null>;
   keyLabel(keycode: number): string | null;
   resolveKey(keycode: number, shift: boolean, ctrl: boolean, alt: boolean): string | null;
-  resetDeadKeyState(): void;
+  clearDeadKey(): void;
   isSupported(): boolean;
 };
 
@@ -107,9 +107,9 @@ export async function resolveKey(keycode: number, shift: boolean, ctrl: boolean,
   return native?.resolveKey(keycode, shift, ctrl, alt) ?? null;
 }
 
-export async function resetDeadKeyState(): Promise<void> {
+export async function clearDeadKey(): Promise<void> {
   const native = await load();
-  native?.resetDeadKeyState();
+  native?.clearDeadKey();
 }
 
 export async function elementLookupAvailable(): Promise<boolean> {
