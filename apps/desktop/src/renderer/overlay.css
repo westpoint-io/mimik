@@ -546,6 +546,27 @@ body.controls .flash {
   animation: camflash 3s ease infinite;
 }
 
+body.controls.resting #mascot svg {
+  animation: rest 3.2s ease-in-out infinite;
+}
+
+body.controls.resting .flash {
+  animation: none;
+  opacity: 0;
+}
+
+@keyframes rest {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
 @keyframes camflash {
   0%,
   88%,

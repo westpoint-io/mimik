@@ -201,6 +201,24 @@ app.whenReady().then(async () => {
     idle.tip === 'Your first click will show up here.' && idle.hint === 'Tip: you can press Alt+Shift+C to capture without clicking.',
     `tip: ${idle.tip}, hint: ${idle.hint}`,
   );
+  const badgeWhileRecording = await card("badge: !document.querySelector('#badge').hidden && document.querySelector('#badge').textContent");
+  overlay.pause();
+  await settle();
+  const resting = await card(
+    "tip: document.querySelector('#tip').textContent, intro: !document.querySelector('#intro').hidden, resting: document.body.classList.contains('resting'), hint: document.querySelector('#keyHint').hidden",
+  );
+  overlay.record();
+  await settle();
+  check(
+    'recording names its mode, and an empty pause is not a blank card',
+    typeof badgeWhileRecording.badge === 'string' &&
+      badgeWhileRecording.badge.length > 0 &&
+      resting.tip === 'Nothing is recorded while paused.' &&
+      resting.intro === true &&
+      resting.resting === true &&
+      resting.hint === true,
+    `badge ${badgeWhileRecording.badge}, paused tip ${resting.tip}, mascot shown ${resting.intro}`,
+  );
 
   overlay.showStep({ id: 'one', index: 1, title: 'Click "Save"', src, source: 'heuristic', pending: false, app: 'Explorer' });
   await settle();

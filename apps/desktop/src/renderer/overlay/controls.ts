@@ -89,11 +89,13 @@ export function controls(): void {
     const recording = state === 'recording';
     const paused = state === 'paused';
     const waiting = recording && !step && !busy;
+    const resting = paused && !step && !busy;
     const pending = Boolean(step?.pending);
 
     document.body.setAttribute('data-state', state);
     document.body.classList.toggle('collapsed', collapsed);
-    document.body.classList.toggle('waiting', waiting);
+    document.body.classList.toggle('waiting', waiting || resting);
+    document.body.classList.toggle('resting', resting);
     document.body.classList.toggle('busy', busy);
 
     label.textContent = starting ? 'Starting…' : recording ? 'Recording' : paused ? 'Paused' : 'Ready';
@@ -107,7 +109,7 @@ export function controls(): void {
       const shown = MODES.find((candidate) => candidate.id === modeId) ?? MODES[0];
       badge.replaceChildren(icon(shown.glyph, 12), shown.label);
     }
-    badge.hidden = !armed;
+    badge.hidden = paused || collapsed;
     pillWriting.hidden = !(collapsed && pending);
 
     const chevron = collapsed ? 'up' : 'down';
@@ -138,13 +140,17 @@ export function controls(): void {
     source.className = step?.source === 'ai' ? 'ai' : 'basic';
     metaText.textContent = [step ? `Step ${step.index}` : '', step?.app ?? ''].filter(Boolean).join(' · ');
 
-    intro.hidden = !(armed || waiting);
-    tip.textContent = armed ? 'Each click is saved as a step.' : 'Your first click will show up here.';
+    intro.hidden = !(armed || waiting || resting);
+    tip.textContent = armed
+      ? 'Each click is saved as a step.'
+      : resting
+        ? 'Nothing is recorded while paused.'
+        : 'Your first click will show up here.';
     const key = armed ? shortcuts.startStop : shortcuts.capture;
-    hint.hidden = intro.hidden || !key;
+    hint.hidden = intro.hidden || resting || !key;
     hintKey.textContent = key ?? '';
     hintText.textContent = armed ? ' to start and stop.' : ' to capture without clicking.';
-    body.hidden = collapsed || (paused && !step);
+    body.hidden = collapsed;
 
     modes.hidden = collapsed || !paused;
     for (const button of modeButtons) button.classList.toggle('active', button.dataset.mode === modeId);
