@@ -31,6 +31,37 @@ function setOpenAtLogin(enabled: boolean): void {
   refreshTrayMenu();
 }
 
+let restoreAfterCapture = false;
+
+function enterCapture(): void {
+  mainWindow?.webContents.setBackgroundThrottling(false);
+  if (!mainWindow?.isVisible()) return;
+  restoreAfterCapture = true;
+  mainWindow.hide();
+}
+
+function leaveCapture(finished: boolean): void {
+  mainWindow?.webContents.setBackgroundThrottling(true);
+  if (finished || restoreAfterCapture) showWindow();
+  restoreAfterCapture = false;
+}
+
+function trayIcon(recording: boolean): Electron.NativeImage {
+  const icon = nativeImage.createFromPath(resource(recording ? 'tray-recording32.png' : 'icon32.png'));
+  return process.platform === 'darwin' ? icon.resize({ width: 16, height: 16 }) : icon;
+}
+
+function isCapturing(): boolean {
+  return overlay?.state === 'recording' || overlay?.state === 'paused';
+}
+
+function refreshTray(): void {
+  if (!tray) return;
+  const recording = isCapturing();
+  tray.setImage(trayIcon(recording));
+  tray.setToolTip(recording ? 'Mimik is recording. Click to finish.' : 'Mimik');
+}
+
 function showWindow(): void {
   if (!mainWindow) {
     createWindow();
@@ -89,7 +120,13 @@ function refreshTrayMenu(): void {
   tray.setContextMenu(
     Menu.buildFromTemplate([
       { label: 'Open Mimik', click: () => showWindow() },
-      { label: 'Set capture area', click: () => overlay?.edit() },
+      {
+        label: 'Set capture area',
+        click: () => {
+          if (!isCapturing()) enterCapture();
+          overlay?.edit();
+        },
+      },
       { type: 'separator' },
       {
         label: 'Start at login',
@@ -105,10 +142,12 @@ function refreshTrayMenu(): void {
 }
 
 function createTray(): void {
-  const icon = nativeImage.createFromPath(resource('icon32.png'));
-  tray = new Tray(process.platform === 'darwin' ? icon.resize({ width: 16, height: 16 }) : icon);
+  tray = new Tray(trayIcon(false));
   tray.setToolTip('Mimik');
-  tray.on('click', () => showWindow());
+  tray.on('click', () => {
+    if (isCapturing()) overlay?.run('stop');
+    else showWindow();
+  });
   refreshTrayMenu();
 }
 
@@ -127,6 +166,7 @@ function applyShortcuts(): void {
 function onShortcut(name: ShortcutName): void {
   if (!overlay) return;
   if (name === 'startStop') {
+    if (overlay.state === 'hidden') enterCapture();
     overlay.run(overlay.state === 'hidden' || overlay.state === 'armed' ? 'start' : 'stop');
     return;
   }
@@ -186,7 +226,8 @@ async function onOverlayCommand(command: OverlayCommand): Promise<void> {
   }
   broadcastOverlay(command, finished ?? guideId);
   applyShortcuts();
-  if (finished) showWindow();
+  refreshTray();
+  if (command === 'stop' || command === 'cancel') leaveCapture(Boolean(finished));
 }
 
 let isQuitting = false;
@@ -292,8 +333,14 @@ if (!app.requestSingleInstanceLock()) {
       if (step === steps.at(-1)) overlay?.showStep(step);
     });
     ipcMain.handle('mimik:capture:region', () => overlay?.region);
-    ipcMain.handle('mimik:capture:edit', () => overlay?.edit());
-    ipcMain.handle('mimik:capture:arm', () => overlay?.arm());
+    ipcMain.handle('mimik:capture:edit', () => {
+      enterCapture();
+      overlay?.edit();
+    });
+    ipcMain.handle('mimik:capture:arm', () => {
+      enterCapture();
+      overlay?.arm();
+    });
 
     applyShortcuts();
     createWindow();
