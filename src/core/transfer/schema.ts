@@ -301,7 +301,7 @@ export function parseManifest(raw: unknown): BundleManifest {
     version,
     exportedAt: num(raw.exportedAt) ?? Date.now(),
     guide: {
-      title: str(guide.title)?.trim() || 'Untitled Guide',
+      title: str(guide.title)?.trim() || 'Untitled guide',
       ...(str(guide.description) ? { description: str(guide.description) } : {}),
       createdAt: num(guide.createdAt) ?? Date.now(),
     },

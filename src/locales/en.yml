@@ -7,7 +7,7 @@ app:
   description: "Record any browser workflow as a step-by-step guide. Edit, voice-narrate, export to video, PDF or DOCX. Local-first, open source."
 
 common:
-  loading: Loading...
+  loading: Loading…
   cancel: Cancel
   save: Save
   delete: Delete
@@ -25,11 +25,11 @@ common:
 
 sidepanel:
   connected: Connected
-  connecting: Connecting...
+  connecting: Connecting…
   heroTitle: What would you like to capture?
   heroSubtitle: Record any workflow automatically
-  startCapture: Start Capture
-  searchPlaceholder: Search guides...
+  startCapture: "Start capture"
+  searchPlaceholder: Search guides…
   recentLabel: Recent
   notRecordable: Open a website to start capturing
 
@@ -39,7 +39,7 @@ library:
   noStarredTitle: No starred guides
   noStarredSub: Star a guide to find it quickly
   trashEmptyTitle: Trash is empty
-  trashEmptySub: Squeaky clean!
+  trashEmptySub: "Deleted guides show up here"
   noMatchingGuides: No matching guides
   moveToTrash: Move to trash
   deletePermanently: Delete permanently
@@ -48,29 +48,29 @@ library:
   openDashboardHint: "Browse, import and export guides there"
   duplicate: Duplicate
   copyOfTitle: "Copy of $1"
-  duplicateFailed: Could not duplicate this guide
+  duplicateFailed: Couldn't duplicate this guide
 
 guideme:
   live: Live
-  roadblock: "We hit a roadblock. Try taking action on the screen to move forward."
-  manualStep: "This step was edited, so it can't be detected automatically. Use Next once you've done it."
+  roadblock: "Can't find this step on the page. Do it yourself to continue."
+  manualStep: "Edited steps can't be detected. Click Next when you've done it."
   stepOf: "Step $1 of $2"
   noDescription: No description
   prev: Prev
   next: Next
   finish: "Finish"
   exitTitle: Heading out?
-  exitMessage: Your walkthrough will stop and the page overlay will be removed.
+  exitMessage: "The walkthrough and its page overlay will close."
   stay: Stay
   exit: Exit
   guideNotFound: Guide not found
 
 guidemeCompletion:
-  title: "All done, champ!"
-  stepsCompleted: "All $1 step completed."
+  title: "Guide complete"
+  stepsCompleted: "$1 step completed."
   stepsCompletedPlural: "All $1 steps completed."
-  allDone: All Done
-  runAgain: Run Again
+  allDone: "All done"
+  runAgain: "Run again"
 
 recording:
   capturePaused: Capture paused
@@ -79,10 +79,10 @@ recording:
   resumeCapture: Resume capture
   recording: "Recording \xB7 $1 step"
   recordingPlural: "Recording \xB7 $1 steps"
-  readyTitle: Ready to capture!
+  readyTitle: "Ready to capture"
   readySub: Click on the page to start
-  finishRecording: Finish Recording
-  smartBlur: Smart Blur
+  finishRecording: "Finish recording"
+  smartBlur: "Smart blur"
   discard: Discard
   deleteStep: Delete step
   justNow: Just now
@@ -91,93 +91,93 @@ recording:
 
 settings:
   title: Settings
-  aiDescriptions: AI Descriptions
+  aiDescriptions: "AI descriptions"
   provider: Provider
   model: Model
   modelCustom: Custom model
   baseUrl: Base URL
   useOwnServer: Use my own server
-  ownServerHintOpenai: "Works with Ollama, LM Studio, vLLM, or any OpenAI-compatible server."
+  ownServerHintOpenai: "Works with Ollama, LM Studio, vLLM or any OpenAI-compatible server."
   ownServerHintAnthropic: "Works with a LiteLLM proxy or any Anthropic-compatible server."
-  apiKey: API Key
+  apiKey: "API key"
   showKey: Show key
   hideKey: Hide key
-  aiLanguage: Description Language
-  voiceover: "Video Voice-over"
+  aiLanguage: "Description language"
+  voiceover: "Video voice-over"
   textToSpeech: "text → speech"
   voiceoverHint: "Mimik speaks each step's text over the exported video."
-  voiceoverUsingAiKey: "No voice-over key is set, so Mimik uses the OpenAI key from AI Descriptions above."
-  voiceoverNoKey: "No API key is set, so videos cannot be narrated."
+  voiceoverUsingAiKey: "Using the OpenAI key from AI descriptions."
+  voiceoverNoKey: "Add an API key to narrate videos."
   voice: "Voice"
   speechToText: "speech → text"
   voiceNarrationHint: "Talk through the workflow and Mimik writes each step from what you said."
-  voiceNarration: Voice Narration
-  voiceUsingAiKey: "No voice key is set, so Mimik uses the OpenAI key from AI Descriptions above."
-  aiNoKey: "No API key is set, so steps will use plain rule-based descriptions."
-  voiceNoKey: "No API key is set, so your recordings will not be narrated."
+  voiceNarration: "Voice narration"
+  voiceUsingAiKey: "Using the OpenAI key from AI descriptions."
+  aiNoKey: "Without an API key, steps get basic rule-based descriptions."
+  voiceNoKey: "Add an API key to narrate recordings."
   microphone: Microphone
   microphoneDefault: System default
   microphoneNeedsAccess: Allow microphone access to see your device names.
   microphoneGrantAccess: Allow microphone access
-  microphoneNone: No microphone was found. Plug one in and it will show up here.
+  microphoneNone: "No microphone found. Plug one in to see it here."
   microphoneUnavailable: Unavailable microphone
-  microphoneMissing: The microphone you picked is not available right now, so Mimik will use the system default.
+  microphoneMissing: "Your chosen microphone isn't connected. Using the system default."
   microphoneTest: Test microphone
   microphoneStatusAllowed: Allowed
   microphoneStatusBlocked: Blocked
   microphoneStatusPending: Not allowed yet
-  microphoneBlocked: Your browser is blocking the microphone for Mimik. Open the site settings from the icon at the left of the address bar and set Microphone to Allow.
+  microphoneBlocked: "Microphone blocked. Click the icon left of the address bar and set Microphone to Allow."
   microphoneUnblockHow: How do I unblock it?
   microphoneTestStop: Stop test
-  microphoneTestFailed: That microphone could not be opened. Pick another one and try again.
-  targetColor: "Brand colour"
+  microphoneTestFailed: "Couldn't open that microphone. Try another one."
+  targetColor: "Brand color"
   targetColorHint: "Click highlights and export accents"
-  branding: "Export Branding"
+  branding: "Export branding"
   brandLogo: "Logo"
   uploadLogo: "Upload logo"
   replaceLogo: "Replace"
   removeLogo: "Remove logo"
   footerLine: "Footer line"
-  footerLinePlaceholder: "e.g. Confidential — internal use only"
-  footerPresetConfidential: "Confidential — internal use only"
+  footerLinePlaceholder: "e.g. Confidential · Internal use only"
+  footerPresetConfidential: "Confidential · Internal use only"
   footerPresetNoDistribute: "Do not distribute"
   attribution: 'Show "Made with Mimik"'
-  saveSettings: Save Settings
+  saveSettings: "Save settings"
   saved: Saved
   validatingKey: "Checking key\u2026"
   keyValid: API key verified.
-  keyInvalid: That API key was rejected. Check it and try again.
+  keyInvalid: "The provider rejected this key. Check it and try again."
   keyModelRequired: Choose a model before checking this key.
-  keyModelInvalid: The selected model is not available from this provider.
+  keyModelInvalid: The selected model isn't available from this provider.
   checkKey: Check key
-  keyCannotSpend: "This key has no credits, so only free models will work."
-  keyUnreachable: Could not reach the provider. Check your connection and try again.
+  keyCannotSpend: "This key has no credits. Only free models will work."
+  keyUnreachable: "Couldn't reach the provider. Check your connection."
   modelsFound: "$1 models available"
-  smartBlur: Smart Blur
-  privacyNotice: "Your keys and audio go only to the provider you pick. Nothing else leaves your browser."
+  smartBlur: "Smart blur"
+  privacyNotice: "Keys and audio go only to the provider you choose."
   bugReport: "Found a bug? Report it on GitHub"
   starCtaTitle: "Like what you see?"
-  starCtaMessage: A GitHub star helps others find Mimik and keeps us motivated!
+  starCtaMessage: "A GitHub star helps other people find Mimik."
   starOnGithub: Star on GitHub
 
 blurPresets:
   email: Email
-  phoneNumbers: Phone Numbers
+  phoneNumbers: "Phone numbers"
   ssn: SSN
-  creditCard: Credit Card
-  ipAddress: IP Address
-  macAddress: MAC Address
+  creditCard: "Credit card"
+  ipAddress: "IP address"
+  macAddress: "MAC address"
 
 fullview:
-  allGuides: All Guides
+  allGuides: "All guides"
   starred: Starred
   trash: Trash
-  searchPlaceholder: Search guides...
-  guideMe: Guide Me
-  untitledGuide: Untitled Guide
-  writingTitle: Writing a title from your captured steps...
+  searchPlaceholder: Search guides…
+  guideMe: "Guide Me"
+  untitledGuide: "Untitled guide"
+  writingTitle: "Writing a title…"
   writingDescription: "Writing a description\u2026"
-  guideNotFound: "Guide not found."
+  guideNotFound: "Guide not found"
   stepCount: "$1 step"
   stepCountPlural: "$1 steps"
   pageOf: "$1 / $2"
@@ -185,7 +185,7 @@ fullview:
 sort:
   recentFirst: Recent first
   oldestFirst: Oldest first
-  alphaAZ: "A \u2014 Z"
+  alphaAZ: "A–Z"
   mostSteps: Most steps
   gridView: Grid view
   listView: List view
@@ -202,14 +202,14 @@ keyboard:
 
 confirmDelete:
   title: "Delete guide?"
-  message: This will permanently delete this guide. This cannot be undone.
+  message: "This can't be undone."
   confirm: Delete permanently
 
 editor:
   backToLibrary: Back to library
   openInDashboard: Open
   openInDashboardHint: Open in the dashboard to edit or export
-  guideMe: Guide Me
+  guideMe: "Guide Me"
   guideMeUnavailable: No replayable steps in this guide
   deleteThisStep: "Delete this step?"
   selectStep: Select step
@@ -226,10 +226,10 @@ editor:
   regenerateDescription: Regenerate description
   generatingDescription: "Generating\u2026"
   descriptionPlaceholder: Add a description
-  descriptionErrorNoApiKey: Add an AI API key in settings to generate descriptions.
-  descriptionErrorNoSteps: This guide has no described steps to summarise.
-  descriptionErrorFailed: Could not generate a description. Try again.
-  descriptionErrorSaveFailed: Generated the description but could not save it. Try again.
+  descriptionErrorNoApiKey: "Add an AI API key in Settings to generate descriptions."
+  descriptionErrorNoSteps: "This guide has no described steps to summarize."
+  descriptionErrorFailed: Couldn't generate a description. Try again.
+  descriptionErrorSaveFailed: "Couldn't save the new description. Try again."
   writingStepDescription: "Writing description\u2026"
   transcribingStepDescription: "Transcribing what you said…"
   rewriteAskAi: Ask AI
@@ -242,15 +242,15 @@ editor:
   rewriteCasual: More casual
   rewriteReplace: Replace
   rewriteDiscard: Discard
-  rewriteErrorNoApiKey: Add an AI API key in settings to rewrite text.
-  rewriteErrorFailed: Could not rewrite the selection. Try again.
+  rewriteErrorNoApiKey: "Add an AI API key in Settings to rewrite text."
+  rewriteErrorFailed: Couldn't rewrite the selection. Try again.
   rewriteErrorStale: The text changed. Select it again.
   restoreSpoken: Restore what you said
 
 capture:
   recordSteps: Record steps
   moreStepsTitle: Capture more steps
-  moreStepsBody: New steps are inserted here. Pick the tab to record in.
+  moreStepsBody: New steps are inserted here. Choose the tab to record in.
   startCapture: Start capture
   noRecordableTabs: No recordable tabs are open in this window.
 
@@ -269,21 +269,21 @@ blocks:
   variantCustom: Custom
 
 history:
-  title: Version History
+  title: "Version history"
   current: Current
   restore: Restore
   unchangedVersions: "Unchanged versions ($1)"
-  readOnlyBanner: "You're viewing an earlier version. Close Version History to return to the current guide."
-  loadError: Unable to load version history. Try again.
-  restoreError: Unable to restore. Try again in a moment.
+  readOnlyBanner: "You're viewing an earlier version. Close version history to go back."
+  loadError: Couldn't load version history. Try again.
+  restoreError: Couldn't restore. Try again in a moment.
   storageFull: Not enough storage to save an undo point. Delete a guide and try again.
-  empty: No earlier versions yet. They appear here once you edit this guide.
+  empty: "No earlier versions yet. Edit the guide to create one."
   nameVersion: Name this version
   namePlaceholder: Version name
   allVersions: All versions
   namedOnly: Named versions only
-  emptyNamed: No named versions yet. Name one to find it again later.
-  renameError: Unable to save that name. Try again.
+  emptyNamed: "No named versions yet."
+  renameError: Couldn't save that name. Try again.
   changeTitle: Title changed
   changeStepAdded: "$1 step added"
   changeStepsAdded: "$1 steps added"
@@ -306,15 +306,15 @@ history:
 
 emptyGuide:
   title: This guide is empty
-  subtitle: Wake it up by recording some steps
+  subtitle: "Record steps to fill it"
 
 blurPanel:
-  title: Smart Blur
-  manualMode: Manual Mode
+  title: "Smart blur"
+  manualMode: "Manual mode"
   selectElements: Select elements to blur
   done: Done
-  doneResume: "Done \xB7 Resume Recording"
-  resetAll: Reset All
+  doneResume: "Done · Resume recording"
+  resetAll: "Reset all"
 
 screenshotView:
   zoomIn: Zoom in
@@ -331,7 +331,7 @@ screenshotView:
   replaceFormats: "PNG, JPG or WebP"
   download: Download
   deleteImage: Delete image
-  deleteConfirm: "Delete this screenshot? This cannot be undone."
+  deleteConfirm: "Delete this screenshot? This can't be undone."
   imageDeleted: Image deleted
   altButton: ALT
   altLabel: Alt text
@@ -346,8 +346,8 @@ annotationEditor:
   addTarget: "Add click target"
   toolRedact: Redact
   toolCrop: Crop
-  colorLabel: Colour
-  textPlaceholder: Type something...
+  colorLabel: "Color"
+  textPlaceholder: Type something…
   targetBorder: Border style
   modeAnnotate: "Annotate"
   toolLine: "Line"
@@ -395,11 +395,11 @@ exportPreview:
   voiceoverNoKey: "Add an OpenAI or ElevenLabs key in Settings to narrate videos."
   videoLength: "Video length $1"
   videoLengthVoice: "Video length $1 → $2 with voice-over"
-  voiceoverCost: "$1 clips · about $2 characters to synthesise"
-  voiceoverFailed: "Narration failed, so this video is silent. Check the API key in Settings."
-  voiceoverNoAudioCodec: "This browser cannot encode audio for video, so this video is silent."
-  voiceoverNoKeySkip: "No voice-over API key is set, so this video is silent. Add one in Settings."
-  voiceoverNothingToSay: "This guide has no text to read aloud, so this video is silent."
+  voiceoverCost: "$1 clips · about $2 characters to synthesize"
+  voiceoverFailed: "Voice-over failed. Check the API key in Settings."
+  voiceoverNoAudioCodec: "The video is silent. This browser can't add audio to videos."
+  voiceoverNoKeySkip: "The video is silent. Add a voice-over API key in Settings."
+  voiceoverNothingToSay: "The video is silent. This guide has no text to read aloud."
   narrating: "Narrating step $1 of $2"
   stepDescriptions: "Step captions"
   stepDescriptionsHint: "Draw the step text onto each video frame"
@@ -424,12 +424,12 @@ exportPreview:
   download: "Export $1"
   rendering: "Updating preview"
   videoReady: "$1 steps · about $2 min of video"
-  videoReadyHint: "Long guides are not encoded automatically. The preview covers every step."
+  videoReadyHint: "Long guides aren't encoded automatically. The preview covers every step."
   videoGenerate: "Generate preview"
   modeDocument: "Document"
   modeVideo: "Video"
   encodingVideo: "Encoding video preview"
-  videoFailed: "The video preview could not be created"
+  videoFailed: "The video preview couldn't be created"
   bundle: "Mimik file"
   bundleHint: "A .mimik file someone else can import and edit"
   bundleStripInputs: "Remove typed text"
@@ -438,9 +438,9 @@ exportPreview:
   url_origin: "Site"
   url_path: "Page"
   url_full: "Full"
-  bundleRedactionNote: "Blurred areas are erased from the images before they leave your browser."
-  bundleTypedWarning: "$1 screenshot still shows text you typed. Blur it before sharing if it matters."
-  bundleTypedWarningPlural: "$1 screenshots still show text you typed. Blur them before sharing if it matters."
+  bundleRedactionNote: "Blurred areas are erased from the exported images."
+  bundleTypedWarning: "$1 screenshot shows text you typed. Blur it before sharing."
+  bundleTypedWarningPlural: "$1 screenshots show text you typed. Blur them before sharing."
 videoPlayer:
   stepCount: "$1 steps"
   previousStep: "Previous step"
@@ -462,31 +462,31 @@ exportMenu:
 
 onboarding:
   welcomeBadge: Welcome
-  welcomeTitle: "You've successfully installed Mimik!"
-  welcomeMessage: "With just a few steps, you'll be ready to auto-capture browser workflows and generate step-by-step guides. No account needed \u2014 everything stays in your browser."
+  welcomeTitle: "Mimik is installed"
+  welcomeMessage: "Set a few options, then record your first guide. No account needed. Guides stay in your browser."
   getStarted: Get started
   stepOf: "Step $1 of $2"
-  aiTitle: AI Descriptions
-  aiMessage: Connect your own API key to get AI-generated step descriptions. This is optional and can be changed later in settings.
-  aiGenerated: AI generated
+  aiTitle: "AI descriptions"
+  aiMessage: "Optional: add your own API key and AI writes each step's description."
+  aiGenerated: AI-generated
   aiGeneratedDescription: AI-generated description
   voiceTitle: Talk, then act
-  voiceMessage: Say what you are about to do, then do it. Mimik matches your narration to the action that follows it, so the order matters more than anything else.
-  voiceRecordHint: Narration stays off until you turn it on. Use the microphone button in the side panel while recording, so you choose per guide.
-  voiceDataNotice: Your audio is sent to the provider you pick here, using your own API key. Nothing else in Mimik leaves your browser.
-  voiceDemoLabel: How narration lands
+  voiceMessage: "Say what you're about to do, then do it. Mimik attaches your words to the next action."
+  voiceRecordHint: "Narration is off by default. Turn it on per guide with the microphone button in the side panel."
+  voiceDataNotice: "Audio goes to the provider you choose, using your API key."
+  voiceDemoLabel: How narration is matched
   voiceDemoSay: You say
   voiceDemoQuote: "Now I'll open the billing settings"
   voiceDemoAct: Then you click
   voiceDemoAction: Click the Billing tab
   voiceDemoBadge: From your voice
-  blurTitle: Smart Blur
+  blurTitle: "Smart blur"
   blurMessage: Automatically blur sensitive information in screenshots. Choose which patterns to detect.
   screenshotPreview: Screenshot preview
   notEnabled: Not enabled
   categoriesProtected: "$1 categories protected"
   pinTitle: Pin Mimik
-  pinMessage: Pin the extension to your toolbar for quick access. Click the puzzle icon in Chrome, then pin Mimik.
+  pinMessage: "Pin Mimik to your toolbar for quick access."
   pinStep1Title: Click the puzzle icon
   pinStep1Sub: In the top-right of your browser toolbar
   pinStep2Title: Find Mimik
@@ -495,16 +495,16 @@ onboarding:
   pinStep3Sub: Mimik will appear in your toolbar
   pinScreenshotAlt: Pin Mimik extension
   starTitle: Mind giving us a star?
-  starMessage: "Mimik is free and open source. A star is the easiest way to say thanks, and it helps other people find it."
+  starMessage: "Mimik is free and open source. A star helps other people find it."
   starAction: Star on GitHub
   starLater: Maybe later
-  doneTitle: "You're all set!"
-  doneMessage: "Mimik is ready to capture your workflows. Click \"Start Capture\" in the extension to record your first guide."
+  doneTitle: "You're all set"
+  doneMessage: "Click \"Start capture\" in the side panel to record your first guide."
   featureAutoCapture: Auto-capture
   featureAIAssist: AI assist
   featureVoice: Voice narration
   featureAnnotate: Annotate & redact
-  featureExports: Export anywhere
+  featureExports: "Export to PDF, video & more"
   featureSmartBlur: Smart blur
   openMimik: Open Mimik
 
@@ -542,58 +542,58 @@ export:
 
 background:
   guideOnDomain: "Guide on $1"
-  newGuide: New Guide
+  newGuide: "New guide"
 
 voice:
   turnOn: Turn on voice narration
   turnOff: Turn off voice narration
   needsApiKey: Add a transcription API key in Settings to narrate
   pausedWithCapture: Narration is paused with the capture
-  micStarting: Starting microphone...
+  micStarting: Starting microphone…
   micHearing: Hearing you
   micQuiet: No sound
   nextRecording: Voice narration is on and starts with your next recording.
-  orderHint: Say what you are about to do, then do it. Your words attach to the next action.
-  transcribing: Transcribing your narration...
-  transcribingHint: Step descriptions will update on their own once this finishes.
+  orderHint: Say what you're about to do, then do it. Your words attach to the next action.
+  transcribing: Transcribing your narration…
+  transcribingHint: "Step descriptions update when it finishes."
   narrated: "Narration added to $1 step."
   narratedPlural: "Narration added to $1 steps."
-  narratedNone: No narration matched your steps, so the descriptions are unchanged.
-  guideSafe: Your guide and screenshots are fine. Only the narration was lost.
+  narratedNone: "None of your narration matched a step."
+  guideSafe: "Your guide and screenshots are unaffected."
   openSettings: Open settings
-  errorPermissionDenied: Microphone access was blocked, so nothing was narrated.
-  errorNoDevice: No microphone was found, so nothing was narrated.
-  errorNoAudio: The microphone picked up no sound, so there was nothing to transcribe.
-  errorMissingApiKey: Voice narration needs a transcription provider and API key.
-  errorStreamEnded: The microphone stopped part way through, so narration ended early.
-  errorNotRecording: Voice narration was not running, so there was nothing to transcribe.
-  errorAlreadyRecording: Voice narration was already running, so this recording was not narrated.
-  errorUnsupported: This browser cannot record voice narration.
-  errorUnknown: Voice narration stopped unexpectedly.
+  errorPermissionDenied: "Microphone access was blocked."
+  errorNoDevice: "No microphone found."
+  errorNoAudio: "The microphone picked up no sound."
+  errorMissingApiKey: "Narration needs a transcription API key."
+  errorStreamEnded: "The microphone cut out partway through."
+  errorNotRecording: "Narration wasn't running."
+  errorAlreadyRecording: "Narration was already running."
+  errorUnsupported: This browser can't record voice narration.
+  errorUnknown: "Narration stopped unexpectedly."
 
 micPermission:
   title: Allow microphone access
-  checkingMessage: Checking whether Mimik already has microphone access...
-  promptingMessage: Your browser is asking for permission. Choose Allow so Mimik can record your narration while you capture a guide. This tab closes on its own.
+  checkingMessage: "Checking microphone access…"
+  promptingMessage: "Choose Allow in your browser's prompt. This tab closes on its own."
   grantedTitle: Microphone ready
-  grantedMessage: Taking you back to what you were doing.
+  grantedMessage: "Taking you back."
   deniedTitle: Microphone access is blocked
-  deniedMessage: Your browser is blocking the microphone for Mimik, so voice narration cannot record. Open the site settings from the icon at the left of the address bar, set Microphone to Allow, then try again. Capturing guides keeps working without it.
+  deniedMessage: "Click the icon left of the address bar, set Microphone to Allow, then try again."
   retry: Try again
-  privacy: Audio is held in memory only while you record and is sent to the transcription provider you configured. Mimik never stores it.
+  privacy: "Audio goes to your transcription provider. Mimik never stores it."
 
 aiStatus:
   rejected: "$1 rejected your API key."
   noCredits: "Your $1 account has no credits."
-  rateLimited: "$1 is limiting how often Mimik can ask."
-  modelInvalid: "$1 does not offer that model to your account."
+  rateLimited: "$1 is rate-limiting Mimik's requests."
+  modelInvalid: "$1 doesn't offer that model to your account."
   quota: "That request was too large for this model."
-  network: "Mimik could not reach $1."
+  network: "Mimik couldn't reach $1."
   unknown: "$1 refused the request."
   actionCheckKey: "Check your key in Settings."
   actionAddCredits: "Add credits, then check the key again."
   actionWait: "Wait a moment before recording more."
-  actionPickModel: "Pick another model in Settings."
+  actionPickModel: "Choose another model in Settings."
   actionConnection: "Check your connection."
 
 stepSource:
@@ -611,8 +611,8 @@ import:
   reading: "Reading the file"
   confirm: "Add to library"
   cancel: "Cancel"
-  guideMeHint: "This guide was recorded on $1. Guide Me only replays on that site."
-  noteRedacted: "Blurred areas were removed by the author and cannot be restored."
+  guideMeHint: "Recorded on $1. Guide Me only replays on that site."
+  noteRedacted: "Blurred areas were removed by the author and can't be restored."
   noteInputs: "Text typed into fields was left out."
   noteUrls: "Links were shortened to the page address."
   noteUrlsOrigin: "Links were shortened to the site address."
@@ -624,10 +624,10 @@ import:
 transcript:
   title: Transcript
   empty: Nothing was narrated in this recording.
-  loadError: Unable to load the transcript. Try again.
+  loadError: Couldn't load the transcript. Try again.
   filterAll: "All ($1)"
   filterUnused: "Unused ($1)"
-  privacyNote: Everything you said while recording, kept on this device only. It is never part of an exported guide and is deleted with the guide.
+  privacyNote: "Kept on this device only. Never included in exported guides, and deleted with the guide."
   usedInStep: "Step $1"
   readOnlyHint: Turn on Edit in the top bar to add these lines to a step.
   notUsed: Unused
@@ -636,4 +636,4 @@ transcript:
   copyAll: Copy all
   download: Download
   delete: Delete transcript
-  confirmDelete: Delete this transcript? What you said will be gone for good.
+  confirmDelete: "Delete this transcript? This can't be undone."

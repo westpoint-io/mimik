@@ -7,7 +7,7 @@ app:
   description: "Enregistrez toute tâche du navigateur en guide pas-à-pas. Éditez, narrez à la voix, exportez en vidéo, PDF ou DOCX. Open source."
 
 common:
-  loading: "Chargement..."
+  loading: "Chargement…"
   cancel: Annuler
   save: Enregistrer
   delete: Supprimer
@@ -17,7 +17,7 @@ common:
   export: Exporter
   close: Fermer
   undo: Annuler
-  star: Favoris
+  star: "Ajouter aux favoris"
   unstar: Retirer des favoris
   restore: Restaurer
   updated: "Mis à jour vers la v$1"
@@ -25,11 +25,11 @@ common:
 
 sidepanel:
   connected: "Connecté"
-  connecting: "Connexion..."
+  connecting: "Connexion…"
   heroTitle: "Que voulez-vous capturer ?"
-  heroSubtitle: "Enregistrez n'importe quel parcours en un clic"
+  heroSubtitle: "Enregistrez automatiquement n'importe quel parcours"
   startCapture: Lancer la capture
-  searchPlaceholder: "Rechercher des guides..."
+  searchPlaceholder: "Rechercher des guides…"
   recentLabel: "Récents"
   notRecordable: "Ouvrez un site web pour lancer la capture"
 
@@ -37,36 +37,36 @@ library:
   noGuidesTitle: Pas encore de guide
   noGuidesSub: "Lancez une capture pour créer votre premier guide"
   noStarredTitle: Aucun favori
-  noStarredSub: "Ajoutez un guide en favoris pour le retrouver vite"
+  noStarredSub: "Ajoutez un guide aux favoris pour le retrouver vite"
   trashEmptyTitle: La corbeille est vide
-  trashEmptySub: "Tout est nickel !"
+  trashEmptySub: "Les guides supprimés apparaissent ici"
   noMatchingGuides: Aucun guide trouvé
   moveToTrash: "Mettre à la corbeille"
   deletePermanently: "Supprimer définitivement"
-  openInFullView: "Ouvrir en plein écran"
+  openInFullView: "Ouvrir en pleine page"
   openDashboard: "Ouvrir le tableau de bord"
-  openDashboardHint: "Parcourez, importez et exportez vos guides là-bas"
+  openDashboardHint: "Parcourez, importez et exportez vos guides dans le tableau de bord"
   duplicate: Dupliquer
   copyOfTitle: "Copie de $1"
   duplicateFailed: Impossible de dupliquer ce guide
 
 guideme:
   live: En direct
-  roadblock: "Nous avons rencontré un obstacle. Agissez à l'écran pour continuer."
-  manualStep: "Cette étape a été modifiée, elle ne peut donc pas être détectée automatiquement. Utilisez Suivant une fois faite."
+  roadblock: "Étape introuvable sur la page. Faites-la vous-même pour continuer."
+  manualStep: "Les étapes modifiées ne sont pas détectées. Cliquez sur Suiv. une fois l'étape faite."
   stepOf: "Étape $1 sur $2"
   noDescription: Aucune description
   prev: "Préc."
   next: Suiv.
   finish: "Terminer"
   exitTitle: "Vous partez déjà ?"
-  exitMessage: "La visite guidée va s'arrêter et le calque sera retiré de la page."
+  exitMessage: "La visite guidée et son affichage sur la page vont se fermer."
   stay: Rester
   exit: Quitter
   guideNotFound: Guide introuvable
 
 guidemeCompletion:
-  title: "Et voilà, c'est dans la poche !"
+  title: "Guide terminé"
   stepsCompleted: "$1 étape terminée."
   stepsCompletedPlural: "Les $1 étapes sont terminées."
   allDone: "Terminé"
@@ -79,15 +79,15 @@ recording:
   resumeCapture: Reprendre la capture
   recording: "Enregistrement \xB7 $1 étape"
   recordingPlural: "Enregistrement \xB7 $1 étapes"
-  readyTitle: "Prêt à capturer !"
+  readyTitle: "Prêt à capturer"
   readySub: Cliquez sur la page pour commencer
   finishRecording: "Terminer l'enregistrement"
   smartBlur: Flou intelligent
   discard: Abandonner
   deleteStep: "Supprimer l'étape"
   justNow: "À l'instant"
-  secondsAgo: "Il y a $1s"
-  minutesAgo: "Il y a $1min"
+  secondsAgo: "Il y a $1 s"
+  minutesAgo: "Il y a $1 min"
 
 settings:
   title: "Paramètres"
@@ -106,30 +106,30 @@ settings:
   voiceover: "Voix off de la vidéo"
   textToSpeech: "texte → voix"
   voiceoverHint: "Mimik lit le texte de chaque étape par-dessus la vidéo exportée."
-  voiceoverUsingAiKey: "Aucune clé de voix off n'est définie, Mimik utilise donc la clé OpenAI des Descriptions IA."
-  voiceoverNoKey: "Aucune clé API n'est définie, les vidéos ne peuvent donc pas être narrées."
+  voiceoverUsingAiKey: "Utilise la clé OpenAI des Descriptions IA."
+  voiceoverNoKey: "Ajoutez une clé API pour narrer les vidéos."
   voice: "Voix"
   speechToText: "voix → texte"
-  voiceNarrationHint: "Explique le flux à voix haute et Mimik écrit chaque étape à partir de ce que tu as dit."
+  voiceNarrationHint: "Décrivez le parcours à voix haute et Mimik rédige chaque étape à partir de ce que vous avez dit."
   voiceNarration: "Narration vocale"
-  voiceUsingAiKey: "Aucune clé vocale n'est définie : Mimik utilise la clé OpenAI des descriptions IA ci-dessus."
-  aiNoKey: "Aucune clé API définie, les étapes utiliseront donc des descriptions simples basées sur des règles."
-  voiceNoKey: "Aucune clé API n'est définie, vos enregistrements ne seront donc pas narrés."
-  microphone: Microphone
+  voiceUsingAiKey: "Utilise la clé OpenAI des Descriptions IA."
+  aiNoKey: "Sans clé API, les étapes reçoivent des descriptions simples basées sur des règles."
+  voiceNoKey: "Ajoutez une clé API pour narrer vos enregistrements."
+  microphone: "Micro"
   microphoneDefault: "Micro par défaut du système"
   microphoneNeedsAccess: "Autorisez l'accès au micro pour voir le nom de vos appareils."
   microphoneGrantAccess: "Autoriser l'accès au micro"
-  microphoneNone: "Aucun micro n'a été trouvé. Branchez-en un et il apparaîtra ici."
+  microphoneNone: "Aucun micro trouvé. Branchez-en un pour le voir ici."
   microphoneUnavailable: "Micro indisponible"
-  microphoneMissing: "Le micro que vous avez choisi n'est pas disponible pour le moment : Mimik utilisera celui par défaut du système."
+  microphoneMissing: "Le micro choisi n'est pas branché. Utilisation du micro par défaut du système."
   microphoneTest: "Tester le micro"
   microphoneStatusAllowed: Autorisé
   microphoneStatusBlocked: Bloqué
   microphoneStatusPending: Pas encore autorisé
-  microphoneBlocked: Votre navigateur bloque le micro pour Mimik. Ouvrez les paramètres du site depuis l'icône à gauche de la barre d'adresse et réglez Microphone sur Autoriser.
+  microphoneBlocked: "Micro bloqué. Cliquez sur l'icône à gauche de la barre d'adresse et réglez Micro sur Autoriser."
   microphoneUnblockHow: Comment le débloquer ?
   microphoneTestStop: "Arrêter le test"
-  microphoneTestFailed: "Ce micro n'a pas pu être ouvert. Choisissez-en un autre et réessayez."
+  microphoneTestFailed: "Impossible d'ouvrir ce micro. Essayez-en un autre."
   targetColor: "Couleur de marque"
   targetColorHint: "Surbrillance des clics et accents des exports"
   branding: "Image de marque des exports"
@@ -138,31 +138,31 @@ settings:
   replaceLogo: "Remplacer"
   removeLogo: "Supprimer le logo"
   footerLine: "Ligne de pied de page"
-  footerLinePlaceholder: "p. ex. Confidentiel — usage interne"
-  footerPresetConfidential: "Confidentiel — usage interne"
+  footerLinePlaceholder: "p. ex. Confidentiel · Usage interne"
+  footerPresetConfidential: "Confidentiel · Usage interne"
   footerPresetNoDistribute: "Ne pas diffuser"
   attribution: 'Afficher « Made with Mimik »'
-  saveSettings: "Enregistrer"
+  saveSettings: "Enregistrer les paramètres"
   saved: "Enregistré"
   validatingKey: "V\xE9rification de la cl\xE9\u2026"
   keyValid: "Cl\xE9 API v\xE9rifi\xE9e."
-  keyInvalid: "Cette cl\xE9 API a \xE9t\xE9 refus\xE9e. V\xE9rifiez-la et r\xE9essayez."
+  keyInvalid: "Le fournisseur a refusé cette clé. Vérifiez-la et réessayez."
   keyModelRequired: Choisissez un modèle avant de vérifier cette clé.
   keyModelInvalid: "Le modèle sélectionné n'est pas disponible chez ce fournisseur."
   checkKey: Vérifier la clé
-  keyCannotSpend: "Cette clé n’a pas de crédits, seuls les modèles gratuits fonctionneront."
-  keyUnreachable: Le fournisseur est injoignable. Vérifiez votre connexion et réessayez.
+  keyCannotSpend: "Cette clé n'a pas de crédits. Seuls les modèles gratuits fonctionneront."
+  keyUnreachable: "Impossible de joindre le fournisseur. Vérifiez votre connexion."
   modelsFound: "$1 modèles disponibles"
   smartBlur: Flou intelligent
-  privacyNotice: "Vos clés et votre audio ne vont qu'au fournisseur que vous choisissez. Rien d'autre ne quitte votre navigateur."
+  privacyNotice: "Les clés et l'audio ne vont qu'au fournisseur choisi."
   bugReport: "Un bug ? Signalez-le sur GitHub"
   starCtaTitle: "Vous aimez Mimik ?"
-  starCtaMessage: "Une étoile sur GitHub nous aide beaucoup et permet à d'autres de découvrir Mimik !"
-  starOnGithub: "Donner une étoile sur GitHub"
+  starCtaMessage: "Une étoile sur GitHub aide d'autres personnes à découvrir Mimik."
+  starOnGithub: "Mettre une étoile sur GitHub"
 
 blurPresets:
   email: "E-mail"
-  phoneNumbers: "Téléphones"
+  phoneNumbers: "Numéros de téléphone"
   ssn: SSN
   creditCard: "Carte bancaire"
   ipAddress: Adresse IP
@@ -172,10 +172,10 @@ fullview:
   allGuides: Tous les guides
   starred: Favoris
   trash: Corbeille
-  searchPlaceholder: "Rechercher des guides..."
-  guideMe: "Guidez-moi !"
+  searchPlaceholder: "Rechercher des guides…"
+  guideMe: "Guidez-moi"
   untitledGuide: Guide sans titre
-  writingTitle: "Rédaction du titre à partir de vos étapes..."
+  writingTitle: "Rédaction du titre…"
   writingDescription: "R\xE9daction d\u2019une description\u2026"
   guideNotFound: Guide introuvable.
   stepCount: "$1 étape"
@@ -185,7 +185,7 @@ fullview:
 sort:
   recentFirst: "Plus récents"
   oldestFirst: "Plus anciens"
-  alphaAZ: "A \u2014 Z"
+  alphaAZ: "A–Z"
   mostSteps: "Plus d'étapes"
   gridView: Vue grille
   listView: Vue liste
@@ -202,14 +202,14 @@ keyboard:
 
 confirmDelete:
   title: "Supprimer ce guide ?"
-  message: "Il sera supprimé définitivement. Pas de retour en arrière."
+  message: "Cette action est irréversible."
   confirm: "Supprimer définitivement"
 
 editor:
   backToLibrary: "Retour à la bibliothèque"
   openInDashboard: Ouvrir
   openInDashboardHint: Ouvrir dans le tableau de bord pour modifier ou exporter
-  guideMe: "Guidez-moi !"
+  guideMe: "Guidez-moi"
   guideMeUnavailable: "Aucune étape rejouable dans ce guide"
   deleteThisStep: "Supprimer cette étape ?"
   selectStep: "Sélectionner l'étape"
@@ -226,12 +226,12 @@ editor:
   regenerateDescription: "Régénérer la description"
   generatingDescription: "Génération\u2026"
   descriptionPlaceholder: "Ajouter une description"
-  descriptionErrorNoApiKey: "Ajoutez une clé API d'IA dans les paramètres pour générer des descriptions."
+  descriptionErrorNoApiKey: "Ajoutez une clé API d'IA dans les Paramètres pour générer des descriptions."
   descriptionErrorNoSteps: "Ce guide n'a aucune étape décrite à résumer."
   descriptionErrorFailed: "Impossible de générer une description. Réessayez."
-  descriptionErrorSaveFailed: "Description générée mais impossible de l'enregistrer. Réessayez."
+  descriptionErrorSaveFailed: "Impossible d'enregistrer la nouvelle description. Réessayez."
   writingStepDescription: "R\xE9daction de la description\u2026"
-  transcribingStepDescription: "Transcription de ce que tu as dit…"
+  transcribingStepDescription: "Transcription de ce que vous avez dit…"
   rewriteAskAi: "Demander \xE0 l'IA"
   rewritePlaceholder: "Dites \xE0 l'IA comment modifier ce texte\u2026"
   rewriteEnter: "Entr\xE9e"
@@ -242,7 +242,7 @@ editor:
   rewriteCasual: "Plus d\xE9contract\xE9"
   rewriteReplace: Remplacer
   rewriteDiscard: Abandonner
-  rewriteErrorNoApiKey: "Ajoutez une cl\xE9 d'API d'IA dans les r\xE9glages pour r\xE9\xE9crire du texte."
+  rewriteErrorNoApiKey: "Ajoutez une clé API d'IA dans les Paramètres pour réécrire du texte."
   rewriteErrorFailed: "Impossible de r\xE9\xE9crire la s\xE9lection. R\xE9essayez."
   rewriteErrorStale: "Le texte a chang\xE9. S\xE9lectionnez-le \xE0 nouveau."
   restoreSpoken: Restaurer ce que vous avez dit
@@ -251,7 +251,7 @@ capture:
   recordSteps: "Enregistrer des étapes"
   moreStepsTitle: "Capturer d'autres étapes"
   moreStepsBody: "Les nouvelles étapes sont insérées ici. Choisissez l'onglet à enregistrer."
-  startCapture: "Démarrer la capture"
+  startCapture: "Lancer la capture"
   noRecordableTabs: "Aucun onglet enregistrable n'est ouvert dans cette fenêtre."
 
 blocks:
@@ -273,16 +273,16 @@ history:
   current: Actuelle
   restore: Restaurer
   unchangedVersions: "Versions inchangées ($1)"
-  readOnlyBanner: "Vous consultez une version antérieure. Fermez l'historique des versions pour revenir au guide actuel."
+  readOnlyBanner: "Vous consultez une version antérieure. Fermez l'historique des versions pour revenir."
   loadError: "Impossible de charger l'historique des versions. Réessayez."
   restoreError: Impossible de restaurer. Réessayez dans un instant.
   storageFull: "Espace insuffisant pour enregistrer un point d'annulation. Supprimez un guide et réessayez."
-  empty: Pas encore de version antérieure. Elles apparaîtront ici dès que vous modifierez ce guide.
+  empty: "Aucune version antérieure. Modifiez le guide pour en créer une."
   nameVersion: Nommer cette version
   namePlaceholder: Nom de la version
   allVersions: Toutes les versions
   namedOnly: Versions nommées uniquement
-  emptyNamed: "Aucune version nommée pour l'instant. Nommez-en une pour la retrouver plus tard."
+  emptyNamed: "Aucune version nommée pour l'instant."
   renameError: "Impossible d'enregistrer ce nom. Réessayez."
   changeTitle: Titre modifié
   changeStepAdded: "$1 étape ajoutée"
@@ -306,7 +306,7 @@ history:
 
 emptyGuide:
   title: Ce guide est vide
-  subtitle: "Enregistrez quelques étapes pour lui donner vie"
+  subtitle: "Enregistrez des étapes pour le remplir"
 
 blurPanel:
   title: Flou intelligent
@@ -331,7 +331,7 @@ screenshotView:
   replaceFormats: "PNG, JPG ou WebP"
   download: "Télécharger"
   deleteImage: "Supprimer l'image"
-  deleteConfirm: "Supprimer cette capture ? Pas de retour en arrière."
+  deleteConfirm: "Supprimer cette capture ? Cette action est irréversible."
   imageDeleted: "Image supprimée"
   altButton: "ALT"
   altLabel: "Texte alternatif"
@@ -347,16 +347,16 @@ annotationEditor:
   toolRedact: Masquer
   toolCrop: Recadrer
   colorLabel: Couleur
-  textPlaceholder: "Écrivez quelque chose..."
+  textPlaceholder: "Écrivez quelque chose…"
   targetBorder: Style de bordure
   modeAnnotate: "Annoter"
   toolLine: "Ligne"
   duplicate: "Dupliquer"
   toolEllipse: "Ellipse"
-  lineColor: "Couleur"
-  fillColor: "Remplissage"
+  lineColor: "Couleur du trait"
+  fillColor: "Couleur de remplissage"
   lineWidth: "Épaisseur"
-  cornerRadius: "Rayon"
+  cornerRadius: "Rayon des angles"
   font: "Police"
   bold: "Gras"
   italic: "Italique"
@@ -373,7 +373,7 @@ annotationEditor:
   cropHint: "Faites glisser pour recadrer, ou un coin pour redimensionner"
   resetCrop: "Réinitialiser"
   arrowEnd: "Extrémité de flèche"
-  fontSize: "Taille"
+  fontSize: "Taille de police"
   undo: "Annuler"
   redo: "Rétablir"
   end_none: "Aucune"
@@ -392,16 +392,16 @@ exportPreview:
   audio: "Audio"
   audioSilent: "Muet"
   audioNarrated: "Narré"
-  voiceoverNoKey: "Ajoutez une clé OpenAI ou ElevenLabs dans les Réglages pour narrer les vidéos."
+  voiceoverNoKey: "Ajoutez une clé OpenAI ou ElevenLabs dans les Paramètres pour narrer les vidéos."
   videoLength: "Durée de la vidéo $1"
   videoLengthVoice: "Durée de la vidéo $1 → $2 avec voix off"
   voiceoverCost: "$1 clips · environ $2 caractères à synthétiser"
-  voiceoverFailed: "La narration a échoué, cette vidéo est donc muette. Vérifiez la clé API dans les Réglages."
-  voiceoverNoAudioCodec: "Ce navigateur ne peut pas encoder l'audio d'une vidéo, cette vidéo est donc muette."
-  voiceoverNoKeySkip: "Aucune clé API de narration n'est configurée, cette vidéo est donc muette. Ajoutez-en une dans les Réglages."
-  voiceoverNothingToSay: "Ce guide n'a aucun texte à lire à voix haute, cette vidéo est donc muette."
+  voiceoverFailed: "La voix off a échoué. Vérifiez la clé API dans les Paramètres."
+  voiceoverNoAudioCodec: "La vidéo est muette. Ce navigateur ne peut pas ajouter d'audio aux vidéos."
+  voiceoverNoKeySkip: "La vidéo est muette. Ajoutez une clé API de voix off dans les Paramètres."
+  voiceoverNothingToSay: "La vidéo est muette. Ce guide n'a aucun texte à lire à voix haute."
   narrating: "Narration de l'étape $1 sur $2"
-  stepDescriptions: "Textes d'étape"
+  stepDescriptions: "Légendes des étapes"
   stepDescriptionsHint: "Incruster le texte de l'étape sur chaque image"
   resolution: "Qualité vidéo"
   gifQuality: "Qualité du GIF"
@@ -410,37 +410,37 @@ exportPreview:
   gif_high: "Haute"
   res_720p: "720p"
   res_1080p: "1080p"
-  title: "Aperçu de l’export"
+  title: "Aperçu de l'export"
   cover: "Page de couverture"
   coverHint: "Une première page avec le titre et les détails"
   screenshots: "Captures"
   screenshotsHint: "Désactivez pour un document compact, texte seul"
   stepUrls: "Liens des étapes"
-  stepUrlsHint: "Affiche l’adresse de chaque étape"
+  stepUrlsHint: "Affiche l'adresse de la page de chaque étape"
   imageScale: "Taille des captures"
   scale_small: "Petite"
   scale_medium: "Moyenne"
   scale_large: "Grande"
   download: "Exporter $1"
-  rendering: "Mise à jour de l’aperçu"
+  rendering: "Mise à jour de l'aperçu"
   videoReady: "$1 étapes · environ $2 min de vidéo"
-  videoReadyHint: "Les guides longs ne sont pas encodés automatiquement. L’aperçu couvre toutes les étapes."
-  videoGenerate: "Générer l’aperçu"
+  videoReadyHint: "Les guides longs ne sont pas encodés automatiquement. L'aperçu couvre toutes les étapes."
+  videoGenerate: "Générer l'aperçu"
   modeDocument: "Document"
   modeVideo: "Vidéo"
-  encodingVideo: "Encodage de l’aperçu vidéo"
-  videoFailed: "Impossible de créer l’aperçu vidéo"
+  encodingVideo: "Encodage de l'aperçu vidéo"
+  videoFailed: "Impossible de créer l'aperçu vidéo"
   bundle: "Fichier Mimik"
-  bundleHint: "Un fichier .mimik qu’une autre personne peut importer et modifier"
+  bundleHint: "Un fichier .mimik qu'une autre personne peut importer et modifier"
   bundleStripInputs: "Retirer le texte saisi"
-  bundleStripInputsHint: "Le retire du texte des étapes et des liens. Les captures montrent toujours ce qui était à l’écran."
+  bundleStripInputsHint: "Le retire du texte des étapes et des liens. Les captures montrent toujours ce qui était à l'écran."
   bundleUrls: "Détail des liens"
   url_origin: "Site"
   url_path: "Page"
   url_full: "Complet"
-  bundleRedactionNote: "Les zones floutées sont effacées des images avant qu’elles ne quittent votre navigateur."
-  bundleTypedWarning: "$1 capture montre encore le texte que vous avez saisi. Floutez-la avant de partager si besoin."
-  bundleTypedWarningPlural: "$1 captures montrent encore le texte que vous avez saisi. Floutez-les avant de partager si besoin."
+  bundleRedactionNote: "Les zones floutées sont effacées des images exportées."
+  bundleTypedWarning: "$1 capture montre du texte que vous avez saisi. Floutez-la avant de partager."
+  bundleTypedWarningPlural: "$1 captures montrent du texte que vous avez saisi. Floutez-les avant de partager."
 videoPlayer:
   stepCount: "$1 étapes"
   previousStep: "Étape précédente"
@@ -462,58 +462,58 @@ exportMenu:
 
 onboarding:
   welcomeBadge: Bienvenue
-  welcomeTitle: "Mimik est installé !"
-  welcomeMessage: "En quelques étapes, vous pourrez capturer vos parcours navigateur et générer des guides automatiquement. Pas de compte nécessaire — tout reste dans votre navigateur."
+  welcomeTitle: "Mimik est installé"
+  welcomeMessage: "Quelques réglages, puis votre premier guide. Sans compte. Vos guides restent dans le navigateur."
   getStarted: "C'est parti"
   stepOf: "Étape $1 sur $2"
   aiTitle: Descriptions IA
-  aiMessage: "Connectez votre clé API pour obtenir des descriptions générées par IA. C'est facultatif et modifiable dans les paramètres."
+  aiMessage: "Facultatif : ajoutez votre clé API et l'IA rédige la description de chaque étape."
   aiGenerated: "Généré par IA"
   aiGeneratedDescription: "Description générée par IA"
   voiceTitle: "Parlez, puis agissez"
-  voiceMessage: "Dites ce que vous allez faire, puis faites-le. Mimik rattache votre narration à l'action qui suit : l'ordre compte plus que tout le reste."
-  voiceRecordHint: "La narration reste désactivée jusqu'à ce que vous l'activiez. Utilisez le bouton microphone dans le panneau latéral pendant l'enregistrement, pour choisir guide par guide."
-  voiceDataNotice: "Votre audio est envoyé au fournisseur choisi ici, avec votre propre clé API. Rien d'autre ne sort de votre navigateur."
+  voiceMessage: "Dites ce que vous allez faire, puis faites-le. Mimik rattache vos paroles à l'action suivante."
+  voiceRecordHint: "Narration désactivée par défaut. Activez-la par guide avec le bouton micro du panneau latéral."
+  voiceDataNotice: "L'audio est envoyé au fournisseur choisi, avec votre clé API."
   voiceDemoLabel: "Comment la narration est rattachée"
   voiceDemoSay: Vous dites
   voiceDemoQuote: "Je vais ouvrir les paramètres de facturation"
   voiceDemoAct: Puis vous cliquez
-  voiceDemoAction: "Clic sur l'onglet Facturation"
+  voiceDemoAction: "Cliquer sur l'onglet Facturation"
   voiceDemoBadge: Depuis votre voix
   blurTitle: Flou intelligent
-  blurMessage: "Floutez automatiquement les données sensibles dans vos captures. Choisissez quels types de données détecter."
-  screenshotPreview: "Aperçu"
+  blurMessage: "Floutez automatiquement les données sensibles des captures. Choisissez quoi détecter."
+  screenshotPreview: "Aperçu de la capture"
   notEnabled: "Non activé"
   categoriesProtected: "$1 catégories protégées"
   pinTitle: "Épinglez Mimik"
-  pinMessage: "Épinglez l'extension dans votre barre d'outils. Cliquez sur l'icône puzzle dans Chrome, puis épinglez Mimik."
+  pinMessage: "Épinglez Mimik à votre barre d'outils pour y accéder rapidement."
   pinStep1Title: "Cliquez sur l'icône puzzle"
   pinStep1Sub: "En haut à droite de votre navigateur"
   pinStep2Title: Trouvez Mimik
   pinStep2Sub: "Dans le menu des extensions"
   pinStep3Title: "Cliquez sur l'épingle"
-  pinStep3Sub: "Mimik apparaîtra dans votre barre"
+  pinStep3Sub: "Mimik apparaîtra dans votre barre d'outils"
   pinScreenshotAlt: "Épingler Mimik"
   starTitle: "Vous nous mettez une étoile ?"
-  starMessage: "Mimik est gratuit et open source. Une étoile est le moyen le plus simple de nous remercier, et elle aide d'autres personnes à le découvrir."
+  starMessage: "Mimik est gratuit et open source. Une étoile aide d'autres personnes à le découvrir."
   starAction: "Mettre une étoile sur GitHub"
   starLater: Plus tard
-  doneTitle: "Tout est prêt !"
-  doneMessage: "Mimik est prêt à capturer. Cliquez sur « Lancer la capture » pour enregistrer votre premier guide."
+  doneTitle: "Tout est prêt"
+  doneMessage: "Cliquez sur « Lancer la capture » dans le panneau latéral pour enregistrer votre premier guide."
   featureAutoCapture: Capture automatique
   featureAIAssist: Assistant IA
   featureVoice: Narration vocale
   featureAnnotate: Annoter et masquer
-  featureExports: Exporter partout
+  featureExports: "Exportez en PDF, vidéo et plus"
   featureSmartBlur: Flou intelligent
   openMimik: Ouvrir Mimik
 
 steps:
   pressKey: "Appuyer sur $1 dans $2"
-  toggleCheckbox: "Cocher $1"
+  toggleCheckbox: "Cocher/décocher $1"
   selectRadio: "Sélectionner $1"
   toggleSwitch: "Activer/désactiver $1"
-  clickLink: 'Cliquer sur le lien "$1"'
+  clickLink: "Cliquer sur le lien « $1 »"
   click: "Cliquer sur $1"
   typeIntoField: "Saisir dans le champ $1 $2"
   typeInto: "Saisir dans $1"
@@ -547,53 +547,53 @@ background:
 voice:
   turnOn: "Activer la narration vocale"
   turnOff: "Désactiver la narration vocale"
-  needsApiKey: "Ajoutez une clé API de transcription dans les paramètres pour commenter"
+  needsApiKey: "Ajoutez une clé API de transcription dans les Paramètres pour narrer"
   pausedWithCapture: "La narration est en pause avec la capture"
-  micStarting: "Démarrage du micro..."
-  micHearing: Nous vous entendons
+  micStarting: "Démarrage du micro…"
+  micHearing: "Mimik vous entend"
   micQuiet: Aucun son
-  nextRecording: "La narration vocale est activée : elle démarrera au prochain enregistrement."
-  orderHint: "Dites ce que vous allez faire, puis faites-le. Vos mots sont rattachés à l'action suivante."
-  transcribing: "Transcription de votre narration..."
-  transcribingHint: "Les descriptions des étapes se mettront à jour toutes seules à la fin."
+  nextRecording: "La narration vocale est activée et démarrera au prochain enregistrement."
+  orderHint: "Dites ce que vous allez faire, puis faites-le. Vos paroles sont rattachées à l'action suivante."
+  transcribing: "Transcription de votre narration…"
+  transcribingHint: "Les descriptions des étapes se mettront à jour à la fin."
   narrated: "Narration ajoutée à $1 étape."
   narratedPlural: "Narration ajoutée à $1 étapes."
-  narratedNone: "Aucune narration ne correspond à vos étapes : les descriptions restent inchangées."
-  guideSafe: "Votre guide et vos captures sont intacts. Seule la narration a été perdue."
-  openSettings: "Ouvrir les paramètres"
-  errorPermissionDenied: "Le micro a été bloqué, rien n'a été narré."
-  errorNoDevice: "Aucun micro n'a été trouvé, rien n'a été narré."
-  errorNoAudio: "Le micro n'a capté aucun son, il n'y avait rien à transcrire."
-  errorMissingApiKey: "La narration vocale nécessite un fournisseur de transcription et une clé API."
-  errorStreamEnded: "Le micro s'est arrêté en cours d'enregistrement, la narration a été écourtée."
-  errorNotRecording: "La narration vocale n'était pas active, il n'y avait rien à transcrire."
-  errorAlreadyRecording: "La narration vocale était déjà en cours, cet enregistrement n'a pas été narré."
+  narratedNone: "Aucune narration ne correspond à une étape."
+  guideSafe: "Votre guide et vos captures ne sont pas affectés."
+  openSettings: "Ouvrir les Paramètres"
+  errorPermissionDenied: "L'accès au micro a été bloqué."
+  errorNoDevice: "Aucun micro trouvé."
+  errorNoAudio: "Le micro n'a capté aucun son."
+  errorMissingApiKey: "La narration nécessite une clé API de transcription."
+  errorStreamEnded: "Le micro s'est coupé en cours d'enregistrement."
+  errorNotRecording: "La narration n'était pas active."
+  errorAlreadyRecording: "La narration était déjà en cours."
   errorUnsupported: "Ce navigateur ne peut pas enregistrer de narration vocale."
-  errorUnknown: "La narration vocale s'est arrêtée de façon inattendue."
+  errorUnknown: "La narration s'est arrêtée de façon inattendue."
 
 micPermission:
-  title: Autoriser l'accès au microphone
-  checkingMessage: Vérification de l'accès au microphone de Mimik...
-  promptingMessage: Votre navigateur demande une autorisation. Choisissez Autoriser pour que Mimik puisse enregistrer votre narration pendant la capture d'un guide. Cet onglet se ferme tout seul.
-  grantedTitle: Microphone prêt
-  grantedMessage: Retour à ce que vous étiez en train de faire.
-  deniedTitle: L'accès au microphone est bloqué
-  deniedMessage: Votre navigateur bloque le microphone pour Mimik, la narration vocale ne peut donc pas enregistrer. Ouvrez les paramètres du site depuis l'icône à gauche de la barre d'adresse, réglez Microphone sur Autoriser, puis réessayez. La capture de guides continue de fonctionner sans cela.
+  title: "Autoriser l'accès au micro"
+  checkingMessage: "Vérification de l'accès au micro…"
+  promptingMessage: "Choisissez Autoriser dans la demande du navigateur. Cet onglet se ferme tout seul."
+  grantedTitle: "Micro prêt"
+  grantedMessage: "Retour en cours."
+  deniedTitle: "L'accès au micro est bloqué"
+  deniedMessage: "Cliquez sur l'icône à gauche de la barre d'adresse, réglez Micro sur Autoriser, puis réessayez."
   retry: Réessayer
-  privacy: L'audio reste en mémoire pendant l'enregistrement et n'est envoyé qu'au service de transcription que vous avez configuré. Mimik ne le conserve jamais.
+  privacy: "L'audio est envoyé à votre fournisseur de transcription. Mimik ne le conserve jamais."
 
 aiStatus:
   rejected: "$1 a refusé votre clé API."
-  noCredits: "Votre compte $1 n’a pas de crédits."
-  rateLimited: "$1 limite la fréquence des requêtes de Mimik."
+  noCredits: "Votre compte $1 n'a pas de crédits."
+  rateLimited: "$1 limite les requêtes de Mimik."
   modelInvalid: "$1 ne propose pas ce modèle à votre compte."
   quota: "Cette requête était trop volumineuse pour ce modèle."
-  network: "Mimik n’a pas pu joindre $1."
+  network: "Impossible de joindre $1."
   unknown: "$1 a refusé la requête."
-  actionCheckKey: "Vérifiez votre clé dans les réglages."
+  actionCheckKey: "Vérifiez votre clé dans les Paramètres."
   actionAddCredits: "Ajoutez des crédits, puis revérifiez la clé."
-  actionWait: "Attendez un instant avant de continuer."
-  actionPickModel: "Choisissez un autre modèle dans les réglages."
+  actionWait: "Attendez un instant avant d'enregistrer d'autres étapes."
+  actionPickModel: "Choisissez un autre modèle dans les Paramètres."
   actionConnection: "Vérifiez votre connexion."
 
 stepSource:
@@ -601,39 +601,39 @@ stepSource:
   voice: "Voix"
   basic: "Simple"
   edited: "Modifiée"
-  hint: "D’où vient cette description"
+  hint: "D'où vient cette description"
 
 import:
   title: "Importer un guide"
-  dialogDescription: "Vérifiez un fichier de guide avant de l’ajouter à votre bibliothèque"
+  dialogDescription: "Vérifiez un fichier de guide avant de l'ajouter à votre bibliothèque"
   button: "Importer"
-  dropHere: "Déposez un fichier .mimik pour l’importer"
+  dropHere: "Déposez un fichier .mimik pour l'importer"
   reading: "Lecture du fichier"
   confirm: "Ajouter à la bibliothèque"
   cancel: "Annuler"
-  guideMeHint: "Ce guide a été enregistré sur $1. Guide Me ne le rejoue que sur ce site."
-  noteRedacted: "Les zones floutées ont été supprimées par l’auteur et ne peuvent pas être récupérées."
-  noteInputs: "Le texte saisi dans les champs n’a pas été inclus."
-  noteUrls: "Les liens ont été réduits à l’adresse de la page."
-  noteUrlsOrigin: "Les liens ont été réduits à l’adresse du site."
-  errorUnreadable: "Ce fichier n’a pas pu être ouvert. Il est peut-être endommagé ou incomplet."
-  errorNotABundle: "Ce n’est pas un fichier Mimik. Choisissez un fichier exporté depuis Mimik."
+  guideMeHint: "Enregistré sur $1. « Guidez-moi » ne le rejoue que sur ce site."
+  noteRedacted: "Les zones floutées ont été supprimées par l'auteur et ne peuvent pas être récupérées."
+  noteInputs: "Le texte saisi dans les champs n'a pas été inclus."
+  noteUrls: "Les liens ont été réduits à l'adresse de la page."
+  noteUrlsOrigin: "Les liens ont été réduits à l'adresse du site."
+  errorUnreadable: "Impossible d'ouvrir ce fichier. Il est peut-être endommagé ou incomplet."
+  errorNotABundle: "Ce n'est pas un fichier Mimik. Choisissez un fichier exporté depuis Mimik."
   errorVersion: "Ce fichier a été créé avec une version plus récente de Mimik. Mettez Mimik à jour, puis réessayez."
   errorEmpty: "Ce fichier ne contient aucune étape."
-  errorFailed: "Le guide n’a pas pu être enregistré dans votre bibliothèque. Réessayez de l’importer."
+  errorFailed: "Impossible d'enregistrer le guide dans votre bibliothèque. Réessayez de l'importer."
 transcript:
   title: Transcription
-  empty: Rien n’a été dit dans cet enregistrement.
+  empty: Rien n'a été dit dans cet enregistrement.
   loadError: Impossible de charger la transcription. Réessayez.
   filterAll: "Tout ($1)"
   filterUnused: "Non utilisé ($1)"
-  privacyNote: Tout ce que vous avez dit pendant l’enregistrement, conservé sur cet appareil uniquement. Il ne fait jamais partie d’un guide exporté et est supprimé avec le guide.
+  privacyNote: "Conservée sur cet appareil. Jamais incluse dans les guides exportés, et supprimée avec le guide."
   usedInStep: "Étape $1"
-  readOnlyHint: Active Modifier dans la barre du haut pour ajouter ces lignes à une étape.
+  readOnlyHint: "Activez Modifier dans la barre du haut pour ajouter ces lignes à une étape."
   notUsed: Non utilisé
   filteredOut: Filtré
-  addToStep: "Ajouter à l’étape $1"
+  addToStep: "Ajouter à l'étape $1"
   copyAll: Tout copier
   download: Télécharger
   delete: Supprimer la transcription
-  confirmDelete: Supprimer cette transcription ? Ce que vous avez dit sera perdu définitivement.
+  confirmDelete: "Supprimer cette transcription ? Cette action est irréversible."
