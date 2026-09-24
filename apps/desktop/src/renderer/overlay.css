@@ -215,29 +215,15 @@ body.boundary #frame {
   border-radius: 2px;
 }
 
-body.boundary[data-state='recording'] #frame {
-  animation: pulse 1.8s ease-in-out infinite;
-}
-
 body.boundary[data-state='paused'] #frame {
   border-style: dashed;
   border-color: var(--muted);
-  animation: none;
 }
 
 body.boundary[data-state='armed'] #frame {
   border-style: dashed;
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    border-color: var(--accent);
-  }
-  50% {
-    border-color: var(--lavender);
-  }
-}
 
 body.controls [hidden] {
   display: none !important;
@@ -383,8 +369,7 @@ body.controls #shot {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: top center;
+  object-fit: contain;
 }
 
 body.controls #veil {
