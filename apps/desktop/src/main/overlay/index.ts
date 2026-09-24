@@ -112,6 +112,8 @@ export class CaptureOverlay {
   private step: OverlayStep | null = null;
   private size = { width: CONTROLS.width, height: CONTROLS.height };
   private busy = false;
+  private editingFrom: OverlayState = 'hidden';
+  private modeBeforeEdit: CaptureMode | null = null;
   private hiding: { shown: BrowserWindow[]; ready: Promise<unknown>; users: number } | null = null;
   private starting = false;
 
@@ -251,6 +253,7 @@ export class CaptureOverlay {
   }
 
   edit(): void {
+    if (this.current !== 'editing') this.editingFrom = this.current;
     this.current = 'editing';
     if (this.boundary && !this.boundary.isDestroyed()) this.boundary.hide();
     if (this.controls && !this.controls.isDestroyed()) this.controls.hide();
@@ -347,7 +350,24 @@ export class CaptureOverlay {
 
   private command(command: OverlayCommand): void {
     if (command.startsWith('mode:')) {
+      const before = this.mode();
       this.onCommand(command);
+      if (command === 'mode:region' && this.current === 'paused') {
+        this.modeBeforeEdit = before;
+        this.edit();
+      }
+      return;
+    }
+    const recording = this.editingFrom === 'recording' || this.editingFrom === 'paused';
+    if (this.current === 'editing' && recording && (command === 'arm' || command === 'cancel')) {
+      if (command === 'cancel' && this.modeBeforeEdit) this.onCommand(`mode:${this.modeBeforeEdit}`);
+      this.modeBeforeEdit = null;
+      if (this.editingFrom === 'recording') this.record();
+      else if (command === 'cancel') this.pause();
+      else {
+        this.record();
+        this.onCommand('resume');
+      }
       return;
     }
     if (command === 'intro:done') {

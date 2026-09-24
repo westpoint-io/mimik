@@ -272,6 +272,49 @@ app.whenReady().then(async () => {
     `${framed.length} overlay window(s), active mode button is ${active}`,
   );
 
+  const editorWindows = () => webContents.getAllWebContents().filter((wc) => wc.getURL().includes('#editor'));
+  const inEditor = (script: string) => editorWindows()[0]?.executeJavaScript(script);
+  const pickArea = () =>
+    windowWithHash('controls')?.webContents.executeJavaScript("document.querySelector('button.mode[data-mode=\"area\"]').click()");
+  overlay.pause();
+  await settle();
+  await pickArea();
+  await settle();
+  const opened = { state: overlay.state, editors: editorWindows().length, sent: commands.at(-1) };
+  const look = JSON.parse(
+    String(
+      (await inEditor(
+        "JSON.stringify({ buttons: [...document.querySelectorAll('#bar button')].map((b) => b.textContent.trim()), edge: getComputedStyle(document.querySelector('#region'), '::after').borderTopStyle, corner: getComputedStyle(document.querySelector('.handle[data-handle=\"nw\"]')).borderTopColor })",
+      )) ?? '{}',
+    ),
+  ) as { buttons?: string[]; edge?: string; corner?: string };
+  await inEditor("document.querySelector('#bar button.secondary').click()");
+  await settle();
+  const cancelled = { state: overlay.state, editors: editorWindows().length, sent: commands.at(-1) };
+  await pickArea();
+  await settle();
+  await inEditor("document.querySelector('#bar button.primary').click()");
+  await settle();
+  const confirmed = { state: overlay.state, editors: editorWindows().length, sent: commands.at(-1) };
+  check(
+    'picking Area while paused opens the editor, Done resumes and Cancel stays paused',
+    opened.state === 'editing' &&
+      opened.editors === displays.length &&
+      opened.sent === 'mode:region' &&
+      cancelled.state === 'paused' &&
+      cancelled.editors === 0 &&
+      cancelled.sent === 'mode:screen' &&
+      confirmed.state === 'recording' &&
+      confirmed.editors === 0 &&
+      confirmed.sent === 'resume',
+    `opened ${JSON.stringify(opened)}, cancel ${JSON.stringify(cancelled)}, done ${JSON.stringify(confirmed)}`,
+  );
+  check(
+    'the area editor uses the action bar and the crop frame',
+    look.buttons?.join('|') === 'CancelEsc|DoneEnter' && look.edge === 'dashed' && look.corner === 'rgb(79, 70, 229)',
+    `buttons ${look.buttons?.join(', ')}, edge ${look.edge}, corner ${look.corner}`,
+  );
+
   const outside = { x: overlay.region.x - 5000, y: overlay.region.y - 5000 };
   const bars = windowWithHash('controls')?.getBounds();
   check(
