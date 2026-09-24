@@ -19,6 +19,14 @@ export function CaptureSheet({ onClose }: { onClose(): void }) {
     window.mimik.capture.settings.get().then(setSettings);
   }, []);
 
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
   const save = async (patch: Partial<CaptureSettings>) => {
     setSettings(await window.mimik.capture.settings.set(patch));
   };
