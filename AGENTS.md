@@ -142,7 +142,7 @@ Content Script ←→ Background Service Worker ←→ Sidepanel / Fullview
 ## Capture Pipeline
 
 **Start recording:**
-1. User clicks "Start Capture" in sidepanel
+1. User clicks "Start capture" in sidepanel
 2. Background transitions xstate machine IDLE → RECORDING
 3. Creates Guide in IndexedDB, broadcasts `START_CAPTURE` to all tabs
 4. Content scripts create CaptureSession → CaptureController (event listeners)
@@ -297,7 +297,7 @@ WebM).
 `providers.ts` is the registry, shaped like `AI_PROVIDERS`: OpenAI (`/audio/speech`, fixed voice
 list) and ElevenLabs (`/text-to-speech/{voice}`, per-account catalog via `listVoices`). Both return
 mp3. OpenAI is the default because most users already hold that key, and `resolveVoiceoverConfig`
-borrows it from AI Descriptions on the same terms `resolveVoiceApiKey` uses — both sides OpenAI, or
+borrows it from AI descriptions on the same terms `resolveVoiceApiKey` uses — both sides OpenAI, or
 nothing. **Holding a key never turns narration on**; `exportOptions.voiceover` defaults to false and
 only the user flips it. Keys are stored per provider (`voiceoverApiKeys`) so switching does not lose
 one, and a voice id is validated against the provider that issued it — an ElevenLabs id selected

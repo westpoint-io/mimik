@@ -32,9 +32,9 @@ Le das a grabar, haces lo tuyo, y obtienes una guía pulida con capturas anotada
 - [📺 Demo](#-demo)
 - [👋 Empezar](#-empezar)
 - [✨ Funciones](#-funciones)
-  - [🔒 Smart Blur](#-smart-blur)
+  - [🔒 Desenfoque inteligente](#-desenfoque-inteligente)
   - [🧠 Descripciones con IA (opcional)](#-descripciones-con-ia-opcional)
-  - [▶️ Reproducción Guide Me](#️-reproducción-guide-me)
+  - [▶️ Reproducción con Guíame](#️-reproducción-con-guíame)
   - [🎙️ Narración por voz (opcional)](#️-narración-por-voz-opcional)
   - [✏️ Editor de guías](#️-editor-de-guías)
   - [🔊 Voz en off del vídeo (opcional)](#-voz-en-off-del-vídeo-opcional)
@@ -63,7 +63,7 @@ Cada acción relevante se convierte en un paso: clics en botones y enlaces, camp
 
 Cada paso lleva una captura con el elemento pulsado resaltado y ampliado. Sin recortar a mano, sin herramientas de anotación que aprender.
 
-¿Necesitas que la grabación mire hacia otro lado un momento? **Pausar** detiene la captura sin terminar la grabación, y **Reanudar** sigue donde lo dejaste. Entrar en Smart Blur la pausa igual.
+¿Necesitas que la grabación mire hacia otro lado un momento? **Pausar** detiene la captura sin terminar la grabación, y **Reanudar** sigue donde lo dejaste. Entrar en Desenfoque inteligente la pausa igual.
 
 | Navegador | Versión | Instalación |
 | --------- | ------- | ----------- |
@@ -89,18 +89,18 @@ Disponible en inglés, español, portugués brasileño, francés, alemán y chin
 
 ## ✨ Funciones
 
-### 🔒 Smart Blur
+### 🔒 Desenfoque inteligente
 
-Smart Blur es un modo que activas mientras grabas, no un filtro siempre encendido. Pulsa **Blur** y la captura se pausa, Mimik detecta y enmascara los datos sensibles de la página — correos, teléfonos, números de identificación, tarjetas de crédito, IPs, direcciones MAC — y las capturas de esa página los mantienen ocultos una vez que pulsas **Listo**. Activa o desactiva cada categoría de forma independiente.
+Desenfoque inteligente es un modo que activas mientras grabas, no un filtro siempre encendido. Pulsa **Desenfoque inteligente** y la captura se pausa, Mimik detecta y enmascara los datos sensibles de la página — correos, teléfonos, números de identificación, tarjetas de crédito, IPs, direcciones MAC — y las capturas de esa página los mantienen ocultos una vez que pulsas **Listo**. Activa o desactiva cada categoría de forma independiente.
 
 ¿Necesitas ocultar algo personalizado? El selector manual te deja elegir cualquier elemento del DOM y enmascararlo en todas las capturas donde aparezca.
 
 <details>
-<summary><strong>Lo que Smart Blur no cubre</strong></summary>
+<summary><strong>Lo que Desenfoque inteligente no cubre</strong></summary>
 
 <br/>
 
-Smart Blur analiza nodos de texto y valores de campos en el marco principal de la página. Eso deja huecos reales, todos estructurales. Si dependes de esto para el RGPD o algo similar, revisa tus capturas en lugar de dar por hecho que una captura limpia es una captura segura:
+Desenfoque inteligente analiza nodos de texto y valores de campos en el marco principal de la página. Eso deja huecos reales, todos estructurales. Si dependes de esto para el RGPD o algo similar, revisa tus capturas en lugar de dar por hecho que una captura limpia es una captura segura:
 
 | Sin cubrir | Por qué |
 |------------|---------|
@@ -120,7 +120,7 @@ El difuminado aplica desde el momento en que entras al modo. Las capturas tomada
 
 </details>
 
-<img src="https://github.com/user-attachments/assets/968d2518-c561-4d68-92a6-3d5f569fe38a" alt="Smart Blur" width="800" />
+<img src="https://github.com/user-attachments/assets/968d2518-c561-4d68-92a6-3d5f569fe38a" alt="Desenfoque inteligente" width="800" />
 
 <div align="right">
 
@@ -142,11 +142,11 @@ Las descripciones se generan a partir de un contexto ligero del DOM (~50-100 tok
 
 </div>
 
-### ▶️ Reproducción Guide Me
+### ▶️ Reproducción con Guíame
 
 Reproduce cualquier guía en vivo sobre una página real. Mimik resalta el siguiente elemento, marca tu progreso paso a paso, y avanza solo conforme vas interactuando. Ideal para formar a un compañero o para guiarte a ti mismo.
 
-<img src="https://github.com/user-attachments/assets/56ffca1d-5074-491f-8571-dd70782d4b05" alt="Reproducción Guide Me" width="800" />
+<img src="https://github.com/user-attachments/assets/56ffca1d-5074-491f-8571-dd70782d4b05" alt="Reproducción con Guíame" width="800" />
 
 <div align="right">
 
@@ -223,7 +223,7 @@ Todas las exportaciones se generan del lado del cliente. Nada pasa por un servid
 
 Tus guías, pasos y capturas viven en tu dispositivo. No hay backend, no hay cuenta, no hay telemetría. Tus API keys (si usas alguna) nunca salen del navegador. Se guardan localmente y se usan para llamar directo al proveedor que elegiste.
 
-Si estás enmascarando datos personales antes de compartir una guía, lee primero [lo que Smart Blur no cubre](#-smart-blur): no alcanza iframes, shadow DOM ni texto dibujado dentro de imágenes.
+Si estás enmascarando datos personales antes de compartir una guía, lee primero [lo que Desenfoque inteligente no cubre](#-desenfoque-inteligente): no alcanza iframes, shadow DOM ni texto dibujado dentro de imágenes.
 
 Dos cosas sí salen del navegador, ambas documentadas en la [política de privacidad](https://mimik.westpoint.io/privacy/): los iconos de los sitios se piden al servicio de favicons de Google, lo que envía el dominio de ese sitio, y las funciones opcionales de IA, narración por voz y voz en off mandan texto o audio al proveedor que configuraste: la voz en off envía el texto de cada paso al exportar, y solo si la activas.
 
