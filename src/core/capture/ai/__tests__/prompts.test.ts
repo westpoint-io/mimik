@@ -25,30 +25,47 @@ describe('getLanguageSuffix', () => {
     expect(getLanguageSuffix('en-US')).toBe('');
   });
 
-  it('returns Spanish suffix for es', () => {
-    expect(getLanguageSuffix('es')).toContain('Spanish');
+  it('writes the Spanish instruction in Spanish', () => {
+    expect(getLanguageSuffix('es')).toContain('en español');
   });
 
-  it('returns French suffix for fr', () => {
-    expect(getLanguageSuffix('fr')).toContain('French');
+  it('writes the French instruction in French', () => {
+    expect(getLanguageSuffix('fr')).toContain('en français');
   });
 
-  it('returns Chinese suffix for zh-CN', () => {
-    expect(getLanguageSuffix('zh-CN')).toContain('Chinese');
+  it('writes the Chinese instruction in Chinese', () => {
+    expect(getLanguageSuffix('zh-CN')).toContain('请用中文输出');
   });
 
-  it('returns Brazilian Portuguese suffix for pt-BR', () => {
-    expect(getLanguageSuffix('pt-BR')).toContain('Brazilian Portuguese');
+  it('writes the Brazilian Portuguese instruction in Portuguese', () => {
+    expect(getLanguageSuffix('pt-BR')).toContain('português do Brasil');
   });
 
-  it('returns the locale code for unknown languages', () => {
-    expect(getLanguageSuffix('sv')).toContain('sv');
+  it('matches a regional locale to its base language', () => {
+    expect(getLanguageSuffix('fr-CA')).toBe(getLanguageSuffix('fr'));
   });
 
-  it('includes IMPORTANT instruction', () => {
-    const suffix = getLanguageSuffix('es');
-    expect(suffix).toContain('IMPORTANT');
+  it('falls back to the English instruction and the locale code for unknown languages', () => {
+    const suffix = getLanguageSuffix('sv');
+    expect(suffix).toContain('sv');
     expect(suffix).toContain('Write the output in');
+  });
+
+  it('writes every offered language its own instruction, never the English fallback', () => {
+    for (const { code } of AI_LANGUAGES) {
+      if (code === 'en') continue;
+      expect(getLanguageSuffix(code)).not.toContain('Write the output in');
+    }
+  });
+
+  it('writes the German instruction in German', () => {
+    expect(getLanguageSuffix('de')).toContain('auf Deutsch');
+  });
+
+  it('tells every language to leave UI labels alone', () => {
+    expect(getLanguageSuffix('es')).toContain('No traduzcas');
+    expect(getLanguageSuffix('de')).toContain('Übersetze keine');
+    expect(getLanguageSuffix('sv')).toContain('Never translate');
   });
 });
 

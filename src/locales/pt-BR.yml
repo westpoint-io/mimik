@@ -519,6 +519,8 @@ steps:
   typeIntoField: "Digitar no campo $1 $2"
   typeInto: "Digitar em $1"
   typeSecret: "Digitar senha"
+  typeValueInto: 'Digitar "$1" em $2'
+  clearField: "Limpar $1"
   copyFrom: "Copiar de $1"
   pasteInto: "Colar em $1"
   cutFrom: "Recortar de $1"

@@ -519,6 +519,8 @@ steps:
   typeIntoField: "在 $1 字段中输入 $2"
   typeInto: "在 $1 中输入"
   typeSecret: "输入密码"
+  typeValueInto: '在 $2 中输入 "$1"'
+  clearField: "清空 $1"
   copyFrom: "从 $1 复制"
   pasteInto: "粘贴到 $1"
   cutFrom: "从 $1 剪切"

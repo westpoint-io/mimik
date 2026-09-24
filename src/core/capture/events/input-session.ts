@@ -46,7 +46,7 @@ export class InputSession {
       return;
     }
     const val = getFieldValue(target);
-    const desc = val ? `Type "${val}" in ${label}` : `Clear ${label}`;
+    const desc = val ? i18n.t('steps.typeValueInto', [val, label]) : i18n.t('steps.clearField', [label]);
     sendMessage('updateInputStep', { stepId: this.stepId, description: desc, inputValue: val || undefined }).catch(
       (err) => logger.warn('Failed to update input step', err),
     );
