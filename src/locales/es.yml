@@ -7,7 +7,7 @@ app:
   description: "Graba cualquier tarea del navegador como una guía paso a paso. Edita, narra con voz y exporta a vídeo, PDF o DOCX. Código abierto."
 
 common:
-  loading: Cargando...
+  loading: Cargando…
   cancel: Cancelar
   save: Guardar
   delete: Eliminar
@@ -17,7 +17,7 @@ common:
   export: Exportar
   close: Cerrar
   undo: Deshacer
-  star: Favorito
+  star: "Añadir a favoritos"
   unstar: Quitar de favoritos
   restore: Restaurar
   updated: "Actualizado a la v$1"
@@ -25,21 +25,21 @@ common:
 
 sidepanel:
   connected: Conectado
-  connecting: Conectando...
+  connecting: Conectando…
   heroTitle: "¿Qué quieres capturar?"
-  heroSubtitle: Graba cualquier flujo de trabajo al instante
+  heroSubtitle: "Graba cualquier flujo de trabajo automáticamente"
   startCapture: Empezar a capturar
-  searchPlaceholder: Buscar guías...
+  searchPlaceholder: Buscar guías…
   recentLabel: Recientes
   notRecordable: Abre un sitio web para empezar a grabar
 
 library:
   noGuidesTitle: No hay guías todavía
-  noGuidesSub: Haz tu primera captura para crear una guía
+  noGuidesSub: "Inicia una captura para crear tu primera guía"
   noStarredTitle: Sin favoritos
   noStarredSub: Marca una guía como favorita para tenerla a mano
   trashEmptyTitle: La papelera está vacía
-  trashEmptySub: "¡Nada por aquí!"
+  trashEmptySub: "Las guías eliminadas aparecen aquí"
   noMatchingGuides: No se encontraron guías
   moveToTrash: Mover a la papelera
   deletePermanently: Eliminar definitivamente
@@ -52,34 +52,34 @@ library:
 
 guideme:
   live: En vivo
-  roadblock: "Nos encontramos con un obstáculo. Actúa en la pantalla para avanzar."
-  manualStep: "Este paso fue editado, así que no se puede detectar automáticamente. Usa Siguiente cuando lo hayas hecho."
+  roadblock: "No se encuentra este paso en la página. Hazlo tú para continuar."
+  manualStep: "Los pasos editados no se detectan. Pulsa Siguiente cuando lo hayas hecho."
   stepOf: "Paso $1 de $2"
   noDescription: Sin descripción
   prev: Anterior
   next: Siguiente
   finish: "Finalizar"
   exitTitle: "¿Ya te vas?"
-  exitMessage: Se detendrá el recorrido y se quitará la guía de la página.
+  exitMessage: "Se cerrarán el recorrido y su capa en la página."
   stay: Quedarme
   exit: Salir
   guideNotFound: No se encontró la guía
 
 guidemeCompletion:
-  title: "¡Listo, crack!"
-  stepsCompleted: "Completaste $1 paso."
-  stepsCompletedPlural: "Completaste los $1 pasos."
+  title: "Guía completada"
+  stepsCompleted: "Has completado $1 paso."
+  stepsCompletedPlural: "Has completado los $1 pasos."
   allDone: Listo
   runAgain: Repetir
 
 recording:
   capturePaused: Captura en pausa
-  capturePausedBlur: "Desenfoque inteligente · captura en pausa"
+  capturePausedBlur: "Modo desenfoque · captura en pausa"
   pauseCapture: Pausar captura
   resumeCapture: Reanudar captura
   recording: "Grabando \xB7 $1 paso"
   recordingPlural: "Grabando \xB7 $1 pasos"
-  readyTitle: "¡Listo para grabar!"
+  readyTitle: "Listo para grabar"
   readySub: Haz clic en la página para empezar
   finishRecording: Terminar grabación
   smartBlur: Desenfoque inteligente
@@ -99,38 +99,38 @@ settings:
   useOwnServer: Usar mi propio servidor
   ownServerHintOpenai: "Funciona con Ollama, LM Studio, vLLM o cualquier servidor compatible con OpenAI."
   ownServerHintAnthropic: "Funciona con un proxy LiteLLM o cualquier servidor compatible con Anthropic."
-  apiKey: Clave API
+  apiKey: "Clave de API"
   showKey: Mostrar clave
   hideKey: Ocultar clave
   clearKey: Borrar clave
-  aiLanguage: Idioma de descripciones
+  aiLanguage: "Idioma de las descripciones"
   voiceover: "Voz en off del vídeo"
   textToSpeech: "texto → voz"
   voiceoverHint: "Mimik lee el texto de cada paso sobre el vídeo exportado."
-  voiceoverUsingAiKey: "No hay clave de voz en off, así que Mimik usa la clave de OpenAI de Descripciones con IA."
-  voiceoverNoKey: "No hay ninguna clave de API configurada, así que los vídeos no se pueden narrar."
+  voiceoverUsingAiKey: "Se usa la clave de OpenAI de Descripciones con IA."
+  voiceoverNoKey: "Añade una clave de API para narrar vídeos."
   voice: "Voz"
   speechToText: "voz → texto"
   voiceNarrationHint: "Explica el flujo en voz alta y Mimik escribe cada paso con lo que dijiste."
   voiceNarration: "Narración por voz"
-  voiceUsingAiKey: "No hay clave de voz, así que Mimik usa la clave de OpenAI de Descripciones con IA de arriba."
-  aiNoKey: "No hay clave de API, así que los pasos usarán descripciones básicas por reglas."
-  voiceNoKey: "No hay ninguna clave de API configurada, así que tus grabaciones no se narrarán."
+  voiceUsingAiKey: "Se usa la clave de OpenAI de Descripciones con IA."
+  aiNoKey: "Sin clave de API, los pasos reciben descripciones básicas basadas en reglas."
+  voiceNoKey: "Añade una clave de API para narrar tus grabaciones."
   microphone: "Micrófono"
   microphoneDefault: Predeterminado del sistema
   microphoneNeedsAccess: "Permite el acceso al micrófono para ver los nombres de tus dispositivos."
   microphoneGrantAccess: "Permitir acceso al micrófono"
-  microphoneNone: "No se encontró ningún micrófono. Conecta uno y aparecerá aquí."
+  microphoneNone: "No se encontró ningún micrófono. Conecta uno para verlo aquí."
   microphoneUnavailable: "Micrófono no disponible"
-  microphoneMissing: "El micrófono que elegiste no está disponible ahora mismo, así que Mimik usará el predeterminado del sistema."
+  microphoneMissing: "El micrófono elegido no está conectado. Se usa el predeterminado del sistema."
   microphoneTest: "Probar micrófono"
   microphoneStatusAllowed: Permitido
   microphoneStatusBlocked: Bloqueado
   microphoneStatusPending: Aún sin permiso
-  microphoneBlocked: Tu navegador está bloqueando el micrófono para Mimik. Abre la configuración del sitio desde el icono a la izquierda de la barra de direcciones y pon Micrófono en Permitir.
+  microphoneBlocked: "Micrófono bloqueado. Pulsa el icono junto a la barra de direcciones y pon Micrófono en Permitir."
   microphoneUnblockHow: ¿Cómo lo desbloqueo?
   microphoneTestStop: Detener prueba
-  microphoneTestFailed: "No se pudo abrir ese micrófono. Elige otro e inténtalo de nuevo."
+  microphoneTestFailed: "No se pudo abrir ese micrófono. Prueba con otro."
   targetColor: "Color de marca"
   targetColorHint: "Resaltados de clic y acentos de exportación"
   branding: "Marca en exportaciones"
@@ -139,27 +139,27 @@ settings:
   replaceLogo: "Reemplazar"
   removeLogo: "Quitar logotipo"
   footerLine: "Línea de pie de página"
-  footerLinePlaceholder: "p. ej. Confidencial — solo uso interno"
-  footerPresetConfidential: "Confidencial — solo uso interno"
+  footerLinePlaceholder: "p. ej. Confidencial · Solo uso interno"
+  footerPresetConfidential: "Confidencial · Solo uso interno"
   footerPresetNoDistribute: "No distribuir"
   attribution: 'Mostrar "Made with Mimik"'
   saveSettings: Guardar ajustes
   saved: Guardado
   validatingKey: "Comprobando clave\u2026"
   keyValid: Clave de API verificada.
-  keyInvalid: "Esa clave de API fue rechazada. Compru\xE9bala e int\xE9ntalo de nuevo."
+  keyInvalid: "El proveedor rechazó esta clave. Compruébala e inténtalo de nuevo."
   keyModelRequired: Elige un modelo antes de comprobar esta clave.
   keyModelInvalid: El modelo seleccionado no está disponible en este proveedor.
   checkKey: Comprobar clave
-  keyCannotSpend: "Esta clave no tiene créditos, solo funcionarán los modelos gratuitos."
-  keyUnreachable: No se pudo conectar con el proveedor. Revisa tu conexión e inténtalo de nuevo.
+  keyCannotSpend: "Esta clave no tiene créditos. Solo funcionarán los modelos gratuitos."
+  keyUnreachable: "No se pudo conectar con el proveedor. Revisa tu conexión."
   modelsFound: "$1 modelos disponibles"
   smartBlur: Desenfoque inteligente
-  privacyNotice: "Tus claves y tu audio solo van al proveedor que elijas. Nada más sale de tu navegador."
-  bugReport: "¿Encontraste un bug? Repórtalo en GitHub"
+  privacyNotice: "Las claves y el audio solo van al proveedor que elijas."
+  bugReport: "¿Has encontrado un error? Notifícalo en GitHub"
   starCtaTitle: "¿Te gusta Mimik?"
-  starCtaMessage: "Una estrella en GitHub nos ayuda un montón y hace que más gente descubra Mimik."
-  starOnGithub: Dar estrella en GitHub
+  starCtaMessage: "Una estrella en GitHub ayuda a que más gente encuentre Mimik."
+  starOnGithub: "Dar una estrella en GitHub"
 
 blurPresets:
   email: Correo electrónico
@@ -173,10 +173,10 @@ fullview:
   allGuides: Todas las guías
   starred: Favoritos
   trash: Papelera
-  searchPlaceholder: Buscar guías...
-  guideMe: "¡Guíame!"
+  searchPlaceholder: Buscar guías…
+  guideMe: "Guíame"
   untitledGuide: Guía sin título
-  writingTitle: Escribiendo un título con tus pasos capturados...
+  writingTitle: "Escribiendo un título…"
   writingDescription: "Escribiendo una descripci\xF3n\u2026"
   guideNotFound: "No se encontró la guía."
   stepCount: "$1 paso"
@@ -186,7 +186,7 @@ fullview:
 sort:
   recentFirst: Más recientes
   oldestFirst: Más antiguas
-  alphaAZ: "A \u2014 Z"
+  alphaAZ: "A–Z"
   mostSteps: Más pasos
   gridView: Ver cuadrícula
   listView: Ver lista
@@ -203,15 +203,15 @@ keyboard:
 
 confirmDelete:
   title: "¿Eliminar esta guía?"
-  message: Se eliminará de forma permanente. No hay vuelta atrás.
+  message: "No se puede deshacer."
   confirm: Eliminar definitivamente
 
 editor:
   backToLibrary: Volver a la biblioteca
   openInDashboard: Abrir
-  openInDashboardHint: Ábrelo en el panel para editar o exportar
-  guideMe: "¡Guíame!"
-  guideMeUnavailable: Esta guía no tiene pasos que se puedan repetir
+  openInDashboardHint: "Ábrela en el panel para editarla o exportarla"
+  guideMe: "Guíame"
+  guideMeUnavailable: "Esta guía no tiene pasos que se puedan reproducir"
   deleteThisStep: "¿Eliminar este paso?"
   selectStep: Seleccionar paso
   selectedCount: "$1 seleccionados"
@@ -227,10 +227,10 @@ editor:
   regenerateDescription: Regenerar descripción
   generatingDescription: "Generando\u2026"
   descriptionPlaceholder: Añadir una descripción
-  descriptionErrorNoApiKey: Añade una clave de API de IA en los ajustes para generar descripciones.
+  descriptionErrorNoApiKey: "Añade una clave de API de IA en Ajustes para generar descripciones."
   descriptionErrorNoSteps: Esta guía no tiene pasos descritos que resumir.
   descriptionErrorFailed: No se pudo generar una descripción. Inténtalo de nuevo.
-  descriptionErrorSaveFailed: Se generó la descripción pero no se pudo guardar. Inténtalo de nuevo.
+  descriptionErrorSaveFailed: "No se pudo guardar la nueva descripción. Inténtalo de nuevo."
   writingStepDescription: "Escribiendo descripci\xF3n\u2026"
   transcribingStepDescription: "Transcribiendo lo que dijiste…"
   rewriteAskAi: Preguntar a la IA
@@ -243,7 +243,7 @@ editor:
   rewriteCasual: "M\xE1s informal"
   rewriteReplace: Reemplazar
   rewriteDiscard: Descartar
-  rewriteErrorNoApiKey: "A\xF1ade una clave de API de IA en los ajustes para reescribir texto."
+  rewriteErrorNoApiKey: "Añade una clave de API de IA en Ajustes para reescribir texto."
   rewriteErrorFailed: "No se pudo reescribir la selecci\xF3n. Int\xE9ntalo de nuevo."
   rewriteErrorStale: "El texto cambi\xF3. Vuelve a seleccionarlo."
   restoreSpoken: Restaurar lo que dijiste
@@ -252,7 +252,7 @@ capture:
   recordSteps: Grabar pasos
   moreStepsTitle: Capturar más pasos
   moreStepsBody: "Los nuevos pasos se insertan aquí. Elige la pestaña que quieres grabar."
-  startCapture: Iniciar captura
+  startCapture: "Empezar a capturar"
   noRecordableTabs: No hay pestañas grabables abiertas en esta ventana.
 
 blocks:
@@ -274,16 +274,16 @@ history:
   current: Actual
   restore: Restaurar
   unchangedVersions: "Versiones sin cambios ($1)"
-  readOnlyBanner: "Estás viendo una versión anterior. Cierra el historial de versiones para volver a la guía actual."
+  readOnlyBanner: "Estás viendo una versión anterior. Cierra el historial de versiones para volver."
   loadError: No se pudo cargar el historial de versiones. Inténtalo de nuevo.
   restoreError: No se pudo restaurar. Inténtalo de nuevo en un momento.
   storageFull: No hay espacio para guardar un punto de deshacer. Elimina una guía e inténtalo de nuevo.
-  empty: Todavía no hay versiones anteriores. Aparecerán aquí cuando edites esta guía.
+  empty: "Aún no hay versiones anteriores. Edita la guía para crear una."
   nameVersion: Ponle nombre a esta versión
   namePlaceholder: Nombre de la versión
   allVersions: Todas las versiones
   namedOnly: Solo versiones con nombre
-  emptyNamed: Todavía no hay versiones con nombre. Ponle nombre a una para encontrarla después.
+  emptyNamed: "Aún no hay versiones con nombre."
   renameError: No se pudo guardar el nombre. Inténtalo de nuevo.
   changeTitle: Título cambiado
   changeStepAdded: "$1 paso añadido"
@@ -307,14 +307,14 @@ history:
 
 emptyGuide:
   title: Esta guía está vacía
-  subtitle: Graba algunos pasos para llenarla
+  subtitle: "Graba pasos para llenarla"
 
 blurPanel:
   title: Desenfoque inteligente
   manualMode: Modo manual
   selectElements: Selecciona elementos para desenfocar
   done: Listo
-  doneResume: "Listo \xB7 Continuar grabación"
+  doneResume: "Listo · Reanudar grabación"
   resetAll: Restablecer todo
 
 screenshotView:
@@ -332,7 +332,7 @@ screenshotView:
   replaceFormats: "PNG, JPG o WebP"
   download: Descargar
   deleteImage: Eliminar imagen
-  deleteConfirm: "¿Eliminar esta captura? No hay vuelta atrás."
+  deleteConfirm: "¿Eliminar esta captura? No se puede deshacer."
   imageDeleted: Imagen eliminada
   altButton: ALT
   altLabel: Texto alternativo
@@ -348,7 +348,7 @@ annotationEditor:
   toolRedact: Ocultar
   toolCrop: Recortar
   colorLabel: Color
-  textPlaceholder: Escribe algo...
+  textPlaceholder: Escribe algo…
   targetBorder: Estilo del borde
   modeAnnotate: "Anotar"
   toolLine: "Línea"
@@ -380,30 +380,30 @@ annotationEditor:
   end_none: "Ninguna"
   end_bar: "Barra"
   end_arrow: "Flecha"
-  end_arrow_solid: "Flecha sólida"
+  end_arrow_solid: "Flecha rellena"
   end_circle: "Círculo"
-  end_circle_solid: "Círculo sólido"
+  end_circle_solid: "Círculo relleno"
   end_square: "Cuadrado"
-  end_square_solid: "Cuadrado sólido"
+  end_square_solid: "Cuadrado relleno"
   done: Listo
 
 exportPreview:
   voiceover: "Voz en off"
   voiceoverHint: "Lee cada paso en voz alta. Cada paso se mantiene hasta que termina la voz."
   audio: "Audio"
-  audioSilent: "Silencioso"
+  audioSilent: "Sin sonido"
   audioNarrated: "Narrado"
   voiceoverNoKey: "Añade una clave de OpenAI o ElevenLabs en Ajustes para narrar los vídeos."
   videoLength: "Duración del vídeo $1"
   videoLengthVoice: "Duración del vídeo $1 → $2 con voz en off"
-  voiceoverCost: "$1 clips · unos $2 caracteres a sintetizar"
-  voiceoverFailed: "La narración falló, así que este vídeo es mudo. Revisa la clave de API en Ajustes."
-  voiceoverNoAudioCodec: "Este navegador no puede codificar audio para vídeo, así que este vídeo es mudo."
-  voiceoverNoKeySkip: "No hay ninguna clave de API de narración configurada, así que este vídeo es mudo. Añade una en Ajustes."
-  voiceoverNothingToSay: "Esta guía no tiene texto que leer en voz alta, así que este vídeo es mudo."
+  voiceoverCost: "$1 clips · unos $2 caracteres por sintetizar"
+  voiceoverFailed: "No se pudo generar la voz en off. Revisa la clave de API en Ajustes."
+  voiceoverNoAudioCodec: "El vídeo no tiene sonido. Este navegador no puede añadir audio a los vídeos."
+  voiceoverNoKeySkip: "El vídeo no tiene sonido. Añade una clave de API de voz en off en Ajustes."
+  voiceoverNothingToSay: "El vídeo no tiene sonido. Esta guía no tiene texto que leer en voz alta."
   narrating: "Narrando el paso $1 de $2"
-  stepDescriptions: "Textos de paso"
-  stepDescriptionsHint: "Dibujar el texto del paso en cada fotograma"
+  stepDescriptions: "Textos de los pasos"
+  stepDescriptionsHint: "Dibuja el texto del paso en cada fotograma del vídeo"
   resolution: "Calidad de vídeo"
   gifQuality: "Calidad del GIF"
   gif_low: "Baja"
@@ -413,11 +413,11 @@ exportPreview:
   res_1080p: "1080p"
   title: "Vista previa de exportación"
   cover: "Portada"
-  coverHint: "Una primera hoja con el título y los detalles"
+  coverHint: "Una primera hoja aparte con el título y los detalles"
   screenshots: "Capturas"
   screenshotsHint: "Desactiva para un documento compacto solo de texto"
   stepUrls: "Enlaces de pasos"
-  stepUrlsHint: "Muestra la dirección de cada paso"
+  stepUrlsHint: "Muestra la dirección de la página de cada paso"
   imageScale: "Tamaño de captura"
   scale_small: "Pequeño"
   scale_medium: "Medio"
@@ -434,14 +434,14 @@ exportPreview:
   bundle: "Archivo Mimik"
   bundleHint: "Un archivo .mimik que otra persona puede importar y editar"
   bundleStripInputs: "Quitar el texto escrito"
-  bundleStripInputsHint: "Lo quita del texto de los pasos y de los enlaces. Las capturas siguen mostrando lo que había en pantalla."
+  bundleStripInputsHint: "Lo quita del texto de los pasos y los enlaces. Las capturas siguen mostrando la pantalla."
   bundleUrls: "Detalle de los enlaces"
   url_origin: "Sitio"
   url_path: "Página"
   url_full: "Completo"
-  bundleRedactionNote: "Las áreas difuminadas se borran de las imágenes antes de salir del navegador."
-  bundleTypedWarning: "$1 captura todavía muestra el texto que escribiste. Difumínala antes de compartir si hace falta."
-  bundleTypedWarningPlural: "$1 capturas todavía muestran el texto que escribiste. Difumínalas antes de compartir si hace falta."
+  bundleRedactionNote: "Las áreas desenfocadas se borran de las imágenes exportadas."
+  bundleTypedWarning: "$1 captura muestra texto que escribiste. Desenfócala antes de compartir."
+  bundleTypedWarningPlural: "$1 capturas muestran texto que escribiste. Desenfócalas antes de compartir."
 videoPlayer:
   stepCount: "$1 pasos"
   previousStep: "Paso anterior"
@@ -462,19 +462,19 @@ exportMenu:
   bundle: "Archivo Mimik"
 
 onboarding:
-  welcomeBadge: Bienvenido
-  welcomeTitle: "¡Ya tienes Mimik instalado!"
-  welcomeMessage: "En unos pasos vas a poder capturar flujos de trabajo y generar guías automáticas. Sin cuenta, sin registros \u2014 todo se queda en tu navegador."
+  welcomeBadge: "Te damos la bienvenida"
+  welcomeTitle: "Mimik está instalado"
+  welcomeMessage: "Configura unas opciones y graba tu primera guía. Sin cuenta. Tus guías no salen del navegador."
   getStarted: Empezar
   stepOf: "Paso $1 de $2"
   aiTitle: Descripciones con IA
-  aiMessage: Conecta tu clave API para que la IA escriba las descripciones de cada paso. Es opcional y lo puedes cambiar después en Ajustes.
+  aiMessage: "Opcional: añade tu clave de API y la IA escribe la descripción de cada paso."
   aiGenerated: Generado por IA
   aiGeneratedDescription: "Descripción generada por IA"
   voiceTitle: Habla y luego actúa
-  voiceMessage: "Di lo que vas a hacer y después hazlo. Mimik une tu narración con la acción que viene justo después, así que el orden es lo que más importa."
-  voiceRecordHint: "La narración permanece desactivada hasta que la actives. Usa el botón de micrófono en el panel lateral mientras grabas, así eliges guía por guía."
-  voiceDataNotice: "Tu audio se envía al proveedor que elijas aquí, con tu propia clave API. Nada más de Mimik sale de tu navegador."
+  voiceMessage: "Di lo que vas a hacer y después hazlo. Mimik une tus palabras a la siguiente acción."
+  voiceRecordHint: "La narración viene desactivada. Actívala por guía con el botón de micrófono del panel lateral."
+  voiceDataNotice: "El audio va al proveedor que elijas, con tu clave de API."
   voiceDemoLabel: "Cómo se asigna la narración"
   voiceDemoSay: Dices
   voiceDemoQuote: "Ahora voy a abrir los ajustes de facturación"
@@ -483,38 +483,38 @@ onboarding:
   voiceDemoBadge: De tu voz
   blurTitle: Desenfoque inteligente
   blurMessage: Detecta y desenfoca datos sensibles en tus capturas automáticamente. Elige qué patrones activar.
-  screenshotPreview: Vista previa
+  screenshotPreview: "Vista previa de la captura"
   notEnabled: No activado
   categoriesProtected: "$1 categorías protegidas"
   pinTitle: Fija Mimik
-  pinMessage: Fija la extensión en tu barra para tenerla siempre a un clic. Busca el ícono de rompecabezas en Chrome y fija Mimik.
-  pinStep1Title: Haz clic en el ícono de rompecabezas
-  pinStep1Sub: Arriba a la derecha en tu barra del navegador
+  pinMessage: "Fija Mimik en tu barra de herramientas para tenerlo a mano."
+  pinStep1Title: "Haz clic en el icono de rompecabezas"
+  pinStep1Sub: "Arriba a la derecha, en la barra de herramientas del navegador"
   pinStep2Title: Busca Mimik
   pinStep2Sub: En el desplegable de extensiones
-  pinStep3Title: Haz clic en el pin
+  pinStep3Title: "Haz clic en el icono de la chincheta"
   pinStep3Sub: Mimik aparecerá en tu barra
   pinScreenshotAlt: Fijar extensión Mimik
   starTitle: "¿Nos das una estrella?"
-  starMessage: "Mimik es gratuito y de código abierto. Una estrella es la forma más fácil de dar las gracias, y ayuda a que otras personas lo encuentren."
+  starMessage: "Mimik es gratuito y de código abierto. Una estrella ayuda a que otras personas lo encuentren."
   starAction: Dar una estrella en GitHub
   starLater: "Quizá más tarde"
-  doneTitle: "¡Ya estás listo!"
-  doneMessage: "Mimik está listo para capturar. Dale clic a \"Empezar a capturar\" en la extensión para grabar tu primera guía."
+  doneTitle: "Todo listo"
+  doneMessage: "Haz clic en \"Empezar a capturar\" en el panel lateral para grabar tu primera guía."
   featureAutoCapture: Captura automática
   featureAIAssist: Asistente de IA
   featureVoice: "Narración por voz"
   featureAnnotate: Anotar y ocultar
-  featureExports: Exportar a todo
+  featureExports: "Exporta a PDF, vídeo y más"
   featureSmartBlur: Desenfoque inteligente
   openMimik: Abrir Mimik
 
 steps:
-  pressKey: "Presionar $1 en $2"
-  toggleCheckbox: "Marcar $1"
+  pressKey: "Pulsar $1 en $2"
+  toggleCheckbox: "Marcar o desmarcar $1"
   selectRadio: "Seleccionar $1"
   toggleSwitch: "Alternar $1"
-  clickLink: 'Clic en enlace "$1"'
+  clickLink: "Clic en el enlace \"$1\""
   click: "Clic en $1"
   typeIntoField: "Escribir en el campo $1 $2"
   typeInto: "Escribir en $1"
@@ -548,45 +548,45 @@ background:
 voice:
   turnOn: "Activar narración por voz"
   turnOff: "Desactivar narración por voz"
-  needsApiKey: "Añade una clave API de transcripción en Ajustes para narrar"
+  needsApiKey: "Añade una clave de API de transcripción en Ajustes para narrar"
   pausedWithCapture: "La narración está en pausa junto con la captura"
-  micStarting: "Iniciando el micrófono..."
-  micHearing: Te estamos oyendo
+  micStarting: "Iniciando el micrófono…"
+  micHearing: "Te oímos"
   micQuiet: Sin sonido
   nextRecording: "La narración por voz está activada y empieza en tu próxima grabación."
   orderHint: "Di lo que vas a hacer y luego hazlo. Tus palabras se asignan a la siguiente acción."
-  transcribing: "Transcribiendo tu narración..."
-  transcribingHint: "Las descripciones de los pasos se actualizarán solas al terminar."
+  transcribing: "Transcribiendo tu narración…"
+  transcribingHint: "Las descripciones de los pasos se actualizan al terminar."
   narrated: "Narración añadida a $1 paso."
   narratedPlural: "Narración añadida a $1 pasos."
-  narratedNone: "Ninguna narración coincidió con tus pasos, así que las descripciones no cambiaron."
-  guideSafe: "Tu guía y tus capturas están intactas. Solo se perdió la narración."
-  openSettings: Abrir ajustes
-  errorPermissionDenied: "El navegador bloqueó el micrófono, así que no se narró nada."
-  errorNoDevice: "No se encontró ningún micrófono, así que no se narró nada."
-  errorNoAudio: "El micrófono no captó ningún sonido, así que no había nada que transcribir."
-  errorMissingApiKey: "La narración por voz necesita un proveedor de transcripción y una clave API."
-  errorStreamEnded: "El micrófono se detuvo a mitad de la grabación, así que la narración terminó antes."
-  errorNotRecording: "La narración por voz no estaba activa, así que no había nada que transcribir."
-  errorAlreadyRecording: "La narración por voz ya estaba en marcha, así que esta grabación no se narró."
+  narratedNone: "Ninguna parte de tu narración coincidió con un paso."
+  guideSafe: "Tu guía y tus capturas no se ven afectadas."
+  openSettings: "Abrir Ajustes"
+  errorPermissionDenied: "Se bloqueó el acceso al micrófono."
+  errorNoDevice: "No se encontró ningún micrófono."
+  errorNoAudio: "El micrófono no captó ningún sonido."
+  errorMissingApiKey: "La narración necesita una clave de API de transcripción."
+  errorStreamEnded: "El micrófono se cortó a mitad de la grabación."
+  errorNotRecording: "La narración no estaba activa."
+  errorAlreadyRecording: "La narración ya estaba en marcha."
   errorUnsupported: "Este navegador no puede grabar narración por voz."
-  errorUnknown: "La narración por voz se detuvo de forma inesperada."
+  errorUnknown: "La narración se detuvo de forma inesperada."
 
 micPermission:
   title: Permitir acceso al micrófono
-  checkingMessage: Comprobando si Mimik ya tiene acceso al micrófono...
-  promptingMessage: Tu navegador está pidiendo permiso. Elige Permitir para que Mimik pueda grabar tu narración mientras capturas una guía. Esta pestaña se cierra sola.
+  checkingMessage: "Comprobando el acceso al micrófono…"
+  promptingMessage: "Elige Permitir en el aviso del navegador. Esta pestaña se cierra sola."
   grantedTitle: Micrófono listo
-  grantedMessage: Te devolvemos a lo que estabas haciendo.
+  grantedMessage: "Te llevamos de vuelta."
   deniedTitle: El acceso al micrófono está bloqueado
-  deniedMessage: Tu navegador está bloqueando el micrófono para Mimik, así que la narración por voz no puede grabar. Abre la configuración del sitio desde el icono a la izquierda de la barra de direcciones, pon Micrófono en Permitir y vuelve a intentarlo. Capturar guías sigue funcionando sin esto.
+  deniedMessage: "Pulsa el icono junto a la barra de direcciones, pon Micrófono en Permitir e inténtalo de nuevo."
   retry: Intentar de nuevo
-  privacy: El audio solo se guarda en memoria mientras grabas y se envía al proveedor de transcripción que hayas configurado. Mimik nunca lo almacena.
+  privacy: "El audio va a tu proveedor de transcripción. Mimik nunca lo guarda."
 
 aiStatus:
   rejected: "$1 rechazó tu clave de API."
   noCredits: "Tu cuenta de $1 no tiene créditos."
-  rateLimited: "$1 está limitando la frecuencia de las peticiones de Mimik."
+  rateLimited: "$1 está limitando las peticiones de Mimik."
   modelInvalid: "$1 no ofrece ese modelo a tu cuenta."
   quota: "Esa petición fue demasiado grande para este modelo."
   network: "Mimik no pudo contactar con $1."
@@ -612,8 +612,8 @@ import:
   reading: "Leyendo el archivo"
   confirm: "Añadir a la biblioteca"
   cancel: "Cancelar"
-  guideMeHint: "Esta guía se grabó en $1. Guide Me solo la reproduce en ese sitio."
-  noteRedacted: "El autor eliminó las áreas difuminadas y no se pueden recuperar."
+  guideMeHint: "Grabada en $1. \"Guíame\" solo la reproduce en ese sitio."
+  noteRedacted: "El autor eliminó las áreas desenfocadas y no se pueden recuperar."
   noteInputs: "Se dejó fuera el texto escrito en los campos."
   noteUrls: "Los enlaces se acortaron a la dirección de la página."
   noteUrlsOrigin: "Los enlaces se acortaron a la dirección del sitio."
@@ -628,7 +628,7 @@ transcript:
   loadError: No se pudo cargar la transcripción. Inténtalo de nuevo.
   filterAll: "Todo ($1)"
   filterUnused: "Sin usar ($1)"
-  privacyNote: Todo lo que dijiste al grabar, guardado solo en este dispositivo. Nunca forma parte de una guía exportada y se elimina con la guía.
+  privacyNote: "Solo en este dispositivo. Nunca se incluye en las guías exportadas y se elimina con la guía."
   usedInStep: "Paso $1"
   readOnlyHint: Activa Editar en la barra superior para añadir estas líneas a un paso.
   notUsed: Sin usar
@@ -637,4 +637,4 @@ transcript:
   copyAll: Copiar todo
   download: Descargar
   delete: Eliminar transcripción
-  confirmDelete: ¿Eliminar esta transcripción? Lo que dijiste se perderá para siempre.
+  confirmDelete: "¿Eliminar esta transcripción? No se puede deshacer."

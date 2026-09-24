@@ -7,7 +7,7 @@ app:
   description: "Nimm jeden Browser-Workflow als Schritt-für-Schritt-Anleitung auf. Bearbeiten, vertonen, als Video, PDF oder DOCX exportieren."
 
 common:
-  loading: Wird geladen...
+  loading: Wird geladen…
   cancel: Abbrechen
   save: Speichern
   delete: Löschen
@@ -25,13 +25,13 @@ common:
 
 sidepanel:
   connected: Verbunden
-  connecting: Wird verbunden...
+  connecting: Wird verbunden…
   heroTitle: Was möchtest du aufnehmen?
   heroSubtitle: Nimm jeden Workflow automatisch auf
   startCapture: Aufnahme starten
-  searchPlaceholder: Anleitungen durchsuchen...
+  searchPlaceholder: Anleitungen durchsuchen…
   recentLabel: Zuletzt verwendet
-  notRecordable: Öffne eine Website, um aufzuzeichnen
+  notRecordable: "Öffne eine Website, um mit der Aufnahme zu beginnen"
 
 library:
   noGuidesTitle: Noch keine Anleitungen
@@ -39,7 +39,7 @@ library:
   noStarredTitle: Keine Favoriten
   noStarredSub: Favorisiere eine Anleitung, um sie schnell wiederzufinden
   trashEmptyTitle: Papierkorb ist leer
-  trashEmptySub: Blitzsauber!
+  trashEmptySub: "Gelöschte Anleitungen erscheinen hier"
   noMatchingGuides: Keine passenden Anleitungen
   moveToTrash: In den Papierkorb verschieben
   deletePermanently: Endgültig löschen
@@ -51,8 +51,8 @@ library:
   duplicateFailed: Diese Anleitung konnte nicht dupliziert werden
 
 guideme:
-  manualStep: "Dieser Schritt wurde bearbeitet und kann nicht automatisch erkannt werden. Nutze Weiter, wenn du fertig bist."
-  roadblock: "Wir kommen nicht weiter. Führe die Aktion auf dem Bildschirm aus, um fortzufahren."
+  manualStep: "Bearbeitete Schritte werden nicht erkannt. Klicke auf Weiter, wenn du fertig bist."
+  roadblock: "Dieser Schritt ist auf der Seite nicht zu finden. Führe ihn selbst aus, um weiterzumachen."
   live: Live
   stepOf: "Schritt $1 von $2"
   noDescription: Keine Beschreibung
@@ -60,14 +60,14 @@ guideme:
   next: Weiter
   finish: Fertigstellen
   exitTitle: Schon fertig?
-  exitMessage: Deine Anleitung wird beendet und das Overlay auf der Seite entfernt.
+  exitMessage: "Die Anleitung und ihr Overlay werden geschlossen."
   stay: Bleiben
   exit: Beenden
   guideNotFound: Anleitung nicht gefunden
 
 guidemeCompletion:
-  title: "Alles erledigt, super!"
-  stepsCompleted: "Alle $1 Schritt abgeschlossen."
+  title: "Anleitung abgeschlossen"
+  stepsCompleted: "$1 Schritt abgeschlossen."
   stepsCompletedPlural: "Alle $1 Schritte abgeschlossen."
   allDone: Fertig
   runAgain: Erneut ausführen
@@ -79,7 +79,7 @@ recording:
   resumeCapture: Aufnahme fortsetzen
   recording: "Aufnahme \xB7 $1 Schritt"
   recordingPlural: "Aufnahme \xB7 $1 Schritte"
-  readyTitle: Bereit zur Aufnahme!
+  readyTitle: "Bereit zur Aufnahme"
   readySub: Klicke auf die Seite, um zu starten
   finishRecording: Aufnahme beenden
   smartBlur: Smart Blur
@@ -97,10 +97,10 @@ settings:
   replaceLogo: "Ersetzen"
   removeLogo: "Logo entfernen"
   footerLine: "Fußzeile"
-  footerLinePlaceholder: "z. B. Vertraulich — nur intern"
-  footerPresetConfidential: "Vertraulich — nur intern"
+  footerLinePlaceholder: "z. B. Vertraulich · Nur intern"
+  footerPresetConfidential: "Vertraulich · Nur intern"
   footerPresetNoDistribute: "Nicht weitergeben"
-  attribution: '"Made with Mimik" anzeigen'
+  attribution: "„Made with Mimik“ anzeigen"
   targetColor: "Markenfarbe"
   title: Einstellungen
   aiDescriptions: KI-Beschreibungen
@@ -119,46 +119,46 @@ settings:
   voiceover: "Video-Voiceover"
   textToSpeech: "Text → Sprache"
   voiceoverHint: "Mimik spricht den Text jedes Schritts über das exportierte Video."
-  voiceoverUsingAiKey: "Kein Voiceover-Schlüssel gesetzt – Mimik nutzt den OpenAI-Schlüssel aus den KI-Beschreibungen."
-  voiceoverNoKey: "Es ist kein API-Schlüssel gesetzt, daher können Videos nicht vertont werden."
+  voiceoverUsingAiKey: "Nutzt den OpenAI-Schlüssel aus den KI-Beschreibungen."
+  voiceoverNoKey: "Füge einen API-Schlüssel hinzu, um Videos zu vertonen."
   voice: "Stimme"
   speechToText: "Sprache → Text"
-  voiceNarrationHint: "Erkläre den Ablauf laut, und Mimik schreibt jeden Schritt aus dem, was du gesagt hast."
+  voiceNarrationHint: "Erkläre den Ablauf laut, und Mimik formuliert jeden Schritt aus deinen Worten."
   voiceNarration: Sprachkommentar
-  voiceUsingAiKey: "Es ist kein Sprach-Schlüssel gesetzt, daher nutzt Mimik den OpenAI-Schlüssel aus den KI-Beschreibungen oben."
-  aiNoKey: "Kein API-Schlüssel gesetzt, daher verwenden Schritte einfache regelbasierte Beschreibungen."
-  voiceNoKey: "Es ist kein API-Schlüssel gesetzt, daher werden deine Aufnahmen nicht vertont."
+  voiceUsingAiKey: "Nutzt den OpenAI-Schlüssel aus den KI-Beschreibungen."
+  aiNoKey: "Ohne API-Schlüssel erhalten Schritte einfache regelbasierte Beschreibungen."
+  voiceNoKey: "Füge einen API-Schlüssel hinzu, um Aufnahmen mit Sprachkommentar zu versehen."
   microphone: Mikrofon
   microphoneDefault: Systemstandard
   microphoneNeedsAccess: Erlaube den Mikrofonzugriff, um deine Gerätenamen zu sehen.
   microphoneGrantAccess: Mikrofonzugriff erlauben
-  microphoneNone: Kein Mikrofon gefunden. Schließe eines an, dann erscheint es hier.
+  microphoneNone: "Kein Mikrofon gefunden. Schließe eines an, um es hier zu sehen."
   microphoneUnavailable: Nicht verfügbares Mikrofon
   microphoneStatusAllowed: Erlaubt
   microphoneStatusBlocked: Blockiert
   microphoneStatusPending: Noch nicht erlaubt
-  microphoneBlocked: Dein Browser blockiert das Mikrofon für Mimik. Öffne die Website-Einstellungen über das Symbol links in der Adressleiste und setze Mikrofon auf Zulassen.
+  microphoneBlocked: "Mikrofon blockiert. Setze es über das Symbol links in der Adressleiste auf Zulassen."
   microphoneUnblockHow: Wie hebe ich die Blockierung auf?
-  microphoneMissing: Das gewählte Mikrofon ist gerade nicht verfügbar, daher nutzt Mimik den Systemstandard.
+  microphoneMissing: "Das gewählte Mikrofon ist nicht verbunden. Der Systemstandard wird verwendet."
   microphoneTest: Mikrofon testen
   microphoneTestStop: Test beenden
-  microphoneTestFailed: Dieses Mikrofon konnte nicht geöffnet werden. Wähle ein anderes und versuche es erneut.
+  microphoneTestFailed: "Dieses Mikrofon ließ sich nicht öffnen. Probiere ein anderes."
   saveSettings: Einstellungen speichern
   saved: Gespeichert
   smartBlur: Smart Blur
-  privacyNotice: "Deine Schlüssel und Audiodaten gehen nur an den Anbieter, den du wählst. Sonst verlässt nichts deinen Browser."
+  privacyNotice: "Schlüssel und Audio gehen nur an den gewählten Anbieter."
   bugReport: "Fehler gefunden? Melde ihn auf GitHub"
   starCtaTitle: "Gefällt dir, was du siehst?"
-  starCtaMessage: Ein Stern auf GitHub hilft anderen, Mimik zu finden, und hält uns motiviert!
-  starOnGithub: Auf GitHub favorisieren
+  starCtaMessage: "Ein Stern auf GitHub hilft anderen, Mimik zu finden."
+  starOnGithub: "Auf GitHub mit Stern markieren"
   validatingKey: "Schlüssel wird geprüft…"
   keyValid: API-Schlüssel bestätigt.
-  keyInvalid: Dieser API-Schlüssel wurde abgelehnt. Prüfe ihn und versuche es erneut.
+  keyInvalid: "Der Anbieter hat diesen Schlüssel abgelehnt. Prüfe ihn und versuche es erneut."
   keyModelRequired: Wähle ein Modell, bevor du diesen Schlüssel prüfst.
   keyModelInvalid: Das ausgewählte Modell ist bei diesem Anbieter nicht verfügbar.
   checkKey: Schlüssel prüfen
-  keyCannotSpend: "Dieser Schlüssel hat kein Guthaben, es funktionieren nur kostenlose Modelle."
-  keyUnreachable: Der Anbieter war nicht erreichbar. Prüfe deine Verbindung und versuche es erneut.
+  keyCannotSpend: "Dieser Schlüssel hat kein Guthaben. Nur kostenlose Modelle funktionieren."
+  keyUnreachable: "Der Anbieter ist nicht erreichbar. Prüfe deine Verbindung."
   modelsFound: "$1 Modelle verfügbar"
 
 blurPresets:
@@ -173,10 +173,10 @@ fullview:
   allGuides: Alle Anleitungen
   starred: Favoriten
   trash: Papierkorb
-  searchPlaceholder: Anleitungen durchsuchen...
-  guideMe: Anleiten
+  searchPlaceholder: Anleitungen durchsuchen…
+  guideMe: "Anleiten"
   untitledGuide: Unbenannte Anleitung
-  writingTitle: Titel wird aus deinen aufgenommenen Schritten erstellt...
+  writingTitle: "Titel wird geschrieben…"
   guideNotFound: "Anleitung nicht gefunden."
   stepCount: "$1 Schritt"
   stepCountPlural: "$1 Schritte"
@@ -186,7 +186,7 @@ fullview:
 sort:
   recentFirst: Neueste zuerst
   oldestFirst: Älteste zuerst
-  alphaAZ: "A — Z"
+  alphaAZ: "A–Z"
   mostSteps: Meiste Schritte
   gridView: Rasteransicht
   listView: Listenansicht
@@ -203,14 +203,14 @@ keyboard:
 
 confirmDelete:
   title: "Anleitung löschen?"
-  message: Diese Anleitung wird endgültig gelöscht. Das kann nicht rückgängig gemacht werden.
+  message: "Das lässt sich nicht rückgängig machen."
   confirm: Endgültig löschen
 
 editor:
   backToLibrary: Zurück zur Bibliothek
   openInDashboard: Öffnen
   openInDashboardHint: Im Dashboard öffnen, um zu bearbeiten oder zu exportieren
-  guideMe: Anleiten
+  guideMe: "Anleiten"
   guideMeUnavailable: Keine abspielbaren Schritte in dieser Anleitung
   deleteThisStep: "Diesen Schritt löschen?"
   selectStep: Schritt auswählen
@@ -243,17 +243,17 @@ editor:
   descriptionErrorNoApiKey: Füge in den Einstellungen einen KI-API-Schlüssel hinzu, um Beschreibungen zu erstellen.
   descriptionErrorNoSteps: Diese Anleitung hat keine beschriebenen Schritte zum Zusammenfassen.
   descriptionErrorFailed: Beschreibung konnte nicht erstellt werden. Versuche es erneut.
-  descriptionErrorSaveFailed: Die Beschreibung wurde erstellt, konnte aber nicht gespeichert werden. Versuche es erneut.
+  descriptionErrorSaveFailed: "Die neue Beschreibung konnte nicht gespeichert werden. Versuche es erneut."
   writingStepDescription: "Beschreibung wird geschrieben…"
-  transcribingStepDescription: "Deine Aufnahme wird transkribiert…"
+  transcribingStepDescription: "Deine Worte werden transkribiert…"
   restoreSpoken: Gesprochenen Text wiederherstellen
 
 capture:
-  recordSteps: Schritte aufzeichnen
+  recordSteps: "Schritte aufnehmen"
   moreStepsTitle: Weitere Schritte aufnehmen
-  moreStepsBody: "Neue Schritte werden hier eingefügt. Wähle den Tab zum Aufzeichnen."
+  moreStepsBody: "Neue Schritte werden hier eingefügt. Wähle den Tab für die Aufnahme."
   startCapture: Aufnahme starten
-  noRecordableTabs: In diesem Fenster ist kein aufzeichenbarer Tab offen.
+  noRecordableTabs: "In diesem Fenster ist kein Tab zum Aufnehmen offen."
 
 blocks:
   add: "Block hinzufügen"
@@ -274,16 +274,16 @@ history:
   current: Aktuell
   restore: Wiederherstellen
   unchangedVersions: "Unveränderte Versionen ($1)"
-  readOnlyBanner: "Du siehst eine frühere Version. Schließe den Versionsverlauf, um zur aktuellen Anleitung zurückzukehren."
+  readOnlyBanner: "Du siehst eine frühere Version. Schließe den Versionsverlauf, um zurückzukehren."
   loadError: Versionsverlauf konnte nicht geladen werden. Versuche es erneut.
-  restoreError: Wiederherstellen hat nicht geklappt. Versuche es gleich noch einmal.
+  restoreError: "Die Version konnte nicht wiederhergestellt werden. Versuche es gleich erneut."
   storageFull: Zu wenig Speicher für einen Rückgängig-Punkt. Lösche eine Anleitung und versuche es erneut.
-  empty: Noch keine früheren Versionen. Sie erscheinen hier, sobald du diese Anleitung bearbeitest.
+  empty: "Noch keine früheren Versionen. Bearbeite die Anleitung, um eine zu erstellen."
   nameVersion: Version benennen
   namePlaceholder: Versionsname
   allVersions: Alle Versionen
   namedOnly: Nur benannte Versionen
-  emptyNamed: Noch keine benannten Versionen. Benenne eine, um sie später wiederzufinden.
+  emptyNamed: "Noch keine benannten Versionen."
   renameError: Name konnte nicht gespeichert werden. Versuche es erneut.
   changeTitle: Titel geändert
   changeStepAdded: "$1 Schritt hinzugefügt"
@@ -299,21 +299,21 @@ history:
   changeImagesReplaced: "$1 Bilder ersetzt"
   changeImageCropped: "$1 Bild zugeschnitten"
   changeImagesCropped: "$1 Bilder zugeschnitten"
-  changeImageAnnotated: "$1 Bild kommentiert"
-  changeImagesAnnotated: "$1 Bilder kommentiert"
+  changeImageAnnotated: "$1 Bild markiert"
+  changeImagesAnnotated: "$1 Bilder markiert"
   changeImageBlurred: "$1 Bild unkenntlich gemacht"
   changeImagesBlurred: "$1 Bilder unkenntlich gemacht"
   changeAltText: Alternativtext bearbeitet
 
 emptyGuide:
   title: Diese Anleitung ist leer
-  subtitle: Erwecke sie zum Leben, indem du Schritte aufnimmst
+  subtitle: "Nimm Schritte auf, um sie zu füllen"
 
 
 blurPanel:
   title: Smart Blur
   manualMode: Manueller Modus
-  selectElements: Elemente zum Weichzeichnen auswählen
+  selectElements: "Elemente zum Unkenntlichmachen auswählen"
   done: Fertig
   doneResume: "Fertig \xB7 Aufnahme fortsetzen"
   resetAll: Alles zurücksetzen
@@ -324,14 +324,14 @@ exportPreview:
   audio: "Audio"
   audioSilent: "Stumm"
   audioNarrated: "Vertont"
-  voiceoverNoKey: "Hinterlege in den Einstellungen einen OpenAI- oder ElevenLabs-Schlüssel, um Videos zu vertonen."
+  voiceoverNoKey: "Füge in den Einstellungen einen OpenAI- oder ElevenLabs-Schlüssel hinzu, um Videos zu vertonen."
   videoLength: "Videolänge $1"
   videoLengthVoice: "Videolänge $1 → $2 mit Voiceover"
-  voiceoverCost: "$1 Clips · etwa $2 Zeichen zu synthetisieren"
-  voiceoverFailed: "Die Vertonung ist fehlgeschlagen, dieses Video ist stumm. Prüfe den API-Schlüssel in den Einstellungen."
-  voiceoverNoAudioCodec: "Dieser Browser kann kein Audio für Videos kodieren, dieses Video ist stumm."
-  voiceoverNoKeySkip: "Es ist kein API-Schlüssel für die Vertonung gesetzt, dieses Video ist stumm. Füge einen in den Einstellungen hinzu."
-  voiceoverNothingToSay: "Diese Anleitung hat keinen Text zum Vorlesen, dieses Video ist stumm."
+  voiceoverCost: "$1 Clips · etwa $2 Zeichen zur Sprachsynthese"
+  voiceoverFailed: "Das Voiceover ist fehlgeschlagen. Prüfe den API-Schlüssel in den Einstellungen."
+  voiceoverNoAudioCodec: "Das Video ist stumm. Dieser Browser kann Videos kein Audio hinzufügen."
+  voiceoverNoKeySkip: "Das Video ist stumm. Füge in den Einstellungen einen Voiceover-API-Schlüssel hinzu."
+  voiceoverNothingToSay: "Das Video ist stumm. Diese Anleitung hat keinen Text zum Vorlesen."
   narrating: "Schritt $1 von $2 wird vertont"
   stepDescriptions: "Schritttexte"
   stepDescriptionsHint: "Den Schritttext in jedes Videobild einzeichnen"
@@ -348,7 +348,7 @@ exportPreview:
   screenshots: "Screenshots"
   screenshotsHint: "Ausschalten für ein kompaktes Nur-Text-Dokument"
   stepUrls: "Schritt-Links"
-  stepUrlsHint: "Zeigt die Adresse jedes Schritts"
+  stepUrlsHint: "Die Seitenadresse jedes Schritts anzeigen"
   imageScale: "Screenshot-Größe"
   scale_small: "Klein"
   scale_medium: "Mittel"
@@ -357,7 +357,7 @@ exportPreview:
   rendering: "Vorschau wird aktualisiert"
   videoReady: "$1 Schritte · etwa $2 Min. Video"
   videoReadyHint: "Lange Anleitungen werden nicht automatisch kodiert. Die Vorschau enthält alle Schritte."
-  videoGenerate: "Vorschau erzeugen"
+  videoGenerate: "Vorschau erstellen"
   modeDocument: "Dokument"
   modeVideo: "Video"
   encodingVideo: "Videovorschau wird erstellt"
@@ -365,14 +365,14 @@ exportPreview:
   bundle: "Mimik-Datei"
   bundleHint: "Eine .mimik-Datei, die andere importieren und bearbeiten können"
   bundleStripInputs: "Eingegebenen Text entfernen"
-  bundleStripInputsHint: "Entfernt ihn aus Schritttexten und Links. Screenshots zeigen weiterhin, was auf dem Bildschirm stand."
-  bundleUrls: "Link-Detail"
+  bundleStripInputsHint: "Entfernt ihn aus Schritttexten und Links. Screenshots zeigen weiterhin, was auf dem Bildschirm war."
+  bundleUrls: "Link-Detailgrad"
   url_origin: "Website"
   url_path: "Seite"
   url_full: "Vollständig"
-  bundleRedactionNote: "Unkenntlich gemachte Bereiche werden aus den Bildern gelöscht, bevor sie den Browser verlassen."
-  bundleTypedWarning: "$1 Screenshot zeigt weiterhin eingegebenen Text. Mach ihn unkenntlich, bevor du teilst."
-  bundleTypedWarningPlural: "$1 Screenshots zeigen weiterhin eingegebenen Text. Mach sie unkenntlich, bevor du teilst."
+  bundleRedactionNote: "Unkenntlich gemachte Bereiche werden aus den exportierten Bildern gelöscht."
+  bundleTypedWarning: "$1 Screenshot zeigt eingegebenen Text. Mach ihn vor dem Teilen unkenntlich."
+  bundleTypedWarningPlural: "$1 Screenshots zeigen eingegebenen Text. Mach sie vor dem Teilen unkenntlich."
 videoPlayer:
   stepCount: "$1 Schritte"
   previousStep: "Vorheriger Schritt"
@@ -394,49 +394,49 @@ exportMenu:
 
 onboarding:
   welcomeBadge: Willkommen
-  welcomeTitle: "Du hast Mimik erfolgreich installiert!"
-  welcomeMessage: "Mit nur wenigen Schritten bist du bereit, Browser-Workflows automatisch aufzunehmen und Schritt-für-Schritt-Anleitungen zu erstellen. Kein Konto nötig — alles bleibt in deinem Browser."
+  welcomeTitle: "Mimik ist installiert"
+  welcomeMessage: "Ein paar Einstellungen, dann nimmst du deine erste Anleitung auf. Ohne Konto, alles bleibt lokal."
   getStarted: Loslegen
   stepOf: "Schritt $1 von $2"
   aiTitle: KI-Beschreibungen
-  aiMessage: Verbinde deinen eigenen API-Schlüssel, um KI-generierte Schrittbeschreibungen zu erhalten. Das ist optional und kann später in den Einstellungen geändert werden.
+  aiMessage: "Optional: Füge deinen API-Schlüssel hinzu und die KI beschreibt jeden Schritt."
   aiGenerated: KI-generiert
   aiGeneratedDescription: KI-generierte Beschreibung
   voiceTitle: Sprich, dann handle
-  voiceMessage: Sag, was du als Nächstes tun wirst, und tu es dann. Mimik ordnet deinen Kommentar der Aktion zu, die darauf folgt — die Reihenfolge ist deshalb das Wichtigste.
-  voiceRecordHint: "Die Sprachaufnahme bleibt aus, bis du sie einschaltest. Nutze die Mikrofontaste in der Seitenleiste während der Aufnahme, so entscheidest du pro Anleitung."
-  voiceDataNotice: Dein Audio wird mit deinem eigenen API-Schlüssel an den hier gewählten Anbieter gesendet. Sonst verlässt nichts in Mimik deinen Browser.
-  voiceDemoLabel: So landet dein Kommentar
+  voiceMessage: "Sag, was du als Nächstes tust, und tu es dann. Mimik ordnet deine Worte der nächsten Aktion zu."
+  voiceRecordHint: "Sprachkommentar ist standardmäßig aus. Aktiviere ihn pro Anleitung per Mikrofon in der Seitenleiste."
+  voiceDataNotice: "Audio geht mit deinem API-Schlüssel an den gewählten Anbieter."
+  voiceDemoLabel: "So wird dein Sprachkommentar zugeordnet"
   voiceDemoSay: Du sagst
   voiceDemoQuote: "Jetzt öffne ich die Zahlungseinstellungen"
   voiceDemoAct: Dann klickst du
-  voiceDemoAction: 'Tab "Zahlungen" anklicken'
+  voiceDemoAction: "Tab „Zahlungen“ anklicken"
   voiceDemoBadge: Aus deiner Stimme
   blurTitle: Smart Blur
-  blurMessage: Mache sensible Informationen in Screenshots automatisch unkenntlich. Wähle, welche Muster erkannt werden sollen.
+  blurMessage: "Sensible Daten in Screenshots automatisch unkenntlich machen. Wähle, was erkannt wird."
   screenshotPreview: Screenshot-Vorschau
   notEnabled: Nicht aktiviert
   categoriesProtected: "$1 Kategorien geschützt"
   pinTitle: Mimik anpinnen
-  pinMessage: Pinne die Erweiterung an deine Symbolleiste für schnellen Zugriff. Klicke auf das Puzzle-Symbol in Chrome und pinne dann Mimik an.
+  pinMessage: "Pinne Mimik an deine Symbolleiste für schnellen Zugriff."
   pinStep1Title: Klicke auf das Puzzle-Symbol
   pinStep1Sub: Oben rechts in deiner Browser-Symbolleiste
   pinStep2Title: Finde Mimik
-  pinStep2Sub: Im Erweiterungs-Dropdown
+  pinStep2Sub: "Im Erweiterungsmenü"
   pinStep3Title: Klicke auf das Pin-Symbol
   pinStep3Sub: Mimik erscheint dann in deiner Symbolleiste
   pinScreenshotAlt: Mimik-Erweiterung anpinnen
   starTitle: "Magst du uns einen Stern geben?"
-  starMessage: "Mimik ist kostenlos und quelloffen. Ein Stern ist der einfachste Weg, Danke zu sagen, und hilft anderen, Mimik zu finden."
+  starMessage: "Mimik ist kostenlos und quelloffen. Ein Stern hilft anderen, es zu finden."
   starAction: Auf GitHub mit Stern markieren
   starLater: "Vielleicht später"
-  doneTitle: "Alles bereit!"
-  doneMessage: "Mimik ist bereit, deine Workflows aufzunehmen. Klicke in der Erweiterung auf \"Aufnahme starten\", um deine erste Anleitung aufzunehmen."
+  doneTitle: "Alles bereit"
+  doneMessage: "Klicke in der Seitenleiste auf „Aufnahme starten“, um deine erste Anleitung aufzunehmen."
   featureAutoCapture: Auto-Aufnahme
   featureAIAssist: KI-Assistent
-  featureVoice: Sprachaufnahme
+  featureVoice: "Sprachkommentar"
   featureAnnotate: "Markieren & schwärzen"
-  featureExports: "Überall exportieren"
+  featureExports: "Export als PDF, Video & mehr"
   featureSmartBlur: Smart Blur
   openMimik: Mimik öffnen
 
@@ -445,9 +445,9 @@ steps:
   toggleCheckbox: "$1 umschalten"
   selectRadio: "$1 auswählen"
   toggleSwitch: "$1 umschalten"
-  clickLink: 'Link "$1" anklicken'
+  clickLink: "Link „$1“ anklicken"
   click: "$1 anklicken"
-  typeIntoField: "In Feld $1 eingeben $2"
+  typeIntoField: "In $1-Feld $2 eingeben"
   typeInto: "In $1 eingeben"
   typeSecret: "Passwort eingeben"
   copyFrom: "Aus $1 kopieren"
@@ -486,9 +486,9 @@ annotationEditor:
   toolRedact: "Schwärzen"
   toolCrop: "Zuschneiden"
   colorLabel: "Farbe"
-  textPlaceholder: "Text eingeben ..."
+  textPlaceholder: "Text eingeben…"
   targetBorder: "Rahmenstil"
-  modeAnnotate: "Kommentieren"
+  modeAnnotate: "Markieren"
   toolLine: "Linie"
   duplicate: "Duplizieren"
   toolEllipse: "Ellipse"
@@ -509,7 +509,7 @@ annotationEditor:
   width_lg: "Dick"
   width_xl: "Sehr dick"
   zoom: "Zoom"
-  cropHint: "Zum Zuschneiden ziehen oder eine Ecke zum Ändern der Größe"
+  cropHint: "Zum Zuschneiden ziehen oder eine Ecke ziehen, um die Größe zu ändern"
   resetCrop: "Zuschnitt zurücksetzen"
   arrowEnd: "Pfeilende"
   fontSize: "Schriftgröße"
@@ -540,7 +540,7 @@ screenshotView:
   replaceFormats: "PNG, JPG oder WebP"
   download: "Herunterladen"
   deleteImage: "Bild löschen"
-  deleteConfirm: "Diesen Screenshot löschen? Das kann nicht rückgängig gemacht werden."
+  deleteConfirm: "Diesen Screenshot löschen? Das lässt sich nicht rückgängig machen."
   imageDeleted: "Bild gelöscht"
   altButton: "ALT"
   altLabel: "Alternativtext"
@@ -549,51 +549,51 @@ screenshotView:
 voice:
   turnOn: Sprachkommentar einschalten
   turnOff: Sprachkommentar ausschalten
-  needsApiKey: Füge in den Einstellungen einen Transkriptions-API-Schlüssel hinzu, um zu kommentieren
-  pausedWithCapture: Die Kommentierung ist mit der Aufnahme pausiert
+  needsApiKey: "Füge in den Einstellungen einen Transkriptions-API-Schlüssel hinzu, um den Sprachkommentar zu nutzen"
+  pausedWithCapture: "Der Sprachkommentar ist mit der Aufnahme pausiert"
   micStarting: "Mikrofon wird gestartet…"
   micHearing: Ich höre dich
   micQuiet: Kein Ton
   nextRecording: Der Sprachkommentar ist aktiv und startet mit deiner nächsten Aufnahme.
   orderHint: "Sag, was du gleich tust, und tu es dann. Deine Worte gehören zur nächsten Aktion."
-  transcribing: "Dein Kommentar wird transkribiert…"
-  transcribingHint: Die Schrittbeschreibungen aktualisieren sich von selbst, sobald das fertig ist.
-  narrated: "Kommentar zu $1 Schritt hinzugefügt."
-  narratedPlural: "Kommentar zu $1 Schritten hinzugefügt."
-  narratedNone: Kein Kommentar passte zu deinen Schritten, daher bleiben die Beschreibungen unverändert.
-  guideSafe: Deine Anleitung und die Screenshots sind in Ordnung. Nur der Kommentar ist verloren.
+  transcribing: "Dein Sprachkommentar wird transkribiert…"
+  transcribingHint: "Die Schrittbeschreibungen werden danach aktualisiert."
+  narrated: "Sprachkommentar zu $1 Schritt hinzugefügt."
+  narratedPlural: "Sprachkommentar zu $1 Schritten hinzugefügt."
+  narratedNone: "Kein Teil deines Sprachkommentars passte zu einem Schritt."
+  guideSafe: "Deine Anleitung und die Screenshots sind nicht betroffen."
   openSettings: Einstellungen öffnen
-  errorPermissionDenied: Der Mikrofonzugriff wurde blockiert, daher wurde nichts kommentiert.
-  errorNoDevice: Kein Mikrofon gefunden, daher wurde nichts kommentiert.
-  errorNoAudio: Das Mikrofon hat keinen Ton aufgenommen, daher gab es nichts zu transkribieren.
-  errorMissingApiKey: Der Sprachkommentar braucht einen Transkriptionsanbieter und einen API-Schlüssel.
-  errorStreamEnded: Das Mikrofon hat mittendrin gestoppt, daher endete der Kommentar früher.
-  errorNotRecording: Der Sprachkommentar lief nicht, daher gab es nichts zu transkribieren.
-  errorAlreadyRecording: Der Sprachkommentar lief bereits, daher wurde diese Aufnahme nicht kommentiert.
+  errorPermissionDenied: "Der Mikrofonzugriff wurde blockiert."
+  errorNoDevice: "Kein Mikrofon gefunden."
+  errorNoAudio: "Das Mikrofon hat keinen Ton aufgenommen."
+  errorMissingApiKey: "Der Sprachkommentar braucht einen API-Schlüssel für die Transkription."
+  errorStreamEnded: "Das Mikrofon ist mittendrin ausgefallen."
+  errorNotRecording: "Der Sprachkommentar lief nicht."
+  errorAlreadyRecording: "Der Sprachkommentar lief bereits."
   errorUnsupported: Dieser Browser kann keinen Sprachkommentar aufnehmen.
-  errorUnknown: Der Sprachkommentar wurde unerwartet beendet.
+  errorUnknown: "Der Sprachkommentar wurde unerwartet beendet."
 
 micPermission:
   title: Mikrofonzugriff erlauben
-  checkingMessage: "Es wird geprüft, ob Mimik schon Mikrofonzugriff hat…"
-  promptingMessage: Dein Browser fragt nach der Berechtigung. Wähle Zulassen, damit Mimik deinen Kommentar aufnehmen kann, während du eine Anleitung aufzeichnest. Dieser Tab schließt sich von selbst.
+  checkingMessage: "Mikrofonzugriff wird geprüft…"
+  promptingMessage: "Wähle in der Browser-Abfrage Zulassen. Dieser Tab schließt sich von selbst."
   grantedTitle: Mikrofon bereit
-  grantedMessage: Es geht zurück zu dem, was du gerade gemacht hast.
+  grantedMessage: "Du wirst zurückgeleitet."
   deniedTitle: Der Mikrofonzugriff ist blockiert
-  deniedMessage: Dein Browser blockiert das Mikrofon für Mimik, daher kann der Sprachkommentar nicht aufnehmen. Öffne die Website-Einstellungen über das Symbol links in der Adressleiste, setze Mikrofon auf Zulassen und versuche es dann erneut. Anleitungen aufzeichnen funktioniert auch ohne.
+  deniedMessage: "Klicke auf das Symbol links in der Adressleiste, setze Mikrofon auf Zulassen und versuche es erneut."
   retry: Erneut versuchen
-  privacy: Audio bleibt nur während der Aufnahme im Speicher und wird an den von dir konfigurierten Transkriptionsanbieter gesendet. Mimik speichert es nie.
+  privacy: "Audio geht an deinen Transkriptionsanbieter. Mimik speichert es nie."
 
 aiStatus:
   rejected: "$1 hat deinen API-Schlüssel abgelehnt."
   noCredits: "Dein $1-Konto hat kein Guthaben."
-  rateLimited: "$1 begrenzt, wie oft Mimik anfragen darf."
+  rateLimited: "$1 drosselt die Anfragen von Mimik."
   modelInvalid: "$1 bietet dieses Modell für dein Konto nicht an."
   quota: "Diese Anfrage war zu groß für dieses Modell."
   network: "Mimik konnte $1 nicht erreichen."
   unknown: "$1 hat die Anfrage abgelehnt."
   actionCheckKey: "Prüfe deinen Schlüssel in den Einstellungen."
-  actionAddCredits: "Guthaben aufladen, dann den Schlüssel erneut prüfen."
+  actionAddCredits: "Lade Guthaben auf und prüfe den Schlüssel dann erneut."
   actionWait: "Warte einen Moment, bevor du weiter aufnimmst."
   actionPickModel: "Wähle in den Einstellungen ein anderes Modell."
   actionConnection: "Prüfe deine Verbindung."
@@ -613,8 +613,8 @@ import:
   reading: "Datei wird gelesen"
   confirm: "Zur Bibliothek hinzufügen"
   cancel: "Abbrechen"
-  guideMeHint: "Diese Anleitung wurde auf $1 aufgezeichnet. Guide Me spielt sie nur auf dieser Website ab."
-  noteRedacted: "Unkenntlich gemachte Bereiche wurden entfernt und lassen sich nicht wiederherstellen."
+  guideMeHint: "Aufgenommen auf $1. „Anleiten“ spielt sie nur dort ab."
+  noteRedacted: "Unkenntlich gemachte Bereiche wurden vom Ersteller entfernt und lassen sich nicht wiederherstellen."
   noteInputs: "In Felder eingegebener Text wurde weggelassen."
   noteUrls: "Links wurden auf die Seitenadresse gekürzt."
   noteUrlsOrigin: "Links wurden auf die Website-Adresse gekürzt."
@@ -626,10 +626,10 @@ import:
 transcript:
   title: Transkript
   empty: In dieser Aufnahme wurde nichts gesprochen.
-  loadError: Transkript konnte nicht geladen werden. Bitte erneut versuchen.
+  loadError: "Das Transkript konnte nicht geladen werden. Versuche es erneut."
   filterAll: "Alle ($1)"
   filterUnused: "Unbenutzt ($1)"
-  privacyNote: Alles, was du während der Aufnahme gesagt hast – nur auf diesem Gerät. Es ist nie Teil einer exportierten Anleitung und wird mit der Anleitung gelöscht.
+  privacyNote: "Nur auf diesem Gerät. Nie Teil exportierter Anleitungen, und mit der Anleitung gelöscht."
   usedInStep: "Schritt $1"
   readOnlyHint: Schalte oben Bearbeiten ein, um diese Zeilen einem Schritt hinzuzufügen.
   notUsed: Unbenutzt
@@ -638,4 +638,4 @@ transcript:
   copyAll: Alles kopieren
   download: Herunterladen
   delete: Transkript löschen
-  confirmDelete: Dieses Transkript löschen? Das Gesprochene ist dann endgültig weg.
+  confirmDelete: "Dieses Transkript löschen? Das lässt sich nicht rückgängig machen."

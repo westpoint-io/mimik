@@ -32,9 +32,9 @@ Clique sur enregistrer, fais ce que tu as à faire, et récupère un guide soign
 - [📺 Démo](#-démo)
 - [👋 Pour commencer](#-pour-commencer)
 - [✨ Fonctionnalités](#-fonctionnalités)
-  - [🔒 Smart Blur](#-smart-blur)
+  - [🔒 Flou intelligent](#-flou-intelligent)
   - [🧠 Descriptions par IA (optionnel)](#-descriptions-par-ia-optionnel)
-  - [▶️ Lecture Guide Me](#️-lecture-guide-me)
+  - [▶️ Lecture avec Guidez-moi](#️-lecture-avec-guidez-moi)
   - [🎙️ Narration vocale (optionnel)](#️-narration-vocale-optionnel)
   - [✏️ Éditeur de guides](#️-éditeur-de-guides)
   - [🔊 Voix off de la vidéo (option)](#-voix-off-de-la-vidéo-option)
@@ -63,7 +63,7 @@ Chaque action utile devient une étape : clics sur les boutons et les liens, cha
 
 Chaque étape reçoit une capture avec l'élément cliqué mis en évidence et zoomé. Pas de recadrage manuel, pas d'outil d'annotation à apprendre.
 
-Besoin que l'enregistrement regarde ailleurs un instant ? **Pause** arrête la capture sans terminer l'enregistrement, et **Reprendre** repart où tu en étais. Entrer dans Smart Blur la met en pause de la même façon.
+Besoin que l'enregistrement regarde ailleurs un instant ? **Pause** arrête la capture sans terminer l'enregistrement, et **Reprendre** repart où tu en étais. Entrer dans Flou intelligent la met en pause de la même façon.
 
 | Navigateur | Version | Installation |
 | ---------- | ------- | ------------ |
@@ -89,18 +89,18 @@ Disponible en anglais, espagnol, portugais brésilien, français, allemand et ch
 
 ## ✨ Fonctionnalités
 
-### 🔒 Smart Blur
+### 🔒 Flou intelligent
 
-Smart Blur est un mode que tu actives pendant l'enregistrement, pas un filtre toujours actif. Clique sur **Blur** et la capture se met en pause, Mimik détecte et masque les données sensibles de la page — e-mails, numéros de téléphone, numéros de sécu, cartes bancaires, IPs, adresses MAC — et les captures de cette page les gardent masquées une fois que tu cliques sur **Terminé**. Active ou désactive chaque catégorie indépendamment.
+Flou intelligent est un mode que tu actives pendant l'enregistrement, pas un filtre toujours actif. Clique sur **Flou intelligent** et la capture se met en pause, Mimik détecte et masque les données sensibles de la page — e-mails, numéros de téléphone, numéros de sécu, cartes bancaires, IPs, adresses MAC — et les captures de cette page les gardent masquées une fois que tu cliques sur **Terminé**. Active ou désactive chaque catégorie indépendamment.
 
 Besoin de cacher quelque chose de précis ? Le sélecteur manuel te laisse choisir n'importe quel élément du DOM et le masquer sur toutes les captures où il apparaît.
 
 <details>
-<summary><strong>Ce que Smart Blur ne couvre pas</strong></summary>
+<summary><strong>Ce que Flou intelligent ne couvre pas</strong></summary>
 
 <br/>
 
-Smart Blur parcourt les nœuds de texte et les valeurs de champs du cadre principal de la page. Il reste de vraies lacunes, toutes structurelles. Si tu t'appuies dessus pour le RGPD ou l'équivalent, vérifie tes captures plutôt que de supposer qu'une capture propre est une capture sûre :
+Flou intelligent parcourt les nœuds de texte et les valeurs de champs du cadre principal de la page. Il reste de vraies lacunes, toutes structurelles. Si tu t'appuies dessus pour le RGPD ou l'équivalent, vérifie tes captures plutôt que de supposer qu'une capture propre est une capture sûre :
 
 | Non couvert | Pourquoi |
 |-------------|----------|
@@ -120,7 +120,7 @@ Le floutage s'applique à partir du moment où tu entres dans le mode. Les captu
 
 </details>
 
-<img src="https://github.com/user-attachments/assets/968d2518-c561-4d68-92a6-3d5f569fe38a" alt="Smart Blur" width="800" />
+<img src="https://github.com/user-attachments/assets/968d2518-c561-4d68-92a6-3d5f569fe38a" alt="Flou intelligent" width="800" />
 
 <div align="right">
 
@@ -142,11 +142,11 @@ Les descriptions sont générées à partir d'un contexte léger du DOM (~50-100
 
 </div>
 
-### ▶️ Lecture Guide Me
+### ▶️ Lecture avec Guidez-moi
 
 Rejoue n'importe quel guide en direct sur une vraie page. Mimik met en évidence l'élément suivant, suit ta progression étape par étape, et avance tout seul au fur et à mesure. Parfait pour former un collègue ou se guider soi-même dans un process.
 
-<img src="https://github.com/user-attachments/assets/56ffca1d-5074-491f-8571-dd70782d4b05" alt="Lecture Guide Me" width="800" />
+<img src="https://github.com/user-attachments/assets/56ffca1d-5074-491f-8571-dd70782d4b05" alt="Lecture avec Guidez-moi" width="800" />
 
 <div align="right">
 
@@ -223,7 +223,7 @@ Tous les exports sont générés côté client. Rien ne passe par un serveur.
 
 Tes guides, étapes et captures restent sur ton appareil. Pas de backend, pas de compte, pas de télémétrie. Tes clés API (si tu en utilises) ne quittent jamais le navigateur. Elles sont stockées localement et servent à appeler directement le fournisseur que tu as choisi.
 
-Si tu masques des données personnelles avant de partager un guide, lis d'abord [ce que Smart Blur ne couvre pas](#-smart-blur) : il n'atteint ni les iframes, ni le shadow DOM, ni le texte dessiné dans une image.
+Si tu masques des données personnelles avant de partager un guide, lis d'abord [ce que Flou intelligent ne couvre pas](#-flou-intelligent) : il n'atteint ni les iframes, ni le shadow DOM, ni le texte dessiné dans une image.
 
 Deux choses sortent bien du navigateur, toutes deux documentées dans la [politique de confidentialité](https://mimik.westpoint.io/privacy/) : les icônes de sites sont récupérées via le service de favicons de Google, ce qui envoie le domaine du site, et les fonctions optionnelles d'IA, de narration vocale et de voix off envoient du texte ou de l'audio au fournisseur que tu as configuré — la voix off envoie le texte de chaque étape au moment de l'export, et seulement si tu l'actives.
 
