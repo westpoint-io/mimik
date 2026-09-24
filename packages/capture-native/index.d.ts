@@ -9,6 +9,18 @@
  */
 export declare const __napiBindingTarget: 'native' | 'wasm32-wasi' | 'wasm32-wasip1'
 
+export declare function activeWindow(): ActiveWindow | null
+
+export interface ActiveWindow {
+  title?: string
+  appName: string
+  appPath?: string
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
 export declare function clearDeadKey(): void
 
 export declare function elementAtPoint(x: number, y: number): Promise<UiElement | null>
@@ -44,3 +56,5 @@ export interface UiElement {
   ancestors: Array<ElementNode>
   children: Array<ElementNode>
 }
+
+export declare function windowAt(x: number, y: number): ActiveWindow | null

@@ -778,9 +778,11 @@ function __napiStampBindingTarget(exportsObject, target) {
 // linked import resolves to `undefined`.
 module.exports.__napiBindingTarget = __napiStampBindingTarget(nativeBinding, __napiLoadedBindingTarget)
 module.exports = nativeBinding
+module.exports.activeWindow = nativeBinding.activeWindow
 module.exports.clearDeadKey = nativeBinding.clearDeadKey
 module.exports.elementAtPoint = nativeBinding.elementAtPoint
 module.exports.focusedElement = nativeBinding.focusedElement
 module.exports.isSupported = nativeBinding.isSupported
 module.exports.keyLabel = nativeBinding.keyLabel
 module.exports.resolveKey = nativeBinding.resolveKey
+module.exports.windowAt = nativeBinding.windowAt
