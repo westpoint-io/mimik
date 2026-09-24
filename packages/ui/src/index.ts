@@ -8,6 +8,7 @@ export { useKeyCheck } from './ai/hooks/use-key-check';
 export { ColorPicker } from './annotation/components/ColorPicker';
 export { CameraMascot } from './common/components/CameraMascot';
 export { FaviconImg } from './common/components/FaviconImg';
+export { Switch } from './common/components/Switch';
 export { getDomainInitial } from './common/lib/domain-initial';
 export { formatRelativeTime } from './common/lib/format-relative-time';
 export {
