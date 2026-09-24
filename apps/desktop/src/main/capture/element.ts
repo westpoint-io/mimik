@@ -1,6 +1,7 @@
 import type { ElementNode, UiElement } from '@mimik/capture-native';
 import { screen } from 'electron';
 import { toDip } from './focused-window';
+import { loadNative as load } from './native';
 
 const LOOKUP_TIMEOUT_MS = 1500;
 
@@ -17,28 +18,6 @@ export interface ScreenElement {
 }
 
 const TEXT_ROLES = new Set(['textbox', 'combobox', 'document']);
-
-type Addon = {
-  elementAtPoint(x: number, y: number): Promise<UiElement | null>;
-  focusedElement(): Promise<UiElement | null>;
-  keyLabel(keycode: number): string | null;
-  resolveKey(keycode: number, shift: boolean, ctrl: boolean, alt: boolean): string | null;
-  clearDeadKey(): void;
-  isSupported(): boolean;
-};
-
-let addon: Addon | null | undefined;
-
-async function load(): Promise<Addon | null> {
-  if (addon === undefined) {
-    try {
-      addon = (await import('@mimik/capture-native')) as unknown as Addon;
-    } catch {
-      addon = null;
-    }
-  }
-  return addon;
-}
 
 function within<T>(work: Promise<T>, ms: number): Promise<T | null> {
   return new Promise((resolve) => {

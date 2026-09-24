@@ -13,7 +13,7 @@ import {
   resolveKey,
   type ScreenElement,
 } from './element';
-import { focusedWindow } from './focused-window';
+import { type FocusedWindowResult, focusedWindow, windowAt } from './focused-window';
 import { type InputAction, InputHook, type KeyAction, type PointerAction } from './input-hook';
 import type { Region } from './region';
 import { type Frame, grabDisplay, type Rect } from './screenshot';
@@ -79,6 +79,7 @@ export interface RecorderHooks {
   ignores?: (point: Point) => boolean;
   lookup?: (point: Point) => Promise<ScreenElement | null>;
   focused?: () => Promise<ScreenElement | null>;
+  windowAt?: (point: Point) => Promise<FocusedWindowResult>;
   label?: (keycode: number) => Promise<string | null>;
   resolve?: (keycode: number, shift: boolean, ctrl: boolean, alt: boolean) => Promise<string | null>;
   reset?: () => Promise<void>;
@@ -112,7 +113,7 @@ export function frameFor(mode: CaptureMode, point: Point, region: Region, window
   const display = screen.getDisplayNearestPoint(point).bounds;
   if (mode === 'screen') return display;
   if (mode === 'window') return window && inside(window, point) ? window : display;
-  return inside(region, point) ? region : display;
+  return region;
 }
 
 export function isRepeatKey(previous: { keycode: number; at: number } | null, keycode: number, at: number): boolean {
@@ -211,6 +212,7 @@ export class DesktopRecorder {
   private readonly ignores: (point: Point) => boolean;
   private readonly lookup: (point: Point) => Promise<ScreenElement | null>;
   private readonly focused: () => Promise<ScreenElement | null>;
+  private readonly windowAt: (point: Point) => Promise<FocusedWindowResult>;
   private readonly label: (keycode: number) => Promise<string | null>;
   private readonly resolve: (keycode: number, shift: boolean, ctrl: boolean, alt: boolean) => Promise<string | null>;
   private readonly reset: () => Promise<void>;
@@ -226,6 +228,7 @@ export class DesktopRecorder {
     this.ignores = hooks.ignores ?? (() => false);
     this.lookup = hooks.lookup ?? elementAt;
     this.focused = hooks.focused ?? focusedField;
+    this.windowAt = hooks.windowAt ?? windowAt;
     this.label = hooks.label ?? keyLabel;
     this.resolve = hooks.resolve ?? resolveKey;
     this.reset = hooks.reset ?? clearDeadKey;
@@ -283,7 +286,8 @@ export class DesktopRecorder {
     this.commitTyping();
     const element = this.lookup(point);
     const frame = this.shoot(point);
-    this.enqueue(() => this.write(action, point, element, frame));
+    const place = this.windowAt(point).catch(() => focusedWindow());
+    this.enqueue(() => this.write(action, point, element, frame, undefined, place));
   }
 
   private onKey(action: KeyAction): void {
@@ -361,10 +365,12 @@ export class DesktopRecorder {
   }
 
   private shoot(point: Point): Promise<Frame> {
-    const { screenshotDelayMs } = this.settings();
+    const { screenshotDelayMs, captureMode } = this.settings();
+    const region = this.region();
+    const at = captureMode === 'region' ? { x: region.x + region.width / 2, y: region.y + region.height / 2 } : point;
     const grabbed = this.withHidden(async () => {
       await delay(screenshotDelayMs);
-      return this.grab(point);
+      return this.grab(at);
     });
     const frame = Promise.all([grabbed, delay(SETTLE_MS + screenshotDelayMs)]).then(([taken]) => taken);
     frame.catch(() => undefined);
@@ -383,7 +389,7 @@ export class DesktopRecorder {
   }
 
   async capture(point: Point): Promise<void> {
-    await this.write('click', point, this.lookup(point), this.shoot(point));
+    await this.write('click', point, this.lookup(point), this.shoot(point), undefined, this.windowAt(point));
   }
 
   async writeTyping(
@@ -409,12 +415,13 @@ export class DesktopRecorder {
     element: Promise<ScreenElement | null>,
     taken: Promise<Frame>,
     inputValue?: string,
+    place?: Promise<FocusedWindowResult>,
   ): Promise<void> {
     const settings = this.settings();
     const region = this.region();
 
     const frame = await taken;
-    const found = await focusedWindow();
+    const found = await (place ?? focusedWindow());
     const framed = frameFor(settings.captureMode, point, region, found.ok ? found.window.bounds : null);
     const shot = await frame(framed);
     const scale = shot.scaleFactor;

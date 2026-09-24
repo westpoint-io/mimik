@@ -186,8 +186,33 @@ app.whenReady().then(async () => {
       sameRect(frameFor('window', insidePoint, region, elsewhere), display.bounds) &&
       sameRect(frameFor('window', insidePoint, region, null), display.bounds) &&
       sameRect(frameFor('region', insidePoint, region, windowRect), region) &&
-      sameRect(frameFor('region', outsidePoint, region, windowRect), display.bounds),
-    detail: 'screen takes the display, window takes the window and falls back twice, region takes the region',
+      sameRect(frameFor('region', outsidePoint, region, windowRect), region),
+    detail: 'screen takes the display, window takes the window and falls back twice, region always takes the region',
+  });
+
+  let framedBy: CaptureRequest | null = null;
+  const clickedWindow = { x: region.x + 40, y: region.y + 30, width: 300, height: 200 };
+  const windowed = new DesktopRecorder(
+    () => region,
+    (fn) => fn(),
+    (request) => {
+      framedBy = request;
+      return Promise.resolve(null);
+    },
+    {
+      grab: async () => syntheticDisplay,
+      settings: () => ({ ...DEFAULT_CAPTURE_SETTINGS, captureMode: 'window', showCursor: false }),
+      lookup: () => Promise.resolve(null),
+      windowAt: () =>
+        Promise.resolve({ ok: true, window: { title: 'Left pane', app: { name: 'Explorer' }, bounds: clickedWindow } }),
+    },
+  );
+  await windowed.capture({ x: clickedWindow.x + 20, y: clickedWindow.y + 20 });
+  const windowShot = (framedBy as CaptureRequest | null)?.image;
+  results.push({
+    name: 'window mode crops to the window that was clicked',
+    ok: windowShot?.width === Math.round(clickedWindow.width * display.scaleFactor),
+    detail: `${windowShot?.width ?? 0} px wide for a ${clickedWindow.width} px window`,
   });
 
   const control: ScreenElement = {
