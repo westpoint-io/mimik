@@ -1,7 +1,7 @@
 import { validateApiKey } from '@mimik/core/capture/ai/validate';
 import { i18n } from '@mimik/core/env';
 import { AiSettings, Switch, useKeyCheck } from '@mimik/ui';
-import { AppWindow, Command, Crop, Keyboard, Monitor, MonitorPlay, MousePointerClick } from 'lucide-react';
+import { AppWindow, Command, Crop, Keyboard, Monitor, MonitorPlay, MousePointerClick, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { CaptureSettings, CaptureShortcuts } from '../../main/capture/settings';
 import { Card } from './Card';
@@ -14,10 +14,10 @@ import { Slider } from './Slider';
 
 type Section = 'capture' | 'ai' | 'shortcuts';
 
-const SECTIONS: { id: Section; labelKey: string }[] = [
-  { id: 'capture', labelKey: 'desktop_capturingSection' },
-  { id: 'ai', labelKey: 'settings_aiDescriptions' },
-  { id: 'shortcuts', labelKey: 'desktop_shortcutsSection' },
+const SECTIONS: { id: Section; labelKey: string; Icon: typeof AppWindow }[] = [
+  { id: 'capture', labelKey: 'desktop_capturingSection', Icon: MonitorPlay },
+  { id: 'ai', labelKey: 'settings_aiDescriptions', Icon: Sparkles },
+  { id: 'shortcuts', labelKey: 'desktop_shortcutsSection', Icon: Command },
 ];
 
 const MODES: { id: CaptureSettings['captureMode']; labelKey: string; Icon: typeof AppWindow }[] = [
@@ -46,29 +46,27 @@ export function SettingsPanel() {
   };
 
   return (
-    <div className="flex h-full">
-      <nav className="w-56 shrink-0 border-r border-border bg-secondary/25 p-3">
-        <p className="px-3 pb-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-          {i18n.t('settings_title')}
-        </p>
+    <div className="flex h-[min(650px,80vh)]">
+      <nav className="w-[210px] shrink-0 border-r border-border bg-secondary/25 p-3">
         {SECTIONS.map((item) => (
           <button
             key={item.id}
             type="button"
             onClick={() => setSection(item.id)}
-            className={`mb-0.5 flex h-9 w-full items-center rounded-[9px] px-3 text-left text-sm transition-colors ${
+            className={`mb-0.5 flex h-9 w-full items-center gap-2.5 rounded-[9px] px-3 text-left text-sm transition-colors ${
               section === item.id
                 ? 'bg-secondary font-semibold text-foreground'
                 : 'text-foreground hover:bg-secondary/60'
             }`}
           >
+            <item.Icon size={15} className={section === item.id ? 'text-accent' : 'text-muted-foreground'} />
             {i18n.t(item.labelKey)}
           </button>
         ))}
       </nav>
 
-      <div className="min-w-0 flex-1 overflow-y-auto px-10 py-8">
-        <div className="mx-auto flex max-w-[640px] flex-col gap-4">
+      <div className="min-w-0 flex-1 overflow-y-auto px-6 py-5">
+        <div className="flex flex-col gap-3.5">
           {section === 'ai' && <AiSettings keyCheck={keyCheck} />}
 
           {section === 'capture' && settings && (

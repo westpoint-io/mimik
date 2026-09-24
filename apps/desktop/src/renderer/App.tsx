@@ -2,7 +2,7 @@ import { GuideContent, LibraryContent, navigate, SearchModal, TooltipProvider, T
 import { useEffect, useState } from 'react';
 import { CaptureSheet } from './CaptureSheet';
 import { GuideZoom } from './GuideZoom';
-import { SettingsPanel } from './settings/SettingsPanel';
+import { SettingsDialog } from './settings/SettingsDialog';
 
 export function App() {
   const route = useRoute();
@@ -27,18 +27,13 @@ export function App() {
         <TopNav
           route={route}
           onSettings={library ? () => setSettingsOpen(true) : undefined}
-          onNavigate={() => setSettingsOpen(false)}
           guideActions={
             route.page === 'guide' ? (
               <GuideZoom guideId={route.guideId} onDone={() => setGuideKey((n) => n + 1)} />
             ) : undefined
           }
         />
-        {settingsOpen ? (
-          <main className="flex-1 min-h-0">
-            <SettingsPanel />
-          </main>
-        ) : route.page === 'guide' ? (
+        {route.page === 'guide' ? (
           <main className="flex-1 py-10 px-6">
             <div className="mx-auto max-w-[780px]">
               <GuideContent
@@ -55,6 +50,7 @@ export function App() {
           </main>
         )}
         <SearchModal />
+        <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
         {sheetOpen && <CaptureSheet onClose={() => setSheetOpen(false)} />}
       </div>
     </TooltipProvider>

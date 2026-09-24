@@ -24,6 +24,7 @@ export {
   MASCOT_VIEW_BOX,
 } from './common/lib/mascot-shapes';
 export { Button } from './components/ui/button';
+export { Dialog, DialogContent, DialogHeader, DialogTitle } from './components/ui/dialog';
 export { Input } from './components/ui/input';
 export { Popover, PopoverContent, PopoverTrigger } from './components/ui/popover';
 export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
