@@ -499,8 +499,18 @@ Under the title the card says where the words came from, with the same Basic and
 uses, and while a description is still being written it shows that instead of a title that is about
 to change. The heuristic text is known the moment the step is written; the AI rewrite arrives later
 in the renderer, which sends `mimik:capture:described` so main can update the step it is holding and
-the badge flips without a reload. A capture in flight lays the camera mascot over the last
-screenshot with the number of the step being taken, which is the card's loader. A Remove button on the
+the badge flips without a reload. A capture in flight shows the camera mascot with the number of the
+step being taken, which is the card's loader, and hides the last screenshot while it does: with a
+screenshot delay set the loader stays up for as long as the delay, and the previous step showing
+through it read as the new step having been captured with the old picture. The shimmer rows under it
+are built as the title and the badge row are, with the same margin, size and line height, and a
+title that wraps onto its second line takes that line from the screenshot rather than from the
+screen: the preview is 150 px less whatever the title adds beyond one line, which the card measures
+after every render. The card is therefore one height while capturing, while the description is being
+written and once any step lands, and the order stays the extension's — screenshot, title, badge row.
+With hand-sized bars it came out 11 px shorter and a wrapped title made it 19 px taller, so the top
+edge jumped on every step; reserving two lines for every title fixed the jump but left an empty line
+under most of them. A Remove button on the
 preview drops the step just taken: main keeps the recording's steps in order, asks the renderer to
 delete the last one and puts the card back on the one before, so a wrong capture is undone where it
 was noticed. The Ready and waiting states name the start/stop and capture-now shortcuts, read from the
@@ -748,6 +758,15 @@ means a person did. `AnnotationEditor` clears it whenever the crop tool writes a
 hand-cropped step survives every later re-zoom. `rezoomEdits` returns null for those, and for a step
 already at the wanted level, so the pass writes only what changes.
 
+`edits.zoomAuto` says whether that level came from Automatic or was picked, because the number alone
+cannot: a 1200 px window on Automatic and the same window at a picked 1.5× store the same level. The
+guide's Zoom control reads it back through `currentZoom` and names the choice on its button and tick
+— Automatic, a level, or nothing when the steps disagree — where it used to say only "Zoom" and open
+on Automatic whatever the guide held, which read as the setting having been ignored. A step saved
+before the flag existed counts as Automatic when its level equals the automatic one for its width,
+and picking a level equal to that is still written, so the flag follows the choice. The crop tool
+clears it along with the level.
+
 `guideActions` on `TopNav` is the slot it mounts into, beside Edit and Export and under the same
 `exportData` guard, so the control appears exactly when the rest of the guide toolbar does. The
 extension passes nothing.
@@ -992,12 +1011,7 @@ news. It went, along with the second bar under it, which halved the chrome from 
 `TopNav` takes only a `Route` and reads the rest from `useFullview`, which `GuideContent` already
 fills, so the guide title, the step count and the export data arrive with no desktop wiring at all.
 Its one desktop-only prop is `onSettings`: the extension has a browser options page and the desktop
-does not, so the gear exists here and only on the library route. `onNavigate` is its counterpart and
-exists for one reason: settings is a boolean laid over the route rather than a route of its own, so
-the header could navigate underneath an open settings pane — the pill moved to Trash and the pane
-stayed. Firing it on the click rather than watching the route is deliberate, because clicking the
-already-active item produces no hash change and that is exactly the click that means "get me out of
-here". Moving it brought `SearchModal`,
+does not, so the gear exists here and only on the library route. Moving it brought `SearchModal`,
 `ExportPreviewModal`, `VideoStepPlayer` and two search components with it — each needed exactly two
 import rewrites, `#imports` to `@mimik/core/env` and `@/core/*` to `@mimik/core/*`, because nothing
 in them was ever extension-specific beyond how WXT resolves a module.
@@ -1046,14 +1060,13 @@ screen you land on and nowhere else.
 
 ## Capture Settings
 
-Five settings that only a desktop capture needs live in `capture-settings.json` beside the region,
+The settings that only a desktop capture needs live in `capture-settings.json` beside the region,
 read by main rather than by core, because none of them mean anything to the extension.
 
 | Setting | Default | Effect |
 |---|---|---|
 | `captureMode` | `window` | What each screenshot frames: the focused window, the whole screen, or a drawn area |
 | `showCursor` | on | A pointer is drawn into the screenshot at the click point |
-| `cursorStyle` | `arrow`, `dot` on Linux | Which pointer shape gets drawn |
 | `screenshotDelayMs` | 0, capped at 2000 | Extra wait between the click and the grab |
 | `keepClicksBeyondArea` | off | Whether clicks beyond the capture area are recorded at all, in `region` mode only |
 | `recordKeys` | on | Whether a shortcut or a named key becomes a step |
@@ -1064,16 +1077,20 @@ read by main rather than by core, because none of them mean anything to the exte
 | `shortcuts` | three accelerators | Global keys for start/stop, pause/resume and capture now |
 
 `normaliseSettings` runs on every read and write, so an out-of-range delay clamps and an unknown
-cursor style falls back to the platform default rather than reaching the recorder. It also reads four
+mode falls back rather than reaching the recorder, and a key it no longer knows is dropped. It also reads four
 settings under the names an earlier build saved them as, so a file written before the rename keeps
 its choices; the next save writes only the current names.
 
-`CursorStyle` and `CursorMark` are core's, not main's. The mark is written in main, crosses IPC, and
-is stored as `edits.cursor`, which the renderer reads through core's type — so two declarations had to
-agree by hand, and did only by luck. Main cannot value-import core, so the runtime list of styles
-still lives there, but `Record<CursorStyle, true>` makes the compiler reject it the moment core's
-union grows. That is the general shape of the fix wherever main needs one of core's closed sets: take
-the type, keep the value, let the type check the value.
+The pointer drawn is always the arrow. A choice of arrow, hand or dot used to sit under "Show the
+cursor", and it only changed anything with that switch on and only on left clicks, so it was a
+setting nobody could see working. `CursorMark` stays core's type, and `drawCursor` still draws all
+three shapes, because steps recorded while the choice existed carry the other two in `edits.cursor`.
+
+The marker colour is not in that file. It is `targetColor` in the renderer's settings storage, the
+same key the extension's brand colour uses, because the renderer is where both readers are: the
+capture sink stamps it on each step's dashed target, and `branding.ts` takes it as the accent of
+every export. Setting it on the desktop therefore recolours exports too, which is what it does in
+the extension. The two surfaces keep separate stores, so neither one's choice reaches the other.
 
 Electron exposes no way to read the real system cursor bitmap and a screen grab never includes the
 pointer, so the shapes are drawn as canvas paths. The cursor is an entry in `edits` beside the click
@@ -1120,26 +1137,34 @@ identical on both surfaces, so `AiSettings` lives in `packages/ui` and each app 
 through its background messaging, which is the only part that differs.
 
 All three sections are cards with one shell: the same border, radius, padding and 28px icon header
-`AiSettings` already had. Rows inside a desktop card stay label-left, control-right, which is right
-at this width, while the AI card keeps the stacked 11px labels it needs in 400px of side panel — the
-two are never on screen at once, and matching them would mean branching that shared component on
-`client()`. The shell alone is what makes the three read as siblings. Capturing is two cards,
-Screenshots and Keyboard, because the divider that separated those groups was already doing a card
-boundary's job.
+`AiSettings` already had, with a line under the title saying what the card is for. Rows inside a
+desktop card are `Row`: label and a one-line hint on the left, the control on the right, divided
+from the next row, or the control underneath with `stack` when it is too wide to sit beside the
+label. The AI card keeps the stacked 11px labels it needs in 400px of side panel — the two are never
+on screen at once, and matching them would mean branching that shared component on `client()`.
+Capturing is three cards: Screenshots, Click marks and Typing and keys.
 
-Every control in there is the shared component — `Select`, `Input`, and a checkbox carrying
-`accent-accent` — never a bare `<select>` or `<input>`. That is the difference the card shell alone
-did not fix: a native select draws the platform's own chevron and popup, a native number field draws
-spinner arrows on Windows, and a native checkbox is the browser's blue, so the section read as a form
-bolted into the app rather than part of it. `styles.css` also kills the number spinners outright,
-because `Input` is a text field's styling wrapped around a control the platform still decorates.
+Each kind of value has one control, and it shows the value rather than hiding it behind a click. A
+choice among a few is `Segmented`, a row of buttons with the chosen one filled; that is the capture
+mode and the zoom, which offers Automatic, 1×, 1.5×, 2×, 3×, 4× and 5× and adds the stored level as one more
+button when an older build saved one in between. An on/off is `Switch`, the same switch the AI card's
+own-server toggle is, moved into `packages/ui` so the two cannot drift. A duration is `Slider`, a
+native range input tinted with `accent-accent` beside a chip reading the value in ms or seconds,
+because a number field hid what the default was and drew spinner arrows on Windows. The marker colour
+is the extension's control, a swatch and hex code that opens the shared `ColorPicker` with core's
+`TARGET_COLORS` as presets. A setting that cannot apply is disabled rather than hidden, so the rows
+do not jump: outside clicks without Area mode, the field read and the typing pause without typing.
+Every change is applied to the page before main answers, or a slider dragged across its range would
+lag a round trip behind the pointer.
 
-The pane carries no heading and no close button. The left nav already names the section, so a title
-repeating the highlighted item is the same word twice on one screen; and `TopNav` stays visible and
-mounted the whole time settings is open, so All Guides, Starred, Trash and the wordmark are all exits
-already. Both were tried and removed — first a "Close" entry under the three sections, styled like
-them, which read as a fourth section that happens to quit, then an X in the pane corner, which by
-then duplicated the header it sat beneath.
+Settings opens as a dialog over the library, not as a page. It is the shared `Dialog` laid out the
+way the export preview lays out its own: a title bar with the close button, the section list down
+the left and the section scrolling beside it, 880 px wide and at most 650 px tall. As a page it
+replaced the library, and on a wide window its content, which tops out around 620 px, sat in a field
+of empty space. The dialog also covers the header, which retired `TopNav`'s `onNavigate`: that prop
+existed only to close the old pane when All Guides, Starred or Trash navigated underneath it.
+`SettingsPanel`, the body, mounts only while the dialog is open, so it reads the settings each time it
+opens and shows a mode the capture sheet or the recording card changed in the meantime.
 
 `AiSettings` is the extension's own AI card, lifted out of `SettingsView` rather than rewritten. A
 parallel implementation was tried first and the wording immediately drifted — the extension said
