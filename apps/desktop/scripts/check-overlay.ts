@@ -253,11 +253,13 @@ app.whenReady().then(async () => {
   const whileBusy = await windowWithHash('controls')?.webContents.executeJavaScript(
     "document.querySelector('#primary').disabled",
   );
-  const veil = await card("text: document.querySelector('#veilText').textContent, remove: document.querySelector('#remove').hidden");
+  const veil = await card(
+    "text: document.querySelector('#veilText').textContent, remove: document.querySelector('#remove').hidden, shot: document.querySelector('#shot').hidden",
+  );
   check(
-    'a capture in flight shows the mascot over the last screenshot',
-    veil.text === 'Capturing step 2…' && veil.remove === true,
-    `veil: ${veil.text}, remove hidden: ${veil.remove}`,
+    'a capture in flight shows the mascot instead of the last screenshot',
+    veil.text === 'Capturing step 2…' && veil.remove === true && veil.shot === true,
+    `veil: ${veil.text}, remove hidden: ${veil.remove}, last screenshot hidden: ${veil.shot}`,
   );
   overlay.setBusy(false);
   await settle();

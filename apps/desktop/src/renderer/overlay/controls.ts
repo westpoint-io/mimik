@@ -121,7 +121,7 @@ export function controls(): void {
 
     if (step && shot.getAttribute('src') !== step.src) shot.src = step.src;
     preview.hidden = armed || !(busy || step);
-    shot.hidden = !step;
+    shot.hidden = !step || busy;
     veil.hidden = !(busy || paused);
     veilMascot.hidden = !busy;
     veilPause.hidden = busy || !paused;
