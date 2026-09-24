@@ -1,5 +1,5 @@
 import { i18n } from '#imports';
-import { resolveAiKey } from '@/core/capture/ai/keys';
+import { AI_KEY_SETTINGS, resolveAiKey } from '@/core/capture/ai/keys';
 import { generateGuideMeta } from '@/core/capture/ai/meta';
 import { AI_PROVIDERS } from '@/core/capture/ai/models';
 import { actionSteps } from '@/core/guides/blocks';
@@ -28,6 +28,10 @@ type GuideMetaInputs =
       baseUrl?: string;
     }
   | { ok: false; reason: ResolveFailure };
+
+async function hasAiKey(): Promise<boolean> {
+  return Boolean(resolveAiKey(await localStorage.get([...AI_KEY_SETTINGS])).apiKey);
+}
 
 async function resolveGuideMetaInputs(guideId: string): Promise<GuideMetaInputs> {
   const settings = await localStorage.get(['aiApiKeys', 'aiApiKey', 'aiProvider', 'aiModel', 'aiBaseUrl']);
@@ -63,7 +67,18 @@ export async function settlePendingDescriptions(guideId: string) {
   await Promise.all(pending.map((s) => clearStepAiPending(s.id)));
 }
 
+async function applyFallbackTitleThenSettle(guideId: string) {
+  const titled = applyFallbackTitle(guideId).catch((err) => logger.error('Fallback title write failed', err));
+  await settlePendingDescriptions(guideId).catch((err) => logger.error('Settling step descriptions failed', err));
+  await titled;
+}
+
 export async function generateGuideMetaOnStop(guideId: string) {
+  if (!(await hasAiKey().catch(() => false))) {
+    await applyFallbackTitleThenSettle(guideId);
+    return;
+  }
+
   try {
     await settlePendingDescriptions(guideId);
     const inputs = await resolveGuideMetaInputs(guideId);

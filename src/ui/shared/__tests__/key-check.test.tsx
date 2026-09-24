@@ -69,11 +69,11 @@ describe('SecretInput', () => {
     const field = screen.getByPlaceholderText('sk-...');
     expect(field).toHaveAttribute('type', 'password');
 
-    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByLabelText('settings.showKey'));
     expect(field).toHaveAttribute('type', 'text');
     expect(field).toHaveValue('sk-secret');
 
-    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByLabelText('settings.hideKey'));
     expect(field).toHaveAttribute('type', 'password');
   });
 
@@ -81,8 +81,24 @@ describe('SecretInput', () => {
     const onChange = vi.fn();
     render(<SecretInput value="" onChange={onChange} placeholder="sk-..." />);
 
-    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(screen.getByLabelText('settings.showKey'));
     fireEvent.change(screen.getByPlaceholderText('sk-...'), { target: { value: 'sk-typed' } });
     expect(onChange).toHaveBeenCalledWith('sk-typed');
+  });
+
+  it('offers no way to clear a field that is already empty', () => {
+    render(<SecretInput value="" onChange={() => {}} placeholder="sk-..." />);
+
+    expect(screen.queryByLabelText('settings.clearKey')).toBeNull();
+  });
+
+  it('empties the key when cleared, without revealing it first', () => {
+    const onChange = vi.fn();
+    render(<SecretInput value="sk-secret" onChange={onChange} placeholder="sk-..." />);
+
+    fireEvent.click(screen.getByLabelText('settings.clearKey'));
+
+    expect(onChange).toHaveBeenCalledWith('');
+    expect(screen.getByPlaceholderText('sk-...')).toHaveAttribute('type', 'password');
   });
 });

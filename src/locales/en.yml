@@ -102,6 +102,7 @@ settings:
   apiKey: "API key"
   showKey: Show key
   hideKey: Hide key
+  clearKey: Clear key
   aiLanguage: "Description language"
   voiceover: "Video voice-over"
   textToSpeech: "text → speech"

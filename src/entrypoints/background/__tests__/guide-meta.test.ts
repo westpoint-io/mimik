@@ -8,6 +8,7 @@ const {
   localStorageGetMock,
   updateGuideDescriptionMock,
   updateGuideTitleMock,
+  whenNarrationSettledMock,
 } = vi.hoisted(() => ({
   clearStepAiPendingMock: vi.fn(),
   generateGuideMetaMock: vi.fn(),
@@ -16,6 +17,7 @@ const {
   localStorageGetMock: vi.fn(),
   updateGuideDescriptionMock: vi.fn(),
   updateGuideTitleMock: vi.fn(),
+  whenNarrationSettledMock: vi.fn(),
 }));
 
 vi.mock('@/core/capture/ai/meta', () => ({ generateGuideMeta: generateGuideMetaMock }));
@@ -29,6 +31,8 @@ vi.mock('@/core/guides/service', () => ({
 }));
 
 vi.mock('@/lib/browser-api', () => ({ localStorage: { get: localStorageGetMock } }));
+
+vi.mock('../voice', () => ({ whenNarrationSettled: whenNarrationSettledMock }));
 
 import { AI_PROVIDERS } from '@/core/capture/ai/models';
 import { generateDescriptionOnDemand, generateGuideMetaOnStop } from '../guide-meta';
@@ -56,6 +60,7 @@ describe('background guide-meta', () => {
     updateGuideTitleMock.mockResolvedValue(undefined);
     updateGuideDescriptionMock.mockResolvedValue(undefined);
     generateGuideMetaMock.mockResolvedValue({ title: 'Generated Title', description: 'Generated description.' });
+    whenNarrationSettledMock.mockResolvedValue(undefined);
   });
 
   describe('input resolution shared by both entry points', () => {
@@ -128,6 +133,85 @@ describe('background guide-meta', () => {
 
       expect(generateGuideMetaMock).not.toHaveBeenCalled();
       expect(updateGuideTitleMock).toHaveBeenCalledWith(GUIDE_ID, 'background.guideOnDomain[example.com]');
+    });
+
+    it('writes the fallback title before narration settles when no key is set', async () => {
+      localStorageGetMock.mockResolvedValue({});
+      let settle!: () => void;
+      whenNarrationSettledMock.mockReturnValue(
+        new Promise<void>((resolve) => {
+          settle = resolve;
+        }),
+      );
+      getStepsForGuideMock.mockResolvedValue([
+        { id: 'step-1', description: '', url: 'https://example.com', aiPending: true },
+      ]);
+
+      const run = generateGuideMetaOnStop(GUIDE_ID);
+      await vi.waitFor(() =>
+        expect(updateGuideTitleMock).toHaveBeenCalledWith(GUIDE_ID, 'background.guideOnDomain[example.com]'),
+      );
+      expect(clearStepAiPendingMock).not.toHaveBeenCalled();
+
+      settle();
+      await run;
+      expect(clearStepAiPendingMock).toHaveBeenCalledWith('step-1');
+    });
+
+    it('waits for narration before generating a title when a key is set', async () => {
+      let settle!: () => void;
+      whenNarrationSettledMock.mockReturnValue(
+        new Promise<void>((resolve) => {
+          settle = resolve;
+        }),
+      );
+      getStepsForGuideMock.mockResolvedValue([
+        { id: 'step-1', description: 'step 1', url: 'https://example.com', aiPending: true },
+      ]);
+
+      const run = generateGuideMetaOnStop(GUIDE_ID);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(generateGuideMetaMock).not.toHaveBeenCalled();
+      expect(updateGuideTitleMock).not.toHaveBeenCalled();
+
+      settle();
+      await run;
+      expect(clearStepAiPendingMock).toHaveBeenCalledWith('step-1');
+      expect(updateGuideTitleMock).toHaveBeenCalledWith(GUIDE_ID, 'Generated Title');
+    });
+
+    it('still clears aiPending when the fallback title write fails', async () => {
+      localStorageGetMock.mockResolvedValue({});
+      updateGuideTitleMock.mockRejectedValue(new Error('DatabaseClosedError'));
+      getStepsForGuideMock.mockResolvedValue([
+        { id: 'step-1', description: '', url: 'https://example.com', aiPending: true },
+      ]);
+
+      await expect(generateGuideMetaOnStop(GUIDE_ID)).resolves.toBeUndefined();
+
+      expect(clearStepAiPendingMock).toHaveBeenCalledWith('step-1');
+    });
+
+    it('writes the fallback title only once when settling fails, so a rename in the meantime survives', async () => {
+      localStorageGetMock.mockResolvedValue({});
+      getStepsForGuideMock.mockRejectedValue(new Error('DatabaseClosedError'));
+
+      await expect(generateGuideMetaOnStop(GUIDE_ID)).resolves.toBeUndefined();
+
+      expect(updateGuideTitleMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('applies the fallback title and settles when the key cannot be read', async () => {
+      localStorageGetMock.mockRejectedValue(new Error('DatabaseClosedError'));
+      getStepsForGuideMock.mockResolvedValue([
+        { id: 'step-1', description: '', url: 'https://example.com', aiPending: true },
+      ]);
+
+      await generateGuideMetaOnStop(GUIDE_ID);
+
+      expect(generateGuideMetaMock).not.toHaveBeenCalled();
+      expect(updateGuideTitleMock).toHaveBeenCalledWith(GUIDE_ID, 'background.guideOnDomain[example.com]');
+      expect(clearStepAiPendingMock).toHaveBeenCalledWith('step-1');
     });
 
     it('falls back to the generic title when the guide has no domain', async () => {

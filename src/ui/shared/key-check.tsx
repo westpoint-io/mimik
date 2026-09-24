@@ -1,4 +1,4 @@
-import { Check, Eye, EyeOff, TriangleAlert } from 'lucide-react';
+import { Check, Eye, EyeOff, TriangleAlert, X } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { i18n } from '#imports';
 import { sendMessage } from '@/lib/messaging';
@@ -138,6 +138,7 @@ export function SecretInput({
 }) {
   const [revealed, setRevealed] = useState(false);
   const Icon = revealed ? EyeOff : Eye;
+  const iconButton = `top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors ${buttonClassName ?? ''}`;
   return (
     <div className="relative flex-1 min-w-0">
       <Input
@@ -145,15 +146,26 @@ export function SecretInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`pr-8 ${className ?? ''}`}
+        className={`${value ? 'pr-14' : 'pr-8'} ${className ?? ''}`}
       />
+      {value && (
+        <button
+          type="button"
+          onClick={() => onChange('')}
+          aria-label={i18n.t('settings.clearKey')}
+          title={i18n.t('settings.clearKey')}
+          className={`absolute right-8 ${iconButton}`}
+        >
+          <X size={13} />
+        </button>
+      )}
       <button
         type="button"
         onClick={() => setRevealed((on) => !on)}
         aria-pressed={revealed}
         aria-label={i18n.t(revealed ? 'settings.hideKey' : 'settings.showKey')}
         title={i18n.t(revealed ? 'settings.hideKey' : 'settings.showKey')}
-        className={`absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors ${buttonClassName ?? ''}`}
+        className={`absolute right-2 ${iconButton}`}
       >
         <Icon size={13} />
       </button>

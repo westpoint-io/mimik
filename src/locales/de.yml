@@ -114,6 +114,7 @@ settings:
   apiKey: API-Schlüssel
   showKey: Schlüssel anzeigen
   hideKey: Schlüssel verbergen
+  clearKey: Schlüssel löschen
   aiLanguage: Sprache der Beschreibungen
   voiceover: "Video-Voiceover"
   textToSpeech: "Text → Sprache"

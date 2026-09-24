@@ -102,6 +102,7 @@ settings:
   apiKey: "Clave de API"
   showKey: Mostrar clave
   hideKey: Ocultar clave
+  clearKey: Borrar clave
   aiLanguage: "Idioma de las descripciones"
   voiceover: "Voz en off del vídeo"
   textToSpeech: "texto → voz"

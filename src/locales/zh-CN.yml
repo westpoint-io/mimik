@@ -102,6 +102,7 @@ settings:
   apiKey: API 密钥
   showKey: 显示密钥
   hideKey: 隐藏密钥
+  clearKey: 清除密钥
   aiLanguage: 描述语言
   voiceover: "视频配音"
   textToSpeech: "文字 → 语音"

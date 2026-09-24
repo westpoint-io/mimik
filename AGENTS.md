@@ -166,7 +166,8 @@ Content Script ←→ Background Service Worker ←→ Sidepanel / Fullview
 **Stop recording:**
 1. Background transitions RECORDING → IDLE
 2. Broadcasts `STOP_CAPTURE`, content scripts flush pending input sessions
-3. Background drains queued step descriptions (20s cap), then generates the guide title from step descriptions + URLs via AI
+3. Background waits for narration to settle (30s cap) and drains queued step descriptions (20s cap), then generates the guide title from step descriptions + URLs via AI
+   - With no AI key the domain fallback title is written straight away. The narration wait, the drain and the `aiPending` cleanup still run, just after the title
 4. Opens fullview dashboard with the guide
 
 ## DOM Context (AI Input)
