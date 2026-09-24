@@ -247,33 +247,30 @@ if (!app.requestSingleInstanceLock()) {
         return overlay ? overlay.withHidden(fn) : fn();
       },
       async (request) => {
-        try {
-          const reply = await ask<{ stepId?: string; title?: string; pending?: boolean }>(
-            mainWindow?.webContents ?? null,
-            'mimik:capture:step',
-            { ...request, guideId },
-          ).catch(() => undefined);
-          if (reply?.stepId && reply.title) {
-            const step: OverlayStep = {
-              id: reply.stepId,
-              index: steps.length + 1,
-              title: reply.title,
-              src: request.image.src,
-              source: 'heuristic',
-              pending: reply.pending === true,
-              app: request.elementMeta.app?.name ?? null,
-            };
-            steps.push(step);
-            overlay?.showStep(step);
-          }
-          return reply;
-        } finally {
-          overlay?.setBusy(false);
+        const reply = await ask<{ stepId?: string; title?: string; pending?: boolean }>(
+          mainWindow?.webContents ?? null,
+          'mimik:capture:step',
+          { ...request, guideId },
+        ).catch(() => undefined);
+        if (reply?.stepId && reply.title) {
+          const step: OverlayStep = {
+            id: reply.stepId,
+            index: steps.length + 1,
+            title: reply.title,
+            src: request.image.src,
+            source: 'heuristic',
+            pending: reply.pending === true,
+            app: request.elementMeta.app?.name ?? null,
+          };
+          steps.push(step);
+          overlay?.showStep(step);
         }
+        return reply;
       },
       {
         settings: () => captureSettings ?? loadSettings(),
         ignores: (point) => overlay?.ignores(point) ?? false,
+        drained: () => overlay?.setBusy(false),
       },
     );
 

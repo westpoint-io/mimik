@@ -516,6 +516,35 @@ app.whenReady().then(async () => {
     detail: `with the first step still being written: ${count('lookup')} lookups, ${count('grab')} grabs, ${count('focused')} field reads`,
   });
 
+  let busyNow = false;
+  const stepless = new DesktopRecorder(
+    () => region,
+    (fn) => {
+      busyNow = true;
+      return fn();
+    },
+    () => Promise.resolve(null),
+    {
+      grab: async () => syntheticDisplay,
+      settings: () => REGION_MODE,
+      focused: () => Promise.resolve({ ...control }),
+      resolve: () => Promise.resolve('x'),
+      reset: () => Promise.resolve(),
+      drained: () => {
+        busyNow = false;
+      },
+    },
+  );
+  for (let i = 0; i < 3; i++) stepless.onAction(pressed(30));
+  stepless.onAction(pressed(28));
+  await stepless.drain();
+  await wait(50);
+  results.push({
+    name: 'typing that writes no step leaves the card idle',
+    ok: !busyNow,
+    detail: busyNow ? 'still marked as capturing after the queue emptied' : 'capturing cleared once the queue emptied',
+  });
+
   const page = { x: 0, y: 0, width: 800, height: 600 };
   const click = { x: 160, y: 66 };
   const boxed = (rect: ScreenElement['rect']) => targetRect({ ...control, rect }, page, click).width;

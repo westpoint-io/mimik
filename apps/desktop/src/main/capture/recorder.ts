@@ -83,6 +83,7 @@ export interface RecorderHooks {
   label?: (keycode: number) => Promise<string | null>;
   resolve?: (keycode: number, shift: boolean, ctrl: boolean, alt: boolean) => Promise<string | null>;
   reset?: () => Promise<void>;
+  drained?: () => void;
 }
 
 export type RecorderStart = { ok: true } | { ok: false; reason: string; detail: string };
@@ -216,6 +217,8 @@ export class DesktopRecorder {
   private readonly label: (keycode: number) => Promise<string | null>;
   private readonly resolve: (keycode: number, shift: boolean, ctrl: boolean, alt: boolean) => Promise<string | null>;
   private readonly reset: () => Promise<void>;
+  private readonly drained: () => void;
+  private pending = 0;
 
   constructor(
     private readonly region: () => Region,
@@ -232,6 +235,7 @@ export class DesktopRecorder {
     this.label = hooks.label ?? keyLabel;
     this.resolve = hooks.resolve ?? resolveKey;
     this.reset = hooks.reset ?? clearDeadKey;
+    this.drained = hooks.drained ?? (() => {});
   }
 
   async start(): Promise<RecorderStart> {
@@ -378,9 +382,16 @@ export class DesktopRecorder {
   }
 
   private enqueue(job: () => Promise<void>): void {
-    this.queue = this.queue.then(job).catch((error) => {
-      process.stderr.write(`mimik: capture failed: ${error instanceof Error ? error.message : String(error)}\n`);
-    });
+    this.pending += 1;
+    this.queue = this.queue
+      .then(job)
+      .catch((error) => {
+        process.stderr.write(`mimik: capture failed: ${error instanceof Error ? error.message : String(error)}\n`);
+      })
+      .finally(() => {
+        this.pending -= 1;
+        if (this.pending === 0) this.drained();
+      });
   }
 
   captureNow(point: Point): void {
