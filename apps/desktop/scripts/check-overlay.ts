@@ -83,7 +83,7 @@ app.whenReady().then(async () => {
   );
 
   const tiny = clampToDisplays({ x: 0, y: 0, width: 10, height: 10 });
-  check('honours the minimum size', tiny.width >= 240 && tiny.height >= 160, `${tiny.width} × ${tiny.height}`);
+  check('honours the minimum size', tiny.width >= 60 && tiny.height >= 30, `${tiny.width} × ${tiny.height}`);
   overlay.edit();
   await settle();
   const editors = overlayWindows();

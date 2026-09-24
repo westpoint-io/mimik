@@ -1,7 +1,7 @@
 import { el } from './el';
 import type { Region } from './types';
 
-const MIN = { width: 240, height: 160 };
+const MIN = { width: 60, height: 30 };
 
 const HANDLES = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'] as const;
 
