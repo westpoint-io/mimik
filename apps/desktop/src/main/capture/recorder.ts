@@ -467,7 +467,7 @@ export class DesktopRecorder {
       },
       ...(inputValue === undefined ? {} : { inputValue }),
       ...(settings.showCursor && action === 'click'
-        ? { cursor: { x: local.x, y: local.y, style: settings.cursorStyle, scale } }
+        ? { cursor: { x: local.x, y: local.y, style: 'arrow', scale } }
         : {}),
       ...(settings.zoomLevel === null ? {} : { zoomLevel: settings.zoomLevel }),
     });

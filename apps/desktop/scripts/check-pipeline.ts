@@ -94,18 +94,17 @@ app.whenReady().then(async () => {
   const results = await ask<CheckResult[]>(win.webContents, 'mimik:check:verify', guideId, 60_000);
 
   const userSettings = loadSettings();
-  const clamped = normaliseSettings({ screenshotDelayMs: 5000, cursorStyle: 'wobble' as never });
+  const clamped = normaliseSettings({ screenshotDelayMs: 5000 });
   const stored = saveSettings({ screenshotDelayMs: 750, keepClicksBeyondArea: true });
   const reloaded = loadSettings();
   results.push({
     name: 'settings clamp and persist',
     ok:
       clamped.screenshotDelayMs === 2000 &&
-      clamped.cursorStyle === DEFAULT_CAPTURE_SETTINGS.cursorStyle &&
       normaliseSettings({ captureMode: 'sideways' as never }).captureMode === DEFAULT_CAPTURE_SETTINGS.captureMode &&
       reloaded.screenshotDelayMs === 750 &&
       reloaded.keepClicksBeyondArea === stored.keepClicksBeyondArea,
-    detail: `5000 ms clamped to ${clamped.screenshotDelayMs}, unknown style fell back to ${clamped.cursorStyle}, 750 ms reloaded as ${reloaded.screenshotDelayMs}`,
+    detail: `5000 ms clamped to ${clamped.screenshotDelayMs}, 750 ms reloaded as ${reloaded.screenshotDelayMs}`,
   });
 
   const knobs = normaliseSettings({
@@ -570,7 +569,7 @@ app.whenReady().then(async () => {
     detail: `${elapsed} ms for a 400 ms delay`,
   });
 
-  settings = { ...REGION_MODE, showCursor: true, cursorStyle: 'arrow', screenshotDelayMs: 0 };
+  settings = { ...REGION_MODE, showCursor: true, screenshotDelayMs: 0 };
   await recorder.capture({ x: region.x + 200, y: region.y + 150 });
   const cursorSizes = await ask<number[]>(win.webContents, 'mimik:check:renderedSizes', activeGuide, 30_000);
   const bare = cursorSizes[cursorSizes.length - 2] ?? 0;

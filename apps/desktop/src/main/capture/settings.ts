@@ -1,13 +1,9 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { CursorStyle } from '@mimik/core/screenshot/types';
 import { app } from 'electron';
 
-export type { CursorStyle };
 export type CaptureMode = 'window' | 'screen' | 'region';
 
-const EVERY_CURSOR_STYLE: Record<CursorStyle, true> = { arrow: true, hand: true, dot: true };
-export const CURSOR_STYLES = Object.keys(EVERY_CURSOR_STYLE) as CursorStyle[];
 export const CAPTURE_MODES: CaptureMode[] = ['window', 'screen', 'region'];
 export const MAX_SCREENSHOT_DELAY_MS = 2000;
 const MIN_ZOOM = 1;
@@ -25,7 +21,6 @@ export interface CaptureShortcuts {
 export interface CaptureSettings {
   captureMode: CaptureMode;
   showCursor: boolean;
-  cursorStyle: CursorStyle;
   screenshotDelayMs: number;
   keepClicksBeyondArea: boolean;
   recordKeys: boolean;
@@ -39,7 +34,6 @@ export interface CaptureSettings {
 export const DEFAULT_CAPTURE_SETTINGS: CaptureSettings = {
   captureMode: 'window',
   showCursor: true,
-  cursorStyle: process.platform === 'darwin' ? 'arrow' : process.platform === 'win32' ? 'arrow' : 'dot',
   screenshotDelayMs: 0,
   keepClicksBeyondArea: false,
   recordKeys: true,
@@ -95,9 +89,6 @@ export function normaliseSettings(input: Partial<CaptureSettings> & LegacySettin
       ? (input.captureMode as CaptureMode)
       : DEFAULT_CAPTURE_SETTINGS.captureMode,
     showCursor: typeof input.showCursor === 'boolean' ? input.showCursor : DEFAULT_CAPTURE_SETTINGS.showCursor,
-    cursorStyle: CURSOR_STYLES.includes(input.cursorStyle as CursorStyle)
-      ? (input.cursorStyle as CursorStyle)
-      : DEFAULT_CAPTURE_SETTINGS.cursorStyle,
     screenshotDelayMs: Number.isFinite(delay) ? Math.min(Math.max(Math.round(delay), 0), MAX_SCREENSHOT_DELAY_MS) : 0,
     keepClicksBeyondArea: flag(
       input.keepClicksBeyondArea ?? input.captureOutsideClicks,
