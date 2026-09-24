@@ -20,7 +20,7 @@ function localeKeys(path: string): string[] {
   return keys.sort();
 }
 
-const LOCALES = ['zh-CN', 'es', 'fr', 'de', 'pt-BR'] as const;
+const LOCALES = ['zh-CN', 'es', 'fr', 'de', 'pt-BR', 'ru'] as const;
 
 describe('locale coverage', () => {
   for (const locale of LOCALES) {

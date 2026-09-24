@@ -41,6 +41,10 @@ describe('getLanguageSuffix', () => {
     expect(getLanguageSuffix('pt-BR')).toContain('Brazilian Portuguese');
   });
 
+  it('returns Russian suffix for ru', () => {
+    expect(getLanguageSuffix('ru')).toContain('Russian');
+  });
+
   it('returns the locale code for unknown languages', () => {
     expect(getLanguageSuffix('sv')).toContain('sv');
   });
@@ -53,8 +57,8 @@ describe('getLanguageSuffix', () => {
 });
 
 describe('AI_LANGUAGES', () => {
-  it('has 6 supported languages', () => {
-    expect(AI_LANGUAGES).toHaveLength(6);
+  it('has 7 supported languages', () => {
+    expect(AI_LANGUAGES).toHaveLength(7);
   });
 
   it('includes English as first entry', () => {
@@ -63,6 +67,10 @@ describe('AI_LANGUAGES', () => {
 
   it('includes Simplified Chinese', () => {
     expect(AI_LANGUAGES).toContainEqual({ code: 'zh-CN', label: '中文' });
+  });
+
+  it('includes Russian', () => {
+    expect(AI_LANGUAGES).toContainEqual({ code: 'ru', label: 'Русский' });
   });
 
   it('each entry has code and label', () => {
