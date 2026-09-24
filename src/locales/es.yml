@@ -164,7 +164,6 @@ desktop:
   resume: Resume
   finish: Finish
   showCursor: Show the cursor in screenshots
-  pointerStyle: Pointer style
   screenshotDelay: Screenshot delay
   keepClicksBeyondArea: Capture clicks outside the capture area
   guideInApp: "Guide in $1"
@@ -182,7 +181,7 @@ desktop:
   guideCountPlural: $1 guías
   shortcutsSection: "Atajos"
   cardScreenshots: "Capturas de pantalla"
-  cardKeyboard: "Teclado"
+  cardKeyboard: "Escritura y teclas"
   cardGlobalKeys: "Teclas globales"
   cardGlobalKeysHint: "Se toman de todas las aplicaciones mientras Mimik está en ejecución."
   zoomLevel: "Acercar hacia el clic"
@@ -194,6 +193,19 @@ desktop:
   typingDebounce: "Cerrar el paso de escritura tras"
   readFieldText: "Leer el texto del propio campo cuando se pueda"
   readFieldTextHint: "Si se desactiva, la guía registra tus pulsaciones"
+  cardScreenshotsHint: "Qué captura cada paso"
+  cardClickMarks: "Marcas de clic"
+  cardClickMarksHint: "Cómo se ve un clic en la guía"
+  cardKeyboardHint: "Lo que el teclado añade a una guía"
+  captureModeHint: "Ventana sigue a la app en la que haces clic."
+  showCursorHint: "Dibuja un puntero donde hiciste clic."
+  markerColour: "Color del marcador"
+  markerColourHint: "El contorno de lo que pulsaste y el color de acento en las exportaciones."
+  screenshotDelayHint: "Espera antes de la captura, para menús con animación."
+  keepClicksBeyondAreaHint: "Solo en modo Área. Esos pasos siguen mostrando el área."
+  typingDebounceHint: "Una pausa así de larga termina el paso."
+  recordKeysHint: "Ctrl+S, Enter y similares se convierten en pasos."
+  seconds: "s"
   shortcutStartStop: "Iniciar o finalizar una grabación"
   shortcutPauseResume: "Pausar o reanudar"
   shortcutCapture: "Capturar un paso ahora"
