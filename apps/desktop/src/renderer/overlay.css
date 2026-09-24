@@ -358,7 +358,7 @@ body.controls #body {
 
 body.controls #preview {
   position: relative;
-  height: 150px;
+  height: calc(150px - var(--title-extra, 0px));
   border: 1px solid #e0e7ff;
   border-radius: 10px;
   background: #eef2ff;
@@ -421,7 +421,8 @@ body.controls #remove svg {
 }
 
 body.controls #stepTitle,
-body.controls #writing {
+body.controls #writing,
+body.controls #skeleton .line {
   margin: 11px 0 0;
   font-size: 13px;
   line-height: 1.45;
@@ -459,15 +460,9 @@ body.controls #pillWriting svg {
   }
 }
 
-body.controls #skeleton {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 13px;
-}
-
 body.controls #skeleton span {
-  display: block;
+  display: inline-block;
+  vertical-align: middle;
   height: 10px;
   width: 78%;
   border-radius: 5px;
@@ -476,7 +471,7 @@ body.controls #skeleton span {
   animation: shimmer 1.4s linear infinite;
 }
 
-body.controls #skeleton span + span {
+body.controls #skeleton .meta span {
   width: 38%;
 }
 
@@ -489,7 +484,8 @@ body.controls #skeleton span + span {
   }
 }
 
-body.controls #stepMeta {
+body.controls #stepMeta,
+body.controls #skeleton .meta {
   display: flex;
   align-items: center;
   gap: 6px;

@@ -254,7 +254,7 @@ app.whenReady().then(async () => {
     "document.querySelector('#primary').disabled",
   );
   const veil = await card(
-    "text: document.querySelector('#veilText').textContent, remove: document.querySelector('#remove').hidden, shot: document.querySelector('#shot').hidden",
+    "text: document.querySelector('#veilText').textContent, remove: document.querySelector('#remove').hidden, shot: document.querySelector('#shot').hidden, height: document.body.scrollHeight",
   );
   check(
     'a capture in flight shows the mascot instead of the last screenshot',
@@ -263,6 +263,17 @@ app.whenReady().then(async () => {
   );
   overlay.setBusy(false);
   await settle();
+  const shortTitle = await card("height: document.body.scrollHeight, preview: document.querySelector('#preview').offsetHeight");
+  overlay.showStep({ id: 'one', index: 1, title: 'Click '.repeat(40), src, source: 'ai', pending: false, app: 'Explorer' });
+  await settle();
+  const longTitle = await card("height: document.body.scrollHeight, preview: document.querySelector('#preview').offsetHeight");
+  overlay.showStep({ id: 'one', index: 1, title: 'Save the file', src, source: 'ai', pending: false, app: 'Explorer' });
+  await settle();
+  check(
+    'the card keeps its height when a step lands, and a long title takes it from the screenshot',
+    shortTitle.height === veil.height && longTitle.height === veil.height && longTitle.preview < shortTitle.preview,
+    `${veil.height} px while capturing, ${shortTitle.height} px with a short title, ${longTitle.height} px with a long one, preview ${shortTitle.preview} → ${longTitle.preview} px`,
+  );
   const whenIdle = await windowWithHash('controls')?.webContents.executeJavaScript(
     "document.querySelector('#primary').disabled",
   );

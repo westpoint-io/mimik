@@ -43,7 +43,12 @@ export function controls(): void {
 
   const stepTitle = el('p', { id: 'stepTitle' });
   const writing = el('p', { id: 'writing' }, icon('loader', 13), 'Writing step description…');
-  const skeleton = el('div', { id: 'skeleton' }, el('span', {}), el('span', {}));
+  const skeleton = el(
+    'div',
+    { id: 'skeleton' },
+    el('p', { className: 'line' }, el('span', {}), '\u00a0'),
+    el('div', { className: 'meta' }, el('span', {}), '\u00a0'),
+  );
   const source = el('span', { id: 'source' });
   const metaText = el('span', { id: 'metaText' });
   const stepMeta = el('div', { id: 'stepMeta' }, source, metaText);
@@ -132,6 +137,8 @@ export function controls(): void {
     const settled = Boolean(step) && !busy && !paused;
     stepTitle.textContent = step?.title ?? '';
     stepTitle.hidden = !settled || pending;
+    const extra = stepTitle.getBoundingClientRect().height - Number.parseFloat(getComputedStyle(stepTitle).lineHeight);
+    preview.style.setProperty('--title-extra', `${stepTitle.hidden ? 0 : Math.max(0, extra)}px`);
     writing.hidden = !settled || !pending;
     skeleton.hidden = !busy;
     stepMeta.hidden = !settled;
