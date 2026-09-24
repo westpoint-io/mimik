@@ -17,6 +17,7 @@ vi.mock('@/lib/browser-api', () => ({
   localStorage: { get: vi.fn().mockResolvedValue({ aiLanguage: 'en' }) },
 }));
 
+import { localStorage } from '@/lib/browser-api';
 import { generateGuideMeta, parseGuideMeta } from '../meta';
 
 const steps = [{ description: 'Click Directory', url: 'https://admin.okta.com/users' }];
@@ -192,5 +193,39 @@ describe('parseGuideMeta', () => {
 
   it('returns null for an empty response', () => {
     expect(parseGuideMeta('   ')).toBeNull();
+  });
+});
+
+describe('guide meta prompt', () => {
+  beforeEach(() => {
+    generateObjectMock.mockReset();
+    generateObjectMock.mockResolvedValue({ object: { title: 'A title', description: 'A description.' } });
+  });
+
+  async function promptFor(aiLanguage: string): Promise<string> {
+    vi.mocked(localStorage.get).mockResolvedValue({ aiLanguage });
+    await generateGuideMeta(steps, 'openai', 'gpt-4o-mini', 'key');
+    return generateObjectMock.mock.calls[0][0].prompt as string;
+  }
+
+  it('leaves no placeholder unfilled', async () => {
+    expect(await promptFor('en')).not.toMatch(/\{\{\w+\}\}/);
+  });
+
+  it('gives the model examples in the configured language', async () => {
+    const prompt = await promptFor('fr');
+    expect(prompt).toContain('Configurer les notifications Slack');
+    expect(prompt).not.toContain('Configure Slack Notification Preferences');
+  });
+
+  it('follows the description language, not the UI language', async () => {
+    const prompt = await promptFor('de');
+    expect(prompt).toContain('Spesenabrechnung in Workday einreichen');
+  });
+
+  it('does not let step text act as a replacement pattern', async () => {
+    vi.mocked(localStorage.get).mockResolvedValue({ aiLanguage: 'en' });
+    await generateGuideMeta([{ description: 'Click $& then $`', url: 'https://example.com' }], 'openai', 'm', 'key');
+    expect(generateObjectMock.mock.calls[0][0].prompt).toContain('Click $& then $`');
   });
 });

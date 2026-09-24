@@ -3,10 +3,9 @@ export const STEP_DESCRIPTION_PROMPT = `You are describing steps in a browser wo
 {{context}}
 
 Examples of good descriptions:
-- "Click the Submit button"
-- "Enter email address in the Email field"
-- "Select 'Admin' from the Role dropdown"
-- "Navigate to the Settings page"
+{{examples}}
+
+Copy button labels, field names, and menu items exactly as they appear on the page. Never translate them.
 
 Write only the description, no preamble.`;
 
@@ -19,16 +18,14 @@ Write a title and a description for this workflow.
 TITLE: specific and descriptive. Mention the application or website name and the specific task performed. Reference specific pages, features, or items that were interacted with. MUST be under 60 characters.
 
 Examples of good titles:
-- "Review claude-code Pull Requests"
-- "Configure Slack Notification Preferences"
-- "Submit Expense Report in Workday"
-- "Create Repository in GitHub Organization"
+{{titleExamples}}
 
 DESCRIPTION: one or two sentences stating what the workflow accomplishes and who would follow it. Do not repeat the title. Do not list the individual steps. Do not mention any UI element that does not appear in the steps above.
 
 Examples of good descriptions:
-- "Reset a locked-out user's password from the Okta admin panel. For IT support staff."
-- "Configure which Slack channels send desktop notifications, and set a do-not-disturb schedule."`;
+{{descriptionExamples}}
+
+Copy application names, page names, and UI labels exactly as they appear in the steps. Never translate them.`;
 
 export const GUIDE_META_JSON_SUFFIX = `
 
@@ -72,6 +69,8 @@ export const AI_LANGUAGES = [
 
 export type AILanguageCode = (typeof AI_LANGUAGES)[number]['code'];
 
+import { resolveByLocale } from './locale';
+
 const LANGUAGE_NAMES: Record<string, string> = {
   es: 'Spanish',
   fr: 'French',
@@ -82,8 +81,21 @@ const LANGUAGE_NAMES: Record<string, string> = {
   zh: 'Chinese',
 };
 
+const LANGUAGE_INSTRUCTIONS: Record<Exclude<AILanguageCode, 'en'>, string> = {
+  es: '\nIMPORTANTE: escribe el resultado en español. No traduzcas los nombres de botones, campos ni páginas.',
+  fr: '\nIMPORTANT : rédige le résultat en français. Ne traduis pas les noms de boutons, de champs ni de pages.',
+  'pt-BR': '\nIMPORTANTE: escreva o resultado em português do Brasil. Não traduza nomes de botões, campos ou páginas.',
+  de: '\nWICHTIG: Schreibe die Ausgabe auf Deutsch. Übersetze keine Schaltflächen-, Feld- oder Seitennamen.',
+  'zh-CN': '\n重要：请用中文输出。不要翻译按钮、字段和页面的名称。',
+};
+
 export function getLanguageSuffix(locale: string): string {
-  if (locale.startsWith('en')) return '';
-  const lang = LANGUAGE_NAMES[locale.split('-')[0]] || locale;
-  return `\nIMPORTANT: Write the output in ${lang}.`;
+  const normalized = locale.trim().toLowerCase();
+  if (normalized.startsWith('en')) return '';
+
+  const instruction = resolveByLocale(LANGUAGE_INSTRUCTIONS, normalized);
+  if (instruction) return instruction;
+
+  const lang = resolveByLocale(LANGUAGE_NAMES, normalized) ?? locale;
+  return `\nIMPORTANT: Write the output in ${lang}. Never translate button, field, or page names.`;
 }

@@ -25,9 +25,10 @@ src/
 │   ├── capture/             # Recording pipeline
 │   │   ├── ai/              # AI description + title generation (Vercel AI SDK)
 │   │   │   ├── description.ts   # getAIDescription (DOM context → AI → step text)
-│   │   │   ├── title.ts         # generateGuideTitle (steps → AI → guide name)
+│   │   │   ├── meta.ts          # generateGuideMeta (steps → AI → guide title + description)
 │   │   │   ├── models.ts        # AI_PROVIDERS config (OpenAI/Anthropic model lists)
-│   │   │   ├── prompts.ts       # Prompt templates
+│   │   │   ├── prompts.ts       # Prompt templates + per-language instructions
+│   │   │   ├── examples.ts      # Prompt examples per AI description language
 │   │   │   └── provider.ts      # createModel factory (OpenAI/Anthropic)
 │   │   ├── dom/              # DOM extraction utilities
 │   │   │   ├── context.ts       # DOMContext extraction + serialization

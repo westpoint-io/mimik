@@ -519,6 +519,8 @@ steps:
   typeIntoField: "Type into $1 field $2"
   typeInto: "Type into $1"
   typeSecret: "Type password"
+  typeValueInto: 'Type "$1" in $2'
+  clearField: "Clear $1"
   copyFrom: "Copy from $1"
   pasteInto: "Paste into $1"
   cutFrom: "Cut from $1"

@@ -450,6 +450,8 @@ steps:
   typeIntoField: "In Feld $1 eingeben $2"
   typeInto: "In $1 eingeben"
   typeSecret: "Passwort eingeben"
+  typeValueInto: '"$1" in $2 eingeben'
+  clearField: "$1 leeren"
   copyFrom: "Aus $1 kopieren"
   pasteInto: "In $1 einfügen"
   cutFrom: "Aus $1 ausschneiden"
