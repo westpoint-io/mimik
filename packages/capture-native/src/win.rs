@@ -148,6 +148,7 @@ fn describe(found: &IUIAutomationElement) -> UiElement {
 }
 
 const MAX_ANCESTORS: usize = 4;
+const TAB_DRAG_LAYER: &str = "TabDragContextImpl";
 const MAX_CHILDREN: usize = 12;
 
 fn node(element: &IUIAutomationElement) -> ElementNode {
@@ -195,6 +196,7 @@ fn narrowest(
   unsafe { walker.GetFirstChildElement(hit) }.ok()?;
   let request = unsafe { uia.CreateCacheRequest() }.ok()?;
   unsafe { request.AddProperty(UIA_BoundingRectanglePropertyId) }.ok()?;
+  unsafe { request.AddProperty(UIA_ClassNamePropertyId) }.ok()?;
   let everything = unsafe { uia.CreateTrueCondition() }.ok()?;
   let found = unsafe { hit.FindAllBuildCache(TreeScope_Subtree, &everything, &request) }.ok()?;
   let elements: Vec<IUIAutomationElement> = (0..unsafe { found.Length() }.ok()?)
@@ -203,6 +205,12 @@ fn narrowest(
   let boxes: Vec<_> = elements
     .iter()
     .map(|element| {
+      let class = unsafe { element.CachedClassName() }
+        .map(|name| name.to_string())
+        .unwrap_or_default();
+      if class.contains(TAB_DRAG_LAYER) {
+        return Default::default();
+      }
       unsafe { element.CachedBoundingRectangle() }
         .map(|rect| (rect.left, rect.top, rect.right, rect.bottom))
         .unwrap_or_default()
