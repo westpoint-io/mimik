@@ -72,6 +72,55 @@ function showWindow(): void {
   mainWindow.focus();
 }
 
+const SPLASH_MIN_MS = 1500;
+const SPLASH_MAX_WAIT_MS = 3000;
+let splash: BrowserWindow | null = null;
+let splashShownAt: number | null = null;
+
+function openSplash(): void {
+  splash = new BrowserWindow({
+    width: 400,
+    height: 300,
+    frame: false,
+    transparent: true,
+    resizable: false,
+    movable: false,
+    skipTaskbar: true,
+    alwaysOnTop: true,
+    show: false,
+    center: true,
+  });
+  splash.once('ready-to-show', () => {
+    splash?.show();
+    splashShownAt = Date.now();
+  });
+  splash.on('closed', () => {
+    splash = null;
+  });
+  if (process.env.ELECTRON_RENDERER_URL) splash.loadURL(`${process.env.ELECTRON_RENDERER_URL}/splash.html`);
+  else splash.loadFile(join(__dirname, '../renderer/splash.html'));
+}
+
+function closeSplash(then: () => void): void {
+  const close = () => {
+    if (splash && !splash.isDestroyed()) splash.close();
+    then();
+  };
+  if (!splash || splash.isDestroyed()) {
+    then();
+    return;
+  }
+  if (splashShownAt === null) {
+    const giveUp = setTimeout(close, SPLASH_MAX_WAIT_MS);
+    splash.once('show', () => {
+      clearTimeout(giveUp);
+      setTimeout(close, SPLASH_MIN_MS);
+    });
+    return;
+  }
+  setTimeout(close, Math.max(0, SPLASH_MIN_MS - (Date.now() - splashShownAt)));
+}
+
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1100,
@@ -90,7 +139,9 @@ function createWindow(): void {
   });
 
   mainWindow.once('ready-to-show', () => {
-    if (!app.getLoginItemSettings().wasOpenedAsHidden) mainWindow?.show();
+    closeSplash(() => {
+      if (!app.getLoginItemSettings().wasOpenedAsHidden) mainWindow?.show();
+    });
   });
 
   mainWindow.on('close', (event) => {
@@ -247,6 +298,7 @@ if (!app.requestSingleInstanceLock()) {
   app.on('second-instance', () => showWindow());
 
   app.whenReady().then(() => {
+    if (!app.getLoginItemSettings().wasOpenedAsHidden) openSplash();
     registerScreenshotProtocol();
     registerAiFetch();
     ipcMain.handle('mimik:openAtLogin:get', () => opensAtLogin());

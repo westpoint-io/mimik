@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { app, BrowserWindow, globalShortcut, screen, webContents } from 'electron';
 import { clampToDisplays, defaultRegion, loadRegion, type Region, saveRegion } from '../src/main/capture/region';
 import type { CaptureMode } from '../src/main/capture/settings';
@@ -385,6 +386,22 @@ app.whenReady().then(async () => {
   overlay.hide();
   overlay.destroy();
   saveRegion(defaultRegion());
+
+  const splash = new BrowserWindow({ width: 400, height: 300, show: false, frame: false });
+  await splash.loadFile(join(__dirname, '../renderer/splash.html'));
+  const splashed = JSON.parse(
+    String(
+      await splash.webContents.executeJavaScript(
+        "JSON.stringify({ word: document.querySelector('#wordmark')?.textContent, paths: document.querySelectorAll('#mascot svg path').length, meter: Boolean(document.querySelector('#meter span')) })",
+      ),
+    ),
+  ) as { word?: string; paths?: number; meter?: boolean };
+  splash.destroy();
+  check(
+    'the loading screen draws the mascot, the name and the bar',
+    splashed.word === 'Mimik' && (splashed.paths ?? 0) >= 5 && splashed.meter === true,
+    `wordmark ${splashed.word}, ${splashed.paths} mascot paths, bar ${splashed.meter}`,
+  );
 
   for (const result of results) {
     process.stdout.write(`${result.ok ? 'ok  ' : 'FAIL'} ${result.name.padEnd(32)} ${result.detail}\n`);

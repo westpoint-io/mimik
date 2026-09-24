@@ -6,7 +6,7 @@ import {
   MASCOT_FACES,
   MASCOT_SEAM,
   MASCOT_VIEW_BOX,
-} from '@mimik/ui';
+} from '@mimik/ui/common/lib/mascot-shapes';
 import { svg } from './svg';
 
 export function mascot(size = 42): SVGSVGElement {
