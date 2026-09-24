@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { ElementMeta } from '@/core/guides/types';
 import { resolveViewport } from '@/core/screenshot/geometry';
-import { autoZoom, clickZoomViewport, rezoomEdits, screenshotForElement, snapZoom } from '@/core/screenshot/record';
+import {
+  autoZoom,
+  clickZoomViewport,
+  currentZoom,
+  rezoomEdits,
+  screenshotForElement,
+  snapZoom,
+} from '@/core/screenshot/record';
 
 const meta: ElementMeta = {
   textContent: null,
@@ -109,11 +116,38 @@ describe('rezoomEdits', () => {
   });
 
   it('leaves a step alone when nothing would change', () => {
-    expect(rezoomEdits(auto, auto.edits?.zoomLevel ?? 0)).toBeNull();
+    expect(rezoomEdits(auto, null)).toBeNull();
+  });
+
+  it('records a picked level even when it matches the automatic one', () => {
+    const next = rezoomEdits(auto, auto.edits?.zoomLevel ?? 0);
+    expect(next?.zoomAuto).toBe(false);
+    expect(next?.viewport).toEqual(auto.edits?.viewport);
   });
 
   it('leaves a hand-cropped step alone', () => {
     const cropped = { ...auto, edits: { ...auto.edits, zoomLevel: undefined } };
     expect(rezoomEdits(cropped, 3)).toBeNull();
+  });
+});
+
+describe('currentZoom', () => {
+  const auto = screenshotForElement({ ...bytes, width: 2560, height: 1440, zoom: 'click' }, meta);
+  const fixed = screenshotForElement({ ...bytes, width: 2560, height: 1440, zoom: 'click', zoomLevel: 2 }, meta);
+  const cropped = { ...fixed, edits: { ...fixed.edits, zoomLevel: undefined, zoomAuto: undefined } };
+
+  it('names the level every app-zoomed step shares', () => {
+    expect(currentZoom([auto, auto])).toBe('auto');
+    expect(currentZoom([fixed, fixed, cropped])).toBe(2);
+  });
+
+  it('names nothing when the steps disagree or none is app-zoomed', () => {
+    expect(currentZoom([auto, fixed])).toBeNull();
+    expect(currentZoom([cropped])).toBeNull();
+  });
+
+  it('reads a step saved before the flag by comparing it with the automatic level', () => {
+    const { zoomAuto: _, ...older } = auto.edits ?? {};
+    expect(currentZoom([{ ...auto, edits: older }])).toBe('auto');
   });
 });

@@ -68,6 +68,7 @@ export function screenshotForElement(bytes: ScreenshotBytes, meta: ElementMeta):
       ...(zoom === 'click'
         ? {
             zoomLevel: level,
+            zoomAuto: zoomLevel === undefined,
             viewport: clickZoomViewport(rest.width, rest.height, { x: click.x * ratio, y: click.y * ratio }, level),
           }
         : {}),
@@ -89,10 +90,26 @@ export function rezoomEdits(screenshot: StoredScreenshot, level: number | null):
   if (!click) return null;
   const ratio = screenshot.pixelRatio || 1;
   const next = level ?? autoZoom(screenshot.width, ratio);
-  if (next === screenshot.edits.zoomLevel) return null;
+  if (next === screenshot.edits.zoomLevel && isAutoZoom(screenshot) === (level === null)) return null;
   return {
     ...screenshot.edits,
     zoomLevel: next,
+    zoomAuto: level === null,
     viewport: clickZoomViewport(screenshot.width, screenshot.height, { x: click.x * ratio, y: click.y * ratio }, next),
   };
+}
+
+function isAutoZoom(screenshot: StoredScreenshot): boolean {
+  return (
+    screenshot.edits?.zoomAuto ?? screenshot.edits?.zoomLevel === autoZoom(screenshot.width, screenshot.pixelRatio || 1)
+  );
+}
+
+export function currentZoom(screenshots: Iterable<StoredScreenshot>): number | 'auto' | null {
+  const levels = new Set<number | 'auto'>();
+  for (const shot of screenshots) {
+    if (shot.edits?.zoomLevel === undefined) continue;
+    levels.add(isAutoZoom(shot) ? 'auto' : shot.edits.zoomLevel);
+  }
+  return levels.size === 1 ? [...levels][0] : null;
 }
