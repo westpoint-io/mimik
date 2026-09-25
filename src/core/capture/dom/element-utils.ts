@@ -1,5 +1,5 @@
 export const FOCUSABLE_SELECTOR =
-  'a[href], button, input, select, textarea, [role="button"], [role="link"], [role="tab"], [role="menuitem"], [role="checkbox"], [role="radio"], [role="option"], [tabindex], [contenteditable="true"]';
+  'a[href], button, input, select, textarea, [role="button"], [role="link"], [role="tab"], [role="menuitem"], [role="checkbox"], [role="radio"], [role="switch"], [role="option"], [tabindex], [contenteditable="true"]';
 
 const MAX_ELEMENT_RATIO = 0.8;
 
@@ -43,6 +43,13 @@ export function isTextField(el: Element): boolean {
     return ['text', 'email', 'password', 'search', 'tel', 'url', 'number'].includes(el.type);
   }
   return el instanceof HTMLTextAreaElement || (el instanceof HTMLElement && el.isContentEditable);
+}
+
+const TOGGLE_ROLES = new Set(['checkbox', 'radio', 'switch']);
+
+export function isToggle(el: Element): boolean {
+  if (el instanceof HTMLInputElement && (el.type === 'checkbox' || el.type === 'radio')) return true;
+  return TOGGLE_ROLES.has(el.getAttribute('role') ?? '');
 }
 
 export function isNavigatingClick(el: HTMLElement): boolean {
