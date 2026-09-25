@@ -91,6 +91,7 @@ export interface Settings {
   guideMeManual: boolean;
   mimikBlurMode: boolean;
   onboardingCompleted: boolean;
+  appLanguage: string;
 }
 
 export type SettingsKey = keyof Settings;

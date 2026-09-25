@@ -1,19 +1,32 @@
 import { validateApiKey } from '@mimik/core/capture/ai/validate';
 import { i18n } from '@mimik/core/env';
 import { AiSettings, BrandingSettings, Switch, useKeyCheck } from '@mimik/ui';
-import { AppWindow, Command, Crop, ImageIcon, Keyboard, Monitor, MonitorPlay, Sparkles } from 'lucide-react';
+import {
+  AppWindow,
+  Command,
+  Crop,
+  ImageIcon,
+  Keyboard,
+  Monitor,
+  MonitorPlay,
+  SlidersHorizontal,
+  Sparkles,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { CaptureSettings, CaptureShortcuts } from '../../main/capture/settings';
 import { Card } from './Card';
+import { GeneralSettings } from './GeneralSettings';
+import { REOPEN_SETTINGS } from './lib/reopen-settings';
 import { zoomLevels } from './lib/zoom-levels';
 import { Row } from './Row';
 import { Segmented } from './Segmented';
 import { ShortcutRecorder } from './ShortcutRecorder';
 import { Slider } from './Slider';
 
-type Section = 'capture' | 'ai' | 'branding' | 'shortcuts';
+type Section = 'general' | 'capture' | 'ai' | 'branding' | 'shortcuts';
 
 const SECTIONS: { id: Section; labelKey: string; Icon: typeof AppWindow }[] = [
+  { id: 'general', labelKey: 'desktop_generalSection', Icon: SlidersHorizontal },
   { id: 'capture', labelKey: 'desktop_capturingSection', Icon: MonitorPlay },
   { id: 'ai', labelKey: 'settings_aiDescriptions', Icon: Sparkles },
   { id: 'branding', labelKey: 'settings_branding', Icon: ImageIcon },
@@ -32,7 +45,11 @@ const KEYS: { id: keyof CaptureShortcuts; labelKey: string }[] = [
 ];
 
 export function SettingsPanel() {
-  const [section, setSection] = useState<Section>('capture');
+  const [section, setSection] = useState<Section>(() => {
+    const reopened = sessionStorage.getItem(REOPEN_SETTINGS) as Section | null;
+    sessionStorage.removeItem(REOPEN_SETTINGS);
+    return reopened ?? 'general';
+  });
   const keyCheck = useKeyCheck(validateApiKey);
   const [settings, setSettings] = useState<CaptureSettings | null>(null);
 
@@ -53,13 +70,16 @@ export function SettingsPanel() {
             key={item.id}
             type="button"
             onClick={() => setSection(item.id)}
-            className={`mb-0.5 flex h-9 w-full items-center gap-2.5 rounded-[9px] px-3 text-left text-sm transition-colors ${
+            className={`mb-0.5 flex min-h-9 w-full items-start gap-2.5 rounded-[9px] px-3 py-2 text-left text-sm leading-5 transition-colors ${
               section === item.id
                 ? 'bg-secondary font-semibold text-foreground'
                 : 'text-foreground hover:bg-secondary/60'
             }`}
           >
-            <item.Icon size={15} className={section === item.id ? 'text-accent' : 'text-muted-foreground'} />
+            <item.Icon
+              size={15}
+              className={`mt-0.5 shrink-0 ${section === item.id ? 'text-accent' : 'text-muted-foreground'}`}
+            />
             {i18n.t(item.labelKey)}
           </button>
         ))}
@@ -151,6 +171,8 @@ export function SettingsPanel() {
               </Card>
             </>
           )}
+
+          {section === 'general' && <GeneralSettings />}
 
           {section === 'shortcuts' && settings && (
             <Card icon={Command} title={i18n.t('desktop_cardGlobalKeys')} hint={i18n.t('desktop_cardGlobalKeysHint')}>

@@ -169,6 +169,18 @@ desktop:
   startSheetTitle: Aufnahme starten
   startButton: Starten
   shortcutsSection: "Tastenkürzel"
+  generalSection: "Allgemein"
+  appLanguage: "App-Sprache"
+  appLanguageHint: "Die Sprache der Mimik-Oberfläche. KI-Beschreibungen haben eine eigene Einstellung."
+  languageSystem: "Wie das System"
+  cardLanguage: "Sprache"
+  cardStartup: "Start"
+  cardUpdates: "Updates"
+  startAtLogin: "Beim Anmelden starten"
+  startAtLoginHint: "Mimik startet im Infobereich, ohne Fenster."
+  version: "Version $1"
+  versionHint: "Mimik sucht bei jedem Start nach Updates."
+  checkUpdates: "Nach Updates suchen"
   cardScreenshots: "Screenshots"
   cardKeyboard: "Tippen und Tasten"
   cardGlobalKeys: "Globale Tasten"

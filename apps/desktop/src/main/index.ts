@@ -308,7 +308,11 @@ if (!app.requestSingleInstanceLock()) {
       return opensAtLogin();
     });
     ipcMain.handle('mimik:version', () => app.getVersion());
+    ipcMain.handle('mimik:updates:check', () => checkForUpdates({ notifyWhenUpToDate: true }));
     ipcMain.handle('mimik:screenshots:sweep', (_event, keep: string[]) => sweepScreenshots(keep));
+    ipcMain.on('mimik:app:relocalise', () => {
+      for (const win of BrowserWindow.getAllWindows()) win.webContents.reload();
+    });
 
     captureSettings = loadSettings();
     const shortcutLabel = (accelerator: string | null) =>

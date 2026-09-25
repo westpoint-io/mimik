@@ -169,6 +169,18 @@ desktop:
   startSheetTitle: 开始捕获
   startButton: 开始
   shortcutsSection: "快捷键"
+  generalSection: "通用"
+  appLanguage: "应用语言"
+  appLanguageHint: "Mimik 界面的语言。AI 描述有单独的设置。"
+  languageSystem: "跟随系统"
+  cardLanguage: "语言"
+  cardStartup: "启动"
+  cardUpdates: "更新"
+  startAtLogin: "登录时启动"
+  startAtLoginHint: "Mimik 在托盘中打开，不显示窗口。"
+  version: "版本 $1"
+  versionHint: "Mimik 每次启动时都会检查更新。"
+  checkUpdates: "检查更新"
   cardScreenshots: "屏幕截图"
   cardKeyboard: "输入与按键"
   cardGlobalKeys: "全局快捷键"

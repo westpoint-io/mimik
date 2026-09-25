@@ -42,6 +42,10 @@ const api = {
       }
     });
   },
+  relocalise: (): void => ipcRenderer.send('mimik:app:relocalise'),
+  updates: {
+    check: (): Promise<void> => ipcRenderer.invoke('mimik:updates:check'),
+  },
   screenshots: {
     sweep: (keep: string[]): Promise<number> => ipcRenderer.invoke('mimik:screenshots:sweep', keep),
   },

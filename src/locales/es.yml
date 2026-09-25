@@ -169,6 +169,18 @@ desktop:
   startSheetTitle: Iniciar una captura
   startButton: Iniciar
   shortcutsSection: "Atajos"
+  generalSection: "General"
+  appLanguage: "Idioma de la app"
+  appLanguageHint: "El idioma de las pantallas de Mimik. Las descripciones con IA tienen su propio ajuste."
+  languageSystem: "Igual que el sistema"
+  cardLanguage: "Idioma"
+  cardStartup: "Inicio"
+  cardUpdates: "Actualizaciones"
+  startAtLogin: "Abrir al iniciar sesión"
+  startAtLoginHint: "Mimik se abre en la bandeja, sin ventana."
+  version: "Versión $1"
+  versionHint: "Mimik busca actualizaciones cada vez que se inicia."
+  checkUpdates: "Buscar actualizaciones"
   cardScreenshots: "Capturas de pantalla"
   cardKeyboard: "Escritura y teclas"
   cardGlobalKeys: "Teclas globales"
