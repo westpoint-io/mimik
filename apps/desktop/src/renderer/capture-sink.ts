@@ -19,12 +19,10 @@ import {
   updateStepDescription,
 } from '@mimik/core/guides/service';
 import { screenshotForElement } from '@mimik/core/screenshot/record';
-import type { CursorMark } from '@mimik/core/screenshot/types';
 import { credentials } from './ai/credentials';
 import { describeStep } from './ai/describe-step';
 
 export type DesktopCaptureStepData = CaptureStepData & {
-  cursor?: CursorMark;
   inputValue?: string;
   zoomLevel?: number;
 };
@@ -53,7 +51,6 @@ export class DesktopCaptureSink implements CaptureSink {
           mimeType: 'image/png',
           width: data.image.width,
           height: data.image.height,
-          cursor: data.cursor ?? null,
           targetColor,
           zoom: 'click',
           zoomLevel: data.zoomLevel,

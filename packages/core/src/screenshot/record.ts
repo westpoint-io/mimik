@@ -1,5 +1,5 @@
 import type { ElementMeta, ScreenshotBounds, StoredScreenshot } from '@/core/guides/types';
-import { type CursorMark, DEFAULT_TARGET_COLOR, type ScreenshotEdits } from '@/core/screenshot/types';
+import { DEFAULT_TARGET_COLOR, type ScreenshotEdits } from '@/core/screenshot/types';
 
 export type ZoomMode = 'element' | 'click' | 'none';
 
@@ -17,7 +17,6 @@ export interface ScreenshotBytes {
   height: number;
   blob?: Blob;
   src?: string;
-  cursor?: CursorMark | null;
   targetColor?: string;
   zoom?: ZoomMode;
   zoomLevel?: number;
@@ -52,7 +51,7 @@ export function clickZoomViewport(
 }
 
 export function screenshotForElement(bytes: ScreenshotBytes, meta: ElementMeta): StoredScreenshot {
-  const { cursor, targetColor, zoom = 'element', zoomLevel, ...rest } = bytes;
+  const { targetColor, zoom = 'element', zoomLevel, ...rest } = bytes;
   const ratio = meta.devicePixelRatio;
   const click = meta.clickPoint ?? { x: meta.rect.x + meta.rect.width / 2, y: meta.rect.y + meta.rect.height / 2 };
   const level = zoomLevel ?? autoZoom(rest.width, ratio);
@@ -64,7 +63,6 @@ export function screenshotForElement(bytes: ScreenshotBytes, meta: ElementMeta):
     pixelRatio: ratio,
     clickPoint: meta.clickPoint,
     edits: {
-      ...(cursor === undefined ? {} : { cursor }),
       ...(zoom === 'click'
         ? {
             zoomLevel: level,

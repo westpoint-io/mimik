@@ -1,17 +1,7 @@
 import { validateApiKey } from '@mimik/core/capture/ai/validate';
 import { i18n } from '@mimik/core/env';
 import { AiSettings, BrandingSettings, Switch, useKeyCheck } from '@mimik/ui';
-import {
-  AppWindow,
-  Command,
-  Crop,
-  ImageIcon,
-  Keyboard,
-  Monitor,
-  MonitorPlay,
-  MousePointerClick,
-  Sparkles,
-} from 'lucide-react';
+import { AppWindow, Command, Crop, ImageIcon, Keyboard, Monitor, MonitorPlay, Sparkles } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { CaptureSettings, CaptureShortcuts } from '../../main/capture/settings';
 import { Card } from './Card';
@@ -127,20 +117,6 @@ export function SettingsPanel() {
                     label={i18n.t('desktop_keepClicksBeyondArea')}
                     disabled={settings.captureMode !== 'region'}
                     onChange={(keepClicksBeyondArea) => save({ keepClicksBeyondArea })}
-                  />
-                </Row>
-              </Card>
-
-              <Card
-                icon={MousePointerClick}
-                title={i18n.t('desktop_cardClickMarks')}
-                hint={i18n.t('desktop_cardClickMarksHint')}
-              >
-                <Row label={i18n.t('desktop_showCursor')} hint={i18n.t('desktop_showCursorHint')}>
-                  <Switch
-                    checked={settings.showCursor}
-                    label={i18n.t('desktop_showCursor')}
-                    onChange={(showCursor) => save({ showCursor })}
                   />
                 </Row>
               </Card>

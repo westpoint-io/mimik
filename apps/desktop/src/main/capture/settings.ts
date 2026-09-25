@@ -20,7 +20,6 @@ export interface CaptureShortcuts {
 
 export interface CaptureSettings {
   captureMode: CaptureMode;
-  showCursor: boolean;
   screenshotDelayMs: number;
   keepClicksBeyondArea: boolean;
   recordKeys: boolean;
@@ -33,7 +32,6 @@ export interface CaptureSettings {
 
 export const DEFAULT_CAPTURE_SETTINGS: CaptureSettings = {
   captureMode: 'window',
-  showCursor: true,
   screenshotDelayMs: 0,
   keepClicksBeyondArea: false,
   recordKeys: true,
@@ -88,7 +86,6 @@ export function normaliseSettings(input: Partial<CaptureSettings> & LegacySettin
     captureMode: CAPTURE_MODES.includes(input.captureMode as CaptureMode)
       ? (input.captureMode as CaptureMode)
       : DEFAULT_CAPTURE_SETTINGS.captureMode,
-    showCursor: typeof input.showCursor === 'boolean' ? input.showCursor : DEFAULT_CAPTURE_SETTINGS.showCursor,
     screenshotDelayMs: Number.isFinite(delay) ? Math.min(Math.max(Math.round(delay), 0), MAX_SCREENSHOT_DELAY_MS) : 0,
     keepClicksBeyondArea: flag(
       input.keepClicksBeyondArea ?? input.captureOutsideClicks,

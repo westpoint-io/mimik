@@ -8,7 +8,6 @@ import { exportGuideAsPDF } from '@mimik/core/export/pdf-export';
 import { allScreenshotIds, getGuide, permanentlyDeleteGuide } from '@mimik/core/guides/service';
 import { elementSource } from '@mimik/core/guides/types';
 import { resolveViewport } from '@mimik/core/screenshot/geometry';
-import { renderScreenshot } from '@mimik/core/screenshot/render';
 import { DesktopCaptureSink } from './capture-sink';
 
 interface CheckResult {
@@ -21,20 +20,6 @@ const sink = new DesktopCaptureSink();
 
 window.mimik.onRequest('mimik:capture:startGuide', () => sink.startGuide());
 window.mimik.onRequest('mimik:capture:step', (payload) => sink.captureStep(payload as CaptureStepData));
-
-window.mimik.onRequest('mimik:check:renderedSizes', async (payload) => {
-  const found = await getGuide(payload as string);
-  if (!found) return [];
-  const sizes: number[] = [];
-  for (const step of found.steps) {
-    const shot = found.screenshots.get(step.id);
-    if (!shot) continue;
-    const bare = await renderScreenshot({ ...shot, edits: { ...shot.edits, cursor: null } });
-    const drawn = await renderScreenshot(shot);
-    sizes.push(bare.size, drawn.size);
-  }
-  return sizes;
-});
 
 window.mimik.onRequest('mimik:check:screenshotSrc', async (payload) => {
   const found = await getGuide(payload as string);

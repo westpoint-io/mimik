@@ -157,7 +157,6 @@ desktop:
   pause: Pause
   resume: Resume
   finish: Finish
-  showCursor: Show the cursor
   screenshotDelay: Screenshot delay
   keepClicksBeyondArea: Capture clicks outside the area
   guideInApp: "Guide in $1"
@@ -184,11 +183,8 @@ desktop:
   readFieldText: "Read the field's own text when it can"
   readFieldTextHint: "Off means the guide records your keystrokes instead"
   cardScreenshotsHint: "What each step captures"
-  cardClickMarks: "Click marks"
-  cardClickMarksHint: "How a click shows in the guide"
   cardKeyboardHint: "What the keyboard adds to a guide"
   captureModeHint: "Window follows the app you click."
-  showCursorHint: "Draws a pointer where you clicked."
   screenshotDelayHint: "Wait before taking the screenshot, for menus that animate."
   keepClicksBeyondAreaHint: "Area mode only. Those steps still show the area."
   typingDebounceHint: "A pause this long ends the step."
