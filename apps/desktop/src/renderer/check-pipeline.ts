@@ -1,5 +1,6 @@
 import './core-env';
 import type { CaptureStepData } from '@mimik/core/capture/sink';
+import { assetUrl } from '@mimik/core/env';
 import { exportGuideAsDOCX } from '@mimik/core/export/docx-export';
 import { exportGuideAsHTML } from '@mimik/core/export/html-export';
 import { exportGuideAsMarkdown } from '@mimik/core/export/markdown-export';
@@ -42,6 +43,12 @@ window.mimik.onRequest('mimik:check:screenshotSrc', async (payload) => {
 });
 
 window.mimik.onRequest('mimik:check:screenshotIds', () => allScreenshotIds());
+
+window.mimik.onRequest('mimik:check:defaultLogo', () =>
+  fetch(assetUrl('/mimik-mark.png'))
+    .then((response) => response.ok)
+    .catch(() => false),
+);
 
 window.mimik.onRequest('mimik:check:cleanup', async (payload) => {
   for (const id of payload as string[]) await permanentlyDeleteGuide(id);

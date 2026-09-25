@@ -22,7 +22,7 @@ configureCore({
   client: 'desktop',
   fetch: mainFetch,
   t: (key, substitutions) => translate(en as Messages, key, substitutions),
-  assetUrl: (path) => new URL(path, document.baseURI).href,
+  assetUrl: (path) => new URL(path.replace(/^\//, ''), document.baseURI).href,
   storage: {
     get: async <K extends SettingsKey>(keys: readonly K[]) => {
       const out: Record<string, unknown> = {};

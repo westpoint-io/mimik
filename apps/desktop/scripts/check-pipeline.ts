@@ -581,6 +581,12 @@ app.whenReady().then(async () => {
   });
 
   const probeSrc = await ask<string | null>(win.webContents, 'mimik:check:screenshotSrc', activeGuide, 20_000);
+  const defaultLogo = await ask<boolean>(win.webContents, 'mimik:check:defaultLogo', undefined, 10_000);
+  results.push({
+    name: 'exports can load the default logo',
+    ok: defaultLogo === true,
+    detail: defaultLogo ? 'mimik-mark.png served beside the page' : 'mimik-mark.png did not load',
+  });
 
   await ask(win.webContents, 'mimik:check:cleanup', [guideId, activeGuide], 30_000);
 
