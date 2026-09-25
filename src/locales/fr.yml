@@ -153,32 +153,22 @@ blurPresets:
   macAddress: Adresse MAC
 
 desktop:
-  record: Record
-  captureArea: Capture area
-  capturing: Capturing
-  paused: Paused
-  ready: Ready
-  lastStep: Last step
-  noStepsYet: No steps captured yet
-  pause: Pause
-  resume: Resume
-  finish: Finish
+  ready: "Prêt"
+  pause: "Pause"
+  resume: "Reprendre"
+  finish: "Terminer"
   showCursor: Show the cursor in screenshots
-  screenshotDelay: Screenshot delay
-  keepClicksBeyondArea: Capture clicks outside the capture area
-  guideInApp: "Guide in $1"
-  newGuide: New Guide
-  capturingSection: Capturing
+  screenshotDelay: "Délai de capture"
+  keepClicksBeyondArea: "Capturer les clics hors de la zone"
+  guideInApp: "Guide dans $1"
+  capturingSection: "Capture"
   milliseconds: ms
   captureMode: Quoi capturer
   modeWindow: Fenêtre
   modeScreen: Écran
   modeRegion: Zone
-  readyToRecord: Prêt à enregistrer
   startSheetTitle: Démarrer une capture
   startButton: Démarrer
-  guideCount: $1 guide
-  guideCountPlural: $1 guides
   shortcutsSection: "Raccourcis"
   cardScreenshots: "Captures d’écran"
   cardKeyboard: "Saisie et touches"
@@ -211,7 +201,6 @@ desktop:
   shortcutCapture: "Capturer une étape maintenant"
   shortcutPress: "Appuyez sur les touches…"
   shortcutClear: "Effacer"
-  shortcutTaken: "Une autre application utilise déjà cette touche"
 
 fullview:
   allGuides: Tous les guides

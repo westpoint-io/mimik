@@ -153,32 +153,22 @@ blurPresets:
   macAddress: MAC 地址
 
 desktop:
-  record: Record
-  captureArea: Capture area
-  capturing: Capturing
-  paused: Paused
-  ready: Ready
-  lastStep: Last step
-  noStepsYet: No steps captured yet
-  pause: Pause
-  resume: Resume
-  finish: Finish
+  ready: "就绪"
+  pause: "暂停"
+  resume: "继续"
+  finish: "完成"
   showCursor: Show the cursor in screenshots
-  screenshotDelay: Screenshot delay
-  keepClicksBeyondArea: Capture clicks outside the capture area
-  guideInApp: "Guide in $1"
-  newGuide: New Guide
-  capturingSection: Capturing
+  screenshotDelay: "截图延迟"
+  keepClicksBeyondArea: "捕获区域外的点击"
+  guideInApp: "$1 中的指南"
+  capturingSection: "捕获"
   milliseconds: ms
   captureMode: 捕获范围
   modeWindow: 窗口
   modeScreen: 屏幕
   modeRegion: 区域
-  readyToRecord: 可以开始录制
   startSheetTitle: 开始捕获
   startButton: 开始
-  guideCount: $1 个指南
-  guideCountPlural: $1 个指南
   shortcutsSection: "快捷键"
   cardScreenshots: "屏幕截图"
   cardKeyboard: "输入与按键"
@@ -211,7 +201,6 @@ desktop:
   shortcutCapture: "立即捕获一步"
   shortcutPress: "请按下按键…"
   shortcutClear: "清除"
-  shortcutTaken: "其他应用已占用该按键"
 
 fullview:
   allGuides: 全部指南

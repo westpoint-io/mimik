@@ -28,7 +28,7 @@ window.mimik.onRequest('mimik:capture:finishGuide', async (payload) => {
   const guideId = payload as string;
   const steps = await getStepsForGuide(guideId);
   const app = steps.find((step) => step.app?.name)?.app?.name;
-  await updateGuideTitle(guideId, app ? i18n.t('desktop.guideInApp', [app]) : i18n.t('desktop.newGuide'));
+  await updateGuideTitle(guideId, app ? i18n.t('desktop.guideInApp', [app]) : i18n.t('background.newGuide'));
 
   const meta = await nameGuide(steps);
   if (meta?.title) await updateGuideTitle(guideId, meta.title);

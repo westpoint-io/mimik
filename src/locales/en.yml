@@ -153,13 +153,7 @@ blurPresets:
   macAddress: MAC Address
 
 desktop:
-  record: Record
-  captureArea: Capture area
-  capturing: Capturing
-  paused: Paused
   ready: Ready
-  lastStep: Last step
-  noStepsYet: No steps captured yet
   pause: Pause
   resume: Resume
   finish: Finish
@@ -167,18 +161,14 @@ desktop:
   screenshotDelay: Screenshot delay
   keepClicksBeyondArea: Capture clicks outside the area
   guideInApp: "Guide in $1"
-  newGuide: New Guide
   capturingSection: Capturing
   milliseconds: ms
   captureMode: What to capture
   modeWindow: Window
   modeScreen: Screen
   modeRegion: Area
-  readyToRecord: Ready to record
   startSheetTitle: Start a capture
   startButton: Start
-  guideCount: $1 guide
-  guideCountPlural: $1 guides
   shortcutsSection: "Shortcuts"
   cardScreenshots: "Screenshots"
   cardKeyboard: "Typing and keys"
@@ -211,7 +201,6 @@ desktop:
   shortcutCapture: "Capture a step now"
   shortcutPress: "Press keys…"
   shortcutClear: "Clear"
-  shortcutTaken: "Another application already owns this key"
 
 fullview:
   allGuides: All Guides

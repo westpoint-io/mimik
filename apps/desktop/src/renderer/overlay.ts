@@ -1,3 +1,4 @@
+import './core-env';
 import './overlay.css';
 import { boundary } from './overlay/boundary';
 import { controls } from './overlay/controls';
