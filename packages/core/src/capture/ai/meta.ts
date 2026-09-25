@@ -1,5 +1,7 @@
 import { generateObject, generateText, jsonSchema } from 'ai';
 import { localStorage } from '@/core/env';
+import { actionSteps } from '@/core/guides/blocks';
+import type { Step } from '@/core/guides/types';
 import { logger } from '@/core/logger';
 import { GUIDE_META_JSON_SUFFIX, GUIDE_META_PROMPT, getLanguageSuffix } from './prompts';
 import { createModel } from './provider';
@@ -91,4 +93,11 @@ export async function generateGuideMeta(
     logger.error('Guide meta generation failed', err);
     return null;
   }
+}
+
+export function guideMetaSteps(steps: Step[]): { description: string; url: string }[] {
+  const described = actionSteps(steps)
+    .filter((step) => step.description)
+    .map((step) => ({ description: step.description, url: step.url }));
+  return described.length > 15 ? [...described.slice(0, 10), ...described.slice(-5)] : described;
 }

@@ -1,25 +1,23 @@
 import { logger } from '@mimik/core/logger';
 import { getAIDescription } from '@/core/capture/ai/description';
 import { describeAiFailure } from '@/core/capture/ai/errors';
-import { resolveAiKey } from '@/core/capture/ai/keys';
-import { AI_PROVIDERS } from '@/core/capture/ai/models';
+import { AI_CREDENTIAL_SETTINGS, resolveAiCredentials } from '@/core/capture/ai/keys';
 import { type DOMContext, serializeDOMContext } from '@/core/capture/dom/context';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import { broadcastAiToPanel } from '@/lib/port/broadcast-ai-to-panel';
 
 export async function generateAiDescription(domContext: DOMContext): Promise<string | undefined> {
-  const settings = await localStorage.get(['aiApiKeys', 'aiApiKey', 'aiProvider', 'aiModel', 'aiBaseUrl']);
-  const { provider, apiKey } = resolveAiKey(settings);
-  if (!apiKey) return undefined;
+  const keys = resolveAiCredentials(await localStorage.get([...AI_CREDENTIAL_SETTINGS]));
+  if (!keys) return undefined;
+  const { provider } = keys;
 
-  const model = (settings.aiModel as string) || AI_PROVIDERS[provider].defaultModel;
   try {
     const description = await getAIDescription(
       serializeDOMContext(domContext),
       provider,
-      model,
-      apiKey,
-      settings.aiBaseUrl as string | undefined,
+      keys.model,
+      keys.apiKey,
+      keys.baseUrl,
     );
     return description || undefined;
   } catch (err) {

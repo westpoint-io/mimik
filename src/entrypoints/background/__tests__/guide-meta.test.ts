@@ -18,7 +18,10 @@ const {
   updateGuideTitleMock: vi.fn(),
 }));
 
-vi.mock('@/core/capture/ai/meta', () => ({ generateGuideMeta: generateGuideMetaMock }));
+vi.mock('@/core/capture/ai/meta', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/core/capture/ai/meta')>()),
+  generateGuideMeta: generateGuideMetaMock,
+}));
 
 vi.mock('@/core/guides/service', () => ({
   clearStepAiPending: clearStepAiPendingMock,

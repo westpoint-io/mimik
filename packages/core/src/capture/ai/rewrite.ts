@@ -1,8 +1,7 @@
 import { generateText } from 'ai';
 import { localStorage } from '@/core/env';
 import { logger } from '@/core/logger';
-import { resolveAiKey } from './keys';
-import { AI_PROVIDERS } from './models';
+import { AI_CREDENTIAL_SETTINGS, resolveAiCredentials } from './keys';
 import { getLanguageSuffix, REWRITE_PROMPT } from './prompts';
 import { createModel } from './provider';
 
@@ -29,25 +28,13 @@ export function buildRewritePrompt(text: string, instruction: string, locale: st
 }
 
 export async function rewriteSelection(text: string, instruction: string): Promise<RewriteSelectionResponse> {
-  const settings = await localStorage.get([
-    'aiApiKeys',
-    'aiApiKey',
-    'aiProvider',
-    'aiModel',
-    'aiBaseUrl',
-    'aiLanguage',
-  ]);
-  const { provider, apiKey } = resolveAiKey(settings);
-  if (!apiKey) return { error: 'no-api-key' };
+  const settings = await localStorage.get([...AI_CREDENTIAL_SETTINGS, 'aiLanguage']);
+  const keys = resolveAiCredentials(settings);
+  if (!keys) return { error: 'no-api-key' };
 
   try {
     const { text: raw } = await generateText({
-      model: createModel(
-        provider,
-        (settings.aiModel as string) || AI_PROVIDERS[provider].defaultModel,
-        apiKey,
-        settings.aiBaseUrl as string | undefined,
-      ),
+      model: createModel(keys.provider, keys.model, keys.apiKey, keys.baseUrl),
       prompt: buildRewritePrompt(text, instruction, (settings.aiLanguage as string) || 'en'),
       maxOutputTokens: 400,
     });
