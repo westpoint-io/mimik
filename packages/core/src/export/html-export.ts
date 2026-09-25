@@ -1,6 +1,7 @@
 import { i18n } from '@/core/env';
 import { fitLogo, loadBranding } from '@/core/export/branding';
 import { type ExportOptions, IMAGE_SCALE_FACTORS, loadExportOptions } from '@/core/export/options';
+import { POPPINS_FONT_FACES } from '@/core/export/poppins';
 import {
   blobToBase64,
   escapeHtml,
@@ -180,10 +181,8 @@ export async function exportGuideAsHTML(
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(guide.title)}</title>
   ${guide.description ? `<meta name="description" content="${escapeHtml(guide.description)}">` : ''}
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
+    ${POPPINS_FONT_FACES}
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Poppins', sans-serif; max-width: 860px; margin: 0 auto; padding: 56px 28px; color: #1E1B4B; background: #fff; }
     a { text-decoration: none; }
