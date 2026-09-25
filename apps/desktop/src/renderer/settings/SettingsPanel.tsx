@@ -129,14 +129,6 @@ export function SettingsPanel() {
                     onChange={(recordTyping) => save({ recordTyping })}
                   />
                 </Row>
-                <Row label={i18n.t('desktop_readFieldText')} hint={i18n.t('desktop_readFieldTextHint')}>
-                  <Switch
-                    checked={settings.readFieldText}
-                    label={i18n.t('desktop_readFieldText')}
-                    disabled={!settings.recordTyping}
-                    onChange={(readFieldText) => save({ readFieldText })}
-                  />
-                </Row>
                 <Row label={i18n.t('desktop_typingDebounce')} hint={i18n.t('desktop_typingDebounceHint')}>
                   <Slider
                     label={i18n.t('desktop_typingDebounce')}

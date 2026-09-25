@@ -180,8 +180,6 @@ desktop:
   recordKeys: "Registrar atajos y teclas con nombre"
   recordTyping: "Registrar lo que escribes"
   typingDebounce: "Cerrar el paso de escritura tras"
-  readFieldText: "Leer el texto del propio campo cuando se pueda"
-  readFieldTextHint: "Si se desactiva, la guía registra tus pulsaciones"
   cardScreenshotsHint: "Qué captura cada paso"
   cardKeyboardHint: "Lo que el teclado añade a una guía"
   captureModeHint: "Ventana sigue a la app en la que haces clic."

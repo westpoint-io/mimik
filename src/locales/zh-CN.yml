@@ -180,8 +180,6 @@ desktop:
   recordKeys: "记录快捷键和命名按键"
   recordTyping: "记录输入内容"
   typingDebounce: "输入步骤结束延迟"
-  readFieldText: "尽可能读取输入框自身的文本"
-  readFieldTextHint: "关闭时改为记录按键"
   cardScreenshotsHint: "每一步截取的内容"
   cardKeyboardHint: "键盘为指南添加的内容"
   captureModeHint: "窗口模式跟随你点击的应用。"

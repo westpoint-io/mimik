@@ -180,8 +180,6 @@ desktop:
   recordKeys: "Enregistrer les raccourcis et touches nommées"
   recordTyping: "Enregistrer ce que vous tapez"
   typingDebounce: "Clôturer l'étape de saisie après"
-  readFieldText: "Lire le texte du champ lorsque c’est possible"
-  readFieldTextHint: "Sinon, le guide enregistre vos frappes"
   cardScreenshotsHint: "Ce que capture chaque étape"
   cardKeyboardHint: "Ce que le clavier ajoute au guide"
   captureModeHint: "Fenêtre suit l’application sur laquelle vous cliquez."

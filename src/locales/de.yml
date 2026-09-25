@@ -180,8 +180,6 @@ desktop:
   recordKeys: "Kürzel und benannte Tasten aufzeichnen"
   recordTyping: "Eingaben aufzeichnen"
   typingDebounce: "Eingabeschritt beenden nach"
-  readFieldText: "Den Feldtext lesen, wenn möglich"
-  readFieldTextHint: "Andernfalls werden die Tastenanschläge aufgezeichnet"
   cardScreenshotsHint: "Was jeder Schritt aufnimmt"
   cardKeyboardHint: "Was die Tastatur zur Anleitung beiträgt"
   captureModeHint: "Fenster folgt der App, die du anklickst."

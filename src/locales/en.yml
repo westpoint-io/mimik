@@ -180,8 +180,6 @@ desktop:
   recordKeys: "Record shortcuts and named keys"
   recordTyping: "Record what you type"
   typingDebounce: "Close a typing step after"
-  readFieldText: "Read the field's own text when it can"
-  readFieldTextHint: "Off means the guide records your keystrokes instead"
   cardScreenshotsHint: "What each step captures"
   cardKeyboardHint: "What the keyboard adds to a guide"
   captureModeHint: "Window follows the app you click."

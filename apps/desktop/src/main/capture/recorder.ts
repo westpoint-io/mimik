@@ -413,7 +413,7 @@ export class DesktopRecorder {
       await this.write('input', where, Promise.resolve(field), shot);
       return;
     }
-    const typed = typedTextFor(field, buffer, this.settings().readFieldText && (seen?.fresh ?? true));
+    const typed = typedTextFor(field, buffer, seen?.fresh ?? true);
     if (!typed) return;
     await this.write('input', where, Promise.resolve(field), shot, typed);
   }

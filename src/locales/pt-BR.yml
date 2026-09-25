@@ -180,8 +180,6 @@ desktop:
   recordKeys: "Registrar atalhos e teclas nomeadas"
   recordTyping: "Registrar o que você digita"
   typingDebounce: "Encerrar a etapa de digitação após"
-  readFieldText: "Ler o texto do próprio campo quando possível"
-  readFieldTextHint: "Se desligado, o guia registra suas teclas"
   cardScreenshotsHint: "O que cada passo captura"
   cardKeyboardHint: "O que o teclado adiciona ao guia"
   captureModeHint: "Janela acompanha o app em que você clica."

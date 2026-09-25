@@ -76,7 +76,7 @@ app.whenReady().then(async () => {
     return Promise.resolve({ png: image.toPNG(), width, height, scaleFactor: scale, displayId: display.id });
   }
 
-  const REGION_MODE = { ...DEFAULT_CAPTURE_SETTINGS, captureMode: 'region' as const };
+  const REGION_MODE = { ...DEFAULT_CAPTURE_SETTINGS, captureMode: 'region' as const, recordKeys: true };
   let settings = { ...REGION_MODE };
   let activeGuide = '';
   const recorder = new DesktopRecorder(
@@ -116,7 +116,6 @@ app.whenReady().then(async () => {
     captureOutsideClicks: true,
     captureKeys: false,
     captureTyping: false,
-    typingSmartDetection: false,
   });
   results.push({
     name: 'settings saved under the old names carry over',
@@ -124,7 +123,6 @@ app.whenReady().then(async () => {
       legacy.keepClicksBeyondArea &&
       !legacy.recordKeys &&
       !legacy.recordTyping &&
-      !legacy.readFieldText &&
       normaliseSettings({ recordTyping: true, captureTyping: false }).recordTyping,
     detail: 'each old key maps onto its new name, and the new name wins when both are present',
   });
