@@ -189,8 +189,6 @@ desktop:
   cardKeyboardHint: "O que o teclado adiciona ao guia"
   captureModeHint: "Janela acompanha o app em que você clica."
   showCursorHint: "Desenha um ponteiro onde você clicou."
-  markerColour: "Cor do marcador"
-  markerColourHint: "O contorno do que você clicou e a cor de destaque nas exportações."
   screenshotDelayHint: "Espera antes da captura, para menus com animação."
   keepClicksBeyondAreaHint: "Só no modo Área. Esses passos ainda mostram a área."
   typingDebounceHint: "Uma pausa desse tamanho encerra o passo."

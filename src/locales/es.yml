@@ -189,8 +189,6 @@ desktop:
   cardKeyboardHint: "Lo que el teclado añade a una guía"
   captureModeHint: "Ventana sigue a la app en la que haces clic."
   showCursorHint: "Dibuja un puntero donde hiciste clic."
-  markerColour: "Color del marcador"
-  markerColourHint: "El contorno de lo que pulsaste y el color de acento en las exportaciones."
   screenshotDelayHint: "Espera antes de la captura, para menús con animación."
   keepClicksBeyondAreaHint: "Solo en modo Área. Esos pasos siguen mostrando el área."
   typingDebounceHint: "Una pausa así de larga termina el paso."

@@ -1,22 +1,32 @@
 import { validateApiKey } from '@mimik/core/capture/ai/validate';
 import { i18n } from '@mimik/core/env';
-import { AiSettings, Switch, useKeyCheck } from '@mimik/ui';
-import { AppWindow, Command, Crop, Keyboard, Monitor, MonitorPlay, MousePointerClick, Sparkles } from 'lucide-react';
+import { AiSettings, BrandingSettings, Switch, useKeyCheck } from '@mimik/ui';
+import {
+  AppWindow,
+  Command,
+  Crop,
+  ImageIcon,
+  Keyboard,
+  Monitor,
+  MonitorPlay,
+  MousePointerClick,
+  Sparkles,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { CaptureSettings, CaptureShortcuts } from '../../main/capture/settings';
 import { Card } from './Card';
 import { zoomLevels } from './lib/zoom-levels';
-import { MarkerColour } from './MarkerColour';
 import { Row } from './Row';
 import { Segmented } from './Segmented';
 import { ShortcutRecorder } from './ShortcutRecorder';
 import { Slider } from './Slider';
 
-type Section = 'capture' | 'ai' | 'shortcuts';
+type Section = 'capture' | 'ai' | 'branding' | 'shortcuts';
 
 const SECTIONS: { id: Section; labelKey: string; Icon: typeof AppWindow }[] = [
   { id: 'capture', labelKey: 'desktop_capturingSection', Icon: MonitorPlay },
   { id: 'ai', labelKey: 'settings_aiDescriptions', Icon: Sparkles },
+  { id: 'branding', labelKey: 'settings_branding', Icon: ImageIcon },
   { id: 'shortcuts', labelKey: 'desktop_shortcutsSection', Icon: Command },
 ];
 
@@ -68,6 +78,8 @@ export function SettingsPanel() {
       <div className="min-w-0 flex-1 overflow-y-auto px-6 py-5">
         <div className="flex flex-col gap-3.5">
           {section === 'ai' && <AiSettings keyCheck={keyCheck} />}
+
+          {section === 'branding' && <BrandingSettings />}
 
           {section === 'capture' && settings && (
             <>
@@ -130,9 +142,6 @@ export function SettingsPanel() {
                     label={i18n.t('desktop_showCursor')}
                     onChange={(showCursor) => save({ showCursor })}
                   />
-                </Row>
-                <Row label={i18n.t('desktop_markerColour')} hint={i18n.t('desktop_markerColourHint')}>
-                  <MarkerColour />
                 </Row>
               </Card>
 

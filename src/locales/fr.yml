@@ -189,8 +189,6 @@ desktop:
   cardKeyboardHint: "Ce que le clavier ajoute au guide"
   captureModeHint: "Fenêtre suit l’application sur laquelle vous cliquez."
   showCursorHint: "Dessine un pointeur là où vous avez cliqué."
-  markerColour: "Couleur du repère"
-  markerColourHint: "Le contour de l’élément cliqué, et l’accent des exports."
   screenshotDelayHint: "Attente avant la capture, pour les menus animés."
   keepClicksBeyondAreaHint: "Mode Zone uniquement. Ces étapes montrent toujours la zone."
   typingDebounceHint: "Une pause de cette durée termine l’étape."
