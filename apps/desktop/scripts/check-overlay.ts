@@ -274,6 +274,19 @@ app.whenReady().then(async () => {
     shortTitle.height === veil.height && longTitle.height === veil.height && longTitle.preview < shortTitle.preview,
     `${veil.height} px while capturing, ${shortTitle.height} px with a short title, ${longTitle.height} px with a long one, preview ${shortTitle.preview} → ${longTitle.preview} px`,
   );
+  overlay.setAiFailure({ reason: 'rejected', provider: 'openai' });
+  await settle();
+  const failed = await card(
+    "shown: !document.querySelector('#aiNotice').hidden, text: document.querySelector('#aiNotice').textContent",
+  );
+  overlay.setAiFailure(null);
+  await settle();
+  const cleared = await card("shown: !document.querySelector('#aiNotice').hidden");
+  check(
+    'a failed AI description says why, in the extension words',
+    failed.shown === true && String(failed.text).includes('OpenAI') && cleared.shown === false,
+    `notice: ${failed.text}; after clearing shown: ${cleared.shown}`,
+  );
   const whenIdle = await windowWithHash('controls')?.webContents.executeJavaScript(
     "document.querySelector('#primary').disabled",
   );

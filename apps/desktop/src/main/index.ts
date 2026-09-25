@@ -6,7 +6,7 @@ import { focusedWindow } from './capture/focused-window';
 import { DesktopRecorder, frameFor } from './capture/recorder';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from './capture/screenshot-store';
 import { type CaptureMode, type CaptureSettings, loadSettings, saveSettings } from './capture/settings';
-import { CaptureOverlay, type OverlayCommand, type OverlayStep } from './overlay';
+import { CaptureOverlay, type OverlayAiFailure, type OverlayCommand, type OverlayStep } from './overlay';
 import { bindShortcuts, type ShortcutName, shortcutMap, unbindShortcuts } from './shortcuts';
 import { checkForUpdates } from './updater';
 
@@ -248,6 +248,7 @@ async function onOverlayCommand(command: OverlayCommand): Promise<void> {
   }
   if (command === 'start' && !guideId) {
     steps = [];
+    overlay?.setAiFailure(null);
     try {
       guideId = await ask<string>(mainWindow?.webContents ?? null, 'mimik:capture:startGuide');
     } catch (error) {
@@ -374,16 +375,20 @@ if (!app.requestSingleInstanceLock()) {
       applyShortcuts();
       return captureSettings;
     });
-    ipcMain.on('mimik:capture:described', (_event, stepId: string, description: string | null) => {
-      const step = steps.find((candidate) => candidate.id === stepId);
-      if (!step) return;
-      if (description) {
-        step.title = description;
-        step.source = 'ai';
-      }
-      step.pending = false;
-      if (step === steps.at(-1)) overlay?.showStep(step);
-    });
+    ipcMain.on(
+      'mimik:capture:described',
+      (_event, stepId: string, description: string | null, failure: OverlayAiFailure | null) => {
+        if (failure) overlay?.setAiFailure(failure);
+        const step = steps.find((candidate) => candidate.id === stepId);
+        if (!step) return;
+        if (description) {
+          step.title = description;
+          step.source = 'ai';
+        }
+        step.pending = false;
+        if (step === steps.at(-1)) overlay?.showStep(step);
+      },
+    );
     ipcMain.handle('mimik:capture:region', () => overlay?.region);
     ipcMain.handle('mimik:capture:edit', () => {
       enterCapture();

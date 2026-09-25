@@ -1,3 +1,4 @@
+import { aiFailureNotice } from '@mimik/core/capture/ai/errors';
 import { i18n } from '@mimik/core/env';
 import type { OverlayView } from '../../main/overlay';
 import { icon } from '../icons';
@@ -77,11 +78,20 @@ export function controls(): void {
   });
   const modes = el('div', { id: 'modeBlock' }, modeLabel, modeRow);
 
+  const aiHeadline = el('strong', {});
+  const aiAction = el('span', {});
+  const aiNotice = el(
+    'div',
+    { id: 'aiNotice', role: 'status' },
+    icon('alert', 13),
+    el('p', {}, aiHeadline, ' ', aiAction),
+  );
+
   const secondary = el('button', { id: 'secondary', type: 'button' });
   const primary = el('button', { id: 'primary', type: 'button', className: 'primary' });
   const foot = el('div', { id: 'foot' }, secondary, primary);
 
-  document.body.append(head, body, modes, foot);
+  document.body.append(head, body, modes, aiNotice, foot);
 
   const report = () => window.mimikOverlay.size(document.body.scrollWidth, document.body.scrollHeight);
 
@@ -90,7 +100,7 @@ export function controls(): void {
   let shownMode = '';
 
   const render = (view: OverlayView) => {
-    const { state, step, busy, starting, mode, shortcuts } = view;
+    const { state, step, busy, starting, mode, shortcuts, aiFailure } = view;
     const armed = state === 'armed';
     const recording = state === 'recording';
     const paused = state === 'paused';
@@ -184,6 +194,13 @@ export function controls(): void {
     primary.dataset.command = armed ? 'start' : 'stop';
     primary.disabled = starting || (busy && !armed);
     foot.hidden = collapsed;
+
+    aiNotice.hidden = collapsed || armed || !aiFailure;
+    if (aiFailure) {
+      const notice = aiFailureNotice(aiFailure.reason, aiFailure.provider);
+      aiHeadline.textContent = notice.headline;
+      aiAction.textContent = notice.action;
+    }
 
     requestAnimationFrame(report);
   };

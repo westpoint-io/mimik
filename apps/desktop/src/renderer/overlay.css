@@ -484,6 +484,31 @@ body.controls #skeleton .meta span {
   }
 }
 
+body.controls #aiNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 10px 14px 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+body.controls #aiNotice svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #dc2626;
+}
+
+body.controls #aiNotice p {
+  margin: 0;
+}
+
+body.controls #aiNotice strong {
+  font-weight: 600;
+  color: var(--deep);
+}
+
 body.controls #stepMeta,
 body.controls #skeleton .meta {
   display: flex;

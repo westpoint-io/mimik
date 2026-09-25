@@ -1,4 +1,5 @@
 import { join } from 'node:path';
+import type { AiFailureReason } from '@mimik/core/capture/ai/errors';
 import { BrowserWindow, ipcMain, screen } from 'electron';
 import { clampToDisplays, loadRegion, type Region, saveRegion } from '../capture/region';
 import type { CaptureMode } from '../capture/settings';
@@ -33,6 +34,11 @@ export interface OverlayShortcuts {
   capture: string | null;
 }
 
+export interface OverlayAiFailure {
+  reason: AiFailureReason;
+  provider: string;
+}
+
 export interface OverlayView {
   state: OverlayState;
   region: Region;
@@ -41,6 +47,7 @@ export interface OverlayView {
   busy: boolean;
   starting: boolean;
   shortcuts: OverlayShortcuts;
+  aiFailure: OverlayAiFailure | null;
 }
 
 export interface OverlayOptions {
@@ -112,6 +119,7 @@ export class CaptureOverlay {
   private step: OverlayStep | null = null;
   private size = { width: CONTROLS.width, height: CONTROLS.height };
   private busy = false;
+  private aiFailure: OverlayAiFailure | null = null;
   private editingFrom: OverlayState = 'hidden';
   private modeBeforeEdit: CaptureMode | null = null;
   private hiding: { shown: BrowserWindow[]; ready: Promise<unknown>; users: number } | null = null;
@@ -157,6 +165,7 @@ export class CaptureOverlay {
       busy: this.busy,
       starting: this.starting,
       shortcuts: this.options.shortcuts?.() ?? NO_SHORTCUTS,
+      aiFailure: this.aiFailure,
     };
   }
 
@@ -180,6 +189,11 @@ export class CaptureOverlay {
 
   showStep(step: OverlayStep | null): void {
     this.step = step ? { ...step } : null;
+    this.broadcast();
+  }
+
+  setAiFailure(failure: OverlayAiFailure | null): void {
+    this.aiFailure = failure;
     this.broadcast();
   }
 

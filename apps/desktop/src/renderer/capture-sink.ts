@@ -86,10 +86,10 @@ export class DesktopCaptureSink implements CaptureSink {
     await addStepToGuide(data.guideId, stepId);
 
     if (pending) {
-      void describeStep(data.action, meta).then(async (written) => {
-        if (written) await updateStepDescription(stepId, written, 'ai');
+      void describeStep(data.action, meta).then(async ({ text, failure }) => {
+        if (text) await updateStepDescription(stepId, text, 'ai');
         await clearStepAiPending(stepId);
-        window.mimik.capture.described(stepId, written);
+        window.mimik.capture.described(stepId, text, failure);
       });
     }
 
