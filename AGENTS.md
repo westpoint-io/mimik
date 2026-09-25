@@ -370,7 +370,7 @@ a one-liner is not worth a cross-boundary dependency that does not work.
 ## Code Layout
 
 `packages/ui/src` is grouped by feature, not by the surface that first used a file: `ai`,
-`annotation`, `common`, `export`, `guide`, `history`, `library`, `navigation` and `search`. Inside a
+`annotation`, `branding`, `common`, `export`, `guide`, `history`, `library`, `navigation` and `search`. Inside a
 feature, components sit in `components/`, hooks in `hooks/`, plain functions in `lib/`, a store
 slice in `store/`, and a `types.ts` only when several files share a type. `components/ui` holds the
 shadcn primitives as the generator writes them, and `stores/` merges the slices.
@@ -450,9 +450,28 @@ the service hydrates one into the other on read, so the distinction stops at the
 user's `mimik` one.
 
 Core reaches the surface through `configureCore`, so every desktop entry point imports
-`src/renderer/core-env.ts` for its side effect, exactly as the extension imports `src/lib/core-env.ts`.
-The desktop adapter backs settings with `window.localStorage` and returns message keys verbatim —
-desktop strings land with the desktop UI.
+`src/renderer/core-env.ts` for its side effect, exactly as the extension imports `src/lib/core-env.ts`
+— the app window, the overlay and the splash alike. The desktop adapter backs settings with
+`window.localStorage` and translates through the same six locale files the extension ships.
+
+Which one is the App language setting under General — the language picked there, or the system's
+when it is left on "Same as the system" — resolved by `appLocale` from `navigator.language`, matching
+a region to its language (`pt-PT` to `pt-BR`) and falling back to English. A key a locale lacks falls
+back to English on its own rather than showing the key. The value is read synchronously when
+`core-env` loads, so changing it stores it, reloads every window through `mimik:app:relocalise`, and
+reopens the settings on General in the window that asked. The extension has no picker, because
+`browser.i18n` follows the browser's own language and cannot be switched at runtime. Strings in the
+main process — the tray and its menu, the error dialogs — are still English.
+
+The overlay and the splash have no React, but they read strings through `i18n.t` like everything
+else, and wherever the extension already names a thing they use its key: the card's header is
+`recording.recording` / `recording.capturePaused`, its Remove button `recording.deleteStep`, its
+writing state `editor.writingStepDescription`, its badges `stepSource.*`, its step line
+`export.stepLabel`, and the area editor's buttons `common.cancel` and `annotationEditor.done`. They
+had been hand-typed English — "Remove this step", "Paused", "Writing step description…" — so one
+action read differently in the side panel and on the card, and a desktop key existed for half of
+them that nothing read. Copy the extension has no counterpart for (the card's tips, "Starting…",
+"Capturing step N…") is still written in the overlay.
 
 `pnpm --filter @mimik/desktop check:storage` runs four checks across two hidden `BrowserWindow`s:
 the v1 to v2 upgrade against a real v1 store, `MimikDB` opening at v2 with all four tables, a guide
@@ -648,8 +667,7 @@ the click point, and the dashed target scaled by that ratio. Scaling the target 
 having once: a rectangle multiplied in one surface and not the other puts the dashed box on the wrong
 thing, and nothing about that fails a build. Everything else about the two paths genuinely differs —
 voice narration, the deferred-description queue and the input finalisation exist only in the
-extension, and the cursor mark, the application name and the fire-and-forget description exist only
-on the desktop — so only the row builder is shared.
+extension, and the application name and the fire-and-forget description exist only on the desktop — so only the row builder is shared.
 
 Main cannot `invoke` a renderer, so `ask()` sends a request with a generated reply channel and waits
 for `ipcMain.once` on it, with a timeout. The preload's `onRequest` is the other half. Guide creation
@@ -803,7 +821,7 @@ keycode table, no layout handling, no dead-key state and no IME composition trac
 codebase — the machinery those need exists to answer a question we do not ask.
 
 A session opens on any key that is not a modifier, not `Enter`, `Tab` or `Escape`, and not held with
-`Ctrl`, `Alt` or `Meta`, and every such key also appends to a buffer of what was typed. It closes on any of those, on a click, on pause, on stop, or after 1200 ms
+`Ctrl`, `Alt` or `Meta`, and every such key also appends to a buffer of what was typed. It closes on any of those, on a click, on pause, on stop, or after 1000 ms
 with no keys. `Shift` plus a letter still counts as typing, which is why modifiers are tested
 individually rather than as a set.
 
@@ -840,7 +858,8 @@ maps to none of those yields no label and therefore no step, rather than a step 
 
 Two sources compete for the text and `typedTextFor` picks between them. The field's value wins
 by default, because it is what is actually on screen and it survives caret movement, selection and
-autocomplete; turning `readFieldText` off skips that read entirely and always uses the buffer. The
+autocomplete. It is always read — a switch to use only the keystroke buffer was taken out, because it
+existed for edge cases nobody would set on purpose. The
 keystroke buffer wins in three cases: the focused element reports no value, the value is empty, or
 the field holds more than was typed by a margin that depends on its type — 24 characters for a
 document, 120 for anything else. That last rule is what makes rich text work — in a word processor
@@ -907,7 +926,11 @@ Descriptions and the guide's name are written by the user's own provider key whe
 by rule when there is not. `getAIDescription` takes a serialised context string rather than a
 `DOMContext`, because the desktop has no DOM to hand it: `serializeScreenContext` writes the same
 shape of thing from the application, the window title, the control's role and name, and the value,
-which is what UIAutomation knows. No screenshot is ever sent.
+which is what UIAutomation knows. No screenshot is ever sent. The key, model and endpoint are read once, by `resolveAiCredentials` in core's `keys.ts`, which the
+extension's descriptions, guide naming and rewrite and the desktop's all call; there had been four
+copies of the same read and default-model fallback. The steps a guide is named from are
+`guideMetaSteps` in `meta.ts` — the actions only, the first ten and last five past fifteen — for the
+same reason.
 
 A step is written with its heuristic description immediately and, when a provider key is saved,
 with `aiPending` set; then it is rewritten when the model answers. Saving a key is what enabling AI
@@ -915,6 +938,14 @@ means here, so without one the flag is never set and nothing on the card claims 
 coming. With one, the flag is cleared **whichever way the request goes** — a miss and a failure both
 clear it — because a pending flag that only clears on success is the same trap as a title
 placeholder that only resolves with AI.
+
+A failure also says why, in the extension's words. `describeStep` classifies the error with core's
+`describeAiFailure` and sends the reason and provider with `mimik:capture:described`; main keeps it
+on the overlay view, and the card shows `aiFailureNotice` — the headline and action the side panel's
+`AiStatus` shows, such as "OpenAI rejected your API key. Check your key in Settings." — above its
+buttons, where the side panel shows it above Finish, until the next recording starts. It used to be
+`catch { return null }`, so a rejected key and no network both looked exactly like having no key.
+`aiFailureKey` and `aiActionKey` moved from the side panel into `capture/ai/errors.ts` for it.
 
 Stopping a recording names the guide twice. The application name lands first so the view never opens
 on a placeholder, and `generateGuideMeta` replaces it if a key is configured. Ordering it that way
@@ -1066,38 +1097,33 @@ read by main rather than by core, because none of them mean anything to the exte
 | Setting | Default | Effect |
 |---|---|---|
 | `captureMode` | `window` | What each screenshot frames: the focused window, the whole screen, or a drawn area |
-| `showCursor` | on | A pointer is drawn into the screenshot at the click point |
 | `screenshotDelayMs` | 0, capped at 2000 | Extra wait between the click and the grab |
 | `keepClicksBeyondArea` | off | Whether clicks beyond the capture area are recorded at all, in `region` mode only |
-| `recordKeys` | on | Whether a shortcut or a named key becomes a step |
+| `recordKeys` | off | Whether a shortcut or a named key becomes a step; off by default, since a guide is clicks and typing |
 | `recordTyping` | on | Whether typing becomes a step |
-| `typingDebounceMs` | 1200, clamped to 200–5000 | Quiet time that closes a typing session |
-| `readFieldText` | on | Off means the keystroke buffer is used and the field's value is never read |
+| `typingDebounceMs` | 1000, clamped to 200–5000 | Quiet time that closes a typing session |
 | `zoomLevel` | automatic | How far a step zooms toward the click: `null` derives it, or 1–5 in 0.25 steps |
 | `shortcuts` | three accelerators | Global keys for start/stop, pause/resume and capture now |
 
 `normaliseSettings` runs on every read and write, so an out-of-range delay clamps and an unknown
-mode falls back rather than reaching the recorder, and a key it no longer knows is dropped. It also reads four
+mode falls back rather than reaching the recorder, and a key it no longer knows is dropped. It also reads three
 settings under the names an earlier build saved them as, so a file written before the rename keeps
 its choices; the next save writes only the current names.
 
-The pointer drawn is always the arrow. A choice of arrow, hand or dot used to sit under "Show the
-cursor", and it only changed anything with that switch on and only on left clicks, so it was a
-setting nobody could see working. `CursorMark` stays core's type, and `drawCursor` still draws all
-three shapes, because steps recorded while the choice existed carry the other two in `edits.cursor`.
+No pointer is drawn into a step. Recordings once stored an arrow at the click point in
+`edits.cursor`, behind a "Show the cursor" switch, and every exporter drew it — but the guide view
+rebuilt the edits it renders from the annotations and the target alone, so the app itself never
+showed it and the switch read as broken. The dashed target already says what was clicked, so the
+pointer went rather than being wired through: the setting, the mark and the drawing are gone, and an
+`edits.cursor` left on an older step is ignored everywhere, exports included. That is also what the
+extension has always done, where the target's colour is the only click mark to set.
 
-The marker colour is not in that file. It is `targetColor` in the renderer's settings storage, the
-same key the extension's brand colour uses, because the renderer is where both readers are: the
+The brand colour is not in that file. It is `targetColor` in the renderer's settings storage, set
+from the Export Branding section with the extension's own card, because the renderer is where both readers
+are: the
 capture sink stamps it on each step's dashed target, and `branding.ts` takes it as the accent of
 every export. Setting it on the desktop therefore recolours exports too, which is what it does in
 the extension. The two surfaces keep separate stores, so neither one's choice reaches the other.
-
-Electron exposes no way to read the real system cursor bitmap and a screen grab never includes the
-pointer, so the shapes are drawn as canvas paths. The cursor is an entry in `edits` beside the click
-target, not something baked into the stored bytes, so `renderScreenshot` draws it and every exporter
-and the editor show it with no export-side work. Keeping it out of the file means the capture is
-never decoded and re-encoded on the way to disk, and the pointer can be moved or removed later
-without touching the original.
 
 The mouse button decides the action: the right button records as `auxclick` and everything else as
 `click`, so a right click reads as "Right-click …" rather than being indistinguishable from a left
@@ -1123,26 +1149,51 @@ filters in `region` mode; the other two modes frame every click by construction.
 
 `check:pipeline` covers all five: clamping and persistence round-trip through the real file, an
 unknown mode falls back, the opt-in rule holds in four positions, a double click collapses to one step, `frameFor` returns the right
-rectangle for all three modes including both window fallbacks, a 400 ms delay measurably slows the
-grab, and the same synthetic frame renders to a different size once a cursor is drawn over it. It restores whatever
+rectangle for all three modes including both window fallbacks, and a 400 ms delay measurably slows the
+grab. It restores whatever
 settings were on disk when it finishes.
 
 ## Desktop Settings
 
-Three sections behind one left nav: Capture, AI descriptions, Shortcuts. The split is the same one
-that decides where a file lives. Capture and Shortcuts describe things the extension has no concept
-of, so they are written in `apps/desktop` against `capture-settings.json`. AI descriptions are
-identical on both surfaces, so `AiSettings` lives in `packages/ui` and each app hands it a
-`validate` function — the desktop passes core's `validateApiKey` directly, and the extension goes
-through its background messaging, which is the only part that differs.
+Five sections behind one left nav: General, Capturing, AI descriptions, Export Branding, Shortcuts, and
+the dialog opens on General, the first, as desktop settings conventionally do. General holds three cards named
+for what they hold — Language, Startup and Updates — rather than one card named after the section,
+which put "General" in the list and again as the pane's only heading. Startup and Updates are the
+tray menu's own "Start at login" and "Check for updates", in the tray's words and through the same
+`setOpenAtLogin` and `checkForUpdates`, so the tray and the settings cannot disagree; the update check
+does nothing in an unpackaged build, where the updater never runs. The split is the
+same one that decides where a file lives. Capturing and Shortcuts describe things the extension has
+no concept of, so they are written in `apps/desktop` against `capture-settings.json`. AI descriptions
+and Branding are identical on both surfaces, so `AiSettings` and `BrandingSettings` live in
+`packages/ui` and both apps mount them. `AiSettings` takes a `validate` function — the desktop passes
+core's `validateApiKey` directly, and the extension goes through its background messaging, which is
+the only part that differs.
 
-All three sections are cards with one shell: the same border, radius, padding and 28px icon header
-`AiSettings` already had, with a line under the title saying what the card is for. Rows inside a
+`BrandingSettings` is the extension's Brand colour card and Branding card — the colour of the click
+highlight and export accent, the logo, the footer line and the attribution — lifted out of
+`SettingsView` as they were, with `useBrandingSettings` holding the four values and saving each change
+as it happens, the way `useAiSettings` does. The desktop had neither at first: the logo, footer and
+attribution were written off as having no desktop meaning, though every desktop export reads them
+through `loadBranding`, and the colour was rebuilt in Capturing under a name of its own, "Marker
+colour", so one setting read as two features in two places. A setting both surfaces have is the
+extension's card, in the extension's order, under the extension's words.
+
+The default logo those exports fall back to is `public/mimik-mark.png`, the extension's own file. The
+desktop renderer takes `public/` as its `publicDir`, so the file sits beside the page in dev and in the
+build, and its `assetUrl` resolves a path relative to the page rather than to the disk root — a
+leading slash on a `file://` page is `file:///mimik-mark.png`. Neither held before, and the fetch
+failing quietly returned no logo, so no desktop export ever had one. `check:pipeline` fetches it.
+
+Every card is `SettingsCard` from `packages/ui`: the border, radius, padding, white face and 28px icon
+header, with an optional hint under the title and an optional control beside it. The extension's AI,
+Brand colour, Export Branding, Voice narration and Smart blur cards and the desktop's `Card` all use
+it; they had been six hand-copied frames, one of them the desktop's. The desktop `Card` only adds the
+divided rows inside. Rows inside a
 desktop card are `Row`: label and a one-line hint on the left, the control on the right, divided
 from the next row, or the control underneath with `stack` when it is too wide to sit beside the
 label. The AI card keeps the stacked 11px labels it needs in 400px of side panel — the two are never
 on screen at once, and matching them would mean branching that shared component on `client()`.
-Capturing is three cards: Screenshots, Click marks and Typing and keys.
+Capturing is two cards: Screenshots, and Typing and keys.
 
 Each kind of value has one control, and it shows the value rather than hiding it behind a click. A
 choice among a few is `Segmented`, a row of buttons with the chosen one filled; that is the capture
@@ -1150,10 +1201,8 @@ mode and the zoom, which offers Automatic, 1×, 1.5×, 2×, 3×, 4× and 5× and
 button when an older build saved one in between. An on/off is `Switch`, the same switch the AI card's
 own-server toggle is, moved into `packages/ui` so the two cannot drift. A duration is `Slider`, a
 native range input tinted with `accent-accent` beside a chip reading the value in ms or seconds,
-because a number field hid what the default was and drew spinner arrows on Windows. The marker colour
-is the extension's control, a swatch and hex code that opens the shared `ColorPicker` with core's
-`TARGET_COLORS` as presets. A setting that cannot apply is disabled rather than hidden, so the rows
-do not jump: outside clicks without Area mode, the field read and the typing pause without typing.
+because a number field hid what the default was and drew spinner arrows on Windows. A setting that cannot apply is disabled rather than hidden, so the rows
+do not jump: outside clicks without Area mode and the typing pause without typing.
 Every change is applied to the page before main answers, or a slider dragged across its range would
 lag a round trip behind the pointer.
 
@@ -1179,8 +1228,10 @@ that genuinely differs — the extension goes through background messaging becau
 what has `host_permissions`, and the desktop calls `validateApiKey` directly on top of the main
 process fetch.
 
-The rest of `SettingsView` stayed put. Voice narration, smart blur, brand logos and the microphone
-picker have no desktop meaning, and it reaches into `@/lib/browser-api/`. Splitting it did mean the
+The rest of `SettingsView` stayed put. Voice narration, smart blur and the microphone picker have no
+desktop meaning, and it reaches into `@/lib/browser-api/`. It mounts `BrandingSettings` where its own
+two cards were and passes the autosave's `queue` as `onChange`, which is only there to raise the
+Saved badge — the card has already written the value. Splitting it did mean the
 autosave had to change shape: the AI fields left the parent's snapshot, so `AiSettings` reports its
 own changes through `onChange` and both halves queue into the same debounced flush. `SettingsView`
 still keeps the provider and key in state for one reason — `resolveVoiceApiKey` falls back to the AI
@@ -1247,7 +1298,7 @@ everywhere but macOS.
 
 | Format | Generator | Details |
 |--------|-----------|---------|
-| HTML | `core/export/html-export.ts` | Self-contained, base64 images, inline CSS |
+| HTML | `core/export/html-export.ts` | Self-contained: base64 images, inline CSS, and its own Poppins |
 | PDF | `core/export/pdf-export.ts` | jsPDF, A4 portrait, auto page breaks |
 | Markdown | `core/export/markdown-export.ts` | Standard MD with base64 image data URLs |
 | DOCX | `core/export/docx-export.ts` | Lazy-imported, Word-compatible |
@@ -1307,14 +1358,25 @@ All colors are defined as CSS variables in `packages/ui/src/global.css` and used
 | `--color-muted-foreground` | `#6B7280` | Secondary text |
 | `--color-border` | `#C7D2FE` | Borders, dividers (lavender) |
 | `--color-secondary` | `#EEF2FF` | Light wash backgrounds |
-| `--color-accent` | `#4F46E5` | Icons, links, focus rings, toggles, meters (indigo) — never a button fill |
+| `--color-accent` | `#1E1B4B` | Icons, links, focus rings, toggles, sliders, selected options — the same navy as the buttons |
 | `--color-primary` | `#1E1B4B` | Primary buttons, badges, dark backgrounds |
 | `--color-primary-foreground` | `#C7D2FE` | Text on dark backgrounds |
 | `--color-lavender` | `#C7D2FE` | Soft accent |
-| `--color-purple` | `#4F46E5` | Primary indigo |
+| `--color-purple` | `#1E1B4B` | Kept as an alias of the accent |
+| `--color-mascot` | `#4F46E5` | The indigo half of the mascot's cap and the camera's light, so the logo keeps its colours |
 | `--color-deep` | `#1E1B4B` | Deepest navy |
 | `--color-violet` | `#38BDF8` | Sky blue accent |
 | `--color-success` | `#059669` | Success green |
+
+The interface is navy and lavender only. The bright indigo `#4F46E5` used to be the accent, and next
+to the navy buttons it made two colours mean "selected" on one screen — a navy chosen mode beside an
+indigo switch and slider. It remains in exactly the places that are drawn over someone else's
+pixels, where a dark mark would vanish on a dark application: the default click highlight
+(`DEFAULT_TARGET_COLOR`, which Brand colour replaces), the capture area's edge and grips (`--mark` in
+`overlay.css`), the annotation editor's selection handles, and the Guide Me ring. The mascot keeps it
+through `--color-mascot`, and the annotation palette and the info callout keep it as a colour a
+person picks for content. Sliders draw their own track, navy up to the value and lavender after,
+because `accent-color` tints only the filled part and left the rest the browser's grey.
 
 Font: Poppins (loaded via `@fontsource/poppins`).
 
@@ -1328,5 +1390,5 @@ Font: Poppins (loaded via `@fontsource/poppins`).
 - **Content script injection** pings first, falls back to `chrome.scripting.executeScript()` for tabs without the script
 - **xstate snapshot** persisted to sessionStorage so the state machine survives service worker restarts
 - **Recording notification** uses `animationend` event (not hardcoded delays) for timing
-- **Font loading** uses `@fontsource/poppins` (CSP-safe, no CDN dependency)
+- **Font loading** uses `@fontsource/poppins` (CSP-safe, no CDN dependency) everywhere, the HTML export included: `export/poppins.ts` inlines the same package's latin and latin-ext woff2 files for 400, 600 and 700 through Vite's `?inline` into `@font-face` rules, about 56 KB. The export used to link Google Fonts, which failed in the desktop's Document preview under its `default-src 'self'` policy and sent every reader's address to Google when the file was opened; the desktop policy now allows `font-src 'self' data:` for the embedded faces. The PDF is still drawn in Helvetica, since jsPDF takes TTF and the package ships only web formats
 - **Cross-context sync** via BroadcastChannel — star/delete events update other views without full reload
