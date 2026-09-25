@@ -15,6 +15,7 @@ import {
   isTextField,
   isTooLarge,
 } from '../dom/element-utils';
+import { locateFrame, placeInTab } from '../dom/frame-placement';
 import { isReplayedClick, replayClick, replayInit, shouldInterceptClick } from './click-intercept';
 import { InputSession } from './input-session';
 
@@ -105,11 +106,12 @@ class CaptureController {
   private capture(action: string, target: HTMLElement, point?: { x: number; y: number }) {
     const atEvent = freezeRect(target);
     return async () => {
+      const placement = locateFrame();
       const elementMeta = extractElementMeta(target, atEvent);
       await sendMessage('captureStep', {
         guideId: this.guideId,
         action,
-        elementMeta: point ? { ...elementMeta, clickPoint: point } : elementMeta,
+        elementMeta: placeInTab(point ? { ...elementMeta, clickPoint: point } : elementMeta, await placement),
         domContext: extractDOMContext(target, action),
       });
     };

@@ -56,8 +56,29 @@ describe('shouldInterceptClick', () => {
     expect(shouldInterceptClick(el('<textarea></textarea>'), click())).toBe(false);
   });
 
-  it('still intercepts a checkbox, which is a click and not typing', () => {
-    expect(shouldInterceptClick(el('<input type="checkbox">'), click())).toBe(true);
+  it('lets native toggles through, since holding one back shoots the state it is leaving', () => {
+    expect(shouldInterceptClick(el('<input type="checkbox">'), click())).toBe(false);
+    expect(shouldInterceptClick(el('<input type="radio">'), click())).toBe(false);
+  });
+
+  it('lets aria toggles through the same way', () => {
+    expect(shouldInterceptClick(el('<div role="checkbox" tabindex="0"></div>'), click())).toBe(false);
+    expect(shouldInterceptClick(el('<button role="switch"></button>'), click())).toBe(false);
+    expect(shouldInterceptClick(el('<div role="radio" tabindex="0"></div>'), click())).toBe(false);
+  });
+
+  it('still holds a checkbox inside a menu, which would close before the shot and take the box with it', () => {
+    const menu = el('<div role="menu"><div role="menuitem" tabindex="0"><input type="checkbox"></div></div>');
+    expect(shouldInterceptClick(menu.querySelector('input') as HTMLElement, click())).toBe(true);
+  });
+
+  it('lets a checkbox in a listbox through, since a multi-select stays open', () => {
+    const list = el('<div role="listbox"><div role="option"><input type="checkbox"></div></div>');
+    expect(shouldInterceptClick(list.querySelector('input') as HTMLElement, click())).toBe(false);
+  });
+
+  it('still holds a checkable menu item, whose menu closes on the click', () => {
+    expect(shouldInterceptClick(el('<div role="menuitemcheckbox" tabindex="0"></div>'), click())).toBe(true);
   });
 });
 

@@ -2,7 +2,9 @@ import { getCssSelector } from 'css-selector-generator';
 import type { ElementMeta } from '@/core/guides/types';
 
 function getCleanText(el: HTMLElement): string | null {
+  if (el instanceof HTMLInputElement) return null;
   const clone = el.cloneNode(true) as HTMLElement;
+  for (const input of clone.querySelectorAll('input')) input.remove();
   clone.style.position = 'absolute';
   clone.style.left = '-9999px';
   clone.style.pointerEvents = 'none';

@@ -47,4 +47,24 @@ describe('extractElementMeta', () => {
     expect(meta.ariaLabel).toBe('Copy link');
     expect(meta.rect).toEqual({ x: 12, y: 34, width: 100, height: 20 });
   });
+
+  it('never attaches a copy of an input to the page, where a checked radio would steal the selection', () => {
+    const option = document.createElement('div');
+    option.setAttribute('role', 'button');
+    option.innerHTML = '<input type="radio" name="size" id="large" checked> Large';
+    document.body.appendChild(option);
+    const attached: Node[] = [];
+    const observer = new MutationObserver(() => {});
+    observer.observe(document.body, { childList: true });
+
+    extractElementMeta(option);
+    extractElementMeta(option.querySelector('input') as HTMLInputElement);
+    for (const record of observer.takeRecords()) attached.push(...record.addedNodes);
+    observer.disconnect();
+
+    expect(attached.length).toBeGreaterThan(0);
+    for (const node of attached) {
+      expect(node instanceof HTMLInputElement || (node as Element).querySelector?.('input')).toBeFalsy();
+    }
+  });
 });
