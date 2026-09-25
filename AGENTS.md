@@ -32,7 +32,8 @@ src/
 │   │   ├── dom/              # DOM extraction utilities
 │   │   │   ├── context.ts       # DOMContext extraction + serialization
 │   │   │   ├── element-meta.ts  # extractElementMeta (selector, text, aria, rect)
-│   │   │   └── element-utils.ts # findFocusableAncestor, isTextField, etc.
+│   │   │   ├── element-utils.ts # findFocusableAncestor, isTextField, etc.
+│   │   │   └── frame-placement.ts # locateFrame/placeInTab (subframe rects → tab coordinates)
 │   │   ├── events/           # Event capture system
 │   │   │   ├── handlers.ts      # CaptureController class + startCapture
 │   │   │   └── input-session.ts # InputSession (typing lifecycle)
@@ -139,6 +140,9 @@ Content Script ←→ Background Service Worker ←→ Sidepanel / Fullview
 - `URL_CHANGED` / `GET_ROUTE` — SPA navigation tracking
 - `START_BLUR` / `DISMISS_BLUR` / `CLEAR_BLUR` — blur overlay: open, close keeping masks, close removing masks
 
+**Frame messages** (content script in a subframe ↔ content script in its parent, `window.postMessage`, `core/capture/dom/frame-placement.ts`):
+- `mimikFramePlacement: 'ask'` / `'answer'`: where a subframe's viewport sits in the tab, so its rects can be moved into screenshot coordinates
+
 ## Capture Pipeline
 
 **Start recording:**
@@ -150,9 +154,9 @@ Content Script ←→ Background Service Worker ←→ Sidepanel / Fullview
 
 **Capture a click:**
 1. Content script's CaptureController detects click via DOM event listener
-2. Click handler pushes async work into PQueue (concurrency: 1)
-3. Enqueueing hides the hover ring (`pointerdown` already did, on mouse paths); queue waits 3 frames then sends `captureStep`
-4. Background calls `captureVisibleTab` (ring is hidden, page hasn't reacted yet)
+2. Click handler pushes async work into PQueue (concurrency: 1). An ordinary click is cancelled and replayed once the screenshot is taken (`click-intercept.ts`); text fields, native dropdowns, toggles outside a menu, shift-clicks and untrusted clicks pass through
+3. Enqueueing hides the hover ring (`pointerdown` already did, on mouse paths); queue waits 3 frames, and in a subframe for the frame's placement in the tab, then sends `captureStep`
+4. Background calls `captureVisibleTab` (ring is hidden; the page hasn't reacted yet, except to a toggle, which is shot after it flips)
 5. Saves Screenshot + Step to IndexedDB
 6. Queues the AI description from DOM context text (serialized in the background; the step carries `aiPending` until it lands) rather than awaiting it
 7. Returns `{ stepId }` → queue processes next event; the ring returns only once the queue is fully drained
@@ -408,6 +412,8 @@ Font: Poppins (loaded via `@fontsource/poppins`).
 
 - **Async event queue** in content script (PQueue, concurrency 1) serializes capture work — each action awaits the background round-trip (screenshot + step write, not the AI description) before the next starts
 - **Hover ring hidden when work is enqueued** (`CaptureController.enqueue`, instant `display:none`), and `show()` stays suppressed until the queue drains — a second click while the first capture is still in flight can't bring the ring back before the screenshot. `pointerdown` hides it earlier still, on top of `captureAction`'s 3-frame wait
+- **Toggles are not held back.** Interception shoots the page before a click lands, but the browser flips a checkbox *before* dispatching its click and flips it back when the click is cancelled, so holding one captured the state the step was leaving. `shouldInterceptClick` lets `isToggle` targets through (native checkbox/radio, `role` checkbox/radio/switch) and the capture runs after the paint wait instead. A label click normally reaches it as its control via `findFocusableAncestor`, and the click the label forwards is deduplicated. `menuitemcheckbox`/`menuitemradio` stay held, and so does any toggle inside `role=menu`/`menubar` (`MENU_SELECTOR`): the menu closes on the click, so a shot taken after it shows neither the menu nor the box. Held, the box is shot one state behind but in its menu, which is the better guide. A listbox is not held, since a multi-select stays open. Capturing after the click exposed a trap in `getCleanText`: it measures text on a copy attached to the page, and a copy of the checked radio joined the page's group and unchecked the real one, so radios could not be selected while recording. It now never attaches an input, which has no innerText anyway
+- **Subframe rects are moved into tab coordinates.** `getBoundingClientRect` is relative to the frame, and `captureVisibleTab` shoots the tab, so a capture inside an iframe drew its outline off by the frame's position. A cross-origin parent is unreachable except by `postMessage`, so `locateFrame` asks the parent's content script, which finds the `<iframe>` by `event.source` (open shadow roots included), measures its content box and scale, and adds its own placement before answering. The lookup runs inside the queued task, next to the rect it moves, since the parent can scroll between the event and the screenshot. The parent only answers direct children (`source.parent`, checked before any DOM search) and only while capture is live, plus `FRAME_ANSWER_GRACE_MS` after `stop()`: a child's last typing step is finalized by the same pause broadcast that stops its parent, and a responder left up for the life of the page would let any frame detect Mimik and track its own position in the tab. An answer outside plausible bounds, or none within 250ms, leaves the rect untranslated
 - **Input session** aggregates all typing on a field into one step — click creates it, keystrokes update description, finalize takes final screenshot
 - **DOM context** sent as text to AI instead of screenshots — 15-30x cheaper per step
 - **Hover ring** (`lib/hover-ring.ts`) is a closed-Shadow-DOM host marked `data-mimik-ignore`, shared by recording and the blur picker (purple). Recording reads the user's `targetColor` so the live ring matches the dashed target baked into screenshots. Never drawn on `iframe`/`embed`/`object` — a capture inside a subframe can't hide the top frame's ring
