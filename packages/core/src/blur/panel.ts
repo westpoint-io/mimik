@@ -128,7 +128,7 @@ const STYLES = `
   }
 
   .toggle input:checked + .toggle-track {
-    background: #4F46E5;
+    background: #1E1B4B;
   }
 
   .toggle input:checked + .toggle-track::after {

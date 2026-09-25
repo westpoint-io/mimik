@@ -41,7 +41,7 @@ export function CameraMascot({ size = 64 }: { size?: number }) {
       <circle {...camera.glint} className="fill-lavender" opacity={0.4} />
       <rect {...camera.flashUnit} className="fill-lavender" opacity={0.7} />
       <circle {...camera.flash} className="fill-lavender animate-[cam-flash_3s_ease_infinite]" />
-      <circle {...camera.light} className="fill-accent" />
+      <circle {...camera.light} className="fill-mascot" />
       {camera.hands.map((hand) => (
         <ellipse key={hand.cx} {...hand} className="fill-primary" />
       ))}

@@ -1,10 +1,11 @@
 @import '@fontsource/poppins/700.css';
 
 :root {
-  --accent: #4f46e5;
+  --accent: #1e1b4b;
   --deep: #1e1b4b;
   --lavender: #c7d2fe;
   --violet-mid: #3730a3;
+  --mascot: #4f46e5;
 }
 
 html,

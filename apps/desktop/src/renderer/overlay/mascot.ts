@@ -25,7 +25,7 @@ export function mascot(size = 42): SVGSVGElement {
     defs,
     svg('rect', { ...MASCOT_BODY, fill: 'var(--deep)' }),
     svg('path', { d: MASCOT_CROWN, fill: 'var(--violet-mid)' }),
-    svg('path', { d: MASCOT_CROWN, fill: 'var(--accent)', 'clip-path': 'url(#mascot-crown-split)' }),
+    svg('path', { d: MASCOT_CROWN, fill: 'var(--mascot)', 'clip-path': 'url(#mascot-crown-split)' }),
     svg('rect', { ...MASCOT_SEAM, fill: 'var(--lavender)' }),
     ...face.eyes.map((d) =>
       svg('path', {
