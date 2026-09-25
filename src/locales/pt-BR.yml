@@ -184,7 +184,6 @@ desktop:
   cardKeyboardHint: "O que o teclado adiciona ao guia"
   captureModeHint: "Janela acompanha o app em que você clica."
   screenshotDelayHint: "Espera antes da captura, para menus com animação."
-  keepClicksBeyondAreaHint: "Só no modo Área. Esses passos ainda mostram a área."
   typingDebounceHint: "Uma pausa desse tamanho encerra o passo."
   recordKeysHint: "Ctrl+S, Enter e afins viram passos."
   seconds: "s"

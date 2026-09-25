@@ -184,7 +184,6 @@ desktop:
   cardKeyboardHint: "Lo que el teclado añade a una guía"
   captureModeHint: "Ventana sigue a la app en la que haces clic."
   screenshotDelayHint: "Espera antes de la captura, para menús con animación."
-  keepClicksBeyondAreaHint: "Solo en modo Área. Esos pasos siguen mostrando el área."
   typingDebounceHint: "Una pausa así de larga termina el paso."
   recordKeysHint: "Ctrl+S, Enter y similares se convierten en pasos."
   seconds: "s"

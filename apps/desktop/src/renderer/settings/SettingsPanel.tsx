@@ -111,7 +111,7 @@ export function SettingsPanel() {
                   />
                 </Row>
 
-                <Row label={i18n.t('desktop_keepClicksBeyondArea')} hint={i18n.t('desktop_keepClicksBeyondAreaHint')}>
+                <Row label={i18n.t('desktop_keepClicksBeyondArea')}>
                   <Switch
                     checked={settings.keepClicksBeyondArea}
                     label={i18n.t('desktop_keepClicksBeyondArea')}
