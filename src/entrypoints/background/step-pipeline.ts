@@ -1,4 +1,5 @@
 import { logger } from '@mimik/core/logger';
+import { queueDescription } from '@/core/capture/ai/description-queue';
 import { AI_KEY_SETTINGS, resolveAiKey } from '@/core/capture/ai/keys';
 import type { DOMContext } from '@/core/capture/dom/context';
 import { CaptureState } from '@/core/capture/machine';
@@ -21,7 +22,6 @@ import type { CaptureStepData, CaptureStepResponse } from '@/lib/messaging';
 import { getActor } from './actor';
 import { generateAiDescription } from './ai-description';
 import { deferDescription, shouldQueueAiDescription } from './deferred-descriptions';
-import { queueDescription } from './description-queue';
 import { flushNarrationForStep, getVoiceUpdate } from './voice';
 
 async function takeScreenshot(stepId: string, meta: ElementMeta): Promise<string | undefined> {

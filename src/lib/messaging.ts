@@ -1,4 +1,5 @@
 import { defineExtensionMessaging } from '@webext-core/messaging';
+import type { GenerateGuideDescriptionResponse } from '@/core/capture/ai/guide-description';
 import type { RewriteError, RewriteSelectionResponse } from '@/core/capture/ai/rewrite';
 import type { CaptureStateValue } from '@/core/capture/machine';
 import type {
@@ -62,15 +63,8 @@ export interface GuideMe_GoToResponse {
   moved: boolean;
 }
 
-export type GuideDescriptionError = 'no-api-key' | 'no-steps' | 'generation-failed' | 'save-failed';
-
 export interface GenerateGuideDescriptionData {
   guideId: string;
-}
-
-export interface GenerateGuideDescriptionResponse {
-  description?: string;
-  error?: GuideDescriptionError;
 }
 
 export interface RewriteSelectionData {

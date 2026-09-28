@@ -1,5 +1,3 @@
-export type GuideDescriptionError = 'no-api-key' | 'no-steps' | 'generation-failed' | 'save-failed';
-
 export interface RecordableTab {
   id: number;
   title: string;
