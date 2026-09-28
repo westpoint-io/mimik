@@ -23,7 +23,7 @@
     "postinstall": "wxt prepare",
     "dev:desktop": "pnpm --filter @mimik/desktop dev",
     "build:desktop": "pnpm --filter @mimik/desktop build",
-    "pack:desktop": "pnpm --filter @mimik/desktop pack"
+    "pack:desktop": "pnpm --filter @mimik/desktop run pack"
   },
   "keywords": [],
   "author": "",
