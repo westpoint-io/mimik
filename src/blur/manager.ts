@@ -13,6 +13,7 @@ export class BlurManager {
   private picker = new ElementPicker();
   private panel: BlurPanel | null = null;
   private active = false;
+  private generation = 0;
 
   constructor(private detector: BlurDetector = new BlurScanner()) {}
 
@@ -20,11 +21,16 @@ export class BlurManager {
     if (this.active) return;
     this.active = true;
 
+    const generation = ++this.generation;
+
     injectBlurStyles();
     const presets = await this.loadPresets();
+    if (!this.active || generation !== this.generation) return;
+
     const activeKeys = (Object.entries(presets) as [PresetKey, boolean][]).filter(([, on]) => on).map(([k]) => k);
 
     this.detector.start(activeKeys);
+    this.panel?.unmount();
     this.panel = new BlurPanel(presets);
     this.panel.mount();
 
@@ -32,10 +38,14 @@ export class BlurManager {
   }
 
   stop() {
-    if (!this.active) return;
-    this.teardown();
+    if (this.active) this.teardown();
     this.detector.stop();
     removeBlurStyles();
+  }
+
+  dismiss() {
+    if (!this.active) return;
+    this.teardown();
   }
 
   private teardown() {

@@ -21,6 +21,8 @@ export interface LibrarySlice {
   page: number;
   pageKey: string;
   setPage: (page: number, pageKey: string) => void;
+  importFile: File | null;
+  setImportFile: (file: File | null) => void;
   counts: { all: number; starred: number; trash: number };
   setCounts: (counts: { all: number; starred: number; trash: number }) => void;
 }
@@ -45,6 +47,8 @@ export const createLibrarySlice: StateCreator<LibrarySlice, [], [], LibrarySlice
   page: 0,
   pageKey: '',
   setPage: (page, pageKey) => set({ page, pageKey }),
+  importFile: null,
+  setImportFile: (importFile) => set({ importFile }),
   counts: { all: 0, starred: 0, trash: 0 },
   setCounts: (counts) => set({ counts }),
 });

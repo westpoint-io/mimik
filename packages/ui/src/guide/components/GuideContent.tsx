@@ -6,12 +6,14 @@ import { getMostCommonDomain } from '@mimik/core/guides/domain';
 import {
   deleteStep,
   getGuide,
+  hasTranscript,
   onGuidesChanged,
   updateGuideDescription,
   updateGuideTitle,
   updateStepDescription,
 } from '@mimik/core/guides/service';
 import type { SnapshotLike } from '@mimik/core/guides/snapshot-diff';
+import { sanitizeGuideTitle, stripTitleLineBreaks } from '@mimik/core/guides/title';
 import type { Guide, Screenshot, Snapshot, Step } from '@mimik/core/guides/types';
 import { logger } from '@mimik/core/logger';
 import type { ScreenshotEdits } from '@mimik/core/screenshot/types';
@@ -25,6 +27,7 @@ import { FaviconImg } from '../../common/components/FaviconImg';
 import { Toast } from '../../common/components/Toast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
 import { messages, panel, tabs } from '../../env';
+import { TranscriptPanel } from '../../history/components/TranscriptPanel';
 import { VersionHistoryPanel } from '../../history/components/VersionHistoryPanel';
 import { useFullview } from '../../stores/use-fullview';
 import { buildPreview } from '../lib/build-preview';
@@ -55,6 +58,9 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
     historyOpen,
     setHistoryOpen,
     historyRefreshKey,
+    transcriptOpen,
+    setTranscriptOpen,
+    setHasTranscript,
   } = useFullview((s) => ({
     setGuideTitle: s.setGuideTitle,
     setGuideStepCount: s.setGuideStepCount,
@@ -65,6 +71,9 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
     historyOpen: s.historyOpen,
     setHistoryOpen: s.setHistoryOpen,
     historyRefreshKey: s.historyRefreshKey,
+    transcriptOpen: s.transcriptOpen,
+    setTranscriptOpen: s.setTranscriptOpen,
+    setHasTranscript: s.setHasTranscript,
   }));
 
   const [data, setData] = useState<GuideData | null>(null);
@@ -79,6 +88,7 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
     setData((prev) => (prev ? { ...prev, guide: { ...prev.guide, description: next } } : prev));
   }, []);
   const desc = useGuideDescription(guideId, applyDescription);
+  const [dataVersion, setDataVersion] = useState(0);
   const titleRef = useRef('');
   const appliedInitialRef = useRef(false);
   const editingDescriptionRef = useRef(false);
@@ -104,8 +114,12 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
       setGuideTitle(newTitle);
       setGuideStepCount(actionSteps(result.steps).length);
     }
+    hasTranscript(guideId)
+      .then(setHasTranscript)
+      .catch((err) => logger.error(' Transcript lookup failed', err));
+    setDataVersion((version) => version + 1);
     setLoading(false);
-  }, [guideId, setGuideTitle, setGuideStepCount]);
+  }, [guideId, setGuideTitle, setGuideStepCount, setHasTranscript]);
 
   useEffect(() => {
     loadGuide();
@@ -121,11 +135,16 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
   }, []);
 
   const handleTitleBlur = useCallback(async () => {
-    if (!data || title === data.guide.title) return;
-    await updateGuideTitle(guideId, title);
-    setData((prev) => (prev ? { ...prev, guide: { ...prev.guide, title } } : prev));
-    document.title = `${title} — ${i18n.t('app_name')}`;
-  }, [data, guideId, title]);
+    const next = sanitizeGuideTitle(title);
+    if (next !== title) {
+      setTitle(next);
+      setGuideTitle(next);
+    }
+    if (!data || next === data.guide.title) return;
+    await updateGuideTitle(guideId, next);
+    setData((prev) => (prev ? { ...prev, guide: { ...prev.guide, title: next } } : prev));
+    document.title = `${next} — ${i18n.t('app_name')}`;
+  }, [data, guideId, title, setGuideTitle]);
 
   const handleGuideDescriptionBlur = useCallback(async () => {
     if (data && desc.text !== (data.guide.description ?? '')) {
@@ -141,7 +160,12 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
     await updateStepDescription(stepId, description, 'manual');
     setData((prev) => {
       if (!prev) return prev;
-      return { ...prev, steps: prev.steps.map((s) => (s.id === stepId ? { ...s, description } : s)) };
+      return {
+        ...prev,
+        steps: prev.steps.map((s) =>
+          s.id === stepId ? { ...s, description, descriptionSource: 'manual' as const } : s,
+        ),
+      };
     });
   }, []);
 
@@ -242,6 +266,7 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
     );
   if (!data) return <p className="text-sm py-12 text-center text-purple">{i18n.t('fullview_guideNotFound')}</p>;
 
+  const sidePanelOpen = historyOpen || transcriptOpen;
   const previewView = preview && previewData?.snapshotId === preview.id ? previewData : null;
   const viewSteps = previewView ? previewView.steps : data.steps;
   const viewScreenshots = previewView ? previewView.screenshots : data.screenshots;
@@ -264,8 +289,8 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
         />
       )}
 
-      <div className={historyOpen ? 'flex items-start gap-6' : ''}>
-        <div className={historyOpen ? 'flex-1 min-w-0' : ''}>
+      <div className={sidePanelOpen ? 'flex items-start gap-6' : ''}>
+        <div className={sidePanelOpen ? 'flex-1 min-w-0' : ''}>
           {preview && (
             <div className="flex items-center gap-2 rounded-lg bg-secondary border border-border px-4 py-3 mb-4">
               <History size={15} className="text-accent shrink-0" />
@@ -310,11 +335,19 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
                 value={title}
                 rows={1}
                 onChange={(e) => {
-                  setTitle(e.target.value);
-                  setGuideTitle(e.target.value);
+                  const next = stripTitleLineBreaks(e.target.value);
+                  setTitle(next);
+                  setGuideTitle(next);
                   const el = e.target;
+                  el.value = next;
                   el.style.height = '0';
                   el.style.height = `${el.scrollHeight}px`;
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+                    e.preventDefault();
+                    e.currentTarget.blur();
+                  }
                 }}
                 onBlur={handleTitleBlur}
                 className="text-[32px] font-extrabold bg-transparent border-b-2 border-transparent hover:border-border focus:outline-none focus:border-accent w-full p-0 text-foreground resize-none leading-tight overflow-hidden"
@@ -445,6 +478,18 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
             onCaptureMore={onCaptureMore && ((atIndex, afterStep) => onCaptureMore({ guideId, atIndex, afterStep }))}
           />
         </div>
+
+        {transcriptOpen && (
+          <TranscriptPanel
+            guideId={guideId}
+            guideTitle={data.guide.title}
+            steps={data.steps}
+            readOnly={!editing || preview !== null}
+            refreshKey={dataVersion}
+            onClose={() => setTranscriptOpen(false)}
+            onChanged={loadGuide}
+          />
+        )}
 
         {historyOpen && (
           <VersionHistoryPanel

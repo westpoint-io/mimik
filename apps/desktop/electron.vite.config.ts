@@ -14,7 +14,8 @@ function yaml(): PluginOption {
     name: 'mimik-yaml',
     transform(_code: string, id: string) {
       if (!id.endsWith('.yml')) return null;
-      return { code: `export default ${JSON.stringify(load(readFileSync(id, 'utf8')))}`, map: null };
+      const json = JSON.stringify(load(readFileSync(id, 'utf8'))).replace(/import/g, '\\u0069mport');
+      return { code: `export default ${json}`, map: null };
     },
   };
 }

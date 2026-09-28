@@ -260,6 +260,16 @@ describe('renameSnapshot', () => {
 });
 
 describe('revertToSnapshot', () => {
+  it('collapses a multi-line title held by a snapshot taken before titles were single-line', async () => {
+    await seedGuide('g-legacy', { stepIds: [], title: 'Set up\nyour profile' });
+    const snapshot = await createSnapshot('g-legacy');
+
+    await updateGuideTitle('g-legacy', 'Changed');
+    await revertToSnapshot(snapshot!.id);
+
+    expect((await getGuide('g-legacy'))?.guide.title).toBe('Set up your profile');
+  });
+
   it('restores title, step order and step content', async () => {
     await seedGuide('g1', { stepIds: ['s1', 's2'], title: 'Original' });
     await db.steps.bulkAdd([

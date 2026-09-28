@@ -2,6 +2,7 @@ import { i18n } from '@mimik/core/env';
 import type { StepKind, VideoChapter } from '@mimik/core/export/video-export';
 import { useEffect, useRef } from 'react';
 import { formatClock } from '../lib/format-clock';
+import { SpokenMark } from './SpokenMark';
 
 const KIND_DOT: Record<StepKind, string> = {
   click: 'bg-accent',
@@ -14,10 +15,14 @@ const KIND_DOT: Record<StepKind, string> = {
 export function StepList({
   chapters,
   index,
+  narrated,
+  playing,
   onJump,
 }: {
   chapters: VideoChapter[];
   index: number;
+  narrated: boolean;
+  playing: boolean;
   onJump: (n: number) => void;
 }) {
   const list = useRef<HTMLElement>(null);
@@ -40,6 +45,7 @@ export function StepList({
         >
           <span className={`mt-1.5 size-1.5 shrink-0 rounded-full ${KIND_DOT[chapter.kind]}`} />
           <span className="min-w-0 flex-1 text-[10.5px] leading-snug text-white/80">{chapter.title}</span>
+          {narrated && chapter.spoken && <SpokenMark talking={playing && i === index} />}
           <span className="pt-0.5 font-mono text-[9px] tabular-nums text-white/40">{formatClock(chapter.start)}</span>
         </button>
       ))}

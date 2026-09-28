@@ -40,6 +40,7 @@ import {
   softDeleteGuide,
   toggleStar,
   updateGuideDescription,
+  updateGuideTitle,
 } from '../service';
 import type { Guide, Screenshot, Step } from '../types';
 
@@ -323,6 +324,25 @@ describe('getTrashedGuides', () => {
     const guides = await getTrashedGuides();
 
     expect(guides.map((g) => g.id)).toEqual(['g3', 'g2']);
+  });
+});
+
+describe('updateGuideTitle', () => {
+  it('collapses a multi-line title into one line before storing it', async () => {
+    await seedGuide('g-title', { updatedAt: 100 });
+
+    await updateGuideTitle('g-title', 'Set up\nyour profile');
+
+    const updated = await db.guides.get('g-title');
+    expect(updated!.title).toBe('Set up your profile');
+    expect(updated!.updatedAt).toBeGreaterThan(100);
+    expect(broadcastMessages).toContainEqual({ type: 'mutated' });
+  });
+
+  it('trims surrounding whitespace', async () => {
+    await seedGuide('g-title-trim');
+    await updateGuideTitle('g-title-trim', '  Set up your profile  ');
+    expect((await db.guides.get('g-title-trim'))!.title).toBe('Set up your profile');
   });
 });
 

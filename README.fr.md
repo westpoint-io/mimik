@@ -32,11 +32,12 @@ Clique sur enregistrer, fais ce que tu as à faire, et récupère un guide soign
 - [📺 Démo](#-démo)
 - [👋 Pour commencer](#-pour-commencer)
 - [✨ Fonctionnalités](#-fonctionnalités)
-  - [🔒 Smart Blur](#-smart-blur)
+  - [🔒 Flou intelligent](#-flou-intelligent)
   - [🧠 Descriptions par IA (optionnel)](#-descriptions-par-ia-optionnel)
-  - [▶️ Lecture Guide Me](#️-lecture-guide-me)
+  - [▶️ Lecture avec Guidez-moi](#️-lecture-avec-guidez-moi)
   - [🎙️ Narration vocale (optionnel)](#️-narration-vocale-optionnel)
   - [✏️ Éditeur de guides](#️-éditeur-de-guides)
+  - [🔊 Voix off de la vidéo (option)](#-voix-off-de-la-vidéo-option)
   - [📤 Export multi-format](#-export-multi-format)
 - [🔐 Confidentialité et stockage](#-confidentialité-et-stockage)
 - [🤝 Contribuer](#-contribuer)
@@ -62,6 +63,8 @@ Chaque action utile devient une étape : clics sur les boutons et les liens, cha
 
 Chaque étape reçoit une capture avec l'élément cliqué mis en évidence et zoomé. Pas de recadrage manuel, pas d'outil d'annotation à apprendre.
 
+Besoin que l'enregistrement regarde ailleurs un instant ? **Pause** arrête la capture sans terminer l'enregistrement, et **Reprendre** repart où tu en étais. Entrer dans Flou intelligent la met en pause de la même façon.
+
 | Navigateur | Version | Installation |
 | ---------- | ------- | ------------ |
 | Chrome     | [![Chrome Version][chrome-version-shield]][chrome-link]   | [Chrome Web Store][chrome-link] |
@@ -86,13 +89,38 @@ Disponible en anglais, espagnol, portugais brésilien, français, allemand et ch
 
 ## ✨ Fonctionnalités
 
-### 🔒 Smart Blur
+### 🔒 Flou intelligent
 
-Mimik détecte et floute automatiquement les données sensibles dans tes captures : e-mails, numéros de téléphone, numéros de sécu, cartes bancaires, IPs, adresses MAC. Active ou désactive chaque catégorie indépendamment.
+Flou intelligent est un mode que tu actives pendant l'enregistrement, pas un filtre toujours actif. Clique sur **Flou intelligent** et la capture se met en pause, Mimik détecte et masque les données sensibles de la page — e-mails, numéros de téléphone, numéros de sécu, cartes bancaires, IPs, adresses MAC — et les captures de cette page les gardent masquées une fois que tu cliques sur **Terminé**. Active ou désactive chaque catégorie indépendamment.
 
 Besoin de cacher quelque chose de précis ? Le sélecteur manuel te laisse choisir n'importe quel élément du DOM et le masquer sur toutes les captures où il apparaît.
 
-<img src="https://github.com/user-attachments/assets/968d2518-c561-4d68-92a6-3d5f569fe38a" alt="Smart Blur" width="800" />
+<details>
+<summary><strong>Ce que Flou intelligent ne couvre pas</strong></summary>
+
+<br/>
+
+Flou intelligent parcourt les nœuds de texte et les valeurs de champs du cadre principal de la page. Il reste de vraies lacunes, toutes structurelles. Si tu t'appuies dessus pour le RGPD ou l'équivalent, vérifie tes captures plutôt que de supposer qu'une capture propre est une capture sûre :
+
+| Non couvert | Pourquoi |
+|-------------|----------|
+| Contenu dans les iframes | Ignoré entièrement ; les cadres cross-origin sont inaccessibles |
+| Shadow DOM | Le parcours reste dans le document et n'entre pas dans les shadow roots |
+| Texte dessiné sur un `<canvas>` et texte dans les images | Des pixels, pas du texte |
+| Contenu CSS `::before` / `::after` | Pas un nœud de texte |
+| Texte de `<select>` et `<option>` | Exclu du parcours |
+| Valeurs présentes seulement dans un attribut, comme `title` ou `alt` | Seuls les nœuds de texte et les valeurs de champs sont lus |
+| Les cadres autres que le principal | L'overlay et le parcours tournent uniquement dans le cadre principal |
+| Tout onglet autre que celui où tu es entré dans le mode | Seul cet onglet est parcouru ; un second onglet sur la même app ne l'est pas |
+| Le texte qui apparaît après **Terminé** | Le parcours s'arrête avec l'overlay : un re-render de la SPA, la page suivante d'une liste ou une navigation ne sont pas masqués — relance Blur là-bas |
+
+Deux choses à savoir sur ce qui est bien traité : une correspondance dans un `<text>` SVG est retirée du rendu plutôt que floutée, car le masque est un élément HTML que SVG ne dessine pas — la donnée ne fuit pas, mais elle disparaît au lieu d'être floutée. Et un `<input>` ou `<textarea>` qui correspond est flouté **en entier**, pas seulement la partie qui correspond.
+
+Le floutage s'applique à partir du moment où tu entres dans le mode. Les captures déjà prises ne sont pas masquées rétroactivement — supprime ces étapes dans l'éditeur.
+
+</details>
+
+<img src="https://github.com/user-attachments/assets/968d2518-c561-4d68-92a6-3d5f569fe38a" alt="Flou intelligent" width="800" />
 
 <div align="right">
 
@@ -114,11 +142,11 @@ Les descriptions sont générées à partir d'un contexte léger du DOM (~50-100
 
 </div>
 
-### ▶️ Lecture Guide Me
+### ▶️ Lecture avec Guidez-moi
 
 Rejoue n'importe quel guide en direct sur une vraie page. Mimik met en évidence l'élément suivant, suit ta progression étape par étape, et avance tout seul au fur et à mesure. Parfait pour former un collègue ou se guider soi-même dans un process.
 
-<img src="https://github.com/user-attachments/assets/56ffca1d-5074-491f-8571-dd70782d4b05" alt="Lecture Guide Me" width="800" />
+<img src="https://github.com/user-attachments/assets/56ffca1d-5074-491f-8571-dd70782d4b05" alt="Lecture avec Guidez-moi" width="800" />
 
 <div align="right">
 
@@ -131,6 +159,12 @@ Rejoue n'importe quel guide en direct sur une vraie page. Mimik met en évidence
 Parle à voix haute pendant que tu enregistres et Mimik transforme ce que tu as dit en descriptions
 d'étapes. L'audio est transcrit avec ta propre clé (OpenAI ou Groq) puis rattaché à l'étape
 correspondante, donc tu narres une fois au lieu d'écrire chaque étape à la main.
+
+La transcription complète est conservée, pas seulement ce qui a atterri dans une étape. Ouvre
+**Transcription** sur un guide pour voir tout ce que tu as dit, y compris les phrases rattachées à
+rien, et ajoute celles que tu veux à une étape. Modifier une étape ne détruit pas non plus
+l'original parlé : l'éditeur peut toujours remettre ce que tu as réellement dit. La transcription
+reste sur ton appareil, ne fait jamais partie d'un guide exporté et est supprimée avec le guide.
 
 <img src="https://github.com/user-attachments/assets/061fddc7-da65-4641-8b39-d30b80c36531" alt="Narration vocale" width="800" />
 
@@ -154,11 +188,22 @@ réordonne ou supprime en lot, et reviens en arrière via l'historique de versio
 
 </div>
 
+### 🔊 Voix off de la vidéo (option)
+
+Activez-la dans le panneau d'export et chaque étape de la vidéo est lue à voix haute, avec votre
+propre clé OpenAI ou ElevenLabs. Si vous avez déjà renseigné une clé OpenAI pour les descriptions IA,
+Mimik la réutilise : rien d'autre à créer. Les étapes narrées restent à l'écran jusqu'à la fin de la
+voix, donc rien n'est coupé, et les clips sont mis en cache localement pour que réexporter le même
+guide ne coûte rien.
+
+Désactivée par défaut : posséder une clé n'active jamais la narration, c'est vous qui l'activez.
+
 ### 📤 Export multi-format
 
 Partage tes guides dans le format qui colle à ton flux :
 
-- **Vidéo** : parcours narré, mp4/H.264, avec le curseur qui se déplace vers chaque cible
+- **Vidéo** : parcours narré, mp4/H.264, avec le curseur qui se déplace vers chaque cible — au choix avec une
+  voix off ElevenLabs qui lit chaque étape, ce qui rend aussi la vidéo conforme à la Section 508
 - **PDF** : prêt à imprimer, A4 portrait avec sauts de page auto
 - **DOCX** : ouvre-le et continue dans Word
 - **HTML** : autonome, à partager partout, images intégrées en base64
@@ -178,7 +223,9 @@ Tous les exports sont générés côté client. Rien ne passe par un serveur.
 
 Tes guides, étapes et captures restent sur ton appareil. Pas de backend, pas de compte, pas de télémétrie. Tes clés API (si tu en utilises) ne quittent jamais le navigateur. Elles sont stockées localement et servent à appeler directement le fournisseur que tu as choisi.
 
-Deux choses sortent bien du navigateur, toutes deux documentées dans la [politique de confidentialité](https://mimik.westpoint.io/privacy/) : les icônes de sites sont récupérées via le service de favicons de Google, ce qui envoie le domaine du site, et les fonctions optionnelles d'IA et de voix envoient du texte ou de l'audio au fournisseur que tu as configuré.
+Si tu masques des données personnelles avant de partager un guide, lis d'abord [ce que Flou intelligent ne couvre pas](#-flou-intelligent) : il n'atteint ni les iframes, ni le shadow DOM, ni le texte dessiné dans une image.
+
+Deux choses sortent bien du navigateur, toutes deux documentées dans la [politique de confidentialité](https://mimik.westpoint.io/privacy/) : les icônes de sites sont récupérées via le service de favicons de Google, ce qui envoie le domaine du site, et les fonctions optionnelles d'IA, de narration vocale et de voix off envoient du texte ou de l'audio au fournisseur que tu as configuré — la voix off envoie le texte de chaque étape au moment de l'export, et seulement si tu l'actives.
 
 <div align="right">
 

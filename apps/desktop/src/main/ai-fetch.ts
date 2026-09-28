@@ -12,6 +12,7 @@ export interface AiResponse {
   statusText: string;
   headers: Record<string, string>;
   body: string;
+  encoding: 'text' | 'base64';
 }
 
 const ALLOWED = new Set(['http:', 'https:']);
@@ -36,11 +37,13 @@ export function registerAiFetch(): void {
     response.headers.forEach((value, key) => {
       headers[key] = value;
     });
+    const textual = /^text\/|json|xml|event-stream/.test(response.headers.get('content-type') ?? '');
     return {
       status: response.status,
       statusText: response.statusText,
       headers,
-      body: await response.text(),
+      body: textual ? await response.text() : Buffer.from(await response.arrayBuffer()).toString('base64'),
+      encoding: textual ? 'text' : 'base64',
     };
   });
 }

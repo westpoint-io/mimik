@@ -15,6 +15,7 @@ interface GuideGridViewProps {
   onTrash: (e: React.MouseEvent, id: string) => void;
   onRestore: (e: React.MouseEvent, id: string) => void;
   onPermanentDelete: (e: React.MouseEvent, id: string) => void;
+  onDuplicate: (e: React.MouseEvent, id: string) => void;
 }
 
 export function GuideGridView({
@@ -24,6 +25,7 @@ export function GuideGridView({
   onTrash,
   onRestore,
   onPermanentDelete,
+  onDuplicate,
 }: GuideGridViewProps) {
   const { guides, thumbnails, places } = useFullview((s) => ({
     guides: s.guides,
@@ -83,6 +85,7 @@ export function GuideGridView({
                   onTrash={onTrash}
                   onRestore={onRestore}
                   onPermanentDelete={onPermanentDelete}
+                  onDuplicate={onDuplicate}
                 />
               </div>
               <p className="text-xs text-muted-foreground">

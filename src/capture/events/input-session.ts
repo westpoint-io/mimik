@@ -3,6 +3,7 @@ import { i18n } from '#imports';
 import { extractDOMContext } from '@/core/capture/dom/context';
 import { extractElementMeta, type FrozenRect, freezeRect } from '@/core/capture/dom/element-meta';
 import { getFieldLabel, getFieldValue, isRedactedField, isSensitiveField } from '@/core/capture/dom/element-utils';
+import { locateFrame, placeInTab } from '@/core/capture/dom/frame-placement';
 import type { CaptureSink } from '@/core/capture/sink';
 
 export class InputSession {
@@ -25,10 +26,12 @@ export class InputSession {
 
   async start(target: HTMLElement, atEvent?: FrozenRect) {
     this.atEvent = atEvent;
+    const placement = locateFrame();
+    const elementMeta = extractElementMeta(target, atEvent);
     const res = await this.sink.captureStep({
       guideId: this.guideId,
       action: 'input',
-      elementMeta: extractElementMeta(target, atEvent),
+      elementMeta: placeInTab(elementMeta, await placement),
       domContext: extractDOMContext(target, 'input'),
     });
     if ('stepId' in res) {
@@ -49,7 +52,7 @@ export class InputSession {
       return;
     }
     const val = getFieldValue(target);
-    const desc = val ? `Type "${val}" in ${label}` : `Clear ${label}`;
+    const desc = val ? i18n.t('steps.typeValueInto', [val, label]) : i18n.t('steps.clearField', [label]);
     this.sink
       .updateInputStep({ stepId: this.stepId, description: desc, inputValue: val || undefined })
       .catch((err) => logger.warn('Failed to update input step', err));
@@ -63,9 +66,11 @@ export class InputSession {
     this.stepId = null;
     this.target = null;
     this.atEvent = undefined;
+    const placement = locateFrame();
+    const elementMeta = extractElementMeta(target, atEvent);
     await this.sink.finalizeInputStep({
       stepId,
-      elementMeta: extractElementMeta(target, atEvent),
+      elementMeta: placeInTab(elementMeta, await placement),
       domContext: extractDOMContext(target, 'input'),
     });
   }

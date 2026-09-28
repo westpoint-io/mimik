@@ -20,8 +20,15 @@ async function mainFetch(input: RequestInfo | URL, init?: RequestInit): Promise<
     method: init?.method ?? 'GET',
     headers,
     body: typeof init?.body === 'string' ? init.body : undefined,
-  })) as { status: number; statusText: string; headers: Record<string, string>; body: string };
-  return new Response(reply.body, { status: reply.status, statusText: reply.statusText, headers: reply.headers });
+  })) as {
+    status: number;
+    statusText: string;
+    headers: Record<string, string>;
+    body: string;
+    encoding: 'text' | 'base64';
+  };
+  const body = reply.encoding === 'base64' ? Uint8Array.from(atob(reply.body), (c) => c.charCodeAt(0)) : reply.body;
+  return new Response(body, { status: reply.status, statusText: reply.statusText, headers: reply.headers });
 }
 
 const MESSAGES: Record<AppLocale, Messages> = {

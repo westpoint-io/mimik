@@ -16,8 +16,11 @@ import {
   ringProgress,
   STEP_SECONDS,
   sharpZoomCeiling,
+  spannedFrames,
   stepFrames,
   stepKind,
+  stepSpans,
+  stepStarts,
   toFrames,
   tooltipBand,
   tooltipPlacement,
@@ -28,7 +31,13 @@ import {
   zoomCrop,
   zoomProgress,
 } from '@/core/export/video-export';
-import { FRAME_HEIGHT, FRAME_WIDTH, RESOLUTION_SPECS } from '@/core/export/video-support';
+import {
+  FRAME_HEIGHT,
+  FRAME_WIDTH,
+  RESOLUTION_SPECS,
+  uniformTimeline,
+  voiceTimeline,
+} from '@/core/export/video-support';
 
 const measure = (line: string) => line.length * 10;
 
@@ -657,5 +666,50 @@ describe('cursorOriginFor', () => {
 
   it('places the entry origin below the frame so the cursor travels in', () => {
     expect(CURSOR_ENTRY_ORIGIN.y).toBeGreaterThan(1);
+  });
+});
+
+describe('narrated step spans', () => {
+  it('matches the uniform layout when nothing was narrated', () => {
+    const spans = stepSpans(uniformTimeline(4), 4);
+    expect(spans).toEqual([157, 157, 157, 157]);
+    expect(stepStarts(spans)).toEqual([0, 147, 294, 441]);
+    expect(spannedFrames(spans)).toBe(totalStepFrames(4));
+  });
+
+  it('never runs a step shorter than the animation, whatever the timeline claims', () => {
+    expect(stepSpans({ coverSeconds: 3, stepSeconds: [0.1, 1] }, 2)).toEqual([157, 157]);
+  });
+
+  it('pushes later steps back by exactly what a long narration added', () => {
+    const spans = stepSpans(voiceTimeline(3, new Map([[0, 8]])), 3);
+    expect(spans[0]).toBe(toFrames(0.35 + 8 + 0.6));
+    expect(stepStarts(spans)).toEqual([0, spans[0] - 10, spans[0] - 10 + 147]);
+    expect(spannedFrames(spans)).toBe(spans[0] + 157 * 2 - 10 * 2);
+  });
+
+  it('holds the last step for its full span', () => {
+    const spans = stepSpans(voiceTimeline(2, new Map([[1, 9]])), 2);
+    expect(spannedFrames(spans)).toBe(157 - 10 + spans[1]);
+  });
+});
+
+describe('videoChapters on a narrated timeline', () => {
+  const steps = (n: number) =>
+    Array.from({ length: n }, (_, i) => ({ id: `s${i}`, description: `Do thing ${i}`, action: 'click' }) as never);
+
+  it('opens the first chapter after the stretched cover card', () => {
+    const timeline = voiceTimeline(2, new Map([[-1, 6]]));
+    expect(videoChapters(steps(2), true, FPS, timeline)[0].start).toBeCloseTo(timeline.coverSeconds, 6);
+  });
+
+  it('gives a narrated step the longer chapter', () => {
+    const marks = videoChapters(steps(3), false, FPS, voiceTimeline(3, new Map([[1, 8]])));
+    expect(marks[1].end - marks[1].start).toBeGreaterThan(marks[0].end - marks[0].start);
+    expect(marks[2].start).toBeCloseTo(marks[1].end, 6);
+  });
+
+  it('is unchanged for a guide with no narration', () => {
+    expect(videoChapters(steps(4), true, FPS, uniformTimeline(4))).toEqual(videoChapters(steps(4), true));
   });
 });

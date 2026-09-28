@@ -1,5 +1,5 @@
 import { i18n } from '@mimik/core/env';
-import { MoreVertical, RotateCcw, Star, StarOff, Trash2 } from 'lucide-react';
+import { Copy, MoreVertical, RotateCcw, Star, StarOff, Trash2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 export function CardMenu({
@@ -10,6 +10,7 @@ export function CardMenu({
   onTrash,
   onRestore,
   onPermanentDelete,
+  onDuplicate,
 }: {
   guideId: string;
   starred: boolean;
@@ -18,6 +19,7 @@ export function CardMenu({
   onTrash: (e: React.MouseEvent, id: string) => void;
   onRestore: (e: React.MouseEvent, id: string) => void;
   onPermanentDelete: (e: React.MouseEvent, id: string) => void;
+  onDuplicate: (e: React.MouseEvent, id: string) => void;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -62,6 +64,14 @@ export function CardMenu({
       label: starred ? i18n.t('common_unstar') : i18n.t('common_star'),
       onClick: (e) => {
         onStar(e, guideId);
+        setOpen(false);
+      },
+    });
+    items.push({
+      icon: <Copy size={13} />,
+      label: i18n.t('library_duplicate'),
+      onClick: (e) => {
+        onDuplicate(e, guideId);
         setOpen(false);
       },
     });

@@ -8,14 +8,15 @@ interface VideoStepPlayerProps {
   src: string;
   type: VideoMime;
   chapters: VideoChapter[];
+  narrated?: boolean;
 }
 
-export function VideoStepPlayer({ src, type, chapters }: VideoStepPlayerProps) {
+export function VideoStepPlayer({ src, type, chapters, narrated = false }: VideoStepPlayerProps) {
   return (
     <MediaPlayer
       src={{ src, type }}
-      autoPlay
-      muted
+      autoPlay={!narrated}
+      muted={!narrated}
       playsInline
       load="eager"
       viewType="video"
@@ -23,7 +24,7 @@ export function VideoStepPlayer({ src, type, chapters }: VideoStepPlayerProps) {
       className="flex size-full"
       style={{ backgroundColor: FRAME_FILL }}
     >
-      <PlayerBody chapters={chapters} />
+      <PlayerBody chapters={chapters} narrated={narrated} />
     </MediaPlayer>
   );
 }

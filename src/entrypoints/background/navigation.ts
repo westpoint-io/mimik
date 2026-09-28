@@ -1,5 +1,5 @@
 import { logger } from '@mimik/core/logger';
-import { CaptureState } from '@/core/capture/machine';
+import { type CaptureSnapshot, CaptureState } from '@/core/capture/machine';
 import { getTab } from '@/lib/browser-api/get-tab';
 import { onHistoryStateUpdated } from '@/lib/browser-api/on-history-state-updated';
 import { onNavigationCompleted } from '@/lib/browser-api/on-navigation-completed';
@@ -10,12 +10,16 @@ import { TabMessage } from '@/lib/tab-messages';
 import { getActor, waitUntilReady } from './actor';
 import { injectContentScript, isInjectableTab } from './tab-manager';
 
+function isLive(state: CaptureSnapshot): boolean {
+  return state.value === CaptureState.RECORDING || state.value === CaptureState.PAUSED;
+}
+
 export function registerNavigationListeners() {
   onNavigationCompleted(async (details) => {
     if (details.frameId !== 0) return;
     await waitUntilReady();
     const state = getActor().getSnapshot();
-    if (state.value === CaptureState.RECORDING) {
+    if (isLive(state)) {
       logger.debug('URL changed (navigation) →', details.url);
       getActor().send({ type: 'URL_CHANGED', url: details.url });
     }
@@ -25,7 +29,7 @@ export function registerNavigationListeners() {
     if (details.frameId !== 0) return;
     await waitUntilReady();
     const state = getActor().getSnapshot();
-    if (state.value === CaptureState.RECORDING) {
+    if (isLive(state)) {
       logger.debug('URL changed (SPA pushState) →', details.url);
       getActor().send({ type: 'URL_CHANGED', url: details.url });
     }
@@ -34,7 +38,7 @@ export function registerNavigationListeners() {
   onTabActivated(async (activeInfo) => {
     await waitUntilReady();
     const state = getActor().getSnapshot();
-    if (state.value !== CaptureState.RECORDING) return;
+    if (!isLive(state)) return;
     if (!state.context.currentGuideId) return;
 
     try {
@@ -55,7 +59,7 @@ export function registerNavigationListeners() {
     if (changeInfo.status !== 'complete') return;
     await waitUntilReady();
     const state = getActor().getSnapshot();
-    if (state.value !== CaptureState.RECORDING) return;
+    if (!isLive(state)) return;
     if (!isInjectableTab(tab)) return;
 
     try {

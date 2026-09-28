@@ -1,6 +1,6 @@
 import type { browser } from '#imports';
 import type { AiFailureReason } from '@/core/capture/ai/errors';
-import type { CaptureStateValue } from '@/core/capture/machine';
+import type { CaptureStateValue, PauseReason } from '@/core/capture/machine';
 import type { VoiceErrorReason } from '@/lib/voice/voice-message';
 
 export interface PanelStateUpdate {
@@ -8,6 +8,7 @@ export interface PanelStateUpdate {
   state: CaptureStateValue;
   stepCount: number;
   currentGuideId: string | null;
+  pauseReason: PauseReason | null;
 }
 
 export type VoicePhase = 'idle' | 'recording' | 'transcribing' | 'error';

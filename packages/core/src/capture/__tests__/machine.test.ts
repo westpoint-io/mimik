@@ -116,4 +116,102 @@ describe('captureMachine', () => {
 
     expect(firstId).not.toBe(secondId);
   });
+
+  it('transitions RECORDING → PAUSED on PAUSE_CAPTURE and records the reason', () => {
+    const actor = startActor();
+    actor.send({ type: 'START_RECORDING', url: 'https://example.com' });
+    actor.send({ type: 'PAUSE_CAPTURE', reason: 'blur' });
+
+    const snap = actor.getSnapshot();
+    expect(snap.value).toBe(CaptureState.PAUSED);
+    expect(snap.context.pauseReason).toBe('blur');
+    expect(snap.context.currentGuideId).toBeTypeOf('string');
+  });
+
+  it('transitions PAUSED → RECORDING on RESUME_CAPTURE and keeps the guide', () => {
+    const actor = startActor();
+    actor.send({ type: 'START_RECORDING', url: 'https://example.com' });
+    const guideId = actor.getSnapshot().context.currentGuideId;
+    actor.send({ type: 'USER_ACTION' });
+    actor.send({ type: 'PAUSE_CAPTURE', reason: 'manual' });
+    actor.send({ type: 'RESUME_CAPTURE' });
+
+    const snap = actor.getSnapshot();
+    expect(snap.value).toBe(CaptureState.RECORDING);
+    expect(snap.context.pauseReason).toBeNull();
+    expect(snap.context.currentGuideId).toBe(guideId);
+    expect(snap.context.stepCount).toBe(1);
+  });
+
+  it('ignores USER_ACTION while PAUSED', () => {
+    const actor = startActor();
+    actor.send({ type: 'START_RECORDING', url: 'https://example.com' });
+    actor.send({ type: 'USER_ACTION' });
+    actor.send({ type: 'PAUSE_CAPTURE', reason: 'blur' });
+
+    actor.send({ type: 'USER_ACTION' });
+    actor.send({ type: 'USER_ACTION' });
+
+    expect(actor.getSnapshot().context.stepCount).toBe(1);
+    expect(actor.getSnapshot().value).toBe(CaptureState.PAUSED);
+  });
+
+  it('transitions PAUSED → IDLE on STOP_RECORDING and resets context', () => {
+    const actor = startActor();
+    actor.send({ type: 'START_RECORDING', url: 'https://example.com' });
+    actor.send({ type: 'PAUSE_CAPTURE', reason: 'blur' });
+    actor.send({ type: 'STOP_RECORDING' });
+
+    const snap = actor.getSnapshot();
+    expect(snap.value).toBe(CaptureState.IDLE);
+    expect(snap.context.currentGuideId).toBeNull();
+    expect(snap.context.pauseReason).toBeNull();
+    expect(snap.context.currentUrl).toBe('');
+  });
+
+  it('tracks URL_CHANGED while PAUSED so navigation is not lost', () => {
+    const actor = startActor();
+    actor.send({ type: 'START_RECORDING', url: 'https://example.com/a' });
+    actor.send({ type: 'PAUSE_CAPTURE', reason: 'blur' });
+    actor.send({ type: 'URL_CHANGED', url: 'https://example.com/b' });
+
+    expect(actor.getSnapshot().context.currentUrl).toBe('https://example.com/b');
+    expect(actor.getSnapshot().value).toBe(CaptureState.PAUSED);
+  });
+
+  it('ignores PAUSE_CAPTURE in IDLE', () => {
+    const actor = startActor();
+    actor.send({ type: 'PAUSE_CAPTURE', reason: 'manual' });
+
+    expect(actor.getSnapshot().value).toBe(CaptureState.IDLE);
+    expect(actor.getSnapshot().context.pauseReason).toBeNull();
+  });
+
+  it('ignores START_RECORDING while PAUSED', () => {
+    const actor = startActor();
+    actor.send({ type: 'START_RECORDING', url: 'https://first.com' });
+    const guideId = actor.getSnapshot().context.currentGuideId;
+    actor.send({ type: 'PAUSE_CAPTURE', reason: 'blur' });
+
+    actor.send({ type: 'START_RECORDING', url: 'https://second.com' });
+
+    const snap = actor.getSnapshot();
+    expect(snap.value).toBe(CaptureState.PAUSED);
+    expect(snap.context.currentGuideId).toBe(guideId);
+  });
+
+  it('survives a persisted snapshot round trip while PAUSED', () => {
+    const actor = startActor();
+    actor.send({ type: 'START_RECORDING', url: 'https://example.com' });
+    actor.send({ type: 'PAUSE_CAPTURE', reason: 'blur' });
+    const guideId = actor.getSnapshot().context.currentGuideId;
+
+    const restored = createActor(captureMachine, { snapshot: actor.getPersistedSnapshot() });
+    restored.start();
+
+    const snap = restored.getSnapshot();
+    expect(snap.value).toBe(CaptureState.PAUSED);
+    expect(snap.context.pauseReason).toBe('blur');
+    expect(snap.context.currentGuideId).toBe(guideId);
+  });
 });

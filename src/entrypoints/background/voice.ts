@@ -2,13 +2,14 @@ import { logger } from '@mimik/core/logger';
 import { CaptureState } from '@/core/capture/machine';
 import { hasVoiceApiKey, VOICE_KEY_SETTINGS } from '@/core/capture/voice/api-key';
 import { narrationUpdates } from '@/core/capture/voice/narration-updates';
-import { applyNarrationToSteps, findExistingStepIds, getStepsForGuide } from '@/core/guides/service';
+import { applyNarrationToSteps, findExistingStepIds, getStepsForGuide, saveTranscript } from '@/core/guides/service';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import { onMessage as onRuntimeMessage } from '@/lib/browser-api/on-message';
 import { closeVoiceHost } from '@/lib/offscreen/close-voice-host';
 import { closeVoiceHostIfIdle } from '@/lib/offscreen/close-voice-host-if-idle';
 import { ensureVoiceHost } from '@/lib/offscreen/ensure-voice-host';
 import { flushVoiceCapture } from '@/lib/offscreen/flush-voice-capture';
+import { getVoiceStatus } from '@/lib/offscreen/get-voice-status';
 import { hasVoiceHost } from '@/lib/offscreen/has-voice-host';
 import { openMicPermissionPage } from '@/lib/offscreen/open-mic-permission-page';
 import { queryMicPermission } from '@/lib/offscreen/query-mic-permission';
@@ -20,6 +21,7 @@ import { broadcastVoiceToPanel } from '@/lib/port/broadcast-voice-to-panel';
 import type { PanelVoiceUpdate, VoicePhase } from '@/lib/port/types';
 import { handedOffPcm } from '@/lib/voice/handed-off-pcm';
 import { isVoiceMessageFor } from '@/lib/voice/is-voice-message-for';
+import { isVoiceStatus } from '@/lib/voice/is-voice-status';
 import { narrateRecording, type VoiceRecording } from '@/lib/voice/narrate-recording';
 import { readTranscriptionSettings } from '@/lib/voice/read-transcription-settings';
 import {
@@ -93,27 +95,40 @@ let orphanAudio: VoiceRecording | null = null;
 let transcribingGuideId: string | null = null;
 let settleNarration: (() => void) | null = null;
 let narrationSettled: Promise<void> | null = null;
+let outstandingTranscriptions = 0;
 
 const NARRATION_SETTLE_TIMEOUT_MS = 30000;
 
 export function whenNarrationSettled(): Promise<void> {
-  if (!narrationSettled) return Promise.resolve();
-  return Promise.race([
-    narrationSettled,
-    new Promise<void>((resolve) => setTimeout(resolve, NARRATION_SETTLE_TIMEOUT_MS)),
-  ]);
+  const pending = narrationSettled;
+  if (!pending) return Promise.resolve();
+  return new Promise<void>((resolve) => {
+    const timer = setTimeout(resolve, NARRATION_SETTLE_TIMEOUT_MS);
+    void pending.then(() => {
+      clearTimeout(timer);
+      resolve();
+    });
+  });
 }
 
-function markNarrationPending(): void {
+function claimTranscription(guideId: string): void {
+  transcribingGuideId = guideId;
+  outstandingTranscriptions += 1;
+  if (narrationSettled) return;
   narrationSettled = new Promise<void>((resolve) => {
     settleNarration = resolve;
   });
 }
 
-function markNarrationSettled(): void {
+function releaseTranscription(guideId: string): boolean {
+  if (transcribingGuideId !== guideId || outstandingTranscriptions === 0) return false;
+  outstandingTranscriptions -= 1;
+  if (outstandingTranscriptions > 0) return true;
+  transcribingGuideId = null;
   settleNarration?.();
   settleNarration = null;
   narrationSettled = null;
+  return true;
 }
 
 function requestMicPermission(tabId?: number): void {
@@ -146,6 +161,25 @@ async function beginVoiceCapture(microphoneId: string | undefined, tabId: number
   report({ phase: 'error', reason: started.reason, error: started.error });
   if (started.reason === 'permission-denied') requestMicPermission(tabId);
   await closeVoiceHost();
+}
+
+export async function isNarrationLive(): Promise<boolean> {
+  if (phase.phase === 'recording') return true;
+  if (!supportsVoice() || !(await hasVoiceHost())) return false;
+  const status = await getVoiceStatus().catch(() => null);
+  return isVoiceStatus(status) && status.recording;
+}
+
+export function isNarrationSettling(): boolean {
+  return phase.phase === 'transcribing';
+}
+
+export function reportNarrationLost(): void {
+  report({
+    phase: 'error',
+    reason: 'stream-ended',
+    error: 'Narration could not be restarted after the pause',
+  });
 }
 
 export function canStartNarrationNow(captureState: string, voicePhase: VoicePhase): boolean {
@@ -198,11 +232,11 @@ async function recoverNarration(guideId: string): Promise<void> {
   }
 
   logger.warn('voice: transcribing narration captured before the microphone host went away');
-  transcribingGuideId = guideId;
+  claimTranscription(guideId);
   report({ phase: 'transcribing' });
   const steps = await getStepsForGuide(guideId);
   const result = await narrateRecording(audio, stepMarks(steps), settings);
-  await applyNarration(guideId, result);
+  await applyNarration(guideId, result, true);
 }
 
 export async function flushNarrationForStep(guideId: string, stepId: string, timestamp: number): Promise<void> {
@@ -244,30 +278,36 @@ export async function stopVoiceNarration(guideId: string): Promise<void> {
 
     const steps = await getStepsForGuide(guideId);
     const settings = await readTranscriptionSettings();
+
+    claimTranscription(guideId);
+    if (phase.phase === 'recording') report({ phase: 'transcribing' });
+
     const response = await stopVoiceCapture(guideId, stepMarks(steps), settings);
 
     if (response.ok) {
       logger.info('voice: transcribing narration', response);
-      transcribingGuideId = guideId;
-      markNarrationPending();
-      if (phase.phase === 'recording') report({ phase: 'transcribing' });
       return;
     }
 
     logger.warn('voice: no narration to apply', response);
-    report({ phase: 'error', reason: response.reason, error: response.error });
+    if (releaseTranscription(guideId)) report({ phase: 'error', reason: response.reason, error: response.error });
     await closeVoiceHostIfIdle();
   } catch (error) {
     logger.error('voice: narration could not be stopped', error);
-    report({ phase: 'error', reason: 'unknown', error: String(error) });
+    if (releaseTranscription(guideId)) report({ phase: 'error', reason: 'unknown', error: String(error) });
     await closeVoiceHostIfIdle();
   }
 }
 
-async function applyNarration(guideId: string, result: VoiceResultEvent['result']): Promise<void> {
-  const final = transcribingGuideId === guideId;
+export async function applyNarration(
+  guideId: string,
+  result: VoiceResultEvent['result'],
+  final: boolean,
+): Promise<void> {
   try {
-    if (final) transcribingGuideId = null;
+    await saveTranscript(guideId, result.transcript).catch((error: unknown) =>
+      logger.warn('voice: the transcript could not be stored', error),
+    );
     const narrated = result.descriptions.map((entry) => entry.stepId);
     const surviving = await findExistingStepIds(narrated);
     const updates = narrationUpdates(result, surviving);
@@ -291,7 +331,7 @@ async function applyNarration(guideId: string, result: VoiceResultEvent['result'
     if (final) report({ phase: 'error', reason: 'unknown', error: String(error) });
   } finally {
     if (final) {
-      markNarrationSettled();
+      releaseTranscription(guideId);
       await closeVoiceHostIfIdle();
     }
   }
@@ -346,7 +386,7 @@ export function registerVoiceListeners(onMicrophoneGranted?: () => Promise<unkno
 
     switch (event.type) {
       case VoiceMessage.VOICE_RESULT:
-        void applyNarration(event.guideId, event.result);
+        void applyNarration(event.guideId, event.result, event.final);
         return undefined;
       case VoiceMessage.VOICE_HANDOFF:
         handleVoiceHandoff(event);

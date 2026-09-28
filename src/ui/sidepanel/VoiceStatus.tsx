@@ -7,9 +7,10 @@ import { MicMeter } from './MicMeter';
 interface VoiceStatusProps {
   update: PanelVoiceUpdate;
   enabled: boolean;
+  paused?: boolean;
 }
 
-export function VoiceStatus({ update, enabled }: VoiceStatusProps) {
+export function VoiceStatus({ update, enabled, paused = false }: VoiceStatusProps) {
   if (update.phase === 'error') {
     return (
       <div className="px-4 pt-2.5 flex items-start gap-2" role="status">
@@ -35,7 +36,9 @@ export function VoiceStatus({ update, enabled }: VoiceStatusProps) {
 
   return (
     <div className="px-4 pt-2.5" role="status">
-      <p className="text-[10px] leading-relaxed text-muted-foreground">{i18n.t('voice.nextRecording')}</p>
+      <p className="text-[10px] leading-relaxed text-muted-foreground">
+        {i18n.t(paused ? 'voice.pausedWithCapture' : 'voice.nextRecording')}
+      </p>
     </div>
   );
 }

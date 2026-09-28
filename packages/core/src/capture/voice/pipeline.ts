@@ -1,12 +1,13 @@
 import { assignSegments } from './attribute';
 import { buildBatches, mergeGaps } from './batching';
-import type { NarrationResult, SpeechSegment, StepWindow, TranscriptionResponse } from './types';
+import type { NarrationResult, SpeechSegment, StepWindow, TranscriptionResponse, TranscriptLine } from './types';
 import { encodeWav } from './wav';
 
 export interface PipelineInput {
   pcm: Int16Array;
   sampleRate: number;
   steps: StepWindow[];
+  audioEpochMs?: number;
   detectSpeech: (pcm: Int16Array, sampleRate: number) => Promise<SpeechSegment[]>;
   transcribe: (wav: Blob) => Promise<TranscriptionResponse>;
 }
@@ -25,10 +26,11 @@ function sliceSpeech(pcm: Int16Array, segments: SpeechSegment[], sampleRate: num
 }
 
 export async function runNarrationPipeline(input: PipelineInput): Promise<NarrationResult> {
-  const { pcm, sampleRate, steps, detectSpeech, transcribe } = input;
+  const { pcm, sampleRate, steps, audioEpochMs, detectSpeech, transcribe } = input;
   const { batches, dropped, forcedSplits } = buildBatches(mergeGaps(await detectSpeech(pcm, sampleRate)));
 
   const collected = new Map<string, string[]>();
+  const lines: TranscriptLine[] = [];
   const stats = {
     batches: batches.length,
     failedBatches: 0,
@@ -48,6 +50,7 @@ export async function runNarrationPipeline(input: PipelineInput): Promise<Narrat
       continue;
     }
     const assigned = assignSegments(response, batch, steps);
+    lines.push(...assigned.lines);
     stats.verbatimSegments += assigned.verbatim;
     stats.splitSegments += assigned.split;
     stats.rejectedSegments += assigned.rejected;
@@ -64,5 +67,7 @@ export async function runNarrationPipeline(input: PipelineInput): Promise<Narrat
     if (text) descriptions.push({ stepId, text });
   }
 
-  return { descriptions, stats };
+  lines.sort((a, b) => a.start - b.start);
+
+  return { descriptions, transcript: { epochMs: audioEpochMs ?? 0, lines }, stats };
 }

@@ -13,7 +13,7 @@ const STATS: NarrationStats = {
 };
 
 function result(descriptions: NarrationResult['descriptions']): NarrationResult {
-  return { descriptions, stats: STATS };
+  return { descriptions, transcript: { epochMs: 0, lines: [] }, stats: STATS };
 }
 
 describe('narrationUpdates', () => {

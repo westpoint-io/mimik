@@ -156,6 +156,22 @@ describe('findFocusableAncestor', () => {
     expect(findFocusableAncestor(span)).toBe(button);
     button.remove();
   });
+
+  it('resolves an ARIA option to itself rather than the tabIndex=-1 listbox wrapping it', () => {
+    const list = document.createElement('div');
+    list.setAttribute('role', 'listbox');
+    list.tabIndex = -1;
+    const option = document.createElement('div');
+    option.setAttribute('role', 'option');
+    const label = document.createElement('span');
+    option.appendChild(label);
+    list.appendChild(option);
+    document.body.appendChild(list);
+
+    expect(findFocusableAncestor(option)).toBe(option);
+    expect(findFocusableAncestor(label)).toBe(option);
+    list.remove();
+  });
 });
 
 describe('getFieldLabel', () => {

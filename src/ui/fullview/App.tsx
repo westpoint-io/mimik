@@ -6,7 +6,10 @@ import { VoiceNotice } from './components/VoiceNotice';
 
 export function FullViewApp() {
   const route = useRoute();
-  const historyOpen = useFullview((s) => s.historyOpen);
+  const { historyOpen, transcriptOpen } = useFullview((s) => ({
+    historyOpen: s.historyOpen,
+    transcriptOpen: s.transcriptOpen,
+  }));
 
   return (
     <TooltipProvider>
@@ -27,7 +30,7 @@ export function FullViewApp() {
 
         {route.page === 'guide' && (
           <main className="flex-1 py-10 px-6">
-            <div className={`mx-auto ${historyOpen ? 'max-w-[1032px]' : 'max-w-[720px]'}`}>
+            <div className={`mx-auto ${historyOpen || transcriptOpen ? 'max-w-[1032px]' : 'max-w-[720px]'}`}>
               <GuideContent guideId={route.guideId} initialStepId={route.stepId} initialTool={route.tool} />
             </div>
           </main>

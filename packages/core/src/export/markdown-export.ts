@@ -1,6 +1,7 @@
 import { i18n } from '@/core/env';
 import { blobToBase64, extractDomain, formatDate } from '@/core/export/utils';
 import { actionSteps, isBlock, stepNumbers, variantLabel } from '@/core/guides/blocks';
+import { sanitizeGuideTitle } from '@/core/guides/title';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
 import { renderScreenshot } from '@/core/screenshot/render';
 
@@ -24,7 +25,7 @@ export async function exportGuideAsMarkdown(
     ...(domain ? [i18n.t('export.sourceLabel', [domain])] : []),
   ].join(' · ');
 
-  const lines: string[] = [`# ${guide.title}`, ''];
+  const lines: string[] = [`# ${sanitizeGuideTitle(guide.title)}`, ''];
   if (guide.description) lines.push(guide.description, '');
   lines.push(`*${meta}*`, '', '---', '');
 

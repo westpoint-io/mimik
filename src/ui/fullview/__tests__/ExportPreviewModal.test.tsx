@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DEFAULT_EXPORT_OPTIONS } from '@/core/export/options';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
@@ -7,6 +7,12 @@ import type { Guide, Screenshot, Step } from '@/core/guides/types';
 const exportGuideAsVideo = vi.hoisted(() => vi.fn());
 const exportGuideAsHTML = vi.hoisted(() => vi.fn());
 const canExportVideo = vi.hoisted(() => vi.fn());
+const stored = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
+
+vi.mock('@/core/env', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/core/env')>()),
+  localStorage: { get: async () => stored.value, set: async () => {} },
+}));
 
 vi.mock('@/core/export/video-export', () => ({ exportGuideAsVideo }));
 vi.mock('@mimik/ui/export/components/VideoStepPlayer', () => ({
@@ -126,5 +132,192 @@ describe('ExportPreviewModal document preview', () => {
     await waitFor(() => expect(exportGuideAsHTML).toHaveBeenCalled());
     const passed = exportGuideAsHTML.mock.calls[0][1] as Step[];
     expect(passed.map((s) => s.id)).toEqual(steps.map((s) => s.id));
+  });
+});
+
+describe('ExportPreviewModal voice-over controls', () => {
+  const silent = () => screen.queryByRole('button', { name: 'exportPreview.audioSilent' });
+  const narrated = () => screen.queryByRole('button', { name: /exportPreview\.audioNarrated/ });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    stored.value = { voiceoverProvider: 'openai', voiceoverApiKeys: { openai: 'sk-test' } };
+    canExportVideo.mockResolvedValue(true);
+    exportGuideAsHTML.mockResolvedValue('<html lang="en"><head></head><body></body></html>');
+    exportGuideAsVideo.mockResolvedValue({ blob: new Blob(['video']), extension: 'mp4', chapters: [] });
+    URL.createObjectURL = vi.fn(() => 'blob:video');
+    URL.revokeObjectURL = vi.fn();
+  });
+
+  it('is offered on the document tab too, since video can be exported from there', async () => {
+    renderModal(3);
+
+    await waitFor(() => expect(exportGuideAsHTML).toHaveBeenCalled());
+    expect(narrated()).not.toBeNull();
+  });
+
+  it('is offered on the video tab', async () => {
+    renderModal(3);
+
+    fireEvent.click(await screen.findByRole('button', { name: 'exportPreview.modeVideo' }));
+
+    await waitFor(() => expect(narrated()).not.toBeNull());
+  });
+
+  it('is absent entirely when this browser cannot encode video', async () => {
+    canExportVideo.mockResolvedValue(false);
+    renderModal(3);
+
+    await waitFor(() => expect(exportGuideAsHTML).toHaveBeenCalled());
+    expect(narrated()).toBeNull();
+  });
+
+  it('starts silent and marks the chosen side', async () => {
+    renderModal(3);
+
+    await waitFor(() => expect(silent()).not.toBeNull());
+    expect(silent()?.getAttribute('aria-pressed')).toBe('true');
+    expect(narrated()?.getAttribute('aria-pressed')).toBe('false');
+
+    fireEvent.click(narrated() as HTMLElement);
+
+    await waitFor(() => expect(narrated()?.getAttribute('aria-pressed')).toBe('true'));
+    expect(silent()?.getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('cannot be narrated without a key', async () => {
+    stored.value = {};
+    renderModal(3);
+
+    await waitFor(() => expect(narrated()).not.toBeNull());
+    expect((narrated() as HTMLButtonElement).disabled).toBe(true);
+    expect((silent() as HTMLButtonElement).disabled).toBe(false);
+  });
+});
+
+describe('ExportPreviewModal video progress', () => {
+  const narrated = () => screen.queryByRole('button', { name: /exportPreview\.audioNarrated/ });
+  const hooks = () =>
+    exportGuideAsVideo.mock.calls.at(-1)?.[4] as {
+      onProgress: (a: number, b: number) => void;
+      onVoiceProgress: (a: number, b: number) => void;
+      onMuxProgress: (a: number, b: number) => void;
+    };
+  const percent = () => screen.getByText(/^\d+%$/).textContent;
+  const label = () => screen.getByText(/^exportPreview\.(narrating|encodingVideo)/).textContent;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    stored.value = { voiceoverProvider: 'openai', voiceoverApiKeys: { openai: 'sk-test' } };
+    canExportVideo.mockResolvedValue(true);
+    exportGuideAsHTML.mockResolvedValue('<html lang="en"><head></head><body></body></html>');
+    URL.createObjectURL = vi.fn(() => 'blob:video');
+    URL.revokeObjectURL = vi.fn();
+    exportGuideAsVideo.mockImplementation(() => new Promise(() => {}));
+  });
+
+  async function openNarratedVideo() {
+    renderModal(3);
+    await waitFor(() => expect(narrated()).not.toBeNull());
+    fireEvent.click(narrated() as HTMLElement);
+    fireEvent.click(await screen.findByRole('button', { name: 'exportPreview.modeVideo' }));
+    await waitFor(() => expect(exportGuideAsVideo).toHaveBeenCalled());
+    await waitFor(() => expect(exportGuideAsVideo.mock.calls.at(-1)?.[3].voiceover).toBe(true));
+  }
+
+  it('moves the bar while clips are synthesised instead of sitting at zero', async () => {
+    await openNarratedVideo();
+
+    act(() => hooks().onVoiceProgress(0, 3));
+    expect(label()).toContain('exportPreview.narrating');
+    expect(percent()).toBe('0%');
+
+    act(() => hooks().onVoiceProgress(2, 3));
+    expect(percent()).toBe('20%');
+  });
+
+  it('stops saying it is narrating once frames start, however narration ended', async () => {
+    await openNarratedVideo();
+
+    act(() => hooks().onVoiceProgress(1, 3));
+    expect(label()).toContain('exportPreview.narrating');
+
+    act(() => hooks().onProgress(1, 300));
+    expect(label()).toBe('exportPreview.encodingVideo');
+  });
+
+  it('leaves the whole bar to encoding when narration produced no clips', async () => {
+    await openNarratedVideo();
+
+    act(() => hooks().onProgress(0, 300));
+    expect(percent()).toBe('0%');
+
+    act(() => hooks().onProgress(150, 300));
+    expect(percent()).toBe('50%');
+  });
+
+  it('leaves the whole bar to encoding when narration gave up partway', async () => {
+    await openNarratedVideo();
+
+    act(() => hooks().onVoiceProgress(2, 3));
+    act(() => hooks().onProgress(0, 300));
+
+    expect(percent()).toBe('0%');
+  });
+
+  it('reserves the head only once every clip landed', async () => {
+    await openNarratedVideo();
+
+    act(() => hooks().onVoiceProgress(3, 3));
+    act(() => hooks().onProgress(0, 300));
+
+    expect(percent()).toBe('30%');
+  });
+
+  it('holds back a tail for the audio track instead of claiming to be finished', async () => {
+    await openNarratedVideo();
+
+    act(() => hooks().onVoiceProgress(3, 3));
+    act(() => hooks().onProgress(300, 300));
+
+    expect(percent()).toBe('90%');
+  });
+
+  it('fills that tail as the audio track is written', async () => {
+    await openNarratedVideo();
+
+    act(() => hooks().onVoiceProgress(3, 3));
+    act(() => hooks().onProgress(300, 300));
+    act(() => hooks().onMuxProgress(20, 40));
+
+    expect(percent()).toBe('95%');
+
+    act(() => hooks().onMuxProgress(40, 40));
+    expect(percent()).toBe('100%');
+  });
+
+  it('leaves the preview label alone while a download runs beside it', async () => {
+    await openNarratedVideo();
+    act(() => hooks().onVoiceProgress(1, 3));
+    expect(label()).toContain('exportPreview.narrating');
+    const preview = hooks();
+
+    fireEvent.click(screen.getByRole('button', { name: 'exportPreview.download[exportMenu.video]' }));
+    await waitFor(() => expect(exportGuideAsVideo).toHaveBeenCalledTimes(2));
+    act(() => hooks().onVoiceProgress(3, 3));
+    act(() => hooks().onProgress(1, 300));
+
+    expect(label()).toContain('exportPreview.narrating');
+    expect(hooks()).not.toBe(preview);
+  });
+
+  it('still reaches the end on a silent export, which writes no audio track', async () => {
+    renderModal(3);
+    fireEvent.click(await screen.findByRole('button', { name: 'exportPreview.modeVideo' }));
+    await waitFor(() => expect(exportGuideAsVideo).toHaveBeenCalled());
+
+    act(() => hooks().onProgress(300, 300));
+
+    expect(percent()).toBe('100%');
   });
 });

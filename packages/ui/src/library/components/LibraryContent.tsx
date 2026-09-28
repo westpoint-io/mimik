@@ -1,5 +1,6 @@
 import { i18n } from '@mimik/core/env';
 import {
+  duplicateGuide,
   type GuideChangeEvent,
   getGuides,
   getStarredGuides,
@@ -11,16 +12,20 @@ import {
   toggleStar,
 } from '@mimik/core/guides/service';
 import type { Guide } from '@mimik/core/guides/types';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { logger } from '@mimik/core/logger';
+import { ChevronLeft, ChevronRight, Upload } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { navigate } from '../../navigation/lib/navigate';
 import { useFullview } from '../../stores/use-fullview';
 import { usePageFit } from '../hooks/use-page-fit';
+import { bundleFrom } from '../lib/bundle-from';
 import { loadCardData } from '../lib/load-card-data';
 import { sortGuides } from '../lib/sort-guides';
 import { ConfirmDeleteModal } from './ConfirmDeleteModal';
 import { EmptyMascot } from './EmptyMascot';
 import { GuideGridView } from './GuideGridView';
 import { GuideListView } from './GuideListView';
+import { ImportGuideModal } from './ImportGuideModal';
 
 interface LibraryContentProps {
   category: 'all' | 'starred' | 'trash';
@@ -45,6 +50,8 @@ export function LibraryContent({ category }: LibraryContentProps) {
     page,
     pageKey,
     setPage,
+    importFile,
+    setImportFile,
     setCounts,
   } = useFullview((s) => ({
     setGuides: s.setGuides,
@@ -58,10 +65,15 @@ export function LibraryContent({ category }: LibraryContentProps) {
     page: s.page,
     pageKey: s.pageKey,
     setPage: s.setPage,
+    importFile: s.importFile,
+    setImportFile: s.setImportFile,
     setCounts: s.setCounts,
   }));
 
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
+  const [duplicateFailed, setDuplicateFailed] = useState(false);
+  const dragDepth = useRef(0);
 
   const allGuidesRef = useRef<Guide[]>([]);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -140,6 +152,19 @@ export function LibraryContent({ category }: LibraryContentProps) {
     await softDeleteGuide(id);
     await loadGuides();
   };
+  const handleDuplicate = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setDuplicateFailed(false);
+    try {
+      if (!(await duplicateGuide(id))) throw new Error('guide not found');
+    } catch (err) {
+      logger.error(' Duplicate guide failed', err);
+      setDuplicateFailed(true);
+      return;
+    }
+    await loadGuides();
+    await refreshCounts();
+  };
   const handleRestore = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
     await restoreGuide(id);
@@ -156,10 +181,48 @@ export function LibraryContent({ category }: LibraryContentProps) {
     await loadGuides();
   };
 
+  const handleDragEnter = (e: React.DragEvent) => {
+    if (!e.dataTransfer.types.includes('Files')) return;
+    dragDepth.current += 1;
+    setDragging(true);
+  };
+  const handleDragLeave = () => {
+    dragDepth.current = Math.max(0, dragDepth.current - 1);
+    if (dragDepth.current === 0) setDragging(false);
+  };
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    dragDepth.current = 0;
+    setDragging(false);
+    setImportFile(bundleFrom(e.dataTransfer.files));
+  };
+
   const showPagination = total !== null && total > pageSize;
 
   return (
-    <div ref={rootRef} className={`flex-1 flex flex-col ${display === 'list' ? 'w-full max-w-6xl mx-auto' : ''}`}>
+    <div
+      ref={rootRef}
+      className={`relative flex-1 flex flex-col ${display === 'list' ? 'w-full max-w-6xl mx-auto' : ''}`}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={(e) => {
+        if (e.dataTransfer.types.includes('Files')) e.preventDefault();
+      }}
+      onDrop={handleDrop}
+    >
+      {dragging && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center rounded-xl border-2 border-dashed border-accent bg-secondary/90 pointer-events-none">
+          <div className="flex items-center gap-2 text-[13px] font-semibold text-accent">
+            <Upload size={16} />
+            {i18n.t('import.dropHere')}
+          </div>
+        </div>
+      )}
+      {duplicateFailed && (
+        <p role="alert" className="text-xs mb-3 text-center text-destructive">
+          {i18n.t('library_duplicateFailed')}
+        </p>
+      )}
       {total === null ? (
         <p className="text-sm py-12 text-center text-purple">{i18n.t('common_loading')}</p>
       ) : total === 0 ? (
@@ -175,6 +238,7 @@ export function LibraryContent({ category }: LibraryContentProps) {
           onTrash={handleTrash}
           onRestore={handleRestore}
           onPermanentDelete={handlePermanentDelete}
+          onDuplicate={handleDuplicate}
         />
       ) : (
         <GuideGridView
@@ -184,6 +248,7 @@ export function LibraryContent({ category }: LibraryContentProps) {
           onTrash={handleTrash}
           onRestore={handleRestore}
           onPermanentDelete={handlePermanentDelete}
+          onDuplicate={handleDuplicate}
         />
       )}
 
@@ -212,6 +277,14 @@ export function LibraryContent({ category }: LibraryContentProps) {
         open={deleteTarget !== null}
         onClose={() => setDeleteTarget(null)}
         onConfirm={confirmPermanentDelete}
+      />
+      <ImportGuideModal
+        file={importFile}
+        onClose={() => setImportFile(null)}
+        onImported={(guideId) => {
+          setImportFile(null);
+          navigate({ page: 'guide', guideId });
+        }}
       />
     </div>
   );

@@ -3,13 +3,18 @@ import { assign, createMachine, type SnapshotFrom } from 'xstate';
 export const CaptureState = {
   IDLE: 'IDLE',
   RECORDING: 'RECORDING',
+  PAUSED: 'PAUSED',
 } as const;
 
 export type CaptureStateValue = (typeof CaptureState)[keyof typeof CaptureState];
 
+export type PauseReason = 'blur' | 'manual';
+
 type CaptureEvent =
   | { type: 'START_RECORDING'; url?: string; insertTargetGuideId?: string; insertAtIndex?: number }
   | { type: 'STOP_RECORDING' }
+  | { type: 'PAUSE_CAPTURE'; reason: PauseReason; narrationWasLive?: boolean }
+  | { type: 'RESUME_CAPTURE' }
   | { type: 'USER_ACTION' }
   | { type: 'URL_CHANGED'; url: string };
 
@@ -19,7 +24,19 @@ interface CaptureContext {
   currentUrl: string;
   insertTargetGuideId: string | null;
   insertAtIndex: number | null;
+  pauseReason: PauseReason | null;
+  narrationWasLive: boolean;
 }
+
+const IDLE_CONTEXT: CaptureContext = {
+  currentGuideId: null,
+  stepCount: 0,
+  currentUrl: '',
+  insertTargetGuideId: null,
+  insertAtIndex: null,
+  pauseReason: null,
+  narrationWasLive: false,
+};
 
 export const captureMachine = createMachine({
   id: 'capture',
@@ -28,13 +45,7 @@ export const captureMachine = createMachine({
     context: CaptureContext;
     events: CaptureEvent;
   },
-  context: {
-    currentGuideId: null,
-    stepCount: 0,
-    currentUrl: '',
-    insertTargetGuideId: null,
-    insertAtIndex: null,
-  },
+  context: { ...IDLE_CONTEXT },
   states: {
     [CaptureState.IDLE]: {
       on: {
@@ -46,6 +57,8 @@ export const captureMachine = createMachine({
             currentUrl: ({ event }) => event.url ?? '',
             insertTargetGuideId: ({ event }) => event.insertTargetGuideId ?? null,
             insertAtIndex: ({ event }) => event.insertAtIndex ?? null,
+            pauseReason: null,
+            narrationWasLive: false,
           }),
         },
       },
@@ -54,18 +67,36 @@ export const captureMachine = createMachine({
       on: {
         STOP_RECORDING: {
           target: CaptureState.IDLE,
+          actions: assign({ ...IDLE_CONTEXT }),
+        },
+        PAUSE_CAPTURE: {
+          target: CaptureState.PAUSED,
           actions: assign({
-            currentGuideId: null,
-            stepCount: 0,
-            currentUrl: '',
-            insertTargetGuideId: null,
-            insertAtIndex: null,
+            pauseReason: ({ event }) => event.reason,
+            narrationWasLive: ({ event }) => event.narrationWasLive === true,
           }),
         },
         USER_ACTION: {
           actions: assign({
             stepCount: ({ context }) => context.stepCount + 1,
           }),
+        },
+        URL_CHANGED: {
+          actions: assign({
+            currentUrl: ({ event }) => event.url,
+          }),
+        },
+      },
+    },
+    [CaptureState.PAUSED]: {
+      on: {
+        RESUME_CAPTURE: {
+          target: CaptureState.RECORDING,
+          actions: assign({ pauseReason: null, narrationWasLive: false }),
+        },
+        STOP_RECORDING: {
+          target: CaptureState.IDLE,
+          actions: assign({ ...IDLE_CONTEXT }),
         },
         URL_CHANGED: {
           actions: assign({
