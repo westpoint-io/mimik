@@ -19,6 +19,7 @@ import {
 } from '../../components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
+import { renderKey } from '../lib/render-key';
 import { withFullViewport } from '../lib/with-full-viewport';
 import { ImagePlaceholder } from './ImagePlaceholder';
 import { ReplaceImageDialog } from './ReplaceImageDialog';
@@ -31,6 +32,7 @@ interface ScreenshotViewProps {
   crop?: boolean;
   frameRatio?: number;
   readOnly?: boolean;
+  cache?: boolean;
   onOpenEditor?: (tool: 'annotate' | 'redact' | 'crop' | 'target') => void;
   onChanged?: () => void;
 }
@@ -51,6 +53,8 @@ const VIEWPORT_EPSILON = 0.5;
 const FRAME_EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
 const FRAME_TRANSITION = `width 0.4s ${FRAME_EASING}, height 0.4s ${FRAME_EASING}, left 0.4s ${FRAME_EASING}, top 0.4s ${FRAME_EASING}`;
 const FRAME_RATIO_EPSILON = 0.01;
+const RENDERED = new Map<string, string>();
+const RENDERED_LIMIT = 48;
 
 export function ScreenshotView({
   screenshot,
@@ -60,11 +64,15 @@ export function ScreenshotView({
   crop = false,
   frameRatio,
   readOnly = false,
+  cache = false,
   onOpenEditor,
   onChanged,
 }: ScreenshotViewProps) {
-  const [fullUrl, setFullUrl] = useState<string | null>(null);
-  const [showViewport, setShowViewport] = useState(false);
+  const [fullUrl, setFullUrl] = useState<string | null>(() => {
+    const key = cache ? renderKey(screenshot, screenshot.edits) : null;
+    return key ? (RENDERED.get(key) ?? null) : null;
+  });
+  const [showViewport, setShowViewport] = useState(!animate && fullUrl !== null);
   const [editsOverride, setEditsOverride] = useState<ScreenshotEdits | undefined>(undefined);
   const [screenshotOverride, setScreenshotOverride] = useState<Screenshot | null>(null);
   const [deleted, setDeleted] = useState(false);
@@ -72,7 +80,7 @@ export function ScreenshotView({
   const [altDraft, setAltDraft] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [replaceOpen, setReplaceOpen] = useState(false);
-  const processedKeyRef = useRef<string | null>(null);
+  const processedKeyRef = useRef<string | null>(fullUrl ? renderKey(screenshot, screenshot.edits) : null);
   const urlRef = useRef<string | null>(null);
   const propScreenshotRef = useRef(screenshot);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -100,9 +108,15 @@ export function ScreenshotView({
   const targetForRender = effectiveEdits?.target;
 
   useEffect(() => {
-    if (!baseScreenshot.blob) return;
-    const cacheKey = `${baseScreenshot.id}:${baseScreenshot.blob.size}:${JSON.stringify(annotationsForRender ?? null)}:${JSON.stringify(targetForRender ?? null)}`;
-    if (processedKeyRef.current === cacheKey) return;
+    const cacheKey = renderKey(baseScreenshot, { annotations: annotationsForRender, target: targetForRender });
+    if (!cacheKey || processedKeyRef.current === cacheKey) return;
+    const hit = cache ? RENDERED.get(cacheKey) : undefined;
+    if (hit) {
+      processedKeyRef.current = cacheKey;
+      setShowViewport(false);
+      setFullUrl(hit);
+      return;
+    }
 
     let cancelled = false;
     const current: Screenshot = {
@@ -120,8 +134,17 @@ export function ScreenshotView({
       }
 
       processedKeyRef.current = cacheKey;
-      if (urlRef.current) URL.revokeObjectURL(urlRef.current);
-      urlRef.current = newUrl;
+      if (cache) {
+        RENDERED.set(cacheKey, newUrl);
+        const oldest = RENDERED.size > RENDERED_LIMIT ? RENDERED.entries().next().value : undefined;
+        if (oldest) {
+          RENDERED.delete(oldest[0]);
+          URL.revokeObjectURL(oldest[1]);
+        }
+      } else {
+        if (urlRef.current) URL.revokeObjectURL(urlRef.current);
+        urlRef.current = newUrl;
+      }
       setShowViewport(false);
       setFullUrl(newUrl);
     })();
@@ -129,7 +152,7 @@ export function ScreenshotView({
     return () => {
       cancelled = true;
     };
-  }, [baseScreenshot, annotationsForRender, targetForRender]);
+  }, [baseScreenshot, annotationsForRender, targetForRender, cache]);
 
   useEffect(() => {
     if (!fullUrl || showViewport) return;
