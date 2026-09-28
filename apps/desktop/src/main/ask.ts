@@ -12,9 +12,11 @@ export function ask<T>(target: WebContents | null, channel: string, payload?: un
       reject(new Error(`${channel}: renderer did not reply within ${timeoutMs}ms`));
     }, timeoutMs);
 
-    ipcMain.once(replyChannel, (_event, result: T) => {
+    ipcMain.once(replyChannel, (_event, result: unknown) => {
       clearTimeout(timer);
-      resolve(result);
+      const failure = result && typeof result === 'object' && 'error' in result ? result.error : undefined;
+      if (typeof failure === 'string') reject(new Error(`${channel}: ${failure}`));
+      else resolve(result as T);
     });
 
     target.send(channel, replyChannel, payload);
