@@ -1,5 +1,6 @@
 import { GuideContent, LibraryContent, navigate, SearchModal, TooltipProvider, TopNav, useRoute } from '@mimik/ui';
 import { useEffect, useState } from 'react';
+import type { CaptureInsert } from '../main/capture/insert';
 import { CaptureSheet } from './CaptureSheet';
 import { GuideZoom } from './GuideZoom';
 import { REOPEN_SETTINGS } from './settings/lib/reopen-settings';
@@ -8,19 +9,20 @@ import { SettingsDialog } from './settings/SettingsDialog';
 export function App() {
   const route = useRoute();
   const [settingsOpen, setSettingsOpen] = useState(() => sessionStorage.getItem(REOPEN_SETTINGS) !== null);
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const [sheet, setSheet] = useState<{ insert?: CaptureInsert } | null>(null);
+  const [guideKey, setGuideKey] = useState(0);
 
   useEffect(() => {
     window.mimik.capture.onCommand((command, _state, _region, id) => {
       if (command !== 'stop' || !id) return;
       setSettingsOpen(false);
-      setSheetOpen(false);
+      setSheet(null);
       navigate({ page: 'guide', guideId: id });
+      setGuideKey((n) => n + 1);
     });
   }, []);
 
   const library = route.page === 'library';
-  const [guideKey, setGuideKey] = useState(0);
 
   return (
     <TooltipProvider>
@@ -42,17 +44,18 @@ export function App() {
                 guideId={route.guideId}
                 initialStepId={route.stepId}
                 initialTool={route.tool}
+                onCaptureMore={(insert) => setSheet({ insert })}
               />
             </div>
           </main>
         ) : (
           <main className="flex-1 py-8 px-6">
-            <LibraryContent category={route.category} onStartCapture={() => setSheetOpen(true)} />
+            <LibraryContent category={route.category} onStartCapture={() => setSheet({})} />
           </main>
         )}
         <SearchModal />
         <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
-        {sheetOpen && <CaptureSheet onClose={() => setSheetOpen(false)} />}
+        {sheet && <CaptureSheet insert={sheet.insert} onClose={() => setSheet(null)} />}
       </div>
     </TooltipProvider>
   );

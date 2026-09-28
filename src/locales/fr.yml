@@ -167,6 +167,8 @@ desktop:
   modeScreen: Écran
   modeRegion: Zone
   startSheetTitle: Démarrer une capture
+  moreStepsAfter: "Les nouvelles étapes sont insérées après l'étape $1."
+  moreStepsFirst: "Les nouvelles étapes sont insérées avant l'étape 1."
   startButton: Démarrer
   shortcutsSection: "Raccourcis"
   generalSection: "Général"

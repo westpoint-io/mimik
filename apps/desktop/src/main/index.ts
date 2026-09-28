@@ -3,6 +3,7 @@ import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, protocol, scree
 import { registerAiFetch } from './ai-fetch';
 import { ask } from './ask';
 import { focusedWindow } from './capture/focused-window';
+import type { CaptureInsert } from './capture/insert';
 import { DesktopRecorder, frameFor } from './capture/recorder';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from './capture/screenshot-store';
 import { type CaptureMode, type CaptureSettings, loadSettings, saveSettings } from './capture/settings';
@@ -15,6 +16,7 @@ let tray: Tray | null = null;
 let overlay: CaptureOverlay | null = null;
 let recorder: DesktopRecorder | null = null;
 let guideId: string | null = null;
+let insert: CaptureInsert | null = null;
 let captureSettings: CaptureSettings | null = null;
 let steps: OverlayStep[] = [];
 
@@ -174,7 +176,10 @@ function refreshTrayMenu(): void {
       {
         label: 'Set capture area',
         click: () => {
-          if (!isCapturing()) enterCapture();
+          if (!isCapturing()) {
+            insert = null;
+            enterCapture();
+          }
           overlay?.edit();
         },
       },
@@ -217,7 +222,10 @@ function applyShortcuts(): void {
 function onShortcut(name: ShortcutName): void {
   if (!overlay) return;
   if (name === 'startStop') {
-    if (overlay.state === 'hidden') enterCapture();
+    if (overlay.state === 'hidden') {
+      insert = null;
+      enterCapture();
+    }
     overlay.run(overlay.state === 'hidden' || overlay.state === 'armed' ? 'start' : 'stop');
     return;
   }
@@ -250,7 +258,7 @@ async function onOverlayCommand(command: OverlayCommand): Promise<void> {
     steps = [];
     overlay?.setAiFailure(null);
     try {
-      guideId = await ask<string>(mainWindow?.webContents ?? null, 'mimik:capture:startGuide');
+      guideId = await ask<string>(mainWindow?.webContents ?? null, 'mimik:capture:startGuide', insert !== null);
     } catch (error) {
       overlay?.hide();
       dialog.showErrorBox('Mimik cannot record', error instanceof Error ? error.message : String(error));
@@ -270,11 +278,23 @@ async function onOverlayCommand(command: OverlayCommand): Promise<void> {
   } else if (command === 'stop' || command === 'cancel') {
     recorder?.stop();
     await recorder?.drain();
-    if (command === 'stop' && steps.length > 0) finished = guideId;
-    if (finished) {
-      await ask(mainWindow?.webContents ?? null, 'mimik:capture:finishGuide', finished, 45_000).catch(
-        () => undefined,
-      );
+    const target = insert;
+    insert = null;
+    if (guideId && target) {
+      await ask(
+        mainWindow?.webContents ?? null,
+        'mimik:capture:insertGuide',
+        { guideId, targetGuideId: target.guideId, atIndex: target.atIndex },
+        45_000,
+      ).catch(() => undefined);
+      if (command === 'stop' && steps.length > 0) finished = target.guideId;
+    } else {
+      if (command === 'stop' && steps.length > 0) finished = guideId;
+      if (finished) {
+        await ask(mainWindow?.webContents ?? null, 'mimik:capture:finishGuide', finished, 45_000).catch(
+          () => undefined,
+        );
+      }
     }
     guideId = null;
   }
@@ -355,7 +375,7 @@ if (!app.requestSingleInstanceLock()) {
         if (reply?.stepId && reply.title) {
           const step: OverlayStep = {
             id: reply.stepId,
-            index: steps.length + 1,
+            index: steps.length + 1 + (insert?.afterStep ?? 0),
             title: reply.title,
             src: request.image.src,
             source: 'heuristic',
@@ -396,11 +416,13 @@ if (!app.requestSingleInstanceLock()) {
       },
     );
     ipcMain.handle('mimik:capture:region', () => overlay?.region);
-    ipcMain.handle('mimik:capture:edit', () => {
+    ipcMain.handle('mimik:capture:edit', (_event, target?: CaptureInsert) => {
+      insert = target ?? null;
       enterCapture();
       overlay?.edit();
     });
-    ipcMain.handle('mimik:capture:arm', () => {
+    ipcMain.handle('mimik:capture:arm', (_event, target?: CaptureInsert) => {
+      insert = target ?? null;
       enterCapture();
       overlay?.arm();
     });

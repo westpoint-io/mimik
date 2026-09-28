@@ -167,6 +167,8 @@ desktop:
   modeScreen: Screen
   modeRegion: Area
   startSheetTitle: Start a capture
+  moreStepsAfter: "New steps are inserted after step $1."
+  moreStepsFirst: "New steps are inserted before step 1."
   startButton: Start
   shortcutsSection: "Shortcuts"
   generalSection: "General"

@@ -167,6 +167,8 @@ desktop:
   modeScreen: 屏幕
   modeRegion: 区域
   startSheetTitle: 开始捕获
+  moreStepsAfter: "新步骤会插入到第 $1 步之后。"
+  moreStepsFirst: "新步骤会插入到第 1 步之前。"
   startButton: 开始
   shortcutsSection: "快捷键"
   generalSection: "通用"

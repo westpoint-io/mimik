@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import type { CaptureInsert } from '../main/capture/insert';
 import type { CaptureSettings } from '../main/capture/settings';
 import type { OverlayAiFailure } from '../main/overlay';
 
@@ -13,8 +14,8 @@ const api = {
   version: (): Promise<string> => ipcRenderer.invoke('mimik:version'),
   capture: {
     region: (): Promise<Region> => ipcRenderer.invoke('mimik:capture:region'),
-    edit: (): Promise<void> => ipcRenderer.invoke('mimik:capture:edit'),
-    arm: (): Promise<void> => ipcRenderer.invoke('mimik:capture:arm'),
+    edit: (insert?: CaptureInsert): Promise<void> => ipcRenderer.invoke('mimik:capture:edit', insert),
+    arm: (insert?: CaptureInsert): Promise<void> => ipcRenderer.invoke('mimik:capture:arm', insert),
     described: (stepId: string, description: string | null, failure: OverlayAiFailure | null): void =>
       ipcRenderer.send('mimik:capture:described', stepId, description, failure),
     settings: {

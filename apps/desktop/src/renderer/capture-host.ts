@@ -3,8 +3,10 @@ import type { CaptureStepData } from '@mimik/core/capture/sink';
 import { i18n } from '@mimik/core/env';
 import {
   allScreenshotIds,
+  createSnapshot,
   deleteStep,
   getStepsForGuide,
+  mergeGuideInto,
   permanentlyDeleteGuide,
   updateGuideDescription,
   updateGuideTitle,
@@ -16,7 +18,7 @@ const sink = new DesktopCaptureSink();
 
 allScreenshotIds().then((ids) => window.mimik.screenshots.sweep(ids));
 
-window.mimik.onRequest('mimik:capture:startGuide', () => sink.startGuide());
+window.mimik.onRequest('mimik:capture:startGuide', (payload) => sink.startGuide(payload === true));
 window.mimik.onRequest('mimik:capture:step', (payload) => sink.captureStep(payload as CaptureStepData));
 
 window.mimik.onRequest('mimik:capture:removeStep', async (payload) => {
@@ -35,6 +37,14 @@ window.mimik.onRequest('mimik:capture:finishGuide', async (payload) => {
   const meta = await nameGuide(guideId);
   if (meta?.title) await updateGuideTitle(guideId, meta.title);
   if (meta?.description) await updateGuideDescription(guideId, meta.description);
+  return true;
+});
+
+window.mimik.onRequest('mimik:capture:insertGuide', async (payload) => {
+  const { guideId, targetGuideId, atIndex } = payload as { guideId: string; targetGuideId: string; atIndex: number };
+  await settleDescriptions(guideId);
+  await createSnapshot(targetGuideId);
+  await mergeGuideInto(guideId, targetGuideId, atIndex);
   return true;
 });
 

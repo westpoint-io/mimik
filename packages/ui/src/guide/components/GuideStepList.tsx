@@ -27,6 +27,7 @@ interface GuideStepListProps {
   onChanged?: () => void;
   hasApiKey?: boolean;
   onInsertRecording?: (guideId: string, insertAtIndex: number, tabId: number) => void;
+  onCaptureMore?: (atIndex: number, afterStep: number) => void;
 }
 
 export function GuideStepList({
@@ -41,6 +42,7 @@ export function GuideStepList({
   onChanged,
   hasApiKey,
   onInsertRecording,
+  onCaptureMore,
 }: GuideStepListProps) {
   const { scrollToStepId, setActiveStepId, bumpHistoryRefresh } = useFullview((s) => ({
     scrollToStepId: s.scrollToStepId,
@@ -57,6 +59,13 @@ export function GuideStepList({
   const stepRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const frameRatio = dominantRatio(screenshots);
   const numbers = stepNumbers(steps);
+  const recordAt =
+    onCaptureMore || onInsertRecording
+      ? (atIndex: number) => () =>
+          onCaptureMore
+            ? onCaptureMore(atIndex, steps.slice(0, atIndex).filter((step) => !isBlock(step)).length)
+            : setRecordAtIndex(atIndex)
+      : undefined;
 
   useEffect(() => {
     if (scrollToStepId) {
@@ -167,10 +176,7 @@ export function GuideStepList({
       <div className="flex flex-col">
         <EmptyGuideState />
         {!readOnly && (
-          <InsertBlockMenu
-            onInsert={(blockType) => handleInsertBlock(0, blockType)}
-            onRecord={onInsertRecording && (() => setRecordAtIndex(0))}
-          />
+          <InsertBlockMenu onInsert={(blockType) => handleInsertBlock(0, blockType)} onRecord={recordAt?.(0)} />
         )}
         {captureDialog}
       </div>
@@ -180,10 +186,7 @@ export function GuideStepList({
   return (
     <div className="space-y-6">
       {!readOnly && (
-        <InsertBlockMenu
-          onInsert={(blockType) => handleInsertBlock(0, blockType)}
-          onRecord={onInsertRecording && (() => setRecordAtIndex(0))}
-        />
+        <InsertBlockMenu onInsert={(blockType) => handleInsertBlock(0, blockType)} onRecord={recordAt?.(0)} />
       )}
       {steps.map((step, idx) => (
         <div
@@ -239,7 +242,7 @@ export function GuideStepList({
           {!readOnly && (
             <InsertBlockMenu
               onInsert={(blockType) => handleInsertBlock(idx + 1, blockType)}
-              onRecord={onInsertRecording && (() => setRecordAtIndex(idx + 1))}
+              onRecord={recordAt?.(idx + 1)}
             />
           )}
         </div>

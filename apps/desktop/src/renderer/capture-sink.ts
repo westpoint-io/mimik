@@ -29,8 +29,8 @@ export type DesktopCaptureStepData = CaptureStepData & {
 };
 
 export class DesktopCaptureSink implements CaptureSink {
-  async startGuide(): Promise<string> {
-    const guide = await createGuide(crypto.randomUUID());
+  async startGuide(staging = false): Promise<string> {
+    const guide = await createGuide(crypto.randomUUID(), staging);
     return guide.id;
   }
 

@@ -167,6 +167,8 @@ desktop:
   modeScreen: Tela
   modeRegion: Área
   startSheetTitle: Iniciar uma captura
+  moreStepsAfter: "As novas etapas entram depois da etapa $1."
+  moreStepsFirst: "As novas etapas entram antes da etapa 1."
   startButton: Iniciar
   shortcutsSection: "Atalhos"
   generalSection: "Geral"
