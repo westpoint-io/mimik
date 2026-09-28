@@ -379,7 +379,7 @@ if (!app.requestSingleInstanceLock()) {
             id: reply.stepId,
             index: steps.length + 1 + (insert?.afterStep ?? 0),
             title: reply.title,
-            src: request.image.src,
+            src: request.image?.src ?? '',
             source: 'heuristic',
             pending: reply.pending === true,
             app: request.elementMeta.app?.name ?? null,

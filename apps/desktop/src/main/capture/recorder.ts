@@ -66,7 +66,7 @@ export interface Point {
 export interface CaptureRequest {
   action: string;
   elementMeta: ElementMeta;
-  image: CaptureImage;
+  image?: CaptureImage;
   inputValue?: string;
   zoomLevel?: number;
 }
@@ -460,15 +460,24 @@ export class DesktopRecorder {
     const settings = this.settings();
     const region = this.region();
 
-    const frame = await taken;
+    const lost = (error: unknown) => {
+      process.stderr.write(`mimik: screenshot failed: ${error instanceof Error ? error.message : String(error)}\n`);
+      return null;
+    };
+    const frame = await taken.catch(lost);
     const found = await (place ?? focusedWindow());
     const framed = frameFor(settings.captureMode, point, region, found.ok ? found.window.bounds : null);
-    const shot = await frame(framed);
-    const scale = shot.scaleFactor;
-
-    const screenshotId = randomUUID();
-    const src = writeScreenshot(screenshotId, shot.png);
-    this.saved(src);
+    const image = frame
+      ? await frame(framed)
+          .then((shot) => {
+            const screenshotId = randomUUID();
+            const src = writeScreenshot(screenshotId, shot.png);
+            this.saved(src);
+            return { screenshotId, src, width: shot.width, height: shot.height, scale: shot.scaleFactor };
+          })
+          .catch(lost)
+      : null;
+    const scale = image?.scale ?? screen.getDisplayNearestPoint(point).scaleFactor;
     const local = { x: point.x - framed.x, y: point.y - framed.y };
     const target = await element;
 
@@ -490,12 +499,9 @@ export class DesktopRecorder {
         ...(target?.children.length ? { children: target.children } : {}),
         ...(found.ok ? { app: found.window.app, window: { title: found.window.title } } : {}),
       },
-      image: {
-        screenshotId,
-        src,
-        width: shot.width,
-        height: shot.height,
-      },
+      ...(image
+        ? { image: { screenshotId: image.screenshotId, src: image.src, width: image.width, height: image.height } }
+        : {}),
       ...(inputValue === undefined ? {} : { inputValue }),
       ...(settings.zoomLevel === null ? {} : { zoomLevel: settings.zoomLevel }),
     });

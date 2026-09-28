@@ -177,7 +177,7 @@ export function controls(): void {
       printingStep = false;
       if (aiWait) clearTimeout(aiWait);
       aiWait = null;
-      if (printed && printed.id !== landedId) land(printed.src, printed.id);
+      if (printed?.src && printed.id !== landedId) land(printed.src, printed.id);
     }
     if (!printingStep && !landing) landedId = step?.id ?? null;
     const capturing = printingStep || landing;
@@ -230,7 +230,7 @@ export function controls(): void {
       aim.style.top = `${(height - shownHeight) / 2 + aimed.y * shownHeight}px`;
     }
     printing.textContent = `Capturing step ${printingIndex}`;
-    shot.hidden = !step;
+    shot.hidden = !step?.src;
     veil.hidden = !paused || capturing;
     remove.hidden = !step || capturing || armed;
 

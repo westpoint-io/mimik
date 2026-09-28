@@ -93,6 +93,26 @@ app.whenReady().then(async () => {
   await recorder.capture({ x: region.x + 400, y: region.y + 300 });
   const results = await ask<CheckResult[]>(win.webContents, 'mimik:check:verify', guideId, 60_000);
 
+  const blindGuide = await ask<string>(win.webContents, 'mimik:capture:startGuide');
+  let blindRequest: CaptureRequest | null = null;
+  const blind = new DesktopRecorder(
+    () => region,
+    (fn) => fn(),
+    (request) => {
+      blindRequest = request;
+      return ask(win.webContents, 'mimik:capture:step', { ...request, guideId: blindGuide });
+    },
+    { grab: () => Promise.reject(new Error('display gone')), settings: () => settings, lookup: () => Promise.resolve(null) },
+  );
+  await blind.capture({ x: region.x + 60, y: region.y + 60 });
+  const blindSteps = (await ask<string[] | null>(win.webContents, 'mimik:check:steps', blindGuide, 20_000)) ?? [];
+  await ask(win.webContents, 'mimik:check:cleanup', [blindGuide], 20_000).catch(() => undefined);
+  results.push({
+    name: 'a failed screenshot still writes the step, without a picture',
+    ok: blindSteps.length === 1 && blindRequest !== null && (blindRequest as CaptureRequest).image === undefined,
+    detail: `${blindSteps.length} step written, image ${(blindRequest as CaptureRequest | null)?.image ? 'sent' : 'absent'}`,
+  });
+
   const userSettings = loadSettings();
   const clamped = normaliseSettings({ screenshotDelayMs: 5000 });
   const stored = saveSettings({ screenshotDelayMs: 750, keepClicksBeyondArea: true });
