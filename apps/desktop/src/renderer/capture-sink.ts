@@ -1,3 +1,4 @@
+import { queueDescription } from '@mimik/core/capture/ai/description-queue';
 import type {
   CaptureSink,
   CaptureStepData,
@@ -83,7 +84,8 @@ export class DesktopCaptureSink implements CaptureSink {
     await addStepToGuide(data.guideId, stepId);
 
     if (pending) {
-      void describeStep(data.action, meta).then(async ({ text, failure }) => {
+      queueDescription(data.guideId, async () => {
+        const { text, failure } = await describeStep(data.action, meta);
         if (text) await updateStepDescription(stepId, text, 'ai');
         await clearStepAiPending(stepId);
         window.mimik.capture.described(stepId, text, failure);

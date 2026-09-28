@@ -272,7 +272,9 @@ async function onOverlayCommand(command: OverlayCommand): Promise<void> {
     await recorder?.drain();
     if (command === 'stop' && steps.length > 0) finished = guideId;
     if (finished) {
-      await ask(mainWindow?.webContents ?? null, 'mimik:capture:finishGuide', finished).catch(() => undefined);
+      await ask(mainWindow?.webContents ?? null, 'mimik:capture:finishGuide', finished, 45_000).catch(
+        () => undefined,
+      );
     }
     guideId = null;
   }

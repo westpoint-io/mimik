@@ -1,3 +1,4 @@
+import { settleDescriptions } from '@mimik/core/capture/ai/settle-descriptions';
 import type { CaptureStepData } from '@mimik/core/capture/sink';
 import { i18n } from '@mimik/core/env';
 import {
@@ -30,7 +31,8 @@ window.mimik.onRequest('mimik:capture:finishGuide', async (payload) => {
   const app = steps.find((step) => step.app?.name)?.app?.name;
   await updateGuideTitle(guideId, app ? i18n.t('desktop.guideInApp', [app]) : i18n.t('background.newGuide'));
 
-  const meta = await nameGuide(steps);
+  await settleDescriptions(guideId);
+  const meta = await nameGuide(guideId);
   if (meta?.title) await updateGuideTitle(guideId, meta.title);
   if (meta?.description) await updateGuideDescription(guideId, meta.description);
   return true;
