@@ -132,6 +132,7 @@ function createWindow(): void {
     minHeight: 480,
     show: false,
     autoHideMenuBar: true,
+    icon: resource(process.platform === 'win32' ? 'icon.ico' : 'icon.png'),
     backgroundColor: '#EEF2FF',
     webPreferences: {
       preload: join(__dirname, '../preload/index.cjs'),
