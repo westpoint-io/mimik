@@ -222,8 +222,18 @@ one writing every step. The tray icon carries a red dot for as long as a recordi
 it then finishes the recording rather than opening the window.
 
 `pnpm dev:desktop` runs it, `pnpm build:desktop` compiles, `pnpm pack:desktop` produces an unpacked
-app in `apps/desktop/dist`. `electron-builder.yml` targets dmg/zip, nsis and AppImage/deb, and
-`executableName` must stay set or the binary inherits the scoped package name.
+app in `apps/desktop/dist`. The root script calls it with `run`, because `pnpm --filter … pack` is
+pnpm's own command: it wrote a tarball of the package and never built the app. `electron-builder.yml`
+targets dmg/zip, nsis and AppImage/deb, and `executableName` must stay set or the binary inherits the
+scoped package name.
+
+The app icon is the extension's, `public/icon.svg`, so the two products share one mark.
+`resources/icon.png` is it at 1024 px, which electron-builder turns into the macOS and Linux icons,
+and `resources/icon.ico` holds 16 to 256 px drawn from the vector rather than scaled down from the
+large one, so the taskbar sizes stay sharp. The main window sets it too, which is what puts it in the
+taskbar in dev and on Linux. They are renders, so a change to the SVG means redrawing both:
+`rsvg-convert -w 1024 -h 1024 public/icon.svg -o apps/desktop/resources/icon.png`, and each ICO size
+the same way combined with `magick`.
 
 ## Desktop Capture Primitives
 
@@ -460,8 +470,15 @@ a region to its language (`pt-PT` to `pt-BR`) and falling back to English. A key
 back to English on its own rather than showing the key. The value is read synchronously when
 `core-env` loads, so changing it stores it, reloads every window through `mimik:app:relocalise`, and
 reopens the settings on General in the window that asked. The extension has no picker, because
-`browser.i18n` follows the browser's own language and cannot be switched at runtime. Strings in the
-main process — the tray and its menu, the error dialogs — are still English.
+`browser.i18n` follows the browser's own language and cannot be switched at runtime.
+
+The main process translates the tray, its menu and the dialogs through `mainI18n`, which bundles the
+same six locale files. It cannot use core's `translate`, since main may only take types from core,
+so it keeps its own dozen-line lookup, with the same English fallback per key. Main has no
+`localStorage`, so it cannot read the chosen language: it starts on the system's, matched to a
+supported language, and the app window reports the one it resolved as soon as `core-env` loads,
+through `mimik:app:locale`, which also rebuilds the tray menu. Picking a language reloads every
+window, so the report follows the choice.
 
 The overlay and the splash have no React, but they read strings through `i18n.t` like everything
 else, and wherever the extension already names a thing they use its key: the card's header is
@@ -676,7 +693,10 @@ of the two paths genuinely differs — voice narration and the input finalisatio
 extension, and the application name only on the desktop.
 
 Main cannot `invoke` a renderer, so `ask()` sends a request with a generated reply channel and waits
-for `ipcMain.once` on it, with a timeout. The preload's `onRequest` is the other half. Guide creation
+for `ipcMain.once` on it, with a timeout. The preload's `onRequest` is the other half. A handler that throws
+answers with `{ error }`, and `ask()` rejects with that message rather than resolving with it. It used
+to resolve, so a guide that failed to be created came back as the guide id `{ error: … }`: the start
+dialog's `catch` never ran and the recording went on writing steps to no guide. Guide creation
 and step writes both ride it, because both need IndexedDB, which only the renderer has.
 
 Screenshot bytes never cross the process boundary. Main writes each capture to a PNG under
@@ -696,6 +716,12 @@ which includes the checks.
 Files outlive the rows that point at them, because deleting a guide only removes database rows. The
 renderer sends every known screenshot id to main at startup and main deletes any file not in that
 set, so an interrupted delete costs disk until the next launch rather than forever.
+
+A failed screenshot does not cost the step. The extension already worked this way: when the grab or
+the crop throws, the step is written with its element and description and no screenshot row, and
+the guide shows the image placeholder with its upload button. On the desktop the error used to reach
+the capture queue, which logged it and wrote nothing, so the click vanished without a word; the card
+now lands the step with an empty preview instead of printing a picture that does not exist.
 
 A click is the press, not the release. The hook listens for `mousedown`, and the element lookup and
 the display grab both start in that handler rather than when the capture queue reaches the step.
