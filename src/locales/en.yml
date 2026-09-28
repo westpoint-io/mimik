@@ -208,6 +208,8 @@ desktop:
   shortcutClear: "Clear"
 
 fullview:
+  collapseSidebar: Collapse sidebar
+  expandSidebar: Expand sidebar
   allGuides: All Guides
   starred: Starred
   trash: Trash

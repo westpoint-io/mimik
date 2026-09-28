@@ -39,7 +39,7 @@ export { ScreenshotView } from './guide/components/ScreenshotView';
 export { StepCard } from './guide/components/StepCard';
 export { StepSourceBadge } from './guide/components/StepSourceBadge';
 export { LibraryContent } from './library/components/LibraryContent';
-export { TopNav } from './navigation/components/TopNav';
+export { AppFrame } from './navigation/components/AppFrame';
 export { useRoute } from './navigation/hooks/use-route';
 export { navigate } from './navigation/lib/navigate';
 export { SearchModal } from './search/components/SearchModal';

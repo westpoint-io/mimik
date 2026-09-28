@@ -1,4 +1,4 @@
-import { GuideContent, LibraryContent, navigate, SearchModal, TooltipProvider, TopNav, useRoute } from '@mimik/ui';
+import { AppFrame, GuideContent, LibraryContent, navigate, SearchModal, TooltipProvider, useRoute } from '@mimik/ui';
 import { useEffect, useState } from 'react';
 import type { CaptureInsert } from '../main/capture/insert';
 import { CaptureSheet } from './CaptureSheet';
@@ -22,20 +22,18 @@ export function App() {
     });
   }, []);
 
-  const library = route.page === 'library';
-
   return (
     <TooltipProvider>
-      <div className="min-h-screen flex flex-col bg-background">
-        <TopNav
-          route={route}
-          onSettings={library ? () => setSettingsOpen(true) : undefined}
-          guideActions={
-            route.page === 'guide' ? (
-              <GuideZoom guideId={route.guideId} onDone={() => setGuideKey((n) => n + 1)} />
-            ) : undefined
-          }
-        />
+      <AppFrame
+        route={route}
+        onStartCapture={() => setSheet({})}
+        onSettings={() => setSettingsOpen(true)}
+        guideActions={
+          route.page === 'guide' ? (
+            <GuideZoom guideId={route.guideId} onDone={() => setGuideKey((n) => n + 1)} />
+          ) : undefined
+        }
+      >
         {route.page === 'guide' ? (
           <main className="flex-1 py-10 px-6">
             <div className="mx-auto max-w-[780px]">
@@ -49,14 +47,14 @@ export function App() {
             </div>
           </main>
         ) : (
-          <main className="flex-1 py-8 px-6">
-            <LibraryContent category={route.category} onStartCapture={() => setSheet({})} />
+          <main className="flex-1 flex flex-col py-8 px-6">
+            <LibraryContent category={route.category} />
           </main>
         )}
-        <SearchModal />
-        <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
-        {sheet && <CaptureSheet insert={sheet.insert} onClose={() => setSheet(null)} />}
-      </div>
+      </AppFrame>
+      <SearchModal />
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+      {sheet && <CaptureSheet insert={sheet.insert} onClose={() => setSheet(null)} />}
     </TooltipProvider>
   );
 }

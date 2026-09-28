@@ -1,4 +1,5 @@
-import { GuideContent, LibraryContent, SearchModal, TooltipProvider, TopNav, useFullview, useRoute } from '@mimik/ui';
+import { AppFrame, GuideContent, LibraryContent, SearchModal, TooltipProvider, useFullview, useRoute } from '@mimik/ui';
+import { browser } from '#imports';
 import { openSidebar } from '@/lib/browser-api/open-sidebar';
 import { UpdateNotice } from '@/ui/shared/UpdateNotice';
 import { VoiceNotice } from './components/VoiceNotice';
@@ -9,14 +10,18 @@ export function FullViewApp() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen flex flex-col bg-background">
-        <TopNav route={route} />
+      <AppFrame
+        route={route}
+        onStartCapture={openSidebar}
+        onSettings={() => browser.runtime.openOptionsPage()}
+        settingsExternal
+      >
         <SearchModal />
         <UpdateNotice className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50" />
 
         {route.page === 'library' && (
-          <main className="flex-1 p-8 max-w-6xl mx-auto w-full">
-            <LibraryContent category={route.category} onStartCapture={openSidebar} />
+          <main className="flex-1 flex flex-col p-8">
+            <LibraryContent category={route.category} />
           </main>
         )}
 
@@ -29,7 +34,7 @@ export function FullViewApp() {
         )}
 
         {import.meta.env.BROWSER !== 'firefox' && <VoiceNotice />}
-      </div>
+      </AppFrame>
     </TooltipProvider>
   );
 }

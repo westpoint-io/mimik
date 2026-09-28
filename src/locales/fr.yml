@@ -208,6 +208,8 @@ desktop:
   shortcutClear: "Effacer"
 
 fullview:
+  collapseSidebar: Réduire la barre latérale
+  expandSidebar: Développer la barre latérale
   allGuides: Tous les guides
   starred: Favoris
   trash: Corbeille

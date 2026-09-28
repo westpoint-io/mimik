@@ -208,6 +208,8 @@ desktop:
   shortcutClear: "Limpar"
 
 fullview:
+  collapseSidebar: Recolher a barra lateral
+  expandSidebar: Expandir a barra lateral
   allGuides: Todos os guias
   starred: Favoritos
   trash: Lixeira

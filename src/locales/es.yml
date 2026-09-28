@@ -208,6 +208,8 @@ desktop:
   shortcutClear: "Borrar"
 
 fullview:
+  collapseSidebar: Contraer la barra lateral
+  expandSidebar: Expandir la barra lateral
   allGuides: Todas las guías
   starred: Favoritos
   trash: Papelera

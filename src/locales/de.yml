@@ -208,6 +208,8 @@ desktop:
   shortcutClear: "Löschen"
 
 fullview:
+  collapseSidebar: Seitenleiste einklappen
+  expandSidebar: Seitenleiste ausklappen
   allGuides: Alle Anleitungen
   starred: Favoriten
   trash: Papierkorb
