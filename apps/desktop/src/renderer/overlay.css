@@ -321,14 +321,6 @@ body.controls #badge {
   font-weight: 600;
 }
 
-body.controls #pillWriting {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  color: var(--lavender);
-}
-
 body.controls #collapse {
   display: flex;
   align-items: center;
@@ -389,11 +381,6 @@ body.controls[data-state='paused'] #veil {
   background: rgba(255, 255, 255, 0.55);
 }
 
-body.controls #veilText {
-  font-size: 11.5px;
-  font-weight: 600;
-}
-
 body.controls #veilPause {
   display: flex;
   align-items: center;
@@ -403,6 +390,205 @@ body.controls #veilPause {
   border-radius: 50%;
   background: var(--deep);
   color: #fff;
+}
+
+@property --p {
+  syntax: '<integer>';
+  inherits: true;
+  initial-value: 0;
+}
+
+body.controls #stage {
+  position: relative;
+}
+
+body.controls #stage.capturing #preview,
+body.controls #stage.capturing #stepTitle,
+body.controls #stage.capturing #stepMeta {
+  visibility: hidden;
+}
+
+body.controls #printer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid #e0e7ff;
+  border-radius: 10px;
+  background: #eef2ff;
+}
+
+body.controls #camera {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  margin-bottom: 50px;
+}
+
+body.controls #printerMascot {
+  position: absolute;
+  inset: 0;
+  display: flex;
+}
+
+body.controls #photo {
+  position: absolute;
+  left: 50%;
+  top: 29px;
+  width: 54px;
+  height: 44px;
+  margin-left: -27px;
+  padding: 3px 3px 8px;
+  box-sizing: border-box;
+  border-radius: 2px;
+  background: #fff;
+  box-shadow: 0 4px 10px rgba(30, 27, 75, 0.18);
+  transform: translateY(calc(var(--p) * 0.48px));
+}
+
+body.controls #slot {
+  position: absolute;
+  left: 50%;
+  top: 70px;
+  width: 64px;
+  height: 5px;
+  margin-left: -32px;
+  border-radius: 3px;
+  background: #0f0d2e;
+}
+
+body.controls #photo .film {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 1px;
+  background: #fff;
+  overflow: hidden;
+}
+
+body.controls #photo .film::before {
+  content: '';
+  position: absolute;
+  inset: 8% 8% 16%;
+  border: 1px solid var(--lavender);
+  border-radius: 1px;
+  background:
+    linear-gradient(var(--lavender), var(--lavender)) 0 0 / 100% 14% no-repeat,
+    linear-gradient(var(--lavender), var(--lavender)) 28% 0 / 1px 100% no-repeat,
+    linear-gradient(#e0e7ff, #e0e7ff) 8% 34% / 14% 8% no-repeat,
+    linear-gradient(#e0e7ff, #e0e7ff) 8% 54% / 16% 8% no-repeat,
+    linear-gradient(#e0e7ff, #e0e7ff) 8% 74% / 12% 8% no-repeat,
+    linear-gradient(#e0e7ff, #e0e7ff) 78% 34% / 52% 8% no-repeat,
+    linear-gradient(#e0e7ff, #e0e7ff) 70% 54% / 42% 8% no-repeat;
+}
+
+body.controls #photo .film img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+}
+
+body.controls #photo.developing .film img {
+  opacity: 1;
+  transition: opacity 0.35s ease-out;
+}
+
+body.controls #aim {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+body.controls #aim::before {
+  content: '';
+  position: absolute;
+  left: -7px;
+  top: -5px;
+  width: 14px;
+  height: 10px;
+  box-sizing: border-box;
+  border: 1px dashed var(--mark);
+  border-radius: 1px;
+}
+
+body.controls #aim svg {
+  position: absolute;
+  left: -2px;
+  top: -2px;
+  fill: var(--deep);
+  stroke: #fff;
+  stroke-width: 2.5;
+}
+
+body.controls #printerCaption {
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+body.controls #percent::after {
+  counter-reset: p var(--p);
+  content: counter(p) '%';
+  font-variant-numeric: tabular-nums;
+}
+
+body.controls #printer .flash {
+  animation: none;
+  opacity: 0;
+}
+
+body.controls #printer.fired .flash {
+  animation: shutter 0.4s ease-out;
+}
+
+@keyframes shutter {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.95;
+  }
+}
+
+body.controls #flyer {
+  position: absolute;
+  z-index: 3;
+  box-sizing: border-box;
+  border: 1px solid #e0e7ff;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(30, 27, 75, 0.14);
+}
+
+body.controls #flyer img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+body.controls #stage.arrived #stepTitle,
+body.controls #stage.arrived #stepMeta,
+body.controls #stage.arrived #remove {
+  animation: arrive 0.26s ease-out both;
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 body.controls #remove {
@@ -422,68 +608,15 @@ body.controls #remove svg {
   height: 13px;
 }
 
-body.controls #stepTitle,
-body.controls #writing,
-body.controls #skeleton .line {
+body.controls #stepTitle {
   margin: 11px 0 0;
   font-size: 13px;
   line-height: 1.45;
-}
-
-body.controls #stepTitle {
   font-weight: 600;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-body.controls #writing {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-weight: 500;
-  color: var(--muted);
-}
-
-body.controls #writing svg,
-body.controls #pillWriting svg {
-  color: var(--accent);
-  animation: spin 0.9s linear infinite;
-}
-
-body.controls #pillWriting svg {
-  color: var(--lavender);
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-body.controls #skeleton span {
-  display: inline-block;
-  vertical-align: middle;
-  height: 10px;
-  width: 78%;
-  border-radius: 5px;
-  background: linear-gradient(90deg, #eef2ff 0%, #e0e7ff 50%, #eef2ff 100%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s linear infinite;
-}
-
-body.controls #skeleton .meta span {
-  width: 38%;
-}
-
-@keyframes shimmer {
-  from {
-    background-position: 100% 0;
-  }
-  to {
-    background-position: -100% 0;
-  }
 }
 
 body.controls #aiNotice {
@@ -511,8 +644,7 @@ body.controls #aiNotice strong {
   color: var(--deep);
 }
 
-body.controls #stepMeta,
-body.controls #skeleton .meta {
+body.controls #stepMeta {
   display: flex;
   align-items: center;
   gap: 6px;

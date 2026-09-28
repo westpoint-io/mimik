@@ -17,6 +17,7 @@ let overlay: CaptureOverlay | null = null;
 let recorder: DesktopRecorder | null = null;
 let guideId: string | null = null;
 let insert: CaptureInsert | null = null;
+let describing = true;
 let captureSettings: CaptureSettings | null = null;
 let steps: OverlayStep[] = [];
 
@@ -383,7 +384,9 @@ if (!app.requestSingleInstanceLock()) {
             app: request.elementMeta.app?.name ?? null,
           };
           steps.push(step);
+          describing = step.pending;
           overlay?.showStep(step);
+          if (step.pending) overlay?.setProgress(95, 3500);
         }
         return reply;
       },
@@ -391,6 +394,9 @@ if (!app.requestSingleInstanceLock()) {
         settings: () => captureSettings ?? loadSettings(),
         ignores: (point) => overlay?.ignores(point) ?? false,
         drained: () => overlay?.setBusy(false),
+        progress: (fraction, ms) => overlay?.setProgress(Math.round(fraction * (describing ? 45 : 100)), ms),
+        aimed: (aim) => overlay?.setPrint({ aim }),
+        saved: (src) => overlay?.setPrint({ src }),
       },
     );
 
@@ -412,7 +418,10 @@ if (!app.requestSingleInstanceLock()) {
           step.source = 'ai';
         }
         step.pending = false;
-        if (step === steps.at(-1)) overlay?.showStep(step);
+        if (step === steps.at(-1)) {
+          overlay?.setProgress(100, 200);
+          overlay?.showStep(step);
+        }
       },
     );
     ipcMain.handle('mimik:capture:region', () => overlay?.region);

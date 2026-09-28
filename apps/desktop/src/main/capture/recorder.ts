@@ -82,9 +82,14 @@ export interface RecorderHooks {
   resolve?: (keycode: number, shift: boolean, ctrl: boolean, alt: boolean) => Promise<string | null>;
   reset?: () => Promise<void>;
   drained?: () => void;
+  progress?: (fraction: number, ms: number) => void;
+  aimed?: (aim: { x: number; y: number; aspect: number }) => void;
+  saved?: (src: string) => void;
 }
 
 export type RecorderStart = { ok: true } | { ok: false; reason: string; detail: string };
+
+const CAPTURE_ESTIMATE_MS = 450;
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -216,6 +221,9 @@ export class DesktopRecorder {
   private readonly resolve: (keycode: number, shift: boolean, ctrl: boolean, alt: boolean) => Promise<string | null>;
   private readonly reset: () => Promise<void>;
   private readonly drained: () => void;
+  private readonly progress: (fraction: number, ms: number) => void;
+  private readonly aimed: (aim: { x: number; y: number; aspect: number }) => void;
+  private readonly saved: (src: string) => void;
   private pending = 0;
 
   constructor(
@@ -234,6 +242,9 @@ export class DesktopRecorder {
     this.resolve = hooks.resolve ?? resolveKey;
     this.reset = hooks.reset ?? clearDeadKey;
     this.drained = hooks.drained ?? (() => {});
+    this.progress = hooks.progress ?? (() => {});
+    this.aimed = hooks.aimed ?? (() => {});
+    this.saved = hooks.saved ?? (() => {});
   }
 
   async start(): Promise<RecorderStart> {
@@ -371,6 +382,8 @@ export class DesktopRecorder {
     const region = this.region();
     const at = captureMode === 'region' ? { x: region.x + region.width / 2, y: region.y + region.height / 2 } : point;
     const grabbed = this.withHidden(async () => {
+      this.progress(0, 0);
+      this.progress(0.9, screenshotDelayMs + CAPTURE_ESTIMATE_MS);
       await delay(screenshotDelayMs);
       return this.grab(at);
     });
@@ -398,7 +411,25 @@ export class DesktopRecorder {
   }
 
   async capture(point: Point): Promise<void> {
-    await this.write('click', point, this.lookup(point), this.shoot(point), undefined, this.windowAt(point));
+    const element = this.lookup(point);
+    const taken = this.shoot(point);
+    const place = this.windowAt(point);
+    place
+      .then((found) => {
+        const frame = frameFor(
+          this.settings().captureMode,
+          point,
+          this.region(),
+          found.ok ? found.window.bounds : null,
+        );
+        this.aimed({
+          x: (point.x - frame.x) / frame.width,
+          y: (point.y - frame.y) / frame.height,
+          aspect: frame.width / frame.height,
+        });
+      })
+      .catch(() => undefined);
+    await this.write('click', point, element, taken, undefined, place);
   }
 
   async writeTyping(
@@ -436,6 +467,8 @@ export class DesktopRecorder {
     const scale = shot.scaleFactor;
 
     const screenshotId = randomUUID();
+    const src = writeScreenshot(screenshotId, shot.png);
+    this.saved(src);
     const local = { x: point.x - framed.x, y: point.y - framed.y };
     const target = await element;
 
@@ -459,13 +492,14 @@ export class DesktopRecorder {
       },
       image: {
         screenshotId,
-        src: writeScreenshot(screenshotId, shot.png),
+        src,
         width: shot.width,
         height: shot.height,
       },
       ...(inputValue === undefined ? {} : { inputValue }),
       ...(settings.zoomLevel === null ? {} : { zoomLevel: settings.zoomLevel }),
     });
+    this.progress(1, 150);
   }
 
   async drain(): Promise<void> {

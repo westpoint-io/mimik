@@ -234,14 +234,20 @@ app.whenReady().then(async () => {
 
   overlay.showStep({ id: 'one', index: 1, title: 'Click "Save"', src, source: 'heuristic', pending: true, app: 'Explorer' });
   await settle();
-  const writing = await card("writing: !document.querySelector('#writing').hidden, title: !document.querySelector('#stepTitle').hidden");
+  const pendingStep = await card(
+    "title: document.querySelector('#stepTitle').textContent, source: document.querySelector('#source').textContent, loaders: document.querySelectorAll('#writing, #skeleton, #pillWriting').length",
+  );
   overlay.showStep({ id: 'one', index: 1, title: 'Save the file', src, source: 'ai', pending: false, app: 'Explorer' });
   await settle();
   const rewritten = await card("source: document.querySelector('#source').textContent, title: document.querySelector('#stepTitle').textContent");
   check(
-    'a pending description shows as being written, then carries the AI badge',
-    writing.writing === true && writing.title === false && rewritten.source === 'AI' && rewritten.title === 'Save the file',
-    `writing shown: ${writing.writing}, title shown: ${writing.title}; then ${rewritten.source} "${rewritten.title}"`,
+    'a pending description keeps the rule-based title, then the AI text replaces it in place',
+    pendingStep.title === 'Click "Save"' &&
+      pendingStep.source === 'Basic' &&
+      pendingStep.loaders === 0 &&
+      rewritten.source === 'AI' &&
+      rewritten.title === 'Save the file',
+    `while pending: ${pendingStep.source} "${pendingStep.title}", ${pendingStep.loaders} writing loaders; then ${rewritten.source} "${rewritten.title}"`,
   );
 
   await evaluate("document.querySelector('#remove').click()");
@@ -254,15 +260,58 @@ app.whenReady().then(async () => {
     "document.querySelector('#primary').disabled",
   );
   const veil = await card(
-    "text: document.querySelector('#veilText').textContent, remove: document.querySelector('#remove').hidden, shot: document.querySelector('#shot').hidden, height: document.body.scrollHeight",
+    "text: document.querySelector('#printing').textContent, printer: !document.querySelector('#printer').hidden, remove: document.querySelector('#remove').hidden, shot: getComputedStyle(document.querySelector('#preview')).visibility, height: document.body.scrollHeight",
+  );
+  overlay.setProgress(60, 0);
+  await settle();
+  const printed = await card("percent: getComputedStyle(document.querySelector('#printer')).getPropertyValue('--p').trim()");
+  check(
+    'a capture in flight prints the photo at the reported percentage, over the last screenshot',
+    veil.text === 'Capturing step 2' &&
+      veil.printer === true &&
+      veil.remove === true &&
+      veil.shot === 'hidden' &&
+      printed.percent === '60',
+    `${veil.text}, printer shown: ${veil.printer}, remove hidden: ${veil.remove}, last screenshot: ${veil.shot}, count: ${printed.percent}%`,
+  );
+  const unaimed = await card("aim: !document.querySelector('#aim').hidden, developing: document.querySelector('#photo').classList.contains('developing')");
+  overlay.setPrint({ aim: { x: 0.25, y: 0.5, aspect: 2 } });
+  overlay.setPrint({ src });
+  await settle();
+  const aimed = await card(
+    "aim: !document.querySelector('#aim').hidden, left: document.querySelector('#aim').style.left, developing: document.querySelector('#photo').classList.contains('developing'), src: document.querySelector('#photo img').getAttribute('src')",
   );
   check(
-    'a capture in flight shows the mascot instead of the last screenshot',
-    veil.text === 'Capturing step 2…' && veil.remove === true && veil.shot === true,
-    `veil: ${veil.text}, remove hidden: ${veil.remove}, last screenshot hidden: ${veil.shot}`,
+    'the photo marks where the click was, and shows the screenshot once it is saved',
+    unaimed.aim === false &&
+      unaimed.developing === false &&
+      aimed.aim === true &&
+      aimed.left !== '' &&
+      aimed.developing === true &&
+      aimed.src === src,
+    `before: marker ${unaimed.aim}, developing ${unaimed.developing}; after: marker ${aimed.aim} at ${aimed.left}, developing ${aimed.developing}`,
   );
+  overlay.showStep({ id: 'two', index: 2, title: 'Click "Open"', src, source: 'heuristic', pending: true, app: 'Explorer' });
   overlay.setBusy(false);
   await settle();
+  const describing = await card(
+    "printer: !document.querySelector('#printer').hidden, title: getComputedStyle(document.querySelector('#stepTitle')).visibility",
+  );
+  overlay.showStep({ id: 'two', index: 2, title: 'Open the file', src, source: 'ai', pending: false, app: 'Explorer' });
+  await new Promise((resolve) => setTimeout(resolve, 900));
+  await settle();
+  const aiLanded = await card(
+    "printer: !document.querySelector('#printer').hidden, title: document.querySelector('#stepTitle').textContent, source: document.querySelector('#source').textContent",
+  );
+  check(
+    'the printer waits for the AI description, and the step lands with it',
+    describing.printer === true &&
+      describing.title === 'hidden' &&
+      aiLanded.printer === false &&
+      aiLanded.title === 'Open the file' &&
+      aiLanded.source === 'AI',
+    `while describing: printer ${describing.printer}, title ${describing.title}; landed: printer ${aiLanded.printer}, ${aiLanded.source} "${aiLanded.title}"`,
+  );
   const shortTitle = await card("height: document.body.scrollHeight, preview: document.querySelector('#preview').offsetHeight");
   overlay.showStep({ id: 'one', index: 1, title: 'Click '.repeat(40), src, source: 'ai', pending: false, app: 'Explorer' });
   await settle();
