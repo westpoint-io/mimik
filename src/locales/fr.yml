@@ -209,7 +209,6 @@ desktop:
   cardKeyboardHint: "Ce que le clavier ajoute au guide"
   captureModeHint: "Fenêtre suit l’application sur laquelle vous cliquez."
   screenshotDelayHint: "Attente avant la capture, pour les menus animés."
-  typingDebounceHint: "Une pause de cette durée termine l’étape."
   recordKeysHint: "Ctrl+S, Entrée et autres deviennent des étapes."
   seconds: "s"
   shortcutStartStop: "Démarrer ou terminer un enregistrement"

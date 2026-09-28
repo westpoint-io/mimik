@@ -209,7 +209,6 @@ desktop:
   cardKeyboardHint: "What the keyboard adds to a guide"
   captureModeHint: "Window follows the app you click."
   screenshotDelayHint: "Wait before taking the screenshot, for menus that animate."
-  typingDebounceHint: "A pause this long ends the step."
   recordKeysHint: "Ctrl+S, Enter and the like become steps."
   seconds: "s"
   shortcutStartStop: "Start or finish a recording"

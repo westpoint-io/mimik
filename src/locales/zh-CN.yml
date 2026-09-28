@@ -209,7 +209,6 @@ desktop:
   cardKeyboardHint: "键盘为指南添加的内容"
   captureModeHint: "窗口模式跟随你点击的应用。"
   screenshotDelayHint: "截图前等待，适用于带动画的菜单。"
-  typingDebounceHint: "停顿这么久即结束该步骤。"
   recordKeysHint: "Ctrl+S、Enter 等会成为步骤。"
   seconds: "秒"
   shortcutStartStop: "开始或结束录制"

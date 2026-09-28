@@ -149,7 +149,7 @@ export function SettingsPanel() {
                     onChange={(recordTyping) => save({ recordTyping })}
                   />
                 </Row>
-                <Row label={i18n.t('desktop_typingDebounce')} hint={i18n.t('desktop_typingDebounceHint')}>
+                <Row label={i18n.t('desktop_typingDebounce')}>
                   <Slider
                     label={i18n.t('desktop_typingDebounce')}
                     min={200}
