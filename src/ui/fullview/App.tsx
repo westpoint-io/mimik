@@ -1,26 +1,11 @@
 import { GuideContent, LibraryContent, SearchModal, TooltipProvider, TopNav, useFullview, useRoute } from '@mimik/ui';
-import { useEffect } from 'react';
 import { openSidebar } from '@/lib/browser-api/open-sidebar';
 import { UpdateNotice } from '@/ui/shared/UpdateNotice';
 import { VoiceNotice } from './components/VoiceNotice';
 
 export function FullViewApp() {
   const route = useRoute();
-  const { toggleSearch, historyOpen } = useFullview((s) => ({
-    toggleSearch: s.toggleSearch,
-    historyOpen: s.historyOpen,
-  }));
-
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        toggleSearch();
-      }
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [toggleSearch]);
+  const historyOpen = useFullview((s) => s.historyOpen);
 
   return (
     <TooltipProvider>
