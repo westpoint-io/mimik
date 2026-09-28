@@ -466,12 +466,12 @@ main process — the tray and its menu, the error dialogs — are still English.
 The overlay and the splash have no React, but they read strings through `i18n.t` like everything
 else, and wherever the extension already names a thing they use its key: the card's header is
 `recording.recording` / `recording.capturePaused`, its Remove button `recording.deleteStep`, its
-writing state `editor.writingStepDescription`, its badges `stepSource.*`, its step line
+badges `stepSource.*`, its step line
 `export.stepLabel`, and the area editor's buttons `common.cancel` and `annotationEditor.done`. They
 had been hand-typed English — "Remove this step", "Paused", "Writing step description…" — so one
 action read differently in the side panel and on the card, and a desktop key existed for half of
 them that nothing read. Copy the extension has no counterpart for (the card's tips, "Starting…",
-"Capturing step N…") is still written in the overlay.
+"Capturing step N") is still written in the overlay.
 
 `pnpm --filter @mimik/desktop check:storage` runs four checks across two hidden `BrowserWindow`s:
 the v1 to v2 upgrade against a real v1 store, `MimikDB` opening at v2 with all four tables, a guide
@@ -515,21 +515,27 @@ whole capture, letterboxed, rather than filling its box: a tall area cropped to 
 only its top, magnified, which looked like the wrong screenshot when it was the right one.
 
 Under the title the card says where the words came from, with the same Basic and AI badges the guide
-uses, and while a description is still being written it shows that instead of a title that is about
-to change. The heuristic text is known the moment the step is written; the AI rewrite arrives later
-in the renderer, which sends `mimik:capture:described` so main can update the step it is holding and
-the badge flips without a reload. A capture in flight shows the camera mascot with the number of the
-step being taken, which is the card's loader, and hides the last screenshot while it does: with a
-screenshot delay set the loader stays up for as long as the delay, and the previous step showing
-through it read as the new step having been captured with the old picture. The shimmer rows under it
-are built as the title and the badge row are, with the same margin, size and line height, and a
-title that wraps onto its second line takes that line from the screenshot rather than from the
-screen: the preview is 150 px less whatever the title adds beyond one line, which the card measures
-after every render. The card is therefore one height while capturing, while the description is being
-written and once any step lands, and the order stays the extension's — screenshot, title, badge row.
-With hand-sized bars it came out 11 px shorter and a wrapped title made it 19 px taller, so the top
-edge jumped on every step; reserving two lines for every title fixed the jump but left an empty line
-under most of them. A Remove button on the
+uses. The renderer sends `mimik:capture:described` when the AI text arrives, and main updates the
+step it is holding. There is no "writing" line, shimmer or collapsed pill — a step used to go through
+two loaders, one for the screenshot and a second for the description.
+
+The one loader is the camera mascot printing a photo, over the whole of the preview, title and badge
+rows so the card keeps its height, and it covers the description as well as the screenshot. The
+recorder's `progress` hook reports a fraction and how long the next stretch should take: from the
+press to 90% over the screenshot delay plus an estimated grab, and 100% once the step is written.
+Main scales that to 45% when an AI description is coming, eases on to 95% over 3.5 s while the model
+writes, and sends 100% when it lands. The card eases a registered `--p` across each stretch, never
+backwards within one capture, which pushes the photo out of a slot under the camera and develops the
+real screenshot in it from 40%. The step lands once, with the AI title and badge; the Basic title
+never flashes first. A description that has not arrived after 8 s lands the step as Basic, and the
+AI text still replaces it in place when it comes. Landing fires the flash and grows the photo,
+through the Web Animations API, from where it was printed into the preview's own rectangle; the
+title and badge fade in once it arrives. Nothing of the previous step shows while this runs, which is what the old veil was for: with a
+delay set, the last screenshot showing through read as the new step taken with the old picture.
+Reduced motion skips the grow. A title that wraps onto its second line takes that line from the
+screenshot rather than from the screen: the preview is 150 px less whatever the title adds beyond
+one line, which the card measures after every render, so the card is one height while capturing and
+once any step lands, and the order stays the extension's — screenshot, title, badge row. A Remove button on the
 preview drops the step just taken: main keeps the recording's steps in order, asks the renderer to
 delete the last one and puts the card back on the one before, so a wrong capture is undone where it
 was noticed. The Ready and waiting states name the start/stop and capture-now shortcuts, read from the
@@ -638,7 +644,7 @@ click so the preload and IPC path is covered rather than the main-process method
 asserted twice: the intro window opens over the capture area with the card saying "Starting…" and no
 start reaching the host, and then, once the real animation has finished, the recording begins. The
 card's states are asserted from the rendered DOM — the waiting prompt, the badge moving from Basic to
-AI, the writing state, the capture veil and the Remove command. On Linux it
+AI with the title shown throughout, the printer at a reported percentage and waiting for the AI description before the step lands, and the Remove command. On Linux it
 runs under `xvfb-run` when available (`xorg-server-xvfb`), so the check does not throw always-on-top
 windows over whatever you are doing.
 
@@ -665,9 +671,9 @@ The two surfaces reach that write by different routes but build the screenshot r
 the extension, a `src` on the desktop — into a row with the bounds in CSS pixels, the pixel ratio,
 the click point, and the dashed target scaled by that ratio. Scaling the target is the part worth
 having once: a rectangle multiplied in one surface and not the other puts the dashed box on the wrong
-thing, and nothing about that fails a build. Everything else about the two paths genuinely differs —
-voice narration, the deferred-description queue and the input finalisation exist only in the
-extension, and the application name and the fire-and-forget description exist only on the desktop — so only the row builder is shared.
+thing, and nothing about that fails a build. The description queue is shared too, as below. The rest
+of the two paths genuinely differs — voice narration and the input finalisation exist only in the
+extension, and the application name only on the desktop.
 
 Main cannot `invoke` a renderer, so `ask()` sends a request with a generated reply channel and waits
 for `ipcMain.once` on it, with a timeout. The preload's `onRequest` is the other half. Guide creation
@@ -918,6 +924,13 @@ whatever the surface supplies. The desktop supplies a wrapper over `mimik:ai:fet
 Electron's `net.fetch` in main. It refuses any url that is not `http:` or `https:`, because the
 renderer names the url and main is the one holding the network.
 
+Ask AI and Generate description reach the model through `messages.send`, which the extension answers
+from its background worker. The desktop has no worker, and its adapter's `send` used to throw for
+everything, so both failed with "generation failed" before any request was made. It now calls the
+same two functions the worker calls — `rewriteSelection` and `generateDescriptionOnDemand`, which
+moved into core's `guide-description.ts` with `resolveGuideMetaInputs`, the inputs both surfaces name
+a guide from — and still refuses the messages that only mean something in a browser.
+
 A failed key check says which failure it was. `reason: 'network'` is worded "could not reach the
 provider", not "rejected" — the two are indistinguishable to a user and only one of them is their
 key's fault.
@@ -926,7 +939,22 @@ Descriptions and the guide's name are written by the user's own provider key whe
 by rule when there is not. `getAIDescription` takes a serialised context string rather than a
 `DOMContext`, because the desktop has no DOM to hand it: `serializeScreenContext` writes the same
 shape of thing from the application, the window title, the control's role and name, and the value,
-which is what UIAutomation knows. No screenshot is ever sent. The key, model and endpoint are read once, by `resolveAiCredentials` in core's `keys.ts`, which the
+which is what UIAutomation knows. No screenshot is ever sent.
+
+The desktop has its own step prompt, `SCREEN_STEP_DESCRIPTION_PROMPT`, which `getAIDescription` takes
+in place of the extension's. The shared one said "a browser workflow… on a web page", and handed a
+UIAutomation role it wrote "Click "Downloads (pinned)" in the treeview". The desktop prompt speaks of
+a desktop application and tells the model to name a control by its label and never by a technical
+type. The context reads the role as words, `tree item` rather than `treeitem`, and carries the step
+before this one, read when the queue reaches the step so it is that step's AI text when there is one.
+
+A guide is named from where each step happened as well as what it did: `guideMetaSteps` gives each
+step a `place`, its URL in the extension and its application and window on the desktop, which had
+sent an empty address and left the model to invent one — a File Explorer guide came back as a
+Microsoft Edge one. The naming prompt says either kind of place may appear and names only what the
+steps name.
+
+The key, model and endpoint are read once, by `resolveAiCredentials` in core's `keys.ts`, which the
 extension's descriptions, guide naming and rewrite and the desktop's all call; there had been four
 copies of the same read and default-model fallback. The steps a guide is named from are
 `guideMetaSteps` in `meta.ts` — the actions only, the first ten and last five past fifteen — for the
@@ -938,6 +966,13 @@ means here, so without one the flag is never set and nothing on the card claims 
 coming. With one, the flag is cleared **whichever way the request goes** — a miss and a failure both
 clear it — because a pending flag that only clears on success is the same trap as a title
 placeholder that only resolves with AI.
+
+The rewrite goes through the extension's own queue, `description-queue.ts` in core: one request at a
+time, 45 s each at most. The desktop fired every description on its own, with no limit and nothing
+waiting for them at Finish, so a hung request left a step on "Writing…" for good and a guide could be
+named before its last descriptions landed. Finish now runs the extension's Stop sequence through
+`settleDescriptions` — wait up to 20 s for the queue, then clear any flag still set — before the name
+is written, and main waits 45 s for that rather than 15.
 
 A failure also says why, in the extension's words. `describeStep` classifies the error with core's
 `describeAiFailure` and sends the reason and provider with `mimik:capture:described`; main keeps it
@@ -1076,6 +1111,15 @@ places.
 
 Starting in Area mode opens the region editor first and arming happens when the rectangle is
 confirmed. The other two modes arm directly, because they have no rectangle to draw.
+
+The "+" between two steps opens the same sheet, titled "Capture more steps" and saying which step the
+new ones follow. The extension's dialog there picks a browser tab to record in, and on the desktop it
+could only ever say that no tab was open, so `GuideContent` takes an `onCaptureMore` and the desktop
+answers it with the sheet — the choice a desktop recording needs is the mode. The recording itself is
+the extension's: the steps land in a staging guide, which the library hides, and Finish settles its
+descriptions, snapshots the guide and merges them in with `mergeGuideInto` at the "+", leaving the
+guide's name alone. The card numbers them from where they will land. `check:pipeline` asserts the
+merge puts the steps at the "+", removes the staging guide and keeps the title.
 
 Guide rows carry an avatar built from the guide title through `getDomainInitial`, which gives a stable
 letter and tint from a hash without a second query. A desktop guide has no web address, so
