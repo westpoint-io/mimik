@@ -791,8 +791,8 @@ before the flag existed counts as Automatic when its level equals the automatic 
 and picking a level equal to that is still written, so the flag follows the choice. The crop tool
 clears it along with the level.
 
-`guideActions` on `TopNav` is the slot it mounts into, beside Edit and Export and under the same
-`exportData` guard, so the control appears exactly when the rest of the guide toolbar does. The
+`guideActions` on `AppFrame` is the slot it mounts into, in the top bar beside Edit and Export and
+under the same `exportData` guard, so the control appears exactly when the rest of the guide toolbar does. The
 extension passes nothing.
 
 The control is a plain `SelectTrigger`, never `asChild` around a `Button`. `SelectTrigger` renders
@@ -1067,33 +1067,62 @@ because the products differ: the extension records a tab, has no capture mode to
 wide and has to pick between three framings first. Forcing those two shells together makes both worse.
 Divergence inside the guide is a bug; divergence in how you reach it is not.
 
-The header is the exception that proves it. `TopNav` is the extension's own dashboard header, moved
-into `packages/ui` and mounted by both surfaces, because a header is navigation rather than capture
-and there was nothing about it worth diverging on. The desktop had grown its own `TopBar` — a text
-wordmark, a gear, and a green "Ready to record" pill — and every part of that was worse: the mascot
-is the mark everywhere else, and a pill that only ever says the app is idle is chrome that is never
-news. It went, along with the second bar under it, which halved the chrome from 116 px to 64.
+The frame around the dashboard is the exception that proves it. `AppFrame` is the extension's own
+dashboard frame, in `packages/ui` and mounted by both surfaces, because it is navigation rather than
+capture and there was nothing about it worth diverging on. It is a sidebar and a top bar. The sidebar
+holds the mascot, Start Capture, All Guides, Starred and Trash with their counts, and Settings at the
+foot. The top bar holds search on the left and the page's own actions on the right — sort and the
+list or grid switch on the library, and Zoom, Edit, Version history and Export on a guide. Neither
+repeats a title: the highlighted sidebar item says where you are, and a guide's title is the heading
+over its steps. A breadcrumb and a heading saying "All Guides" were both tried and both only said the
+same thing twice.
 
-`TopNav` takes only a `Route` and reads the rest from `useFullview`, which `GuideContent` already
-fills, so the guide title, the step count and the export data arrive with no desktop wiring at all.
-Its one desktop-only prop is `onSettings`: the extension has a browser options page and the desktop
-does not, so the gear exists here and only on the library route. Moving it brought `SearchModal`,
-`ExportPreviewModal`, `VideoStepPlayer` and two search components with it — each needed exactly two
-import rewrites, `#imports` to `@mimik/core/env` and `@/core/*` to `@mimik/core/*`, because nothing
-in them was ever extension-specific beyond how WXT resolves a module.
+The sidebar collapses to icons on its own when Version history is open or the window is under
+1100 px, because a 232 px sidebar, the guide column and the history panel do not fit side by side in
+a 1280 px window, and the extension's tab loses 400 px whenever the browser's side panel is open.
+Collapsing it by hand is remembered in `localStorage`; expanding it by hand holds for the session
+even where it would otherwise collapse. `useSidebarCollapse` owns that rule.
 
-Below the header both surfaces mount the same dashboard. The desktop briefly had its own
-`HomeScreen` — a hero, a question and a Start Capture button — and it existed for one reason: the
-extension's dashboard has no way to start a capture, only its side panel does, so there was nothing
-to inherit and the hero was copied from the side panel into a window five times its width. That one
-missing affordance was the whole of the apparent divergence between the two products.
+`AppFrame` takes only a `Route` and reads the rest from `useFullview`, which `GuideContent` already
+fills, so the export data arrives with no desktop wiring at all. What differs is passed in:
+`onStartCapture` opens `CaptureSheet` on the desktop and the side panel in the extension, and
+`onSettings` opens the settings dialog on the desktop and the options page in the extension, which
+is what `settingsExternal` marks with an external-link icon. Start Capture is in the sidebar on every
+page, where it used to sit only above the All Guides list. The first shared header brought
+`SearchModal`, `ExportPreviewModal`, `VideoStepPlayer` and two search components with it — each
+needed exactly two import rewrites, `#imports` to `@mimik/core/env` and `@/core/*` to
+`@mimik/core/*`, because nothing in them was ever extension-specific beyond how WXT resolves a
+module.
 
-`LibraryContent` now takes an optional `onStartCapture` and renders the button itself, so the
-dashboard can begin a recording on either surface and `HomeScreen` is gone. What the button does is
-the app's to decide, because the two actions have nothing in common: the desktop opens
-`CaptureSheet`, and the extension opens the side panel, which is where its recording view lives.
-Filling that gap was an improvement to the extension in its own right — browsing the library in a
-tab and wanting to record used to mean going to find the side panel yourself.
+`SearchModal` listens for Ctrl or ⌘ with K itself. The listener used to live in the extension's
+`FullViewApp`, so the desktop mounted the same dialog and the shortcut did nothing there. The search
+box shows ⌘K on a Mac and Ctrl K everywhere else.
+
+A page of the library never scrolls. `usePageFit` fits as many columns as the width allows, none
+narrower than 300 px and at most six, and as many rows of cards or list rows as fit between the top
+of the library and the pager pinned to the bottom of the window, and that is the page size. A fixed
+three columns in a capped width left most of a wide window empty, and a fixed nine per page pushed
+the taller cards and rows past the bottom of it. The list view is capped at `max-w-6xl`, since a row
+that spans a wide window is mostly empty line. Each card is the first step's screenshot at 16:9,
+cropped the way the guide shows it — zoomed toward the click on the desktop, around the element in
+the extension — then where the guide happened, its title on up to two lines, and its step count and
+date, with a star on the picture when it is starred. Where it happened is the most common site among
+its steps, with its favicon, or the application the first step names, with a letter tile; the tile
+never asks for a favicon, because that request would send the application's name to a favicon
+service. `loadCardData` reads both for the page being shown. The list view is the same card laid
+flat: a 16:9 thumbnail, the title, one line of description, and where it happened with the step
+count and date, with the star and the card's menu always visible. A guide with nothing to show has
+the mascot's eyes on navy in place of a picture, and every card keeps the line for where it
+happened even when it is empty, so an untitled guide lines up with the rest.
+
+Going back to the library from a guide shows it as it was left. The page, the guide count and the
+page fit live in the store or beside the hook rather than in the component, which unmounts while a guide is open,
+so the grid paints at once on the same page and refreshes behind it. Thumbnails pass `cache` to
+`ScreenshotView`, which keeps the drawn image under the same key it already used to skip redraws —
+id, blob size, annotations and target — in a map of the last 48, so a card does not redraw its
+screenshot through a canvas every time the library opens. The guide's own screenshots do not cache,
+since editing changes them constantly. Dates follow the app language through `formatDate`; Chinese was missing from its map
+and read in English.
 
 Pressing Start Capture opens `CaptureSheet` rather than arming immediately. Esc closes it, as it does
 every dialog; the sheet is a panel of its own rather than the shared dialog, so it listens for the key
@@ -1121,17 +1150,9 @@ descriptions, snapshots the guide and merges them in with `mergeGuideInto` at th
 guide's name alone. The card numbers them from where they will land. `check:pipeline` asserts the
 merge puts the steps at the "+", removes the staging guide and keeps the title.
 
-Guide rows carry an avatar built from the guide title through `getDomainInitial`, which gives a stable
-letter and tint from a hash without a second query. A desktop guide has no web address, so
-`FaviconImg` has nothing to fetch and the title, which is named after the recorded application, is the
-only identity available. Star and delete are always visible rather than revealed on hover, matching
-the side panel; the fullview list hides them until hover and that reads as inert in a window this wide.
-
 Routing is `useRoute` and `navigate` from `@mimik/ui`, not a hand-rolled `hashchange` listener. The desktop had one
 matching `#guide/<id>`, which is the same scheme the shared router already parses, so adopting it
-cost nothing and bought Starred and Trash the routes the header needs. `HomeScreen` serves the `all`
-category and `LibraryContent` serves the other two, because the hero and Start Capture belong on the
-screen you land on and nowhere else.
+cost nothing and bought Starred and Trash the routes the sidebar needs.
 
 ## Capture Settings
 
@@ -1254,8 +1275,8 @@ Settings opens as a dialog over the library, not as a page. It is the shared `Di
 way the export preview lays out its own: a title bar with the close button, the section list down
 the left and the section scrolling beside it, 880 px wide and at most 650 px tall. As a page it
 replaced the library, and on a wide window its content, which tops out around 620 px, sat in a field
-of empty space. The dialog also covers the header, which retired `TopNav`'s `onNavigate`: that prop
-existed only to close the old pane when All Guides, Starred or Trash navigated underneath it.
+of empty space. The dialog also covers the sidebar, which is why no navigation prop exists: one used
+to close the old pane when All Guides, Starred or Trash navigated underneath it.
 `SettingsPanel`, the body, mounts only while the dialog is open, so it reads the settings each time it
 opens and shows a mode the capture sheet or the recording card changed in the meantime.
 
