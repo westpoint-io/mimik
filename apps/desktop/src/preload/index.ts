@@ -44,6 +44,7 @@ const api = {
     });
   },
   relocalise: (): void => ipcRenderer.send('mimik:app:relocalise'),
+  locale: (code: string): void => ipcRenderer.send('mimik:app:locale', code),
   updates: {
     check: (): Promise<void> => ipcRenderer.invoke('mimik:updates:check'),
   },
