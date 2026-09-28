@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Step } from '@/core/guides/types';
 
 const { generateObjectMock, generateTextMock } = vi.hoisted(() => ({
   generateObjectMock: vi.fn(),
@@ -13,9 +14,9 @@ vi.mock('ai', () => ({
 
 vi.mock('../provider', () => ({ createModel: () => ({ id: 'test-model' }) }));
 
-import { generateGuideMeta, parseGuideMeta } from '../meta';
+import { generateGuideMeta, guideMetaSteps, parseGuideMeta } from '../meta';
 
-const steps = [{ description: 'Click Directory', url: 'https://admin.okta.com/users' }];
+const steps = [{ description: 'Click Directory', place: 'https://admin.okta.com/users' }];
 
 const UNSUPPORTED = new Error('response_format json_schema is not supported by this model');
 
@@ -184,5 +185,26 @@ describe('parseGuideMeta', () => {
 
   it('returns null for an empty response', () => {
     expect(parseGuideMeta('   ')).toBeNull();
+  });
+});
+
+describe('guideMetaSteps', () => {
+  it('places a desktop step by its application and window, since it has no address', () => {
+    const step = (over: Partial<Step>): Step => ({
+      id: 'step',
+      guideId: 'guide',
+      index: 0,
+      description: 'Click "Downloads"',
+      action: 'click',
+      url: '',
+      timestamp: 0,
+      ...over,
+    });
+    expect(
+      guideMetaSteps([
+        step({ app: { name: 'File Explorer' }, window: { title: 'Downloads' } }),
+        step({ url: 'https://example.com/a' }),
+      ]).map((entry) => entry.place),
+    ).toEqual(['File Explorer — Downloads', 'https://example.com/a']);
   });
 });

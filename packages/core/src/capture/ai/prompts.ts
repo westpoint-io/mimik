@@ -10,21 +10,22 @@ Examples of good descriptions:
 
 Write only the description, no preamble.`;
 
-export const GUIDE_META_PROMPT = `These are the steps of a browser workflow, with the page URL and description for each step:
+export const GUIDE_META_PROMPT = `These are the steps of a recorded workflow. Each one shows where it happened, a page URL or an application and its window, and what the user did:
 
 {{steps}}
 
 Write a title and a description for this workflow.
 
-TITLE: specific and descriptive. Mention the application or website name and the specific task performed. Reference specific pages, features, or items that were interacted with. MUST be under 60 characters.
+TITLE: specific and descriptive. Mention the application or website name and the specific task performed. Reference specific pages, features, or items that were interacted with. Only name applications, websites and items that appear in the steps. MUST be under 60 characters.
 
 Examples of good titles:
 - "Review claude-code Pull Requests"
 - "Configure Slack Notification Preferences"
 - "Submit Expense Report in Workday"
 - "Create Repository in GitHub Organization"
+- "Export a Budget to PDF in Excel"
 
-DESCRIPTION: one or two sentences stating what the workflow accomplishes and who would follow it. Do not repeat the title. Do not list the individual steps. Do not mention any UI element that does not appear in the steps above.
+DESCRIPTION: one or two sentences stating what the workflow accomplishes and who would follow it. Do not repeat the title. Do not list the individual steps. Do not mention any application, website or UI element that does not appear in the steps above.
 
 Examples of good descriptions:
 - "Reset a locked-out user's password from the Okta admin panel. For IT support staff."

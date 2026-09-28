@@ -95,7 +95,7 @@ describe('background guide-meta', () => {
 
       await run(GUIDE_ID);
 
-      expect(generateGuideMetaMock.mock.calls[0][0]).toEqual([{ description: 'kept', url: 'https://example.com/a' }]);
+      expect(generateGuideMetaMock.mock.calls[0][0]).toEqual([{ description: 'kept', place: 'https://example.com/a' }]);
     });
 
     it.each(entryPoints)("%s defaults the model to the provider's own default", async (_name, run) => {

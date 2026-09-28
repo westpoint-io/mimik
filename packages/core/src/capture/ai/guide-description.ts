@@ -14,7 +14,7 @@ export interface GenerateGuideDescriptionResponse {
 type GuideMetaInputs =
   | {
       ok: true;
-      steps: { description: string; url: string }[];
+      steps: { description: string; place: string }[];
       provider: string;
       model: string;
       apiKey: string;
