@@ -85,7 +85,8 @@ export class DesktopCaptureSink implements CaptureSink {
 
     if (pending) {
       queueDescription(data.guideId, async () => {
-        const { text, failure } = await describeStep(data.action, meta);
+        const previous = (await getStepsForGuide(data.guideId)).find((step) => step.index === index - 1);
+        const { text, failure } = await describeStep(data.action, meta, previous?.description);
         if (text) await updateStepDescription(stepId, text, 'ai');
         await clearStepAiPending(stepId);
         window.mimik.capture.described(stepId, text, failure);
