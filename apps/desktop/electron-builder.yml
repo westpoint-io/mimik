@@ -1,6 +1,6 @@
 appId: io.westpoint.mimik
 productName: Mimik
-executableName: mimik
+executableName: Mimik
 extraMetadata:
   name: mimik
   productName: Mimik
@@ -35,6 +35,7 @@ nsis:
   createStartMenuShortcut: true
   runAfterFinish: true
 linux:
+  executableName: mimik
   category: Utility
   target:
     - AppImage

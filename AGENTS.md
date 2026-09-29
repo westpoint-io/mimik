@@ -312,7 +312,8 @@ word.
 app in `apps/desktop/dist`. The root script calls it with `run`, because `pnpm --filter … pack` is
 pnpm's own command: it wrote a tarball of the package and never built the app. `electron-builder.yml`
 targets dmg/zip, nsis and AppImage/deb, and `executableName` must stay set or the binary inherits the
-scoped package name. `extraMetadata` renames the packaged app to `mimik`, display name `Mimik`, for the
+scoped package name. It is `Mimik`, capitalised, because electron-builder names the Windows install folder,
+the `.exe` and the uninstaller after it; Linux keeps `mimik`. `extraMetadata` renames the packaged app to `mimik`, display name `Mimik`, for the
 same reason: under `@mimik/desktop` the installer put it in `Programs\@mimikdesktop`, and at runtime
 it took the dev copy's name and so its settings and guides. Windows installs through the NSIS wizard,
 not one click: who to install for, the folder, and a Run Mimik box at the end, with
