@@ -18,14 +18,21 @@ interface ProviderSelectProps<T extends string> {
   options: ProviderOption<T>[];
   onChange: (value: T) => void;
   onOpenKeys?: () => void;
+  triggerClassName?: string;
 }
 
-export function ProviderSelect<T extends string>({ value, options, onChange, onOpenKeys }: ProviderSelectProps<T>) {
+export function ProviderSelect<T extends string>({
+  value,
+  options,
+  onChange,
+  onOpenKeys,
+  triggerClassName,
+}: ProviderSelectProps<T>) {
   const [open, setOpen] = useState(false);
 
   return (
     <Select open={open} onOpenChange={setOpen} value={value} onValueChange={(next) => onChange(next as T)}>
-      <SelectTrigger className="h-8">
+      <SelectTrigger className={triggerClassName ?? 'h-8'}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

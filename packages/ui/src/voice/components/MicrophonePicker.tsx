@@ -1,23 +1,23 @@
 import { i18n } from '@mimik/core/env';
-import { Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui';
 import { ChevronRight, Mic, Square, TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { getActiveTab } from '@/lib/browser-api/get-active-tab';
-import { openMicPermissionPage } from '@/lib/offscreen/open-mic-permission-page';
-import { isMicrophoneMissing } from './lib/is-microphone-missing';
-import { microphoneListState } from './lib/microphone-list-state';
-import { type MicrophonePermission, microphoneStatus } from './lib/microphone-status';
-import { nextMicLevel, SPEAKING_LEVEL } from './lib/next-mic-level';
-import { toMicrophoneOptions } from './lib/to-microphone-options';
-import { SYSTEM_DEFAULT_VALUE, toSelectValue } from './lib/to-select-value';
-import { toStoredMicrophoneId } from './lib/to-stored-microphone-id';
+import { Button } from '../../components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
+import { isMicrophoneMissing } from '../lib/is-microphone-missing';
+import { microphoneListState } from '../lib/microphone-list-state';
+import { type MicrophonePermission, microphoneStatus } from '../lib/microphone-status';
+import { nextMicLevel, SPEAKING_LEVEL } from '../lib/next-mic-level';
+import { toMicrophoneOptions } from '../lib/to-microphone-options';
+import { SYSTEM_DEFAULT_VALUE, toSelectValue } from '../lib/to-select-value';
+import { toStoredMicrophoneId } from '../lib/to-stored-microphone-id';
+import type { MicrophoneDevice } from '../types';
 import { StatusBadge } from './StatusBadge';
-import type { MicrophoneDevice } from './types';
 
 interface MicrophonePickerProps {
   triggerClassName?: string;
   value: string;
   onChange: (deviceId: string) => void;
+  onRequestAccess: () => Promise<void>;
 }
 
 interface MicTest {
@@ -30,7 +30,7 @@ const MICROPHONE: PermissionDescriptor = { name: 'microphone' as PermissionName 
 const ANALYSER_FFT_SIZE = 2048;
 const METER_INTERVAL_MS = 80;
 
-export function MicrophonePicker({ value, onChange, triggerClassName }: MicrophonePickerProps) {
+export function MicrophonePicker({ value, onChange, onRequestAccess, triggerClassName }: MicrophonePickerProps) {
   const [devices, setDevices] = useState<MicrophoneDevice[]>([]);
   const [testing, setTesting] = useState(false);
   const [level, setLevel] = useState(0);
@@ -89,10 +89,9 @@ export function MicrophonePicker({ value, onChange, triggerClassName }: Micropho
   useEffect(() => stopTest, [stopTest]);
 
   const requestAccess = useCallback(async () => {
-    const tab = await getActiveTab().catch(() => undefined);
-    await openMicPermissionPage(tab?.id).catch(() => undefined);
+    await onRequestAccess().catch(() => undefined);
     await refresh();
-  }, [refresh]);
+  }, [onRequestAccess, refresh]);
 
   const startTest = useCallback(async () => {
     stopTest();

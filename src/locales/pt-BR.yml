@@ -540,15 +540,18 @@ onboarding:
   welcomeBadge: "Boas-vindas"
   welcomeTitle: "Mimik instalado!"
   welcomeMessage: "Em poucos passos você vai poder capturar fluxos de trabalho e gerar guias automáticos. Sem conta, sem cadastro \u2014 tudo fica no seu navegador."
+  welcomeMessageDesktop: "Em poucos passos você vai poder capturar fluxos de trabalho no seu computador e gerar guias automáticos. Sem conta, sem cadastro — tudo fica no seu computador."
   getStarted: "Começar"
   stepOf: "Passo $1 de $2"
   aiTitle: Descrições com IA
   aiMessage: Conecta sua chave API pra ter descrições dos passos geradas por IA. É opcional e dá pra mudar depois nos ajustes.
+  keySaved: "Fica salva com suas outras chaves em Ajustes › Chaves de API."
   aiGenerated: Gerado por IA
   aiGeneratedDescription: Descrição gerada por IA
   voiceTitle: "Fale e depois faça"
   voiceMessage: "Diga o que vai fazer e depois faça. O Mimik associa suas palavras à próxima ação."
   voiceRecordHint: "A narração fica desligada por padrão. Ative por guia no botão de microfone do painel lateral."
+  voiceRecordHintDesktop: "A narração fica desligada por padrão. Ative por guia no botão de microfone do cartão de gravação."
   voiceDataNotice: "O áudio vai para o provedor que você escolher, com sua chave de API."
   voiceDemoLabel: "Como a narração é atribuída"
   voiceDemoSay: "Você fala"
@@ -576,6 +579,7 @@ onboarding:
   starLater: Talvez depois
   doneTitle: "Tudo pronto"
   doneMessage: "Clique em \"Começar a capturar\" no painel lateral para gravar seu primeiro guia."
+  doneMessageDesktop: "Clique em \"Começar a capturar\" para gravar seu primeiro guia."
   featureAutoCapture: Captura automática
   featureAIAssist: Assistente de IA
   featureVoice: "Narração por voz"

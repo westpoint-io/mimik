@@ -1,31 +1,24 @@
-import {
-  Input,
-  KeyStatusNote,
-  KeyWarningNote,
-  ModelList,
-  SecretInput,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  useAiSettings,
-  useApiKeys,
-} from '@mimik/ui';
-import { i18n } from '#imports';
-import { KEY_PLACEHOLDERS, SERVER } from '@/core/capture/ai/keys';
-import { AI_PROVIDERS, type AIProviderKey, CUSTOM_MODEL_VALUE, DEFAULT_AI_PROVIDER } from '@/core/capture/ai/models';
-import { AI_LANGUAGES, type AILanguageCode } from '@/core/capture/ai/prompts';
-import { useKeyCheck } from '@/ui/shared/hooks/use-key-check';
-import { ProgressDots } from '../ProgressDots';
+import { SERVER } from '@mimik/core/capture/ai/keys';
+import { CUSTOM_MODEL_VALUE } from '@mimik/core/capture/ai/models';
+import { AI_LANGUAGES, type AILanguageCode } from '@mimik/core/capture/ai/prompts';
+import { i18n } from '@mimik/core/env';
+import { ProviderKeyRow } from '../../ai/components/ProviderKeyRow';
+import { ProviderSelect } from '../../ai/components/ProviderSelect';
+import { ServerSettings } from '../../ai/components/ServerSettings';
+import { useAiSettings } from '../../ai/hooks/use-ai-settings';
+import { useApiKeys } from '../../ai/hooks/use-api-keys';
+import { aiProviderOptions } from '../../ai/lib/ai-provider-options';
+import { Input } from '../../components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import type { StepProps } from '../types';
+import { ProgressDots } from './ProgressDots';
 
-export function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
-  const aiKeyCheck = useKeyCheck();
+const FIELD = 'w-full h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10';
+
+export function AISetupStep({ onNext, onSkip, onBack, index, total, validate }: StepProps) {
   const keys = useApiKeys({ reloadOnFocus: true });
-  const ai = useAiSettings({ onDirty: aiKeyCheck.reset, reloadOnFocus: true });
-  const provider = ai.provider === SERVER ? DEFAULT_AI_PROVIDER : ai.provider;
-  const apiKey = keys.keys[provider] ?? '';
+  const ai = useAiSettings({ reloadOnFocus: true });
+  const provider = ai.provider;
 
   return (
     <div className="flex h-screen">
@@ -42,74 +35,59 @@ export function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps)
               <label className="block text-xs font-semibold text-foreground mb-1.5">
                 {i18n.t('settings.provider')}
               </label>
-              <Select value={provider} onValueChange={(v) => ai.setProvider(v as AIProviderKey)}>
-                <SelectTrigger className="w-full h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(AI_PROVIDERS).map(([key, cfg]) => (
-                    <SelectItem key={key} value={key}>
-                      {cfg.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <ProviderSelect
+                value={provider}
+                onChange={ai.setProvider}
+                options={aiProviderOptions(() => true)}
+                triggerClassName={FIELD}
+              />
             </div>
+
+            {provider === SERVER ? (
+              <ServerSettings server={keys.server} onChange={keys.setServer} validate={validate} />
+            ) : (
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1.5">
+                  {i18n.t('settings.apiKey')}
+                </label>
+                <ProviderKeyRow
+                  key={provider}
+                  bare
+                  provider={provider}
+                  value={keys.keys[provider] ?? ''}
+                  onChange={(next) => keys.setKey(provider, next)}
+                  validate={validate}
+                />
+                <p className="mt-1.5 text-[11px] text-muted-foreground">{i18n.t('onboarding.keySaved')}</p>
+              </div>
+            )}
 
             <div>
               <label className="block text-xs font-semibold text-foreground mb-1.5">{i18n.t('settings.model')}</label>
-              <Select value={ai.usingCustomModel ? CUSTOM_MODEL_VALUE : ai.model} onValueChange={ai.setModel}>
-                <SelectTrigger className="w-full h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {ai.models.map((m) => (
-                    <SelectItem key={m.id} value={m.id}>
-                      {m.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {ai.models.length > 0 && (
+                <Select value={ai.usingCustomModel ? CUSTOM_MODEL_VALUE : ai.model} onValueChange={ai.setModel}>
+                  <SelectTrigger className={FIELD}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ai.models.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
               {ai.usingCustomModel && (
                 <Input
                   type="text"
                   value={ai.model}
                   onChange={(e) => ai.setModel(e.target.value)}
-                  placeholder={ai.defaultModel}
-                  className="w-full mt-1.5 h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10"
+                  placeholder={ai.defaultModel || 'llama3.2'}
+                  aria-label={i18n.t('settings.modelCustom')}
+                  className={`${ai.models.length > 0 ? 'mt-1.5 ' : ''}${FIELD}`}
                 />
               )}
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-foreground mb-1.5">{i18n.t('settings.apiKey')}</label>
-              <SecretInput
-                value={apiKey}
-                onChange={(next) => {
-                  aiKeyCheck.reset();
-                  keys.setKey(provider, next);
-                }}
-                placeholder={KEY_PLACEHOLDERS[provider]}
-                className="w-full h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10"
-                buttonClassName="right-3"
-              />
-              <div className="flex items-center gap-3 mt-2">
-                <button
-                  type="button"
-                  disabled={!apiKey || aiKeyCheck.status === 'checking'}
-                  onClick={() => {
-                    if (aiKeyCheck.status !== 'checking') void aiKeyCheck.check(provider, apiKey, undefined, ai.model);
-                  }}
-                  className="px-4 py-2 bg-card text-foreground border border-border rounded-lg font-semibold text-xs hover:border-accent hover:text-accent transition-colors disabled:opacity-50 disabled:pointer-events-none"
-                >
-                  {i18n.t('settings.checkKey')}
-                </button>
-                <div className="min-w-0">
-                  <KeyStatusNote status={aiKeyCheck.status} />
-                  <KeyWarningNote warning={aiKeyCheck.warning} />
-                </div>
-              </div>
-              {aiKeyCheck.models && <ModelList models={aiKeyCheck.models} />}
             </div>
 
             <div>
@@ -117,7 +95,7 @@ export function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps)
                 {i18n.t('settings.aiLanguage')}
               </label>
               <Select value={ai.language} onValueChange={(v) => ai.setLanguage(v as AILanguageCode)}>
-                <SelectTrigger className="w-full h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10">
+                <SelectTrigger className={FIELD}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

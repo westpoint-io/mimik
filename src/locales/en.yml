@@ -540,15 +540,18 @@ onboarding:
   welcomeBadge: Welcome
   welcomeTitle: "You've successfully installed Mimik!"
   welcomeMessage: "With just a few steps, you'll be ready to auto-capture browser workflows and generate step-by-step guides. No account needed \u2014 everything stays in your browser."
+  welcomeMessageDesktop: "With just a few steps, you'll be ready to auto-capture workflows on your computer and generate step-by-step guides. No account needed — everything stays on your computer."
   getStarted: Get started
   stepOf: "Step $1 of $2"
   aiTitle: "AI descriptions"
   aiMessage: Connect your own API key to get AI-generated step descriptions. This is optional and can be changed later in settings.
+  keySaved: "Saved with your other keys in Settings › API keys."
   aiGenerated: AI-generated
   aiGeneratedDescription: AI-generated description
   voiceTitle: Talk, then act
   voiceMessage: "Say what you're about to do, then do it. Mimik attaches your words to the next action."
   voiceRecordHint: "Narration is off by default. Turn it on per guide with the microphone button in the side panel."
+  voiceRecordHintDesktop: "Narration is off by default. Turn it on per guide with the microphone button on the recording card."
   voiceDataNotice: "Audio goes to the provider you choose, using your API key."
   voiceDemoLabel: How narration is matched
   voiceDemoSay: You say
@@ -576,6 +579,7 @@ onboarding:
   starLater: Maybe later
   doneTitle: "You're all set"
   doneMessage: "Click \"Start capture\" in the side panel to record your first guide."
+  doneMessageDesktop: "Click \"Start capture\" to record your first guide."
   featureAutoCapture: Auto-capture
   featureAIAssist: AI assist
   featureVoice: Voice narration

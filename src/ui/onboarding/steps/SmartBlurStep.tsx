@@ -1,9 +1,8 @@
+import { ProgressDots, type StepProps } from '@mimik/ui';
 import { useEffect, useState } from 'react';
 import { i18n } from '#imports';
 import { PRESET_LABELS, type PresetKey } from '@/core/blur/regexes';
 import { localStorage } from '@/lib/browser-api/local-storage';
-import { ProgressDots } from '../ProgressDots';
-import type { StepProps } from '../types';
 
 const BLUR_PRESET_I18N: Record<PresetKey, string> = {
   email: 'email',

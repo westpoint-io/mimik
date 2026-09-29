@@ -1,5 +1,5 @@
-import { type AiChoice, KEY_PROVIDER_LABELS, SERVER } from '@mimik/core/capture/ai/keys';
-import { AI_PROVIDERS, CUSTOM_MODEL_VALUE } from '@mimik/core/capture/ai/models';
+import { SERVER } from '@mimik/core/capture/ai/keys';
+import { CUSTOM_MODEL_VALUE } from '@mimik/core/capture/ai/models';
 import { AI_LANGUAGES, type AILanguageCode } from '@mimik/core/capture/ai/prompts';
 import { i18n } from '@mimik/core/env';
 import { Globe, Sparkles } from 'lucide-react';
@@ -8,6 +8,7 @@ import { Input } from '../../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import { useAiSettings } from '../hooks/use-ai-settings';
 import type { ApiKeysState } from '../hooks/use-api-keys';
+import { aiProviderOptions } from '../lib/ai-provider-options';
 import { MissingKeyNote } from './MissingKeyNote';
 import { ProviderSelect } from './ProviderSelect';
 
@@ -34,20 +35,9 @@ export function AiSettings({ keys, onOpenKeys, onChange }: AiSettingsProps) {
           value={provider}
           onChange={setProvider}
           onOpenKeys={onOpenKeys}
-          options={[
-            ...(Object.keys(AI_PROVIDERS) as (keyof typeof AI_PROVIDERS)[]).map((key) => ({
-              value: key as AiChoice,
-              label: KEY_PROVIDER_LABELS[key],
-              logo: key,
-              available: Boolean(keys.keys[key]),
-            })),
-            {
-              value: SERVER as AiChoice,
-              label: i18n.t('settings.ownServer'),
-              logo: 'server' as const,
-              available: Boolean(keys.server.url.trim()),
-            },
-          ]}
+          options={aiProviderOptions((choice) =>
+            choice === SERVER ? Boolean(keys.server.url.trim()) : Boolean(keys.keys[choice]),
+          )}
         />
         {missing && <MissingKeyNote text={missing} onOpenKeys={onOpenKeys} />}
       </div>

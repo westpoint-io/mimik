@@ -7,6 +7,7 @@ import {
   AiSettings,
   ApiKeysSettings,
   BrandingSettings,
+  MicrophonePicker,
   MissingKeyNote,
   ProviderSelect,
   SettingsCard,
@@ -20,7 +21,8 @@ import { localStorage } from '@/lib/browser-api/local-storage';
 import { sendMessage } from '@/lib/messaging';
 import { useSettingsAutosave } from '@/ui/shared/hooks/use-settings-autosave';
 import { API_KEYS_ID, openApiKeys } from '@/ui/shared/lib/open-api-keys';
-import { MicrophonePicker } from '@/ui/shared/MicrophonePicker';
+import { requestMicrophoneAccess } from '@/ui/shared/lib/request-microphone-access';
+import { validateApiKey } from '@/ui/shared/lib/validate-api-key';
 
 interface SettingsViewProps {
   onBack?: () => void;
@@ -51,11 +53,6 @@ export function SettingsView({ onBack }: SettingsViewProps) {
   const { saved, queue } = useSettingsAutosave({ blurPresets, voiceProvider, voiceMicrophoneId }, loaded);
   const keys = useApiKeys({ onChange: queue });
 
-  const validate = useCallback(
-    (provider: string, apiKey: string, baseUrl?: string, model?: string) =>
-      sendMessage('validateApiKey', { provider, apiKey, baseUrl, model }),
-    [],
-  );
   const listVoices = useCallback(
     (provider: VoiceoverProviderKey, apiKey: string) =>
       sendMessage('listVoices', { provider, apiKey }).then((result) => result.voices),
@@ -97,7 +94,7 @@ export function SettingsView({ onBack }: SettingsViewProps) {
 
       <div className="flex-1 px-3 py-4 space-y-3">
         <div id={API_KEYS_ID} className="scroll-mt-3 space-y-3">
-          <ApiKeysSettings state={keys} validate={validate} title={i18n.t('settings.apiKeys')} />
+          <ApiKeysSettings state={keys} validate={validateApiKey} title={i18n.t('settings.apiKeys')} />
         </div>
 
         <AiSettings keys={keys} onOpenKeys={openApiKeys} onChange={queue} />
@@ -138,7 +135,12 @@ export function SettingsView({ onBack }: SettingsViewProps) {
           </div>
 
           {import.meta.env.BROWSER !== 'firefox' && (
-            <MicrophonePicker value={voiceMicrophoneId} onChange={setVoiceMicrophoneId} triggerClassName="h-8" />
+            <MicrophonePicker
+              value={voiceMicrophoneId}
+              onChange={setVoiceMicrophoneId}
+              onRequestAccess={requestMicrophoneAccess}
+              triggerClassName="h-8"
+            />
           )}
         </SettingsCard>
 

@@ -471,15 +471,18 @@ onboarding:
   welcomeBadge: Willkommen
   welcomeTitle: "Du hast Mimik erfolgreich installiert!"
   welcomeMessage: "Mit nur wenigen Schritten bist du bereit, Browser-Workflows automatisch aufzunehmen und Schritt-für-Schritt-Anleitungen zu erstellen. Kein Konto nötig — alles bleibt in deinem Browser."
+  welcomeMessageDesktop: "Mit nur wenigen Schritten bist du bereit, Workflows auf deinem Computer automatisch aufzunehmen und Schritt-für-Schritt-Anleitungen zu erstellen. Kein Konto nötig — alles bleibt auf deinem Computer."
   getStarted: Loslegen
   stepOf: "Schritt $1 von $2"
   aiTitle: KI-Beschreibungen
   aiMessage: Verbinde deinen eigenen API-Schlüssel, um KI-generierte Schrittbeschreibungen zu erhalten. Das ist optional und kann später in den Einstellungen geändert werden.
+  keySaved: "Wird mit deinen anderen Schlüsseln unter Einstellungen › API-Schlüssel gespeichert."
   aiGenerated: KI-generiert
   aiGeneratedDescription: KI-generierte Beschreibung
   voiceTitle: Sprich, dann handle
   voiceMessage: "Sag, was du als Nächstes tust, und tu es dann. Mimik ordnet deine Worte der nächsten Aktion zu."
   voiceRecordHint: "Sprachkommentar ist standardmäßig aus. Aktiviere ihn pro Anleitung per Mikrofon in der Seitenleiste."
+  voiceRecordHintDesktop: "Sprachkommentar ist standardmäßig aus. Aktiviere ihn pro Anleitung per Mikrofon auf der Aufnahmekarte."
   voiceDataNotice: "Audio geht mit deinem API-Schlüssel an den gewählten Anbieter."
   voiceDemoLabel: "So wird dein Sprachkommentar zugeordnet"
   voiceDemoSay: Du sagst
@@ -507,6 +510,7 @@ onboarding:
   starLater: "Vielleicht später"
   doneTitle: "Alles bereit"
   doneMessage: "Klicke in der Seitenleiste auf „Aufnahme starten“, um deine erste Anleitung aufzunehmen."
+  doneMessageDesktop: "Klicke auf „Aufnahme starten“, um deine erste Anleitung aufzunehmen."
   featureAutoCapture: Auto-Aufnahme
   featureAIAssist: KI-Assistent
   featureVoice: "Sprachkommentar"

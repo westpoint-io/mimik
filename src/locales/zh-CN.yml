@@ -540,15 +540,18 @@ onboarding:
   welcomeBadge: 欢迎
   welcomeTitle: "你已成功安装 Mimik！"
   welcomeMessage: "只需几步即可开始自动捕获浏览器工作流并生成分步指南。无需账号，一切都保留在你的浏览器中。"
+  welcomeMessageDesktop: "只需几步即可开始自动捕获电脑上的工作流并生成分步指南。无需账号，一切都保留在你的电脑上。"
   getStarted: 开始使用
   stepOf: "第 $1 步，共 $2 步"
   aiTitle: AI 描述
   aiMessage: 连接你自己的 API 密钥，即可获得 AI 生成的步骤描述。此功能可选，也可以稍后在设置中更改。
+  keySaved: "与其他密钥一起保存在“设置 › API 密钥”中。"
   aiGenerated: AI 生成
   aiGeneratedDescription: AI 生成的描述
   voiceTitle: 先说，再操作
   voiceMessage: "先说出你要做什么，再去做。Mimik 会把你的话关联到下一个动作。"
   voiceRecordHint: "语音讲解默认关闭。录制时可通过侧边栏的麦克风按钮为每份指南单独开启。"
+  voiceRecordHintDesktop: "语音讲解默认关闭。录制时可通过录制卡片上的麦克风按钮为每份指南单独开启。"
   voiceDataNotice: "音频会使用你的 API 密钥发送到你选择的提供商。"
   voiceDemoLabel: "语音讲解如何对应到步骤"
   voiceDemoSay: 你说
@@ -576,6 +579,7 @@ onboarding:
   starLater: 稍后再说
   doneTitle: "设置完成"
   doneMessage: "点击侧边栏中的“开始捕获”，录制第一份指南。"
+  doneMessageDesktop: "点击“开始捕获”，录制第一份指南。"
   featureAutoCapture: 自动捕获
   featureAIAssist: AI 辅助
   featureVoice: 语音讲解

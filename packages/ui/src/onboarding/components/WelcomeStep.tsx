@@ -1,5 +1,5 @@
-import { i18n } from '#imports';
-import { MascotLarge } from '../MascotLarge';
+import { client, i18n } from '@mimik/core/env';
+import { MascotLarge } from './MascotLarge';
 
 export function WelcomeStep({ onNext }: { onNext: () => void }) {
   return (
@@ -13,7 +13,7 @@ export function WelcomeStep({ onNext }: { onNext: () => void }) {
             {i18n.t('onboarding.welcomeTitle')}
           </h1>
           <p className="text-base text-muted-foreground leading-relaxed mb-10 max-w-md">
-            {i18n.t('onboarding.welcomeMessage')}
+            {i18n.t(client() === 'desktop' ? 'onboarding.welcomeMessageDesktop' : 'onboarding.welcomeMessage')}
           </p>
           <button
             onClick={onNext}

@@ -1,21 +1,13 @@
+import { client, i18n, localStorage } from '@mimik/core/env';
 import { useEffect } from 'react';
-import { browser, i18n } from '#imports';
-import { localStorage } from '@/lib/browser-api/local-storage';
-import { openSidebar } from '@/lib/browser-api/open-sidebar';
-import { requestHostPermissions } from '@/lib/browser-api/request-host-permissions';
-import { MascotLarge } from '../MascotLarge';
+import { MascotLarge } from './MascotLarge';
 
-export function DoneStep() {
+export function DoneStep({ onOpen }: { onOpen: () => void }) {
+  const desktop = client() === 'desktop';
+
   useEffect(() => {
-    localStorage.set({ onboardingCompleted: true });
+    void localStorage.set({ onboardingCompleted: true });
   }, []);
-
-  const handleOpen = async () => {
-    openSidebar();
-    const permissionsPromise = requestHostPermissions();
-    await permissionsPromise;
-    browser.tabs.create({ url: browser.runtime.getURL('/fullview.html') });
-  };
 
   return (
     <div className="flex h-screen items-center justify-center">
@@ -27,10 +19,10 @@ export function DoneStep() {
           {i18n.t('onboarding.doneTitle')}
         </h1>
         <p className="text-base text-muted-foreground mb-8 max-w-md mx-auto leading-relaxed">
-          {i18n.t('onboarding.doneMessage')}
+          {i18n.t(desktop ? 'onboarding.doneMessageDesktop' : 'onboarding.doneMessage')}
         </p>
 
-        <div className="grid grid-cols-3 gap-3 mb-8">
+        <div className="flex flex-wrap justify-center gap-3 mb-8">
           {[
             {
               label: i18n.t('onboarding.featureAutoCapture'),
@@ -63,7 +55,7 @@ export function DoneStep() {
                 </>
               ),
             },
-            {
+            !desktop && {
               label: i18n.t('onboarding.featureSmartBlur'),
               icon: (
                 <>
@@ -81,28 +73,30 @@ export function DoneStep() {
                 </>
               ),
             },
-          ].map((f) => (
-            <div key={f.label} className="bg-secondary rounded-xl px-3 py-4 text-center">
-              <div className="text-accent flex justify-center mb-2">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                >
-                  {f.icon}
-                </svg>
+          ]
+            .filter((f) => f !== false)
+            .map((f) => (
+              <div key={f.label} className="w-[calc((100%-1.5rem)/3)] bg-secondary rounded-xl px-3 py-4 text-center">
+                <div className="text-accent flex justify-center mb-2">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  >
+                    {f.icon}
+                  </svg>
+                </div>
+                <p className="text-xs font-semibold text-foreground">{f.label}</p>
               </div>
-              <p className="text-xs font-semibold text-foreground">{f.label}</p>
-            </div>
-          ))}
+            ))}
         </div>
 
         <button
-          onClick={handleOpen}
+          onClick={onOpen}
           className="inline-flex items-center gap-2 px-7 py-3 bg-primary text-primary-foreground rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors"
         >
           {i18n.t('onboarding.openMimik')}
