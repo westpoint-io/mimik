@@ -23,6 +23,14 @@ mac:
 win:
   target:
     - nsis
+nsis:
+  artifactName: ${productName}-${version}.${ext}
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  runAfterFinish: true
 linux:
   category: Utility
   target:
