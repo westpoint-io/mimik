@@ -83,7 +83,7 @@ app.whenReady().then(async () => {
     () => region,
     (fn) => fn(),
     (request) => ask(win.webContents, 'mimik:capture:step', { ...request, guideId: activeGuide }),
-    { grab: async () => syntheticDisplay, settings: () => settings },
+    { grab: async () => syntheticDisplay, settings: () => settings, lookup: () => Promise.resolve(null) },
   );
 
   activeGuide = await ask<string>(win.webContents, 'mimik:capture:startGuide');
