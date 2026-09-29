@@ -320,6 +320,17 @@ not one click: who to install for, the folder, and a Run Mimik box at the end, w
 `resources/installerSidebar.bmp`, the mascot on navy, beside the Welcome and Finish pages. The file is
 `Mimik-<version>.exe`.
 
+The installer carries `THIRD_PARTY_NOTICES.txt` and Mimik's own `LICENSE.txt` beside the executable,
+where Electron already puts `LICENSE.electron.txt` and `LICENSES.chromium.html`. Nearly every
+dependency's licence, MIT included, asks for its notice to travel with any copy, so the file is written
+on every build rather than kept by hand: `scripts/third-party-notices.ts` is a renderer plugin that
+lists each package the bundle pulled in, walks the `node_modules` electron-builder copies from the
+app's dependencies, adds the addon's runtime Rust crates from `cargo metadata` whenever the Windows
+addon is built, and appends two texts no package ships, kept in `apps/desktop/licenses/`: libuiohook's
+LGPL-3.0, which `uiohook-napi` compiles into its prebuilt binary, and the MIT notice of the LobeHub
+provider logos. The LGPL is satisfied because that binary is a separate file a user can replace with
+one built from its public source. `check:pipeline` fails if the file stops naming what ships.
+
 The app icon is the extension's, `public/icon.svg`, so the two products share one mark.
 `resources/icon.png` is it at 1024 px, which electron-builder turns into the macOS and Linux icons,
 and `resources/icon.ico` holds 16 to 256 px drawn from the vector rather than scaled down from the
