@@ -1493,6 +1493,17 @@ extension shows them on one page and a key pasted at the top has to clear the no
 narration provider at once; the desktop's `SettingsPanel` holds it for the same reason across
 sections.
 
+The options page, which the dashboard's Settings opens, renders the same view with `layout="sections"`:
+the section list on the left and one section at a time, named in the URL hash (`#api-keys`), so "Add
+one in API keys" switches to that section rather than scrolling. It holds the settings and nothing else: the
+privacy note, the bug link and the star card stay in the side panel, which keeps the single column.
+The options page used to centre its card vertically in a box the height of the window, and
+once the settings outgrew the window the header and the API keys card sat above it, out of reach.
+
+The key rows line up the same way on every surface: the check result sits after the provider's name,
+the field runs to the card's edge, and your own server's labels share the width of the name column,
+so its fields start where the key fields do.
+
 The shortcut recorder reads a keystroke and writes an Electron accelerator. It refuses a bare key,
 because a global accelerator with no modifier takes that key from every application on the machine,
 and it ignores a modifier pressed alone, because `Shift` is not a shortcut. `accelerator()` is a
