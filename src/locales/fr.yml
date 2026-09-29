@@ -476,6 +476,7 @@ exportPreview:
   voiceoverNoKeySkip: "La vidéo est muette. Ajoutez une clé API de voix off dans les Paramètres."
   voiceoverNothingToSay: "La vidéo est muette. Ce guide n'a aucun texte à lire à voix haute."
   narrating: "Narration de l'étape $1 sur $2"
+  preparingVoiceover: "Préparation de la voix off"
   stepDescriptions: "Légendes des étapes"
   stepDescriptionsHint: "Incruster le texte de l'étape sur chaque image"
   resolution: "Qualité vidéo"
@@ -719,3 +720,10 @@ transcript:
   download: Télécharger
   delete: Supprimer la transcription
   confirmDelete: "Supprimer cette transcription ? Cette action est irréversible."
+
+stepKind:
+  click: "Clic"
+  type: "Saisie"
+  key: "Touche"
+  navigate: "Page"
+  note: "Note"

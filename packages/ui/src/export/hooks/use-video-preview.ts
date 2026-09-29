@@ -14,7 +14,8 @@ export interface VideoPreview {
   mime: VideoMime;
   chapters: VideoChapter[];
   progress: number;
-  narrating: { done: number; total: number } | null;
+  stage: 'voice' | 'video';
+  narrating: { done: number; total: number; text?: string } | null;
   voiceoverError: VoiceoverSkip | null;
   error: string | null;
   deferred: boolean;
@@ -36,7 +37,8 @@ export function useVideoPreview({ active, guide, steps, screenshots, options, vo
   const [mime, setMime] = useState<VideoMime>('video/mp4');
   const [chapters, setChapters] = useState<VideoChapter[]>([]);
   const [progress, setProgress] = useState(0);
-  const [narrating, setNarrating] = useState<{ done: number; total: number } | null>(null);
+  const [stage, setStage] = useState<'voice' | 'video'>('video');
+  const [narrating, setNarrating] = useState<{ done: number; total: number; text?: string } | null>(null);
   const [voiceoverError, setVoiceoverError] = useState<VoiceoverSkip | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [requested, setRequested] = useState(false);
@@ -66,6 +68,7 @@ export function useVideoPreview({ active, guide, steps, screenshots, options, vo
     let made: string | null = null;
     setError(null);
     setProgress(0);
+    setStage(voiceover ? 'voice' : 'video');
     setNarrating(null);
     setVoiceoverError(null);
     const timer = setTimeout(async () => {
@@ -81,15 +84,15 @@ export function useVideoPreview({ active, guide, steps, screenshots, options, vo
             signal: controller.signal,
             onProgress: (encoded, frames) => {
               if (controller.signal.aborted) return;
-              setNarrating(null);
+              setStage('video');
               setProgress(
                 exportProgress.encode(encoded, frames, allClipsLanded ? voiceShare : 0, allClipsLanded ? muxShare : 0),
               );
             },
-            onVoiceProgress: (done, total) => {
+            onVoiceProgress: (done, total, text) => {
               if (controller.signal.aborted) return;
               allClipsLanded = done === total;
-              setNarrating(done < total ? { done, total } : null);
+              setNarrating({ done, total, text });
               setProgress(exportProgress.narrate(done, total, voiceShare));
             },
             onMuxProgress: (done, total) => {
@@ -122,6 +125,7 @@ export function useVideoPreview({ active, guide, steps, screenshots, options, vo
     mime,
     chapters,
     progress,
+    stage,
     narrating,
     voiceoverError,
     error,

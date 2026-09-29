@@ -203,8 +203,8 @@ describe('ExportPreviewModal video progress', () => {
       onVoiceProgress: (a: number, b: number) => void;
       onMuxProgress: (a: number, b: number) => void;
     };
-  const percent = () => screen.getByText(/^\d+%$/).textContent;
-  const label = () => screen.getByText(/^exportPreview\.(narrating|encodingVideo)/).textContent;
+  const percent = () => `${screen.getByRole('progressbar').getAttribute('aria-valuenow')}%`;
+  const label = () => screen.getByText(/^exportPreview\.(narrating|preparingVoiceover|encodingVideo)/).textContent;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -224,6 +224,15 @@ describe('ExportPreviewModal video progress', () => {
     await waitFor(() => expect(exportGuideAsVideo).toHaveBeenCalled());
     await waitFor(() => expect(exportGuideAsVideo.mock.calls.at(-1)?.[3].voiceover).toBe(true));
   }
+
+  it('starts on the voice-over rather than encoding before the first clip is asked for', async () => {
+    await openNarratedVideo();
+
+    expect(label()).toBe('exportPreview.preparingVoiceover');
+
+    act(() => hooks().onVoiceProgress(3, 3));
+    expect(label()).toContain('exportPreview.narrating');
+  });
 
   it('moves the bar while clips are synthesised instead of sitting at zero', async () => {
     await openNarratedVideo();

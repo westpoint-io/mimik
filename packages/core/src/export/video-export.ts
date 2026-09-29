@@ -691,7 +691,7 @@ export type FrameOptions = Pick<ExportOptions, 'cover' | 'stepDescriptions'> & {
 
 export interface VideoExportControls {
   onProgress?: (done: number, total: number) => void;
-  onVoiceProgress?: (done: number, total: number) => void;
+  onVoiceProgress?: (done: number, total: number, next?: string) => void;
   onMuxProgress?: (done: number, total: number) => void;
   signal?: AbortSignal;
 }

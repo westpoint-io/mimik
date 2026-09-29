@@ -407,6 +407,7 @@ exportPreview:
   voiceoverNoKeySkip: "Das Video ist stumm. Füge in den Einstellungen einen Voiceover-API-Schlüssel hinzu."
   voiceoverNothingToSay: "Das Video ist stumm. Diese Anleitung hat keinen Text zum Vorlesen."
   narrating: "Schritt $1 von $2 wird vertont"
+  preparingVoiceover: "Voiceover wird vorbereitet"
   stepDescriptions: "Schritttexte"
   stepDescriptionsHint: "Den Schritttext in jedes Videobild einzeichnen"
   resolution: "Videoqualität"
@@ -720,3 +721,10 @@ transcript:
   download: Herunterladen
   delete: Transkript löschen
   confirmDelete: "Dieses Transkript löschen? Das lässt sich nicht rückgängig machen."
+
+stepKind:
+  click: "Klick"
+  type: "Eingabe"
+  key: "Taste"
+  navigate: "Seite"
+  note: "Notiz"

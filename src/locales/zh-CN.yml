@@ -476,6 +476,7 @@ exportPreview:
   voiceoverNoKeySkip: "该视频无声。请在设置中添加配音 API 密钥。"
   voiceoverNothingToSay: "该视频无声。该指南没有可朗读的文本。"
   narrating: "正在为第 $1 步配音，共 $2 步"
+  preparingVoiceover: "正在准备配音"
   stepDescriptions: "步骤字幕"
   stepDescriptionsHint: "将步骤文字绘制到每一帧视频中"
   resolution: "视频质量"
@@ -719,3 +720,10 @@ transcript:
   download: 下载
   delete: "删除转写文本"
   confirmDelete: "删除这份转写文本？此操作无法撤销。"
+
+stepKind:
+  click: "点击"
+  type: "输入"
+  key: "按键"
+  navigate: "页面"
+  note: "备注"

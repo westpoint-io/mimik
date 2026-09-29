@@ -476,6 +476,7 @@ exportPreview:
   voiceoverNoKeySkip: "O vídeo está sem som. Adicione uma chave de API de narração em Ajustes."
   voiceoverNothingToSay: "O vídeo está sem som. Este guia não tem texto para ler em voz alta."
   narrating: "Narrando o passo $1 de $2"
+  preparingVoiceover: "Preparando a narração"
   stepDescriptions: "Textos dos passos"
   stepDescriptionsHint: "Desenhar o texto do passo em cada quadro"
   resolution: "Qualidade do vídeo"
@@ -719,3 +720,10 @@ transcript:
   download: Baixar
   delete: "Excluir transcrição"
   confirmDelete: "Excluir esta transcrição? Não é possível desfazer."
+
+stepKind:
+  click: "Clique"
+  type: "Digitar"
+  key: "Tecla"
+  navigate: "Página"
+  note: "Nota"

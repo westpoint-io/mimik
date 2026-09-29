@@ -476,6 +476,7 @@ exportPreview:
   voiceoverNoKeySkip: "The video is silent. Add a voice-over API key in Settings."
   voiceoverNothingToSay: "The video is silent. This guide has no text to read aloud."
   narrating: "Narrating step $1 of $2"
+  preparingVoiceover: "Preparing the voice-over"
   stepDescriptions: "Step captions"
   stepDescriptionsHint: "Draw the step text onto each video frame"
   resolution: "Video quality"
@@ -719,3 +720,10 @@ transcript:
   download: Download
   delete: Delete transcript
   confirmDelete: "Delete this transcript? This can't be undone."
+
+stepKind:
+  click: "Click"
+  type: "Type"
+  key: "Key"
+  navigate: "Page"
+  note: "Note"
