@@ -1,0 +1,87 @@
+name: Desktop
+
+on:
+  pull_request:
+    branches:
+      - desktop
+  push:
+    branches:
+      - desktop
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Tests
+        run: pnpm test
+
+      - name: Build extension
+        run: pnpm build
+
+      - name: Storage check
+        run: xvfb-run -a pnpm --filter @mimik/desktop check:storage
+
+      - name: Pipeline check
+        run: xvfb-run -a pnpm --filter @mimik/desktop check:pipeline
+
+      - name: Overlay check
+        run: xvfb-run -a pnpm --filter @mimik/desktop check:overlay
+
+  windows:
+    name: Windows installer
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build the accessibility addon
+        run: pnpm --filter @mimik/capture-native build
+
+      - name: Storage check
+        run: pnpm --filter @mimik/desktop check:storage
+
+      - name: Pipeline check
+        run: pnpm --filter @mimik/desktop check:pipeline
+
+      - name: Build the installer
+        run: |
+          pnpm build:desktop
+          pnpm --filter @mimik/desktop exec electron-builder --win --publish never
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mimik-windows
+          path: apps/desktop/dist/*.exe
+          if-no-files-found: error
