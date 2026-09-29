@@ -45,8 +45,9 @@ export function ServerSettings({ server, onChange, validate }: ServerSettingsPro
       <div className="-mt-1 divide-y divide-secondary">
         <div className="py-2.5">
           <label className="flex items-center gap-3">
-            <span className="w-24 shrink-0 text-[13px] font-semibold text-foreground">
+            <span className="w-[152px] shrink-0 flex items-center gap-1.5 text-[13px] font-semibold text-foreground">
               {i18n.t('settings.baseUrl')}
+              <KeyStatusIcon status={keyCheck.status} />
             </span>
             <Input
               value={server.url}
@@ -55,18 +56,17 @@ export function ServerSettings({ server, onChange, validate }: ServerSettingsPro
               placeholder="http://localhost:11434/v1"
               className="h-8 flex-1 text-[13px] rounded-lg border-border font-mono"
             />
-            <span className="w-4 shrink-0 flex justify-center">
-              <KeyStatusIcon status={keyCheck.status} />
-            </span>
           </label>
           {keyCheck.status !== 'valid' && keyCheck.status !== 'checking' && (
-            <div className="pl-[108px]">
+            <div className="pl-[164px]">
               <KeyStatusNote status={keyCheck.status} />
             </div>
           )}
         </div>
         <div className="flex items-center gap-3 py-2.5">
-          <span className="w-24 shrink-0 text-[13px] font-semibold text-foreground">{i18n.t('settings.apiKey')}</span>
+          <span className="w-[152px] shrink-0 text-[13px] font-semibold text-foreground">
+            {i18n.t('settings.apiKey')}
+          </span>
           <SecretInput
             value={server.apiKey}
             onChange={(apiKey) => change({ apiKey })}
@@ -74,10 +74,9 @@ export function ServerSettings({ server, onChange, validate }: ServerSettingsPro
             placeholder={i18n.t('settings.optional')}
             className="h-8 text-[13px] rounded-lg border-border"
           />
-          <span className="w-4 shrink-0" />
         </div>
-        <div className="flex items-center gap-3 py-2.5">
-          <span className="w-24 shrink-0 text-[13px] font-semibold text-foreground">
+        <div className="flex flex-wrap items-center gap-3 py-2.5">
+          <span className="w-[152px] shrink-0 text-[13px] font-semibold text-foreground">
             {i18n.t('settings.serverSpeaks')}
           </span>
           <Segmented
