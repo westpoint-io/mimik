@@ -116,10 +116,8 @@ settings:
   addKey: "添加密钥"
   noKey: "无密钥"
   voiceover: "视频配音"
-  textToSpeech: "文字 → 语音"
   voiceoverHint: "Mimik 会在导出的视频中朗读每个步骤的文本。"
   voice: "语音"
-  speechToText: "语音 → 文字"
   voiceNarrationHint: "边录边讲，Mimik 会根据你说的内容写出每个步骤。"
   voiceNarration: 语音讲解
   aiNoKey: "没有 API 密钥时，步骤使用基于规则的简单描述。"

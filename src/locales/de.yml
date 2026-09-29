@@ -128,10 +128,8 @@ settings:
   addKey: "Schlüssel hinzufügen"
   noKey: "Kein Schlüssel"
   voiceover: "Video-Voiceover"
-  textToSpeech: "Text → Sprache"
   voiceoverHint: "Mimik spricht den Text jedes Schritts über das exportierte Video."
   voice: "Stimme"
-  speechToText: "Sprache → Text"
   voiceNarrationHint: "Erkläre den Ablauf laut, und Mimik formuliert jeden Schritt aus deinen Worten."
   voiceNarration: Sprachkommentar
   aiNoKey: "Ohne API-Schlüssel erhalten Schritte einfache regelbasierte Beschreibungen."

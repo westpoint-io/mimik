@@ -101,16 +101,7 @@ export function SettingsView({ onBack }: SettingsViewProps) {
 
         <BrandingSettings onChange={queue} />
 
-        <SettingsCard
-          icon={Mic}
-          title={i18n.t('settings.voiceNarration')}
-          hint={i18n.t('settings.voiceNarrationHint')}
-          action={
-            <span className="shrink-0 rounded-md bg-secondary px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-muted-foreground">
-              {i18n.t('settings.speechToText')}
-            </span>
-          }
-        >
+        <SettingsCard icon={Mic} title={i18n.t('settings.voiceNarration')} hint={i18n.t('settings.voiceNarrationHint')}>
           <div>
             <label className="block text-[11px] font-semibold text-foreground mb-1">
               {i18n.t('settings.provider')}
