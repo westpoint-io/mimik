@@ -58,7 +58,7 @@ scripts/                 repository checks that pnpm lint runs
 | Content Script | `entrypoints/content.ts` | Injected into all tabs: CaptureSession, event listeners |
 | Side Panel | `entrypoints/sidepanel/` | Recording controls, library, guide editor, settings |
 | Full View | `entrypoints/fullview/` | Dashboard: library browse, guide viewer, Ctrl+K search |
-| Onboarding | `entrypoints/onboarding/` | First-install wizard: AI setup, smart blur, pin extension |
+| Onboarding | `entrypoints/onboarding/` | First-install wizard: AI setup, narration, smart blur, pin extension, star |
 | Options | `entrypoints/options/` | Settings page (shared SettingsView in centered card) |
 
 ## Messaging
@@ -1452,8 +1452,11 @@ that genuinely differs — the extension goes through background messaging becau
 what has `host_permissions`, and the desktop calls `validateApiKey` directly on top of the main
 process fetch.
 
-The rest of `SettingsView` stayed put. Voice narration, smart blur and the microphone picker have no
-desktop meaning, and it reaches into `@/lib/browser-api/`. It mounts the API keys card at the top,
+The rest of `SettingsView` stayed put. Voice narration and smart blur have no desktop card yet, and it
+reaches into `@/lib/browser-api/`. `MicrophonePicker` moved to `packages/ui/src/voice` with the
+onboarding, taking `onRequestAccess`: the extension opens its permission page, because a side panel
+cannot show the browser's microphone prompt, and the desktop calls `getUserMedia`, which Electron
+grants. It mounts the API keys card at the top,
 then `AiSettings`, `BrandingSettings` and `VoiceoverSettings` where its own cards were, and passes the
 autosave's `queue` as `onChange`, which is only there to raise the Saved badge — the card has already
 written the value. It holds `useApiKeys` itself and hands the state to every card, because the
@@ -1465,6 +1468,31 @@ The shortcut recorder reads a keystroke and writes an Electron accelerator. It r
 because a global accelerator with no modifier takes that key from every application on the machine,
 and it ignores a modifier pressed alone, because `Shift` is not a shortcut. `accelerator()` is a
 pure function over the event so it is tested without a keyboard.
+
+## First Run
+
+Both surfaces run one onboarding, `OnboardingFlow` in `packages/ui/src/onboarding`: Welcome, the
+steps the surface passes in, then Done. The extension passes AI setup, narration, smart blur, pin and
+star, and drops narration on Firefox; the desktop passes AI setup, narration and star, since smart
+blur works only on web pages and an installed app is already in the Start menu and on the taskbar,
+which is what pinning buys the extension. The steps are the extension's own, moved rather than
+copied, so the two cannot drift. What differs arrives as props — `validate` for the key check,
+`requestMicrophoneAccess`, and `onFinish`, which opens the side panel and the dashboard in the
+extension and shows the library on the desktop — and three strings that name the browser, the
+welcome, the narration hint and the Done line, have desktop versions chosen through `client()`, as
+is dropping Smart blur from Done's features.
+
+The AI and narration steps ask for a key the way Settings does, not with a field of their own: each
+picks its provider through `ProviderSelect`, with every provider enabled since this is where keys get
+added, and under it sits that provider's `ProviderKeyRow` from the API keys section, or
+`ServerSettings` for your own server. A key typed in the first step is already filled and ticked in
+the second when both use the same provider. The step opens with what the feature does rather than a
+list of keys, because most people arrive without one, and a form asking for credentials before saying
+what they buy is a screen they can only skip.
+
+Done writes `onboardingCompleted`, and the desktop `App` shows the flow until it is set, reading it
+through core's `localStorage` like every other setting. The narration step saves the provider and
+microphone the desktop's narration will read; the recording card has no microphone button yet.
 
 ## Capture Shortcuts
 
@@ -1527,7 +1555,11 @@ because the package is not in `onlyBuiltDependencies`.
 `.github/workflows/desktop.yml` runs on the `desktop` branch, which the extension's `pr-test.yml`
 does not cover: lint, typecheck, the tests, the extension build and the storage, pipeline and
 overlay checks under `xvfb-run` on Linux, then on Windows the addon, the storage and pipeline checks
-and an unsigned NSIS installer uploaded as the run's artifact.
+and an unsigned NSIS installer uploaded as the run's artifact. `npmRebuild` is off in
+`electron-builder.yml`: every native module the app loads is a prebuilt N-API binary, and the rebuild
+tried to compile `get-windows` with node-gyp, which needs Visual Studio the runner does not have. On
+the Ubuntu runner the job lifts AppArmor's limit on unprivileged user namespaces first, or Electron
+falls back to a SUID sandbox helper that is not set up and aborts.
 
 ## Export Formats
 
