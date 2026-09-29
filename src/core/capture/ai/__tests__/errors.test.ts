@@ -5,7 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { aiActionKey, aiFailureKey } from '@/ui/sidepanel/ai-status';
 import { type AiFailureReason, describeAiFailure } from '../errors';
 
-const LOCALES = ['en', 'de', 'es', 'fr', 'pt-BR', 'zh-CN'];
+const LOCALES = ['en', 'de', 'es', 'fr', 'pt-BR', 'zh-CN', 'ru'];
 const REASONS: AiFailureReason[] = [
   'rejected',
   'no-credits',

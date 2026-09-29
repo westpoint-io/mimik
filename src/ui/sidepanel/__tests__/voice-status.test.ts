@@ -15,7 +15,7 @@ import {
   voiceErrorKey,
 } from '../voice-status';
 
-const LOCALES = ['en', 'es', 'fr', 'pt-BR', 'zh-CN'];
+const LOCALES = ['en', 'es', 'fr', 'pt-BR', 'zh-CN', 'ru'];
 
 function voiceKeysIn(locale: string): string[] {
   const lines = readFileSync(join(process.cwd(), 'src/locales', `${locale}.yml`), 'utf8')
