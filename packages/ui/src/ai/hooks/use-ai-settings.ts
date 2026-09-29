@@ -1,34 +1,27 @@
-import { type AIApiKeys, keyFor, migrateApiKeys, withKeyFor } from '@mimik/core/capture/ai/keys';
+import { type AiChoice, aiChoice, SERVER } from '@mimik/core/capture/ai/keys';
 import {
   AI_PROVIDERS,
-  type AIProviderKey,
+  type AIModelOption,
   CUSTOM_MODEL_VALUE,
   DEFAULT_AI_PROVIDER,
-  isCustomBaseUrl,
   isCustomModel,
-  providerOrDefault,
 } from '@mimik/core/capture/ai/models';
 import type { AILanguageCode } from '@mimik/core/capture/ai/prompts';
 import { localStorage } from '@mimik/core/env';
 import { useCallback, useEffect, useState } from 'react';
 
-const AI_KEYS = ['aiProvider', 'aiModel', 'aiApiKey', 'aiApiKeys', 'aiBaseUrl', 'aiLanguage'] as const;
+const AI_KEYS = ['aiProvider', 'aiModel', 'aiBaseUrl', 'aiServerUrl', 'aiLanguage'] as const;
 
 export interface AiSettingsState {
-  provider: AIProviderKey;
+  provider: AiChoice;
   model: string;
-  apiKey: string;
-  baseUrl: string;
   language: AILanguageCode;
-  ownServer: boolean;
   usingCustomModel: boolean;
-  providerConfig: (typeof AI_PROVIDERS)[AIProviderKey];
-  setProvider: (provider: AIProviderKey) => void;
+  models: AIModelOption[];
+  defaultModel: string;
+  setProvider: (provider: AiChoice) => void;
   setModel: (model: string) => void;
-  setApiKey: (apiKey: string) => void;
-  setBaseUrl: (baseUrl: string) => void;
   setLanguage: (language: AILanguageCode) => void;
-  toggleOwnServer: () => void;
 }
 
 interface Options {
@@ -36,29 +29,22 @@ interface Options {
   reloadOnFocus?: boolean;
 }
 
+function defaultModelFor(provider: AiChoice): string {
+  return provider === SERVER ? '' : AI_PROVIDERS[provider].defaultModel;
+}
+
 export function useAiSettings({ onDirty, reloadOnFocus = false }: Options = {}): AiSettingsState {
-  const [provider, setProviderState] = useState<AIProviderKey>(DEFAULT_AI_PROVIDER);
+  const [provider, setProviderState] = useState<AiChoice>(DEFAULT_AI_PROVIDER);
   const [model, setModelState] = useState(AI_PROVIDERS[DEFAULT_AI_PROVIDER].defaultModel);
-  const [apiKey, setApiKeyState] = useState('');
-  const [apiKeys, setApiKeys] = useState<AIApiKeys>({});
-  const [baseUrl, setBaseUrlState] = useState('');
   const [language, setLanguageState] = useState<AILanguageCode>('en');
-  const [ownServer, setOwnServer] = useState(false);
   const [customModel, setCustomModel] = useState(false);
 
   useEffect(() => {
     const load = () =>
       localStorage.get(AI_KEYS).then((stored) => {
-        const next = providerOrDefault(stored.aiProvider);
-        const keys = migrateApiKeys(stored);
+        const next = aiChoice(stored);
         setProviderState(next);
-        setApiKeys(keys);
-        setApiKeyState(keyFor(keys, next));
-        if (typeof stored.aiModel === 'string') setModelState(stored.aiModel);
-        if (isCustomBaseUrl(AI_PROVIDERS[next], stored.aiBaseUrl as string)) {
-          setBaseUrlState(stored.aiBaseUrl as string);
-          setOwnServer(true);
-        }
+        setModelState(typeof stored.aiModel === 'string' ? stored.aiModel : defaultModelFor(next));
         if (typeof stored.aiLanguage === 'string') setLanguageState(stored.aiLanguage as AILanguageCode);
       });
 
@@ -80,18 +66,14 @@ export function useAiSettings({ onDirty, reloadOnFocus = false }: Options = {}):
   );
 
   const setProvider = useCallback(
-    (next: AIProviderKey) => {
-      const nextModel = AI_PROVIDERS[next].defaultModel;
-      const nextKey = keyFor(apiKeys, next);
+    (next: AiChoice) => {
+      const nextModel = defaultModelFor(next);
       setProviderState(next);
       setModelState(nextModel);
-      setApiKeyState(nextKey);
       setCustomModel(false);
-      setOwnServer(false);
-      setBaseUrlState('');
-      dirty({ aiProvider: next, aiModel: nextModel, aiBaseUrl: '', aiApiKey: nextKey });
+      dirty({ aiProvider: next, aiModel: nextModel, aiBaseUrl: '' });
     },
-    [apiKeys, dirty],
+    [dirty],
   );
 
   const setModel = useCallback(
@@ -108,24 +90,6 @@ export function useAiSettings({ onDirty, reloadOnFocus = false }: Options = {}):
     [dirty],
   );
 
-  const setApiKey = useCallback(
-    (next: string) => {
-      const keys = withKeyFor(apiKeys, provider, next);
-      setApiKeyState(next);
-      setApiKeys(keys);
-      dirty({ aiApiKey: next, aiApiKeys: keys });
-    },
-    [apiKeys, provider, dirty],
-  );
-
-  const setBaseUrl = useCallback(
-    (next: string) => {
-      setBaseUrlState(next);
-      dirty({ aiBaseUrl: next });
-    },
-    [dirty],
-  );
-
   const setLanguage = useCallback(
     (next: AILanguageCode) => {
       setLanguageState(next);
@@ -134,32 +98,17 @@ export function useAiSettings({ onDirty, reloadOnFocus = false }: Options = {}):
     [dirty],
   );
 
-  const toggleOwnServer = useCallback(() => {
-    setOwnServer((on) => {
-      if (on) {
-        setBaseUrlState('');
-        dirty({ aiBaseUrl: '' });
-      }
-      return !on;
-    });
-  }, [dirty]);
-
-  const providerConfig = AI_PROVIDERS[provider] ?? AI_PROVIDERS[DEFAULT_AI_PROVIDER];
+  const config = provider === SERVER ? null : AI_PROVIDERS[provider];
 
   return {
     provider,
     model,
-    apiKey,
-    baseUrl,
     language,
-    ownServer,
-    usingCustomModel: customModel || isCustomModel(model, providerConfig),
-    providerConfig,
+    usingCustomModel: config === null || customModel || isCustomModel(model, config),
+    models: config?.models ?? [],
+    defaultModel: config?.defaultModel ?? '',
     setProvider,
     setModel,
-    setApiKey,
-    setBaseUrl,
     setLanguage,
-    toggleOwnServer,
   };
 }

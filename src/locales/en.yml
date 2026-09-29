@@ -96,7 +96,6 @@ settings:
   model: Model
   modelCustom: Custom model
   baseUrl: Base URL
-  useOwnServer: Use my own server
   ownServerHintOpenai: "Works with Ollama, LM Studio, vLLM or any OpenAI-compatible server."
   ownServerHintAnthropic: "Works with a LiteLLM proxy or any Anthropic-compatible server."
   apiKey: "API key"
@@ -104,18 +103,26 @@ settings:
   hideKey: Hide key
   clearKey: Clear key
   aiLanguage: "Description language"
+  apiKeys: "API keys"
+  aiSection: "AI"
+  ownServer: "Your own server"
+  optional: "Optional"
+  serverSpeaks: "Compatible with"
+  protocolOpenai: "OpenAI API"
+  protocolAnthropic: "Anthropic API"
+  noServer: "No server address yet."
+  noKeyFor: "No $1 key yet."
+  addOneInKeys: "Add one in API keys."
+  addKey: "Add key"
+  noKey: "No key"
   voiceover: "Video voice-over"
   textToSpeech: "text → speech"
   voiceoverHint: "Mimik speaks each step's text over the exported video."
-  voiceoverUsingAiKey: "Using the OpenAI key from AI descriptions."
-  voiceoverNoKey: "Add an API key to narrate videos."
   voice: "Voice"
   speechToText: "speech → text"
   voiceNarrationHint: "Talk through the workflow and Mimik writes each step from what you said."
   voiceNarration: "Voice narration"
-  voiceUsingAiKey: "Using the OpenAI key from AI descriptions."
   aiNoKey: "Without an API key, steps get basic rule-based descriptions."
-  voiceNoKey: "Add an API key to narrate recordings."
   microphone: Microphone
   microphoneDefault: System default
   microphoneNeedsAccess: Allow microphone access to see your device names.

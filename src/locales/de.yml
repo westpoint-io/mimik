@@ -106,7 +106,6 @@ settings:
   aiDescriptions: KI-Beschreibungen
   modelCustom: Eigenes Modell
   baseUrl: Basis-URL
-  useOwnServer: Eigenen Server verwenden
   ownServerHintOpenai: "Funktioniert mit Ollama, LM Studio, vLLM oder jedem OpenAI-kompatiblen Server."
   ownServerHintAnthropic: "Funktioniert mit einem LiteLLM-Proxy oder jedem Anthropic-kompatiblen Server."
   provider: Anbieter
@@ -116,18 +115,26 @@ settings:
   hideKey: Schlüssel verbergen
   clearKey: Schlüssel löschen
   aiLanguage: Sprache der Beschreibungen
+  apiKeys: "API-Schlüssel"
+  aiSection: "KI"
+  ownServer: "Eigener Server"
+  optional: "Optional"
+  serverSpeaks: "Kompatibel mit"
+  protocolOpenai: "OpenAI-API"
+  protocolAnthropic: "Anthropic-API"
+  noServer: "Noch keine Serveradresse."
+  noKeyFor: "Noch kein $1-Schlüssel."
+  addOneInKeys: "Füge einen unter API-Schlüssel hinzu."
+  addKey: "Schlüssel hinzufügen"
+  noKey: "Kein Schlüssel"
   voiceover: "Video-Voiceover"
   textToSpeech: "Text → Sprache"
   voiceoverHint: "Mimik spricht den Text jedes Schritts über das exportierte Video."
-  voiceoverUsingAiKey: "Nutzt den OpenAI-Schlüssel aus den KI-Beschreibungen."
-  voiceoverNoKey: "Füge einen API-Schlüssel hinzu, um Videos zu vertonen."
   voice: "Stimme"
   speechToText: "Sprache → Text"
   voiceNarrationHint: "Erkläre den Ablauf laut, und Mimik formuliert jeden Schritt aus deinen Worten."
   voiceNarration: Sprachkommentar
-  voiceUsingAiKey: "Nutzt den OpenAI-Schlüssel aus den KI-Beschreibungen."
   aiNoKey: "Ohne API-Schlüssel erhalten Schritte einfache regelbasierte Beschreibungen."
-  voiceNoKey: "Füge einen API-Schlüssel hinzu, um Aufnahmen mit Sprachkommentar zu versehen."
   microphone: Mikrofon
   microphoneDefault: Systemstandard
   microphoneNeedsAccess: Erlaube den Mikrofonzugriff, um deine Gerätenamen zu sehen.

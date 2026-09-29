@@ -1,4 +1,4 @@
-import { SecretInput, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui';
+import { SecretInput, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, useApiKeys } from '@mimik/ui';
 import { Mic, MousePointerClick, Shield } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { i18n } from '#imports';
@@ -10,14 +10,14 @@ import type { StepProps } from '../types';
 
 export function VoiceStep({ onNext, onSkip, onBack, index, total }: StepProps) {
   const [provider, setProvider] = useState<VoiceProvider>('openai');
-  const [apiKey, setApiKey] = useState('');
   const [microphoneId, setMicrophoneId] = useState('');
+  const keys = useApiKeys({ reloadOnFocus: true });
+  const apiKey = keys.keys[provider] ?? '';
 
   useEffect(() => {
     const load = () =>
-      localStorage.get(['voiceProvider', 'voiceApiKey', 'voiceMicrophoneId']).then((stored) => {
+      localStorage.get(['voiceProvider', 'voiceMicrophoneId']).then((stored) => {
         if (stored.voiceProvider === 'openai' || stored.voiceProvider === 'groq') setProvider(stored.voiceProvider);
-        if (typeof stored.voiceApiKey === 'string') setApiKey(stored.voiceApiKey);
         if (typeof stored.voiceMicrophoneId === 'string') setMicrophoneId(stored.voiceMicrophoneId);
       });
 
@@ -39,10 +39,7 @@ export function VoiceStep({ onNext, onSkip, onBack, index, total }: StepProps) {
     void localStorage.set({ voiceProvider: nextProvider });
   };
 
-  const handleApiKeyChange = (nextKey: string) => {
-    setApiKey(nextKey);
-    void localStorage.set({ voiceApiKey: nextKey });
-  };
+  const handleApiKeyChange = (nextKey: string) => keys.setKey(provider, nextKey);
 
   return (
     <div className="flex h-screen">

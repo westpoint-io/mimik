@@ -96,7 +96,6 @@ settings:
   model: "Modèle"
   modelCustom: Modèle personnalisé
   baseUrl: URL de base
-  useOwnServer: Utiliser mon propre serveur
   ownServerHintOpenai: "Fonctionne avec Ollama, LM Studio, vLLM ou tout serveur compatible OpenAI."
   ownServerHintAnthropic: "Fonctionne avec un proxy LiteLLM ou tout serveur compatible Anthropic."
   apiKey: "Clé API"
@@ -104,18 +103,26 @@ settings:
   hideKey: Masquer la clé
   clearKey: Effacer la clé
   aiLanguage: Langue des descriptions
+  apiKeys: "Clés API"
+  aiSection: "IA"
+  ownServer: "Votre propre serveur"
+  optional: "Facultatif"
+  serverSpeaks: "Compatible avec"
+  protocolOpenai: "API OpenAI"
+  protocolAnthropic: "API Anthropic"
+  noServer: "Aucune adresse de serveur pour l'instant."
+  noKeyFor: "Aucune clé $1 pour l'instant."
+  addOneInKeys: "Ajoutez-en une dans Clés API."
+  addKey: "Ajouter une clé"
+  noKey: "Pas de clé"
   voiceover: "Voix off de la vidéo"
   textToSpeech: "texte → voix"
   voiceoverHint: "Mimik lit le texte de chaque étape par-dessus la vidéo exportée."
-  voiceoverUsingAiKey: "Utilise la clé OpenAI des Descriptions IA."
-  voiceoverNoKey: "Ajoutez une clé API pour narrer les vidéos."
   voice: "Voix"
   speechToText: "voix → texte"
   voiceNarrationHint: "Décrivez le parcours à voix haute et Mimik rédige chaque étape à partir de ce que vous avez dit."
   voiceNarration: "Narration vocale"
-  voiceUsingAiKey: "Utilise la clé OpenAI des Descriptions IA."
   aiNoKey: "Sans clé API, les étapes reçoivent des descriptions simples basées sur des règles."
-  voiceNoKey: "Ajoutez une clé API pour narrer vos enregistrements."
   microphone: "Micro"
   microphoneDefault: "Micro par défaut du système"
   microphoneNeedsAccess: "Autorisez l'accès au micro pour voir le nom de vos appareils."

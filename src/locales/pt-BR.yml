@@ -96,7 +96,6 @@ settings:
   model: Modelo
   modelCustom: Modelo personalizado
   baseUrl: URL base
-  useOwnServer: Usar meu próprio servidor
   ownServerHintOpenai: "Funciona com Ollama, LM Studio, vLLM ou qualquer servidor compatível com OpenAI."
   ownServerHintAnthropic: "Funciona com um proxy LiteLLM ou qualquer servidor compatível com Anthropic."
   apiKey: "Chave de API"
@@ -104,18 +103,26 @@ settings:
   hideKey: Ocultar chave
   clearKey: Limpar chave
   aiLanguage: "Idioma das descrições"
+  apiKeys: "Chaves de API"
+  aiSection: "IA"
+  ownServer: "Seu próprio servidor"
+  optional: "Opcional"
+  serverSpeaks: "Compatível com"
+  protocolOpenai: "API da OpenAI"
+  protocolAnthropic: "API da Anthropic"
+  noServer: "Ainda não há endereço de servidor."
+  noKeyFor: "Ainda não há chave da $1."
+  addOneInKeys: "Adicione uma em Chaves de API."
+  addKey: "Adicionar chave"
+  noKey: "Sem chave"
   voiceover: "Narração do vídeo"
   textToSpeech: "texto → voz"
   voiceoverHint: "O Mimik lê o texto de cada passo sobre o vídeo exportado."
-  voiceoverUsingAiKey: "Usando a chave da OpenAI definida em Descrições com IA."
-  voiceoverNoKey: "Adicione uma chave de API para narrar vídeos."
   voice: "Voz"
   speechToText: "voz → texto"
   voiceNarrationHint: "Explique o fluxo em voz alta e o Mimik escreve cada passo com o que você disse."
   voiceNarration: "Narração por voz"
-  voiceUsingAiKey: "Usando a chave da OpenAI definida em Descrições com IA."
   aiNoKey: "Sem chave de API, os passos recebem descrições simples baseadas em regras."
-  voiceNoKey: "Adicione uma chave de API para narrar suas gravações."
   microphone: Microfone
   microphoneDefault: "Padrão do sistema"
   microphoneNeedsAccess: "Permita o acesso ao microfone para ver o nome dos seus dispositivos."

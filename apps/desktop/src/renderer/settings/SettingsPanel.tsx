@@ -1,12 +1,22 @@
 import { validateApiKey } from '@mimik/core/capture/ai/validate';
 import { i18n } from '@mimik/core/env';
-import { AiSettings, BrandingSettings, Switch, useKeyCheck } from '@mimik/ui';
+import { fetchVoices } from '@mimik/core/export/voiceover/client';
+import {
+  AiSettings,
+  ApiKeysSettings,
+  BrandingSettings,
+  Segmented,
+  Switch,
+  useApiKeys,
+  VoiceoverSettings,
+} from '@mimik/ui';
 import {
   AppWindow,
   Command,
   Crop,
   ImageIcon,
   Keyboard,
+  KeyRound,
   Monitor,
   MonitorPlay,
   SlidersHorizontal,
@@ -19,18 +29,18 @@ import { GeneralSettings } from './GeneralSettings';
 import { REOPEN_SETTINGS } from './lib/reopen-settings';
 import { zoomLevels } from './lib/zoom-levels';
 import { Row } from './Row';
-import { Segmented } from './Segmented';
 import { ShortcutRecorder } from './ShortcutRecorder';
 import { Slider } from './Slider';
 
-type Section = 'general' | 'capture' | 'ai' | 'branding' | 'shortcuts';
+type Section = 'general' | 'capture' | 'ai' | 'branding' | 'shortcuts' | 'keys';
 
 const SECTIONS: { id: Section; labelKey: string; Icon: typeof AppWindow }[] = [
   { id: 'general', labelKey: 'desktop_generalSection', Icon: SlidersHorizontal },
   { id: 'capture', labelKey: 'desktop_capturingSection', Icon: MonitorPlay },
-  { id: 'ai', labelKey: 'settings_aiDescriptions', Icon: Sparkles },
+  { id: 'ai', labelKey: 'settings_aiSection', Icon: Sparkles },
   { id: 'branding', labelKey: 'settings_branding', Icon: ImageIcon },
   { id: 'shortcuts', labelKey: 'desktop_shortcutsSection', Icon: Command },
+  { id: 'keys', labelKey: 'settings_apiKeys', Icon: KeyRound },
 ];
 
 const MODES: { id: CaptureSettings['captureMode']; labelKey: string; Icon: typeof AppWindow }[] = [
@@ -50,7 +60,7 @@ export function SettingsPanel() {
     sessionStorage.removeItem(REOPEN_SETTINGS);
     return reopened ?? 'general';
   });
-  const keyCheck = useKeyCheck(validateApiKey);
+  const keys = useApiKeys();
   const [settings, setSettings] = useState<CaptureSettings | null>(null);
 
   useEffect(() => {
@@ -87,7 +97,14 @@ export function SettingsPanel() {
 
       <div className="min-w-0 flex-1 overflow-y-auto px-6 py-5">
         <div className="flex flex-col gap-3.5">
-          {section === 'ai' && <AiSettings keyCheck={keyCheck} />}
+          {section === 'ai' && (
+            <>
+              <AiSettings keys={keys} onOpenKeys={() => setSection('keys')} />
+              <VoiceoverSettings keys={keys.keys} listVoices={fetchVoices} onOpenKeys={() => setSection('keys')} />
+            </>
+          )}
+
+          {section === 'keys' && <ApiKeysSettings state={keys} validate={validateApiKey} />}
 
           {section === 'branding' && <BrandingSettings />}
 

@@ -1,5 +1,5 @@
-import type { AIApiKeys } from '@/core/capture/ai/keys';
-import type { AIProviderKey } from '@/core/capture/ai/models';
+import type { AIApiKeys, AiChoice, ApiKeys } from '@/core/capture/ai/keys';
+import type { AIProtocol } from '@/core/capture/ai/models';
 import type { VoiceProvider } from '@/core/capture/voice/transcribe';
 import type { TranscriptLine } from '@/core/capture/voice/types';
 import type { BrandLogo } from '@/core/export/branding';
@@ -72,11 +72,14 @@ export interface Screenshot {
 export type StoredScreenshot = Omit<Screenshot, 'blob'> & { blob?: Blob };
 
 export interface Settings {
+  apiKeys: ApiKeys;
   aiApiKey: string;
   aiApiKeys: AIApiKeys;
-  aiProvider: AIProviderKey;
+  aiProvider: AiChoice;
   aiModel: string;
   aiBaseUrl: string;
+  aiServerUrl: string;
+  aiServerProtocol: AIProtocol;
   aiLanguage: string;
   voiceEnabled: boolean;
   voiceProvider: VoiceProvider;

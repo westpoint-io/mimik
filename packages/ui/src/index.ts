@@ -1,14 +1,19 @@
 export { AiSettings } from './ai/components/AiSettings';
+export { ApiKeysSettings } from './ai/components/ApiKeysSettings';
 export { KeyStatusNote } from './ai/components/KeyStatusNote';
 export { KeyWarningNote } from './ai/components/KeyWarningNote';
+export { MissingKeyNote } from './ai/components/MissingKeyNote';
 export { ModelList } from './ai/components/ModelList';
+export { ProviderSelect } from './ai/components/ProviderSelect';
 export { SecretInput } from './ai/components/SecretInput';
 export { useAiSettings } from './ai/hooks/use-ai-settings';
+export { type ApiKeysState, useApiKeys } from './ai/hooks/use-api-keys';
 export { useKeyCheck } from './ai/hooks/use-key-check';
 export { ColorPicker } from './annotation/components/ColorPicker';
 export { BrandingSettings } from './branding/components/BrandingSettings';
 export { CameraMascot } from './common/components/CameraMascot';
 export { FaviconImg } from './common/components/FaviconImg';
+export { Segmented } from './common/components/Segmented';
 export { SettingsCard } from './common/components/SettingsCard';
 export { Switch } from './common/components/Switch';
 export { getDomainInitial } from './common/lib/domain-initial';
@@ -32,6 +37,7 @@ export { Popover, PopoverContent, PopoverTrigger } from './components/ui/popover
 export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './components/ui/tooltip';
 export { ExportPreviewModal } from './export/components/ExportPreviewModal';
+export { VoiceoverSettings } from './export/components/VoiceoverSettings';
 export { BlockCard } from './guide/components/BlockCard';
 export { EmptyGuideState } from './guide/components/EmptyGuideState';
 export { GuideContent } from './guide/components/GuideContent';

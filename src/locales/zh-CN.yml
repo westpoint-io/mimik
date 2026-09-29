@@ -96,7 +96,6 @@ settings:
   model: 模型
   modelCustom: 自定义模型
   baseUrl: 基础 URL
-  useOwnServer: 使用自己的服务器
   ownServerHintOpenai: "支持 Ollama、LM Studio、vLLM 或任何兼容 OpenAI 的服务器。"
   ownServerHintAnthropic: "支持 LiteLLM 代理或任何兼容 Anthropic 的服务器。"
   apiKey: API 密钥
@@ -104,18 +103,26 @@ settings:
   hideKey: 隐藏密钥
   clearKey: 清除密钥
   aiLanguage: 描述语言
+  apiKeys: "API 密钥"
+  aiSection: "AI"
+  ownServer: "自己的服务器"
+  optional: "可选"
+  serverSpeaks: "兼容"
+  protocolOpenai: "OpenAI API"
+  protocolAnthropic: "Anthropic API"
+  noServer: "尚未填写服务器地址。"
+  noKeyFor: "尚未添加 $1 密钥。"
+  addOneInKeys: "请在 API 密钥中添加。"
+  addKey: "添加密钥"
+  noKey: "无密钥"
   voiceover: "视频配音"
   textToSpeech: "文字 → 语音"
   voiceoverHint: "Mimik 会在导出的视频中朗读每个步骤的文本。"
-  voiceoverUsingAiKey: "使用“AI 描述”中的 OpenAI 密钥。"
-  voiceoverNoKey: "添加 API 密钥即可为视频配音。"
   voice: "语音"
   speechToText: "语音 → 文字"
   voiceNarrationHint: "边录边讲，Mimik 会根据你说的内容写出每个步骤。"
   voiceNarration: 语音讲解
-  voiceUsingAiKey: "使用“AI 描述”中的 OpenAI 密钥。"
   aiNoKey: "没有 API 密钥时，步骤使用基于规则的简单描述。"
-  voiceNoKey: "添加 API 密钥即可为录制生成语音讲解。"
   microphone: 麦克风
   microphoneDefault: 系统默认
   microphoneNeedsAccess: 允许麦克风访问后即可查看设备名称。

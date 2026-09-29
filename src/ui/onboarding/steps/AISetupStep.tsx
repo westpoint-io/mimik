@@ -10,10 +10,11 @@ import {
   SelectTrigger,
   SelectValue,
   useAiSettings,
+  useApiKeys,
 } from '@mimik/ui';
-import { Globe } from 'lucide-react';
 import { i18n } from '#imports';
-import { AI_PROVIDERS, type AIProviderKey, CUSTOM_MODEL_VALUE } from '@/core/capture/ai/models';
+import { KEY_PLACEHOLDERS, SERVER } from '@/core/capture/ai/keys';
+import { AI_PROVIDERS, type AIProviderKey, CUSTOM_MODEL_VALUE, DEFAULT_AI_PROVIDER } from '@/core/capture/ai/models';
 import { AI_LANGUAGES, type AILanguageCode } from '@/core/capture/ai/prompts';
 import { useKeyCheck } from '@/ui/shared/hooks/use-key-check';
 import { ProgressDots } from '../ProgressDots';
@@ -21,23 +22,10 @@ import type { StepProps } from '../types';
 
 export function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
   const aiKeyCheck = useKeyCheck();
+  const keys = useApiKeys({ reloadOnFocus: true });
   const ai = useAiSettings({ onDirty: aiKeyCheck.reset, reloadOnFocus: true });
-  const {
-    provider,
-    model,
-    apiKey,
-    baseUrl,
-    language: aiLanguage,
-    ownServer,
-    usingCustomModel,
-    providerConfig,
-    setProvider: handleProviderChange,
-    setModel: handleModelChange,
-    setApiKey: handleApiKeyChange,
-    setBaseUrl: handleBaseUrlChange,
-    setLanguage: handleLanguageChange,
-    toggleOwnServer: handleOwnServerToggle,
-  } = ai;
+  const provider = ai.provider === SERVER ? DEFAULT_AI_PROVIDER : ai.provider;
+  const apiKey = keys.keys[provider] ?? '';
 
   return (
     <div className="flex h-screen">
@@ -54,7 +42,7 @@ export function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps)
               <label className="block text-xs font-semibold text-foreground mb-1.5">
                 {i18n.t('settings.provider')}
               </label>
-              <Select value={provider} onValueChange={(v) => handleProviderChange(v as AIProviderKey)}>
+              <Select value={provider} onValueChange={(v) => ai.setProvider(v as AIProviderKey)}>
                 <SelectTrigger className="w-full h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10">
                   <SelectValue />
                 </SelectTrigger>
@@ -70,24 +58,24 @@ export function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps)
 
             <div>
               <label className="block text-xs font-semibold text-foreground mb-1.5">{i18n.t('settings.model')}</label>
-              <Select value={usingCustomModel ? CUSTOM_MODEL_VALUE : model} onValueChange={handleModelChange}>
+              <Select value={ai.usingCustomModel ? CUSTOM_MODEL_VALUE : ai.model} onValueChange={ai.setModel}>
                 <SelectTrigger className="w-full h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {providerConfig.models.map((m) => (
+                  {ai.models.map((m) => (
                     <SelectItem key={m.id} value={m.id}>
                       {m.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {usingCustomModel && (
+              {ai.usingCustomModel && (
                 <Input
                   type="text"
-                  value={model}
-                  onChange={(e) => handleModelChange(e.target.value)}
-                  placeholder={providerConfig.defaultModel}
+                  value={ai.model}
+                  onChange={(e) => ai.setModel(e.target.value)}
+                  placeholder={ai.defaultModel}
                   className="w-full mt-1.5 h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10"
                 />
               )}
@@ -97,8 +85,11 @@ export function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps)
               <label className="block text-xs font-semibold text-foreground mb-1.5">{i18n.t('settings.apiKey')}</label>
               <SecretInput
                 value={apiKey}
-                onChange={handleApiKeyChange}
-                placeholder="sk-..."
+                onChange={(next) => {
+                  aiKeyCheck.reset();
+                  keys.setKey(provider, next);
+                }}
+                placeholder={KEY_PLACEHOLDERS[provider]}
                 className="w-full h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10"
                 buttonClassName="right-3"
               />
@@ -107,7 +98,7 @@ export function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps)
                   type="button"
                   disabled={!apiKey || aiKeyCheck.status === 'checking'}
                   onClick={() => {
-                    if (aiKeyCheck.status !== 'checking') void aiKeyCheck.check(provider, apiKey, baseUrl, model);
+                    if (aiKeyCheck.status !== 'checking') void aiKeyCheck.check(provider, apiKey, undefined, ai.model);
                   }}
                   className="px-4 py-2 bg-card text-foreground border border-border rounded-lg font-semibold text-xs hover:border-accent hover:text-accent transition-colors disabled:opacity-50 disabled:pointer-events-none"
                 >
@@ -122,54 +113,10 @@ export function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps)
             </div>
 
             <div>
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-xs font-semibold text-foreground flex items-center gap-1">
-                  <Globe size={12} className="-mt-px" />
-                  {i18n.t('settings.useOwnServer')}
-                </span>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={ownServer}
-                  aria-label={i18n.t('settings.useOwnServer')}
-                  onClick={handleOwnServerToggle}
-                  className={`w-10 h-6 rounded-full transition-colors relative shrink-0 ${
-                    ownServer ? 'bg-accent' : 'bg-border'
-                  }`}
-                >
-                  <span
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
-                      ownServer ? 'translate-x-4' : 'translate-x-0'
-                    }`}
-                  />
-                </button>
-              </div>
-              {ownServer && (
-                <div className="mt-2 space-y-2">
-                  <Input
-                    type="text"
-                    value={baseUrl}
-                    onChange={(e) => handleBaseUrlChange(e.target.value)}
-                    placeholder={providerConfig.defaultBaseUrl}
-                    aria-label={i18n.t('settings.baseUrl')}
-                    className="w-full h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10"
-                  />
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    {i18n.t(
-                      providerConfig.protocol === 'anthropic'
-                        ? 'settings.ownServerHintAnthropic'
-                        : 'settings.ownServerHintOpenai',
-                    )}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            <div>
               <label className="block text-xs font-semibold text-foreground mb-1.5">
                 {i18n.t('settings.aiLanguage')}
               </label>
-              <Select value={aiLanguage} onValueChange={(v) => handleLanguageChange(v as AILanguageCode)}>
+              <Select value={ai.language} onValueChange={(v) => ai.setLanguage(v as AILanguageCode)}>
                 <SelectTrigger className="w-full h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10">
                   <SelectValue />
                 </SelectTrigger>

@@ -79,7 +79,7 @@ describe('every provider takes a custom server', () => {
     for (const locale of LOCALES) {
       const keys = localeKeys(locale);
       expect(keys.has('settings.baseUrl')).toBe(true);
-      expect(keys.has('settings.useOwnServer')).toBe(true);
+      expect(keys.has('settings.ownServer')).toBe(true);
       expect(keys.has('settings.ownServerHintOpenai')).toBe(true);
       expect(keys.has('settings.ownServerHintAnthropic')).toBe(true);
     }

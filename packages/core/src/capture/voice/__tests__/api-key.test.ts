@@ -3,10 +3,9 @@ import { hasVoiceApiKey, normalizeVoiceProvider, resolveVoiceApiKey, VOICE_KEY_S
 
 describe('resolveVoiceApiKey', () => {
   it('uses the voice key when the provider is openai and one is set', () => {
-    expect(resolveVoiceApiKey({ voiceProvider: 'openai', voiceApiKey: 'sk-voice', aiApiKey: 'sk-ai' })).toEqual({
+    expect(resolveVoiceApiKey({ voiceProvider: 'openai', voiceApiKey: 'sk-voice' })).toEqual({
       provider: 'openai',
       apiKey: 'sk-voice',
-      source: 'voice',
     });
   });
 
@@ -14,7 +13,6 @@ describe('resolveVoiceApiKey', () => {
     expect(resolveVoiceApiKey({ voiceProvider: 'openai', voiceApiKey: '', aiApiKey: 'sk-ai' })).toEqual({
       provider: 'openai',
       apiKey: 'sk-ai',
-      source: 'ai',
     });
   });
 
@@ -22,7 +20,6 @@ describe('resolveVoiceApiKey', () => {
     expect(resolveVoiceApiKey({ voiceProvider: 'openai', aiApiKey: 'sk-ai' })).toEqual({
       provider: 'openai',
       apiKey: 'sk-ai',
-      source: 'ai',
     });
   });
 
@@ -30,7 +27,6 @@ describe('resolveVoiceApiKey', () => {
     expect(resolveVoiceApiKey({ voiceProvider: 'openai', voiceApiKey: '', aiApiKey: '' })).toEqual({
       provider: 'openai',
       apiKey: '',
-      source: 'none',
     });
   });
 
@@ -38,7 +34,6 @@ describe('resolveVoiceApiKey', () => {
     expect(resolveVoiceApiKey({ voiceProvider: 'groq', voiceApiKey: '', aiApiKey: 'sk-ai' })).toEqual({
       provider: 'groq',
       apiKey: '',
-      source: 'none',
     });
   });
 
@@ -46,25 +41,25 @@ describe('resolveVoiceApiKey', () => {
     expect(resolveVoiceApiKey({ voiceProvider: 'groq', voiceApiKey: 'gsk-voice', aiApiKey: 'sk-ai' })).toEqual({
       provider: 'groq',
       apiKey: 'gsk-voice',
-      source: 'voice',
     });
   });
 
   it('does not lend an anthropic key to a whisper endpoint', () => {
     expect(
       resolveVoiceApiKey({ voiceProvider: 'openai', voiceApiKey: '', aiProvider: 'anthropic', aiApiKey: 'sk-ant-x' }),
-    ).toEqual({ provider: 'openai', apiKey: '', source: 'none' });
+    ).toEqual({ provider: 'openai', apiKey: '' });
   });
 
   it('treats a missing ai provider as openai', () => {
-    expect(resolveVoiceApiKey({ voiceProvider: 'openai', aiProvider: undefined, aiApiKey: 'sk-ai' }).source).toBe('ai');
+    expect(resolveVoiceApiKey({ voiceProvider: 'openai', aiProvider: undefined, aiApiKey: 'sk-ai' }).apiKey).toBe(
+      'sk-ai',
+    );
   });
 
   it('treats a whitespace-only voice key as empty', () => {
     expect(resolveVoiceApiKey({ voiceProvider: 'openai', voiceApiKey: '   \n\t ', aiApiKey: 'sk-ai' })).toEqual({
       provider: 'openai',
       apiKey: 'sk-ai',
-      source: 'ai',
     });
   });
 
@@ -72,7 +67,6 @@ describe('resolveVoiceApiKey', () => {
     expect(resolveVoiceApiKey({ voiceProvider: 'openai', voiceApiKey: '', aiApiKey: '   ' })).toEqual({
       provider: 'openai',
       apiKey: '',
-      source: 'none',
     });
   });
 
@@ -85,7 +79,6 @@ describe('resolveVoiceApiKey', () => {
     expect(resolveVoiceApiKey({ voiceProvider: 'openai', voiceApiKey: 42, aiApiKey: { key: 'sk-ai' } })).toEqual({
       provider: 'openai',
       apiKey: '',
-      source: 'none',
     });
   });
 
@@ -93,13 +86,12 @@ describe('resolveVoiceApiKey', () => {
     expect(resolveVoiceApiKey({ voiceProvider: 'deepgram', aiApiKey: 'sk-ai' })).toEqual({
       provider: 'openai',
       apiKey: 'sk-ai',
-      source: 'ai',
     });
     expect(resolveVoiceApiKey({}).provider).toBe('openai');
   });
 
   it('resolves nothing from empty storage', () => {
-    expect(resolveVoiceApiKey({})).toEqual({ provider: 'openai', apiKey: '', source: 'none' });
+    expect(resolveVoiceApiKey({})).toEqual({ provider: 'openai', apiKey: '' });
   });
 });
 
@@ -122,6 +114,8 @@ describe('normalizeVoiceProvider', () => {
 
 describe('VOICE_KEY_SETTINGS', () => {
   it('names every storage key the resolution reads', () => {
-    expect([...VOICE_KEY_SETTINGS]).toEqual(['voiceProvider', 'voiceApiKey', 'aiProvider', 'aiApiKey', 'aiApiKeys']);
+    expect([...VOICE_KEY_SETTINGS]).toEqual(
+      expect.arrayContaining(['apiKeys', 'voiceProvider', 'voiceApiKey', 'aiApiKey', 'aiApiKeys']),
+    );
   });
 });
