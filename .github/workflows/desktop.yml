@@ -28,6 +28,8 @@ jobs:
 
       - run: sudo apt-get update && sudo apt-get install -y xvfb
 
+      - run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
       - run: pnpm install --frozen-lockfile
 
       - name: Lint
