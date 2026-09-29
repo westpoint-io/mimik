@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { app, BrowserWindow, nativeImage, protocol, screen } from 'electron';
 import { ask } from '../src/main/ask';
@@ -111,6 +112,15 @@ app.whenReady().then(async () => {
     name: 'a failed screenshot still writes the step, without a picture',
     ok: blindSteps.length === 1 && blindRequest !== null && (blindRequest as CaptureRequest).image === undefined,
     detail: `${blindSteps.length} step written, image ${(blindRequest as CaptureRequest | null)?.image ? 'sent' : 'absent'}`,
+  });
+
+  const notices = readFileSync(join(__dirname, '../THIRD_PARTY_NOTICES.txt'), 'utf8');
+  const listed = ['react ', 'mediabunny ', '@fontsource/poppins ', 'uiohook-napi ', 'libuiohook ', 'LobeHub Icons '];
+  const unlisted = listed.filter((name) => !notices.includes(`\n${name}`));
+  results.push({
+    name: 'the notices list what the app ships',
+    ok: unlisted.length === 0 && notices.includes('GNU LESSER GENERAL PUBLIC LICENSE'),
+    detail: unlisted.length ? `missing ${unlisted.join(', ')}` : `${notices.split('-'.repeat(79)).length - 1} entries`,
   });
 
   const userSettings = loadSettings();

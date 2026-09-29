@@ -10,7 +10,13 @@ directories:
   buildResources: resources
 files:
   - out/**
+  - "!out/THIRD_PARTY_NOTICES.txt"
   - package.json
+extraFiles:
+  - from: out/THIRD_PARTY_NOTICES.txt
+    to: THIRD_PARTY_NOTICES.txt
+  - from: ../../LICENSE
+    to: LICENSE.txt
 extraResources:
   - from: resources
     to: .
