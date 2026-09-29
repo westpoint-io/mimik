@@ -17,7 +17,10 @@ configureUi({
     active: async () => null,
     get: async () => null,
     query: async () => [],
-    create: async () => null,
+    create: async (url) => {
+      window.open(url, '_blank');
+      return null;
+    },
     update: async () => null,
     focusWindow: async () => undefined,
     recordable: async () => [],
