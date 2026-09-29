@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { type Ctx, drawAnnotation, drawRoundedRect, TARGET_RADIUS, TARGET_STROKE } from '@/core/screenshot/draw';
+import {
+  BLUR_MARGIN,
+  type Ctx,
+  drawAnnotation,
+  drawRoundedRect,
+  TARGET_RADIUS,
+  TARGET_STROKE,
+} from '@/core/screenshot/draw';
 import { type Annotation, DEFAULT_LINE_HEIGHT, FONT_FAMILIES, LINE_WIDTHS } from '@/core/screenshot/types';
 
 interface Call {
@@ -7,7 +14,16 @@ interface Call {
   a: unknown[];
 }
 
-const TRACKED = ['lineWidth', 'strokeStyle', 'fillStyle', 'lineCap', 'lineJoin', 'font', 'filter'];
+const TRACKED = [
+  'lineWidth',
+  'strokeStyle',
+  'fillStyle',
+  'lineCap',
+  'lineJoin',
+  'font',
+  'filter',
+  'imageSmoothingEnabled',
+];
 
 const METHODS = [
   'beginPath',
@@ -17,6 +33,7 @@ const METHODS = [
   'arcTo',
   'arc',
   'rect',
+  'clip',
   'ellipse',
   'stroke',
   'fill',
@@ -81,23 +98,78 @@ describe('drawAnnotation redact', () => {
     expect(r.count('drawImage')).toBe(0);
   });
 
-  it('blurs by resampling the canvas over itself', () => {
+  it('clips everything it draws to the box', () => {
+    const r = recorder();
+    drawAnnotation(r.ctx, { id: 'r2', type: 'redact', style: 'blur', x: 40, y: 50, w: 120, h: 30 }, 0, 0);
+
+    expect(r.first('rect')).toEqual([40, 50, 120, 30]);
+    expect(r.names().indexOf('clip')).toBeLessThan(r.names().indexOf('drawImage'));
+    expect(r.count('fillRect')).toBe(0);
+  });
+
+  it('lays a coarse copy under the blur, so nothing sharp shows where the blur thins out', () => {
+    const r = recorder();
+    drawAnnotation(r.ctx, { id: 'r2', type: 'redact', style: 'blur', x: 40, y: 50, w: 120, h: 30 }, 0, 0);
+
+    const [down, up] = r.all('drawImage') as number[][];
+    expect(down.slice(1)).toEqual([40, 50, 120, 30, 40, 50, 15, 4]);
+    expect(up.slice(1)).toEqual([40, 50, 15, 4, 40, 50, 120, 30]);
+    const draws = r.names().flatMap((name, index) => (name === 'drawImage' ? [index] : []));
+    expect(r.names().indexOf('set:filter')).toBeGreaterThan(draws[1]);
+  });
+
+  it('blurs the pixels around the box too, so its edges do not fade to the original', () => {
     const r = recorder();
     drawAnnotation(r.ctx, { id: 'r2', type: 'redact', style: 'blur', x: 40, y: 50, w: 120, h: 30 }, 0, 0);
 
     expect(r.first('set:filter')).toEqual(['blur(12px)']);
-    expect(r.first('drawImage')).toEqual([{ width: 800, height: 600 }, 40, 50, 120, 30, 40, 50, 120, 30]);
-    expect(r.count('fillRect')).toBe(0);
+    const m = BLUR_MARGIN;
+    const w = 120 + 2 * m;
+    const h = 30 + 2 * m;
+    expect(r.all('drawImage').at(-1)?.slice(1)).toEqual([40 - m, 50 - m, w, h, 40 - m, 50 - m, w, h]);
+  });
+
+  it('covers the visible part of a box that starts past the edge of a crop', () => {
+    const r = recorder();
+    drawAnnotation(r.ctx, { id: 'r7', type: 'redact', style: 'blur', x: 90, y: 130, w: 120, h: 20 }, 100, 100);
+
+    const [down, up] = r.all('drawImage') as number[][];
+    expect(down.slice(1, 5)).toEqual([0, 30, 110, 20]);
+    expect(down.slice(5, 7)).toEqual([100, 130]);
+    expect(up.slice(5)).toEqual([100, 130, 110, 20]);
+  });
+
+  it('draws nothing for a box entirely outside the canvas', () => {
+    const r = recorder();
+    drawAnnotation(r.ctx, { id: 'r8', type: 'redact', style: 'blur', x: -500, y: 10, w: 50, h: 20 }, 0, 0);
+
+    expect(r.count('drawImage')).toBe(0);
+  });
+
+  it('keeps the padded blur source inside the canvas', () => {
+    const r = recorder();
+    drawAnnotation(r.ctx, { id: 'r6', type: 'redact', style: 'blur', x: 5, y: 580, w: 50, h: 20 }, 0, 0);
+
+    const [, sx, sy, sw, sh] = r.all('drawImage').at(-1) as number[];
+    expect([sx, sy]).toEqual([0, 580 - BLUR_MARGIN]);
+    expect(sx + sw).toBe(55 + BLUR_MARGIN);
+    expect(sy + sh).toBe(600);
   });
 
   it('offsets the blur source by the viewport origin so a cropped export blurs the same pixels', () => {
     const r = recorder();
     drawAnnotation(r.ctx, { id: 'r3', type: 'redact', style: 'blur', x: 300, y: 220, w: 80, h: 40 }, 100, 60);
 
-    const [, sx, sy, sw, sh, dx, dy, dw, dh] = r.first('drawImage') as number[];
-    expect([sx, sy]).toEqual([200, 160]);
-    expect([dx, dy]).toEqual([300, 220]);
-    expect([sw, sh, dw, dh]).toEqual([80, 40, 80, 40]);
+    expect(r.first('rect')).toEqual([300, 220, 80, 40]);
+    expect(r.names().indexOf('set:imageSmoothingEnabled')).toBeLessThan(r.names().indexOf('drawImage'));
+    const [down, up] = r.all('drawImage') as number[][];
+    expect(down.slice(1, 5)).toEqual([200, 160, 80, 40]);
+    expect(down.slice(5, 7)).toEqual([300, 220]);
+    expect(up.slice(1, 5)).toEqual([200, 160, 10, 5]);
+    expect(up.slice(5)).toEqual([300, 220, 80, 40]);
+    const [, sx, sy, , , dx, dy] = r.all('drawImage').at(-1) as number[];
+    expect([sx, sy]).toEqual([200 - BLUR_MARGIN, 160 - BLUR_MARGIN]);
+    expect([dx, dy]).toEqual([300 - BLUR_MARGIN, 220 - BLUR_MARGIN]);
   });
 
   it('leaves the origin out of a solid redaction, which is drawn in destination space', () => {

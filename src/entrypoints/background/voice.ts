@@ -95,7 +95,7 @@ let orphanAudio: VoiceRecording | null = null;
 let transcribingGuideId: string | null = null;
 let settleNarration: (() => void) | null = null;
 let narrationSettled: Promise<void> | null = null;
-let outstandingTranscriptions = 0;
+const outstandingTranscriptions = new Map<string, number>();
 
 const NARRATION_SETTLE_TIMEOUT_MS = 30000;
 
@@ -113,7 +113,7 @@ export function whenNarrationSettled(): Promise<void> {
 
 function claimTranscription(guideId: string): void {
   transcribingGuideId = guideId;
-  outstandingTranscriptions += 1;
+  outstandingTranscriptions.set(guideId, (outstandingTranscriptions.get(guideId) ?? 0) + 1);
   if (narrationSettled) return;
   narrationSettled = new Promise<void>((resolve) => {
     settleNarration = resolve;
@@ -121,10 +121,15 @@ function claimTranscription(guideId: string): void {
 }
 
 function releaseTranscription(guideId: string): boolean {
-  if (transcribingGuideId !== guideId || outstandingTranscriptions === 0) return false;
-  outstandingTranscriptions -= 1;
-  if (outstandingTranscriptions > 0) return true;
-  transcribingGuideId = null;
+  const claims = outstandingTranscriptions.get(guideId) ?? 0;
+  if (claims === 0) return false;
+  if (claims > 1) {
+    outstandingTranscriptions.set(guideId, claims - 1);
+    return true;
+  }
+  outstandingTranscriptions.delete(guideId);
+  if (transcribingGuideId === guideId) transcribingGuideId = [...outstandingTranscriptions.keys()].at(-1) ?? null;
+  if (outstandingTranscriptions.size > 0) return true;
   settleNarration?.();
   settleNarration = null;
   narrationSettled = null;
@@ -311,7 +316,7 @@ export async function applyNarration(
     const narrated = result.descriptions.map((entry) => entry.stepId);
     const surviving = await findExistingStepIds(narrated);
     const updates = narrationUpdates(result, surviving);
-    await applyNarrationToSteps(updates);
+    await applyNarrationToSteps(updates, result.transcript.epochMs);
     const narratedIds = updates.map((update) => update.stepId);
     discardDeferred(guideId, narratedIds);
     recordNarrated(guideId, narratedIds);

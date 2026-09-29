@@ -62,6 +62,9 @@ export default defineConfig({
         '@mimik/ui': resolve(__dirname, '../../packages/ui/src'),
         '@/core': core,
         '@mimik/locales': locales,
+        canvg: resolve(core, 'export/empty.ts'),
+        html2canvas: resolve(core, 'export/empty.ts'),
+        dompurify: resolve(core, 'export/empty.ts'),
       },
     },
     build: {

@@ -69,10 +69,12 @@ export async function writeVoiceTrack(
   add: (buffer: AudioBuffer) => Promise<void>,
   sampleRate = VOICE_SAMPLE_RATE,
   onProgress?: (done: number, total: number) => void,
+  signal?: AbortSignal,
 ): Promise<void> {
   const pieces = voiceTrackPieces(clips, totalSec, sampleRate);
   let written = 0;
   for (const piece of pieces) {
+    if (signal?.aborted) throw new DOMException('Voiceover was aborted', 'AbortError');
     await add(piece.kind === 'clip' ? piece.buffer : silence(piece.samples, sampleRate));
     onProgress?.(++written, pieces.length);
   }

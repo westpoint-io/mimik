@@ -192,7 +192,7 @@ réordonne ou supprime en lot, et reviens en arrière via l'historique de versio
 
 Activez-la dans le panneau d'export et chaque étape de la vidéo est lue à voix haute, avec votre
 propre clé OpenAI ou ElevenLabs. Si vous avez déjà renseigné une clé OpenAI pour les descriptions IA,
-Mimik la réutilise : rien d'autre à créer. Les étapes narrées restent à l'écran jusqu'à la fin de la
+Mimik la réutilise : rien d'autre à créer, sauf si les descriptions IA passent par votre propre serveur, dont la clé reste là. Les étapes narrées restent à l'écran jusqu'à la fin de la
 voix, donc rien n'est coupé, et les clips sont mis en cache localement pour que réexporter le même
 guide ne coûte rien.
 

@@ -10,15 +10,21 @@ const MAX_UNPACKED_BYTES = 200 * 1024 * 1024;
 
 const MAX_FILE_BYTES = 100 * 1024 * 1024;
 
+const MAX_ENTRIES = 5_000;
+
 export async function readBundle(file: Blob): Promise<ParsedBundle> {
   if (file.size > MAX_FILE_BYTES) throw new BundleError('unreadable', 'bundle is implausibly large');
 
   let entries: Record<string, Uint8Array>;
   try {
     let unpacked = 0;
+    const seen = new Set<string>();
     entries = unzipSync(new Uint8Array(await file.arrayBuffer()), {
       filter: (entry) => {
-        unpacked += entry.originalSize;
+        if (seen.has(entry.name)) throw new Error('bundle repeats an entry');
+        seen.add(entry.name);
+        if (seen.size > MAX_ENTRIES) throw new Error('bundle has implausibly many entries');
+        unpacked += Math.max(entry.originalSize, entry.size);
         if (unpacked > MAX_UNPACKED_BYTES) throw new Error('bundle is implausibly large');
         return true;
       },

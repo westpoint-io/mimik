@@ -272,3 +272,12 @@ describe('readBundle', () => {
     expect((await caught(bundleFile({ [MANIFEST_PATH]: strToU8('{ nope') }))).kind).toBe('not-a-bundle');
   });
 });
+
+describe('readBundle against a crafted archive', () => {
+  it('refuses an archive with implausibly many entries', async () => {
+    const files: Record<string, Uint8Array> = { [MANIFEST_PATH]: strToU8(JSON.stringify(manifest())) };
+    for (let i = 0; i < 5_001; i++) files[`screenshots/${i}.webp`] = new Uint8Array(1);
+
+    expect((await caught(bundleFile(files))).kind).toBe('unreadable');
+  });
+});

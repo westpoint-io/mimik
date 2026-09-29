@@ -91,11 +91,13 @@ export function useGuideExport({ active, guide, steps, screenshots, options, voi
           signal: controller.signal,
           onProgress: (encoded, frames) => setProgress(frames > 0 ? encoded / frames : 0),
         });
+        if (controller.signal.aborted) return;
         downloadBlob(built.blob, safeFilename(guide.title, built.extension));
       } else {
         const controller = new AbortController();
         abort.current = controller;
         setProgress(0);
+        setVoiceoverError(null);
         const voiceShare = voiceover ? VOICE_PROGRESS_SHARE : 0;
         const muxShare = voiceover ? MUX_PROGRESS_SHARE : 0;
         let allClipsLanded = false;
@@ -118,6 +120,7 @@ export function useGuideExport({ active, guide, steps, screenshots, options, voi
             onMuxProgress: (done, total) => setProgress(exportProgress.mux(done, total, muxShare)),
           },
         );
+        if (controller.signal.aborted) return;
         setVoiceoverError(built.voiceoverError ?? null);
         downloadBlob(built.blob, safeFilename(guide.title, built.extension));
       }

@@ -499,6 +499,32 @@ describe('exportGuideAsVideo voiceover', () => {
     expect(rec.added).toHaveLength(157 * 2 - 10);
   });
 
+  it('stays silent for a caller that passes no options, whatever was saved', async () => {
+    voice.settings = { ...voice.settings, exportOptions: { ...DEFAULT_EXPORT_OPTIONS, voiceover: true, cover: false } };
+    voice.clips = new Map([[0, clip(9)]]);
+    const steps = [makeStep(0), makeStep(1)];
+    await exportGuideAsVideo(guide, steps, shotsFor(steps));
+
+    expect(renderVoiceover).not.toHaveBeenCalled();
+    expect(rec.audioTracks).toBe(0);
+  });
+
+  it('stops a narrated export cancelled while the voice track is being written', async () => {
+    const controller = new AbortController();
+    voice.clips = new Map([[0, clip(2)]]);
+    const steps = [makeStep(0), makeStep(1)];
+
+    await expect(
+      exportGuideAsVideo(guide, steps, shotsFor(steps), opts({ cover: false, voiceover: true }), {
+        signal: controller.signal,
+        onMuxProgress: () => controller.abort(),
+      }),
+    ).rejects.toMatchObject({ name: 'AbortError' });
+
+    expect(rec.cancelled).toBe(1);
+    expect(rec.finalized).toBe(0);
+  });
+
   it('holds a narrated step until its clip ends', async () => {
     voice.clips = new Map([[0, clip(9)]]);
     const steps = [makeStep(0), makeStep(1)];

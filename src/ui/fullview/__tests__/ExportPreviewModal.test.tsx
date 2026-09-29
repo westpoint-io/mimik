@@ -8,6 +8,12 @@ const exportGuideAsVideo = vi.hoisted(() => vi.fn());
 const exportGuideAsHTML = vi.hoisted(() => vi.fn());
 const canExportVideo = vi.hoisted(() => vi.fn());
 const stored = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
+const downloadBlob = vi.hoisted(() => vi.fn());
+
+vi.mock('@/core/export/download', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/core/export/download')>()),
+  downloadBlob,
+}));
 
 vi.mock('@/core/env', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/core/env')>()),
@@ -185,6 +191,20 @@ describe('ExportPreviewModal voice-over controls', () => {
     expect(silent()?.getAttribute('aria-pressed')).toBe('false');
   });
 
+  it('is off again as soon as the panel is reopened, before any saved options load', async () => {
+    const { steps, screenshots } = makeGuideOf(3);
+    const props = { onOpenChange: () => {}, guide, steps, screenshots };
+    const { rerender } = render(<ExportPreviewModal open {...props} />);
+    await waitFor(() => expect(narrated()).not.toBeNull());
+    fireEvent.click(narrated() as HTMLElement);
+    await waitFor(() => expect(narrated()?.getAttribute('aria-pressed')).toBe('true'));
+
+    rerender(<ExportPreviewModal open={false} {...props} />);
+    rerender(<ExportPreviewModal open {...props} />);
+
+    expect(narrated()?.getAttribute('aria-pressed')).toBe('false');
+  });
+
   it('cannot be narrated without a key', async () => {
     stored.value = {};
     renderModal(3);
@@ -318,6 +338,37 @@ describe('ExportPreviewModal video progress', () => {
 
     expect(label()).toContain('exportPreview.narrating');
     expect(hooks()).not.toBe(preview);
+  });
+
+  it('keeps showing why the preview is silent after a download narrates fine', async () => {
+    exportGuideAsVideo.mockResolvedValueOnce({
+      blob: new Blob(['video']),
+      extension: 'mp4',
+      chapters: [],
+      voiceoverError: { reason: 'failed', detail: 'rejected' },
+    });
+    await openNarratedVideo();
+    await screen.findByText('exportPreview.voiceoverFailed');
+
+    exportGuideAsVideo.mockResolvedValueOnce({ blob: new Blob(['video']), extension: 'mp4', chapters: [] });
+    fireEvent.click(screen.getByRole('button', { name: 'exportPreview.download[exportMenu.video]' }));
+    await waitFor(() => expect(downloadBlob).toHaveBeenCalled());
+
+    expect(screen.getByText('exportPreview.voiceoverFailed')).not.toBeNull();
+  });
+
+  it('saves nothing when the download is cancelled', async () => {
+    renderModal(3);
+    await screen.findByRole('button', { name: 'exportPreview.download[exportMenu.video]' });
+    let finish!: (value: unknown) => void;
+    exportGuideAsVideo.mockImplementationOnce(() => new Promise((resolve) => (finish = resolve)));
+
+    fireEvent.click(screen.getByRole('button', { name: 'exportPreview.download[exportMenu.video]' }));
+    const cancel = await screen.findByRole('button', { name: /exportMenu\.cancelProgress/ });
+    fireEvent.click(cancel);
+    await act(async () => finish({ blob: new Blob(['video']), extension: 'mp4', chapters: [] }));
+
+    expect(downloadBlob).not.toHaveBeenCalled();
   });
 
   it('still reaches the end on a silent export, which writes no audio track', async () => {

@@ -24,7 +24,15 @@ const { broadcasts } = vi.hoisted(() => {
 });
 
 import { db } from '../db';
-import { createSnapshot, duplicateGuide, getGuide, getSnapshots, replaceScreenshot } from '../service';
+import {
+  createSnapshot,
+  deleteTranscripts,
+  duplicateGuide,
+  getGuide,
+  getSnapshots,
+  getTranscripts,
+  replaceScreenshot,
+} from '../service';
 import type { Guide, Screenshot, Step } from '../types';
 
 function makeStep(overrides: Partial<Step> & { id: string; guideId: string }): Step {
@@ -142,23 +150,6 @@ describe('duplicateGuide', () => {
     expect(await getSnapshots('g1')).toHaveLength(1);
   });
 
-  it('does not carry the transcript over', async () => {
-    await seedGuide('g1', { stepIds: ['s1'] });
-    await db.steps.add(makeStep({ id: 's1', guideId: 'g1', narratedDescription: 'what I said' }));
-    await db.transcripts.add({
-      id: 't1',
-      guideId: 'g1',
-      epochMs: Date.now(),
-      lines: [{ text: 'what I said', startSeconds: 0, endSeconds: 1, stepId: 's1' }],
-    } as never);
-
-    const copyId = await duplicateGuide('g1');
-
-    expect(await db.transcripts.where('guideId').equals(copyId!).count()).toBe(0);
-    const copy = await getGuide(copyId!);
-    expect(copy?.steps[0].narratedDescription).toBe('what I said');
-  });
-
   it('copies only the screenshot each step currently points at', async () => {
     await seedGuide('g1', { stepIds: ['s1'] });
     await db.steps.add(makeStep({ id: 's1', guideId: 'g1', screenshotId: 'sc1' }));
@@ -212,5 +203,50 @@ describe('duplicateGuide', () => {
     await seedGuide('g1', { stepIds: [] });
     await duplicateGuide('g1');
     expect(broadcasts).toContainEqual({ type: 'mutated' });
+  });
+
+  it('brings the transcript along, so the copy can still delete its spoken text', async () => {
+    await seedGuide('g1', { stepIds: ['s1'] });
+    await db.steps.add(
+      makeStep({
+        id: 's1',
+        guideId: 'g1',
+        description: 'Open billing',
+        narratedDescription: 'Open billing',
+        descriptionSource: 'narration',
+      }),
+    );
+    await db.transcripts.add({
+      id: 't1',
+      guideId: 'g1',
+      epochMs: 1,
+      createdAt: 1,
+      lines: [
+        { start: 0, end: 1, text: 'Open billing', stepId: 's1', rejectReason: null },
+        { start: 2, end: 3, text: 'stray', stepId: 'gone', rejectReason: null, addedByHand: true },
+      ],
+    });
+
+    const copyId = (await duplicateGuide('g1'))!;
+    const copyStepId = (await getGuide(copyId))!.steps[0].id;
+    const [copied] = await getTranscripts(copyId);
+    expect(copied.id).not.toBe('t1');
+    expect(copied.lines[0].stepId).toBe(copyStepId);
+    expect(copied.lines[1]).toMatchObject({ stepId: null });
+    expect(copied.lines[1].addedByHand).toBeUndefined();
+
+    await deleteTranscripts(copyId);
+    const copyStep = (await getGuide(copyId))!.steps[0];
+    expect(copyStep.narratedDescription).toBeUndefined();
+    expect(copyStep.description).not.toBe('Open billing');
+    expect(await getTranscripts('g1')).toHaveLength(1);
+  });
+
+  it('keeps the copy title on one line when the original predates the rule', async () => {
+    await seedGuide('g1', { title: 'Reset\na password' });
+
+    const copyId = await duplicateGuide('g1');
+
+    expect((await getGuide(copyId!))?.guide.title).not.toContain('\n');
   });
 });

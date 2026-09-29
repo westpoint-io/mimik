@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MIN_BARE_SCRUB, SCRUB_PLACEHOLDER, scrubValues, typedValues } from '../scrub';
+import { MIN_BARE_SCRUB, SCRUB_PLACEHOLDER, scrubUrl, scrubValues, typedValues } from '../scrub';
 
 describe('scrubValues', () => {
   it('removes the value from the description the capture pipeline writes', () => {
@@ -65,5 +65,50 @@ describe('typedValues', () => {
         { inputValue: '  ' },
       ]),
     ).toEqual(['a much longer value', 'short']);
+  });
+});
+
+describe('scrubUrl', () => {
+  it('never touches the scheme or host, even when a typed value matches them', () => {
+    expect(scrubUrl('https://github.com/search?q=github', ['github'])).toBe(
+      `https://github.com/search?q=${encodeURIComponent(SCRUB_PLACEHOLDER)}`,
+    );
+  });
+
+  it('finds a value the browser form-encoded', () => {
+    const url = scrubUrl('https://a.example/s?q=%28555%29+123-4567&page=2', ['(555) 123-4567']);
+    expect(url).toBe(`https://a.example/s?q=${encodeURIComponent(SCRUB_PLACEHOLDER)}&page=2`);
+  });
+
+  it('removes a short value that is a whole query value', () => {
+    expect(scrubUrl('https://a.example/check?pin=123', ['123'])).toBe(
+      `https://a.example/check?pin=${encodeURIComponent(SCRUB_PLACEHOLDER)}`,
+    );
+  });
+
+  it('removes a value from a path segment and the fragment', () => {
+    const url = scrubUrl('https://a.example/users/jane%40corp.com#jane@corp.com', ['jane@corp.com']);
+    expect(url).not.toContain('jane');
+    expect(url.startsWith('https://a.example/users/')).toBe(true);
+  });
+
+  it('returns the URL untouched when nothing in it was typed', () => {
+    const url = 'https://a.example/a%20b?x=1+2';
+    expect(scrubUrl(url, ['hunter2'])).toBe(url);
+  });
+
+  it('does not throw on a value cut through the middle of an emoji', () => {
+    const cut = `${'a'.repeat(79)}😀`.slice(0, 80);
+    expect(() => scrubUrl('https://a.example/?q=x', [cut])).not.toThrow();
+  });
+
+  it('keeps the shape of a URL that ends in a bare ? or #', () => {
+    const placeholder = encodeURIComponent(SCRUB_PLACEHOLDER);
+    expect(scrubUrl('https://a.example/users/hunter22?', ['hunter22'])).toBe(`https://a.example/users/${placeholder}`);
+    expect(scrubUrl('https://a.example/users/hunter22#', ['hunter22'])).toBe(`https://a.example/users/${placeholder}`);
+  });
+
+  it('scrubs an opaque URL as plain text, since it has no host to protect', () => {
+    expect(scrubUrl('data:text/plain,hunter22', ['hunter22'])).toBe(`data:text/plain,${SCRUB_PLACEHOLDER}`);
   });
 });

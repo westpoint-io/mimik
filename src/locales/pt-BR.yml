@@ -525,6 +525,10 @@ videoPlayer:
   mute: "Silenciar"
   unmute: "Ativar som"
   spoken: "Passo narrado"
+  play: "Reproduzir"
+  pause: "Pausar"
+  fullscreen: "Tela cheia"
+  exitFullscreen: "Sair da tela cheia"
 
 exportMenu:
   docx: DOCX
@@ -610,6 +614,7 @@ steps:
   navigate: "Ir para a página"
   typeValueInto: 'Digitar "$1" em $2'
   clearField: "Limpar $1"
+  textField: "campo de texto"
   defaultAction: "$1 $2"
 
 export:

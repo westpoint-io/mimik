@@ -53,12 +53,12 @@ export interface ApiKeySettings {
   voiceApiKey?: unknown;
   voiceProvider?: unknown;
   voiceoverApiKeys?: unknown;
+  aiBaseUrl?: unknown;
+  aiServerUrl?: unknown;
 }
 
 export interface AiSettingsStored extends ApiKeySettings {
   aiModel?: unknown;
-  aiBaseUrl?: unknown;
-  aiServerUrl?: unknown;
   aiServerProtocol?: unknown;
 }
 
@@ -70,15 +70,11 @@ export const API_KEY_SETTINGS = [
   'voiceApiKey',
   'voiceProvider',
   'voiceoverApiKeys',
-] as const;
-
-export const AI_CREDENTIAL_SETTINGS = [
-  ...API_KEY_SETTINGS,
-  'aiModel',
   'aiBaseUrl',
   'aiServerUrl',
-  'aiServerProtocol',
 ] as const;
+
+export const AI_CREDENTIAL_SETTINGS = [...API_KEY_SETTINGS, 'aiModel', 'aiServerProtocol'] as const;
 
 function trimmed(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
@@ -120,10 +116,16 @@ function parseKeys(value: unknown): ApiKeys {
 export function readApiKeys(stored: ApiKeySettings): ApiKeys {
   if (typeof stored.apiKeys === 'object' && stored.apiKeys !== null) return parseKeys(stored.apiKeys);
   const voice = trimmed(stored.voiceApiKey);
+  const ai: ApiKeys = migrateApiKeys(stored);
+  if (legacyServerUrl(stored)) {
+    const provider = providerOrDefault(stored.aiProvider);
+    if (ai[provider]) ai.server = ai[provider];
+    delete ai[provider];
+  }
   return {
     ...parseKeys(stored.voiceoverApiKeys),
     ...(voice ? { [stored.voiceProvider === 'groq' ? 'groq' : 'openai']: voice } : {}),
-    ...migrateApiKeys(stored),
+    ...ai,
   };
 }
 
@@ -134,7 +136,7 @@ export function withKey(keys: ApiKeys, name: KeyName, value: string): ApiKeys {
   return next;
 }
 
-function legacyServerUrl(stored: AiSettingsStored): string {
+function legacyServerUrl(stored: ApiKeySettings): string {
   if (trimmed(stored.aiServerUrl)) return '';
   const url = trimmed(stored.aiBaseUrl);
   return isCustomBaseUrl(AI_PROVIDERS[providerOrDefault(stored.aiProvider)], url) ? url : '';
@@ -156,7 +158,7 @@ export function resolveServer(stored: AiSettingsStored): AiServer | null {
     (stored.aiServerProtocol === undefined && legacy && AI_PROVIDERS[provider].protocol === 'anthropic')
       ? 'anthropic'
       : 'openai';
-  return { url, protocol, apiKey: keys.server ?? (legacy ? (keys[provider] ?? '') : '') };
+  return { url, protocol, apiKey: keys.server ?? '' };
 }
 
 export interface AiCredentials {

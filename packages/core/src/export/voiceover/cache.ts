@@ -38,6 +38,14 @@ export async function writeClip(id: string, bytes: ArrayBuffer): Promise<void> {
   }
 }
 
+export async function deleteClip(id: string): Promise<void> {
+  try {
+    await db.voiceClips.delete(id);
+  } catch (error) {
+    logger.error('[voiceover] cache delete failed', error);
+  }
+}
+
 export async function clearClips(): Promise<void> {
   await db.voiceClips.clear();
 }

@@ -29,7 +29,8 @@ vi.mock('../voice', () => ({
   whenNarrationSettled: (...args: unknown[]) => whenNarrationSettled(...args),
 }));
 
-import { pauseCapture, restartNarrationOnceTranscriptionSettles, resumeCapture } from '../pause';
+import { pauseCapture, restartNarrationOnceTranscriptionSettles, resumeCapture, resumeFromPause } from '../pause';
+import { broadcastDismissBlur } from '../tab-manager';
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -176,5 +177,98 @@ describe('the retry that waits for the transcription', () => {
     await expect(restartNarrationOnceTranscriptionSettles(start)).resolves.toBe(false);
 
     expect(reportNarrationLost).toHaveBeenCalled();
+  });
+});
+
+describe('a resume that lands while the pause is still flushing', () => {
+  it('waits for the pause to stop the mic before it restarts it', async () => {
+    voicePhase = 'recording';
+    const order: string[] = [];
+    let finishStop!: () => void;
+    stopVoiceNarration.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishStop = () => {
+            order.push('mic stopped');
+            voicePhase = 'transcribing';
+            resolve();
+          };
+        }),
+    );
+    const tryStart = vi.fn(() => {
+      order.push('restart attempted');
+      return true;
+    });
+
+    const pausing = pauseCapture('manual');
+    await flush();
+    const resuming = resumeCapture(tryStart);
+    await flush();
+    expect(actor.getSnapshot().value).toBe('PAUSED');
+
+    finishStop();
+    await pausing;
+    await resuming;
+    await flush();
+
+    expect(actor.getSnapshot().value).toBe('RECORDING');
+    expect(order).toEqual(['mic stopped', 'restart attempted']);
+  });
+
+  it('keeps waiting on the first pause when a second pause is pressed during its flush', async () => {
+    voicePhase = 'recording';
+    let finishStop!: () => void;
+    stopVoiceNarration.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishStop = () => {
+            voicePhase = 'transcribing';
+            resolve();
+          };
+        }),
+    );
+    const tryStart = vi.fn(() => true);
+
+    const pausing = pauseCapture('manual');
+    await flush();
+    expect(await pauseCapture('manual')).toBe(false);
+    const resuming = resumeCapture(tryStart);
+    await flush();
+
+    expect(actor.getSnapshot().value).toBe('PAUSED');
+    expect(tryStart).not.toHaveBeenCalled();
+
+    finishStop();
+    await pausing;
+    await resuming;
+    expect(actor.getSnapshot().value).toBe('RECORDING');
+  });
+
+  it('closes the blur overlay only after the pause that opened it has settled', async () => {
+    voicePhase = 'recording';
+    const order: string[] = [];
+    let finishStop!: () => void;
+    stopVoiceNarration.mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finishStop = () => {
+            order.push('pause settled');
+            resolve();
+          };
+        }),
+    );
+    vi.mocked(broadcastDismissBlur).mockImplementation(async () => {
+      order.push('overlay dismissed');
+    });
+
+    const pausing = pauseCapture('blur');
+    await flush();
+    const resuming = resumeFromPause(vi.fn(() => true));
+    await flush();
+    finishStop();
+    await pausing;
+    await resuming;
+
+    expect(order).toEqual(['pause settled', 'overlay dismissed']);
   });
 });

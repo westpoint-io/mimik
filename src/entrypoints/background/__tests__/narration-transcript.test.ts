@@ -58,7 +58,7 @@ describe('applying a narration result', () => {
     await applyNarration('g1', { descriptions: [], transcript: orphaned, stats }, false);
 
     expect(saveTranscript).toHaveBeenCalledWith('g1', orphaned);
-    expect(applyNarrationToSteps).toHaveBeenCalledWith([]);
+    expect(applyNarrationToSteps).toHaveBeenCalledWith([], 1_700_000_000_000);
   });
 
   it('keeps each transcribed slice as its own stored row', async () => {
@@ -80,6 +80,9 @@ describe('applying a narration result', () => {
       false,
     );
 
-    expect(applyNarrationToSteps).toHaveBeenCalledWith([{ stepId: 's1', description: 'Open the billing tab' }]);
+    expect(applyNarrationToSteps).toHaveBeenCalledWith(
+      [{ stepId: 's1', description: 'Open the billing tab' }],
+      1_700_000_000_000,
+    );
   });
 });

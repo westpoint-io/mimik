@@ -89,14 +89,16 @@ export function getFieldValue(el: HTMLElement): string {
   return '';
 }
 
+const READABLE = /[\p{L}\p{N}]/u;
+
 function meaningfulLabel(text: string | null | undefined): string | null {
   const trimmed = text?.trim();
-  if (!trimmed || !/[a-z0-9]/i.test(trimmed)) return null;
+  if (!trimmed || !READABLE.test(trimmed)) return null;
   return (
     trimmed
       .split('\n')
       .map((line) => line.trim())
-      .find((line) => /[a-z0-9]/i.test(line)) ?? null
+      .find((line) => READABLE.test(line)) ?? null
   );
 }
 
@@ -110,7 +112,7 @@ function slottedLabel(el: Element): string | null {
   );
 }
 
-export function getFieldLabel(el: HTMLElement): string {
+export function getFieldLabel(el: HTMLElement): string | null {
   const ariaLabel = el.getAttribute('aria-label');
   if (ariaLabel) return ariaLabel;
 
@@ -146,5 +148,5 @@ export function getFieldLabel(el: HTMLElement): string {
   const name = el.getAttribute('name');
   if (name && !/[-_]test|[-_]id|[-_]key/i.test(name)) return name;
 
-  return 'text field';
+  return null;
 }

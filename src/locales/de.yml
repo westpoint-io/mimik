@@ -456,6 +456,10 @@ videoPlayer:
   mute: "Stummschalten"
   unmute: "Ton einschalten"
   spoken: "Vertonter Schritt"
+  play: "Abspielen"
+  pause: "Pause"
+  fullscreen: "Vollbild"
+  exitFullscreen: "Vollbild beenden"
 
 exportMenu:
   docx: "DOCX"
@@ -540,6 +544,7 @@ steps:
   drag: '"$1" ziehen'
   typeValueInto: '"$1" in $2 eingeben'
   clearField: "$1 leeren"
+  textField: "Textfeld"
   navigate: Zur Seite navigieren
   defaultAction: "$1 $2"
 
