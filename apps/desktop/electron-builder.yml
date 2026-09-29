@@ -1,6 +1,9 @@
 appId: io.westpoint.mimik
 productName: Mimik
 executableName: mimik
+extraMetadata:
+  name: mimik
+  productName: Mimik
 npmRebuild: false
 directories:
   output: dist
