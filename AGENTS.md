@@ -1298,7 +1298,13 @@ module.
 The guide page's top bar also holds Duplicate, and Transcript when the guide has a narration
 transcript, which only an extension recording produces. The library's controls hold Import, beside
 sort and view, and dropping a `.mimik` file anywhere on the library opens the same dialog, because
-the file lives in the store where both reach it. Duplicate is also an item in the card menu, which
+the file lives in the store where both reach it. On the desktop a `.mimik` file also opens from
+Finder or Explorer: `fileAssociations` in `electron-builder.yml` registers the type, and main takes the
+path from macOS's `open-file`, from its own arguments at launch, or from a second launch's arguments.
+Main only keeps the path and nudges the window; the renderer asks for the file through
+`takeOpenedFile` both when it mounts and when nudged, so a file that arrives before the window has
+loaded is not lost, and puts it in the same store slot the Import button fills, on the library.
+`check:pipeline` exports a guide as `.mimik`, imports it back and compares the steps and screenshots. Duplicate is also an item in the card menu, which
 the list and grid share.
 
 `SearchModal` listens for Ctrl or ⌘ with K itself. The listener used to live in the extension's
@@ -1318,9 +1324,14 @@ that spans a wide window is mostly empty line. Each card is the first step's scr
 cropped the way the guide shows it — zoomed toward the click on the desktop, around the element in
 the extension — then where the guide happened, its title on up to two lines, and its step count and
 date, with a star on the picture when it is starred. Where it happened is the most common site among
-its steps, with its favicon, or the application the first step names, with a letter tile; the tile
-never asks for a favicon, because that request would send the application's name to a favicon
-service. `loadCardData` reads both for the page being shown. The list view is the same card laid
+its steps, with its favicon, or the application the first step names, with the application's own icon; that icon
+never comes from a favicon service, because the request would send the application's name to it. The
+desktop serves it from the operating system instead: a step's `app.id` is the path of the `.app` bundle
+or `.exe`, `appIconUrl` in the UI env turns it into a `mimik-app-icon:` URL, and main answers with
+`app.getFileIcon`. The extension has no such URL, and neither does an older step whose id is not a
+path, so those keep the letter tile. The desktop's page policy allows the favicon service in
+`img-src`; without it every site showed its letter tile there too. A card with no place at all reads
+"—" on that line. `loadCardData` reads both for the page being shown. The list view is the same card laid
 flat: a 16:9 thumbnail, the title, one line of description, and where it happened with the step
 count and date, with the star and the card's menu always visible. A guide with nothing to show has
 the mascot's eyes on navy in place of a picture, and every card keeps the line for where it
