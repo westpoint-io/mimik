@@ -12,6 +12,7 @@ interface SidebarProps {
   onStartCapture?: () => void;
   onSettings?: () => void;
   settingsExternal?: boolean;
+  version?: string;
 }
 
 const navItems = [
@@ -20,7 +21,15 @@ const navItems = [
   { key: 'trash' as const, labelKey: 'fullview_trash' as const, icon: Trash2 },
 ];
 
-export function Sidebar({ route, collapsed, onToggle, onStartCapture, onSettings, settingsExternal }: SidebarProps) {
+export function Sidebar({
+  route,
+  collapsed,
+  onToggle,
+  onStartCapture,
+  onSettings,
+  settingsExternal,
+  version,
+}: SidebarProps) {
   const counts = useFullview((s) => s.counts);
   const row = collapsed ? 'justify-center w-9 mx-auto' : 'gap-2.5 px-2.5';
   const toggleLabel = i18n.t(collapsed ? 'fullview_expandSidebar' : 'fullview_collapseSidebar');
@@ -99,6 +108,7 @@ export function Sidebar({ route, collapsed, onToggle, onStartCapture, onSettings
           {!collapsed && (
             <>
               <span className="flex-1 text-left">{settingsLabel}</span>
+              {version && <span className="text-[11px] font-medium text-muted-foreground">{version}</span>}
               {settingsExternal && <ExternalLink size={12} className="text-muted-foreground" />}
             </>
           )}
