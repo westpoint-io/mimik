@@ -91,7 +91,8 @@ recording:
 
 settings:
   title: Ajustes
-  aiDescriptions: Descripciones con IA
+  aiDescriptions: "Descripciones de los pasos"
+  aiDescriptionsHint: "Mimik escribe el texto de cada paso y nombra tu guía con tu proveedor de IA."
   provider: Proveedor
   model: Modelo
   modelCustom: Modelo personalizado
@@ -137,8 +138,10 @@ settings:
   microphoneTestStop: Detener prueba
   microphoneTestFailed: "No se pudo abrir ese micrófono. Prueba con otro."
   targetColor: "Color de marca"
-  targetColorHint: "Resaltados de clic y acentos de exportación"
+  targetColorHint: "Colorea el resaltado de clics y los acentos de las exportaciones."
   branding: "Marca en exportaciones"
+  logoAndFooter: "Logotipo y pie de página"
+  logoAndFooterHint: "Aparece en cada guía que exportas."
   brandLogo: "Logotipo"
   uploadLogo: "Subir logotipo"
   replaceLogo: "Reemplazar"
@@ -152,6 +155,11 @@ settings:
   saved: Guardado
   validatingKey: "Comprobando clave\u2026"
   keyValid: Clave de API verificada.
+  keyChecking: "Comprobando…"
+  keyVerified: "Verificada"
+  keyRejected: "Rechazada"
+  keyOffline: "Sin conexión"
+  keyCheckModel: "Revisa el modelo"
   keyInvalid: "El proveedor rechazó esta clave. Compruébala e inténtalo de nuevo."
   keyModelRequired: Elige un modelo antes de comprobar esta clave.
   keyModelInvalid: El modelo seleccionado no está disponible en este proveedor.
@@ -181,6 +189,7 @@ desktop:
   finish: "Finalizar"
   screenshotDelay: "Retraso de la captura"
   keepClicksBeyondArea: "Capturar clics fuera del área"
+  keepClicksBeyondAreaHint: "En modo Área, los clics fuera del área también se vuelven pasos, encuadrados en el área."
   guideInApp: "Guía en $1"
   capturingSection: "Captura"
   milliseconds: ms
@@ -189,23 +198,33 @@ desktop:
   modeScreen: Pantalla
   modeRegion: Área
   startSheetTitle: Iniciar una captura
+  permissionsTitle: "Permisos necesarios"
+  permissionsIntro: "Mimik necesita un par de permisos para grabar."
+  permissionAccessibility: "Accesibilidad"
+  permissionAccessibilityHint: "Necesario para grabar tus clics y pulsaciones de teclas."
+  permissionScreen: "Grabación de pantalla"
+  permissionScreenHint: "Necesario para tomar capturas de pantalla para tus guías."
+  permissionScreenRestart: "Reinicia Mimik para terminar de activarlo."
+  permissionGrant: "Conceder permiso"
+  permissionGranted: "Concedido"
+  permissionRestart: "Reiniciar Mimik"
   moreStepsAfter: "Los nuevos pasos se insertan después del paso $1."
   moreStepsFirst: "Los nuevos pasos se insertan antes del paso 1."
   startButton: Iniciar
   shortcutsSection: "Atajos"
   generalSection: "General"
   appLanguage: "Idioma de la app"
-  appLanguageHint: "El idioma de las pantallas de Mimik. Las descripciones con IA tienen su propio ajuste."
+  appLanguageHint: "El idioma de las pantallas de Mimik. Las descripciones de los pasos tienen su propio ajuste de idioma."
   languageSystem: "Igual que el sistema"
   cardLanguage: "Idioma"
   cardStartup: "Inicio"
   cardUpdates: "Actualizaciones"
   startAtLogin: "Abrir al iniciar sesión"
   startAtLoginHint: "Mimik se abre en la bandeja, sin ventana."
+  startAtLoginHintMac: "Mimik se abre al iniciar sesión."
   version: "Versión $1"
   versionHint: "Mimik busca actualizaciones cada vez que se inicia."
   checkUpdates: "Buscar actualizaciones"
-  traySetArea: "Definir el área de captura"
   trayQuit: "Salir de Mimik"
   trayRecording: "Mimik está grabando. Haz clic para terminar."
   cannotRecord: "Mimik no puede grabar"
@@ -214,6 +233,7 @@ desktop:
   restartNow: "Reiniciar ahora"
   later: "Más tarde"
   updateFailed: "No se pudieron buscar actualizaciones"
+  updateFailedMessage: "Mimik no pudo conectar con el servidor de actualizaciones. Inténtalo de nuevo más tarde."
   upToDate: "Actualizado"
   upToDateMessage: "Mimik $1 es la versión más reciente."
   cardScreenshots: "Capturas de pantalla"
@@ -226,9 +246,11 @@ desktop:
   zoomGuide: "Zoom"
   recordKeys: "Registrar atajos y teclas con nombre"
   recordTyping: "Registrar lo que escribes"
+  recordTypingHint: "Todo lo que escribes en un campo se convierte en un paso."
   typingDebounce: "Cerrar el paso de escritura tras"
-  cardScreenshotsHint: "Qué captura cada paso"
-  cardKeyboardHint: "Lo que el teclado añade a una guía"
+  typingDebounceHint: "Una pausa así de larga cierra el paso de escritura."
+  cardScreenshotsHint: "Lo que muestra la captura de cada paso."
+  cardKeyboardHint: "Lo que tu teclado añade a una guía."
   captureModeHint: "Ventana sigue a la app en la que haces clic."
   screenshotDelayHint: "Espera antes de la captura, para menús con animación."
   recordKeysHint: "Ctrl+S, Enter y similares se convierten en pasos."

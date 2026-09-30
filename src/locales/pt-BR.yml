@@ -91,7 +91,8 @@ recording:
 
 settings:
   title: Ajustes
-  aiDescriptions: Descrições com IA
+  aiDescriptions: "Descrições das etapas"
+  aiDescriptionsHint: "O Mimik escreve o texto de cada etapa e dá nome ao seu guia com o seu provedor de IA."
   provider: Provedor
   model: Modelo
   modelCustom: Modelo personalizado
@@ -137,8 +138,10 @@ settings:
   microphoneTestStop: Parar teste
   microphoneTestFailed: "Não foi possível abrir esse microfone. Tente outro."
   targetColor: "Cor da marca"
-  targetColorHint: "Destaques de clique e detalhes de cor nas exportações"
+  targetColorHint: "Colore o destaque dos cliques e os detalhes das exportações."
   branding: "Marca nas exportações"
+  logoAndFooter: "Logotipo e rodapé"
+  logoAndFooterHint: "Aparece em todo guia que você exporta."
   brandLogo: "Logotipo"
   uploadLogo: "Enviar logotipo"
   replaceLogo: "Substituir"
@@ -152,6 +155,11 @@ settings:
   saved: Salvo
   validatingKey: "Verificando chave\u2026"
   keyValid: Chave de API verificada.
+  keyChecking: "Verificando…"
+  keyVerified: "Verificada"
+  keyRejected: "Recusada"
+  keyOffline: "Inacessível"
+  keyCheckModel: "Verifique o modelo"
   keyInvalid: "O provedor recusou esta chave. Verifique e tente de novo."
   keyModelRequired: Escolha um modelo antes de verificar esta chave.
   keyModelInvalid: O modelo selecionado não está disponível neste provedor.
@@ -181,6 +189,7 @@ desktop:
   finish: "Concluir"
   screenshotDelay: "Atraso da captura"
   keepClicksBeyondArea: "Capturar cliques fora da área"
+  keepClicksBeyondAreaHint: "No modo Área, cliques fora da área também viram etapas, enquadradas na área."
   guideInApp: "Guia no $1"
   capturingSection: "Captura"
   milliseconds: ms
@@ -189,23 +198,33 @@ desktop:
   modeScreen: Tela
   modeRegion: Área
   startSheetTitle: Iniciar uma captura
+  permissionsTitle: "Permissões necessárias"
+  permissionsIntro: "O Mimik precisa de algumas permissões para gravar."
+  permissionAccessibility: "Acessibilidade"
+  permissionAccessibilityHint: "Necessária para gravar seus cliques e teclas digitadas."
+  permissionScreen: "Gravação de tela"
+  permissionScreenHint: "Necessária para capturar as telas dos seus guias."
+  permissionScreenRestart: "Reinicie o Mimik para terminar de ativar."
+  permissionGrant: "Conceder permissão"
+  permissionGranted: "Concedida"
+  permissionRestart: "Reiniciar o Mimik"
   moreStepsAfter: "As novas etapas entram depois da etapa $1."
   moreStepsFirst: "As novas etapas entram antes da etapa 1."
   startButton: Iniciar
   shortcutsSection: "Atalhos"
   generalSection: "Geral"
   appLanguage: "Idioma do app"
-  appLanguageHint: "O idioma das telas do Mimik. As descrições por IA têm uma configuração própria."
+  appLanguageHint: "O idioma das telas do Mimik. As descrições das etapas têm sua própria configuração de idioma."
   languageSystem: "Igual ao sistema"
   cardLanguage: "Idioma"
   cardStartup: "Inicialização"
   cardUpdates: "Atualizações"
   startAtLogin: "Abrir ao iniciar a sessão"
   startAtLoginHint: "O Mimik abre na bandeja, sem janela."
+  startAtLoginHintMac: "O Mimik abre quando você inicia a sessão."
   version: "Versão $1"
   versionHint: "O Mimik procura atualizações sempre que é iniciado."
   checkUpdates: "Procurar atualizações"
-  traySetArea: "Definir a área de captura"
   trayQuit: "Sair do Mimik"
   trayRecording: "O Mimik está gravando. Clique para terminar."
   cannotRecord: "O Mimik não consegue gravar"
@@ -214,6 +233,7 @@ desktop:
   restartNow: "Reiniciar agora"
   later: "Mais tarde"
   updateFailed: "Não foi possível procurar atualizações"
+  updateFailedMessage: "O Mimik não conseguiu acessar o servidor de atualizações. Tente novamente mais tarde."
   upToDate: "Atualizado"
   upToDateMessage: "O Mimik $1 é a versão mais recente."
   cardScreenshots: "Capturas de tela"
@@ -226,9 +246,11 @@ desktop:
   zoomGuide: "Zoom"
   recordKeys: "Registrar atalhos e teclas nomeadas"
   recordTyping: "Registrar o que você digita"
+  recordTypingHint: "Tudo o que você digita em um campo vira uma etapa."
   typingDebounce: "Encerrar a etapa de digitação após"
-  cardScreenshotsHint: "O que cada passo captura"
-  cardKeyboardHint: "O que o teclado adiciona ao guia"
+  typingDebounceHint: "Uma pausa desse tamanho encerra a etapa de digitação."
+  cardScreenshotsHint: "O que a captura de cada etapa mostra."
+  cardKeyboardHint: "O que o seu teclado acrescenta a um guia."
   captureModeHint: "Janela acompanha o app em que você clica."
   screenshotDelayHint: "Espera antes da captura, para menus com animação."
   recordKeysHint: "Ctrl+S, Enter e afins viram passos."

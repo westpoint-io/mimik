@@ -90,8 +90,10 @@ recording:
   minutesAgo: "vor $1 Min."
 
 settings:
-  targetColorHint: "Klick-Hervorhebungen und Export-Akzente"
+  targetColorHint: "Färbt die Klickmarkierung und die Akzente in Exporten."
   branding: "Export-Branding"
+  logoAndFooter: "Logo und Fußzeile"
+  logoAndFooterHint: "Erscheint in jeder Anleitung, die du exportierst."
   brandLogo: "Logo"
   uploadLogo: "Logo hochladen"
   replaceLogo: "Ersetzen"
@@ -103,7 +105,8 @@ settings:
   attribution: "„Made with Mimik“ anzeigen"
   targetColor: "Markenfarbe"
   title: Einstellungen
-  aiDescriptions: KI-Beschreibungen
+  aiDescriptions: "Schrittbeschreibungen"
+  aiDescriptionsHint: "Mimik schreibt den Text jedes Schritts und benennt deine Anleitung mit deinem KI-Anbieter."
   modelCustom: Eigenes Modell
   baseUrl: Basis-URL
   ownServerHintOpenai: "Funktioniert mit Ollama, LM Studio, vLLM oder jedem OpenAI-kompatiblen Server."
@@ -158,6 +161,11 @@ settings:
   starOnGithub: "Auf GitHub mit Stern markieren"
   validatingKey: "Schlüssel wird geprüft…"
   keyValid: API-Schlüssel bestätigt.
+  keyChecking: "Wird geprüft…"
+  keyVerified: "Bestätigt"
+  keyRejected: "Abgelehnt"
+  keyOffline: "Nicht erreichbar"
+  keyCheckModel: "Modell prüfen"
   keyInvalid: "Der Anbieter hat diesen Schlüssel abgelehnt. Prüfe ihn und versuche es erneut."
   keyModelRequired: Wähle ein Modell, bevor du diesen Schlüssel prüfst.
   keyModelInvalid: Das ausgewählte Modell ist bei diesem Anbieter nicht verfügbar.
@@ -181,6 +189,7 @@ desktop:
   finish: "Beenden"
   screenshotDelay: "Screenshot-Verzögerung"
   keepClicksBeyondArea: "Klicks außerhalb des Bereichs aufnehmen"
+  keepClicksBeyondAreaHint: "Im Bereichsmodus werden Klicks außerhalb trotzdem zu Schritten, gezeigt im Bereich."
   guideInApp: "Anleitung in $1"
   capturingSection: "Aufnahme"
   milliseconds: ms
@@ -189,23 +198,33 @@ desktop:
   modeScreen: Bildschirm
   modeRegion: Bereich
   startSheetTitle: Aufnahme starten
+  permissionsTitle: "Berechtigungen erforderlich"
+  permissionsIntro: "Mimik braucht ein paar Berechtigungen, um aufzunehmen."
+  permissionAccessibility: "Bedienungshilfen"
+  permissionAccessibilityHint: "Erforderlich, um deine Klicks und Tastatureingaben aufzunehmen."
+  permissionScreen: "Bildschirmaufnahme"
+  permissionScreenHint: "Erforderlich, um Screenshots für deine Anleitungen aufzunehmen."
+  permissionScreenRestart: "Starte Mimik neu, um das Einschalten abzuschließen."
+  permissionGrant: "Berechtigung erteilen"
+  permissionGranted: "Erteilt"
+  permissionRestart: "Mimik neu starten"
   moreStepsAfter: "Neue Schritte werden nach Schritt $1 eingefügt."
   moreStepsFirst: "Neue Schritte werden vor Schritt 1 eingefügt."
   startButton: Starten
   shortcutsSection: "Tastenkürzel"
   generalSection: "Allgemein"
   appLanguage: "App-Sprache"
-  appLanguageHint: "Die Sprache der Mimik-Oberfläche. KI-Beschreibungen haben eine eigene Einstellung."
+  appLanguageHint: "Die Sprache der Mimik-Oberfläche. Schrittbeschreibungen haben eine eigene Spracheinstellung."
   languageSystem: "Wie das System"
   cardLanguage: "Sprache"
   cardStartup: "Start"
   cardUpdates: "Updates"
   startAtLogin: "Beim Anmelden starten"
   startAtLoginHint: "Mimik startet im Infobereich, ohne Fenster."
+  startAtLoginHintMac: "Mimik startet, wenn du dich anmeldest."
   version: "Version $1"
   versionHint: "Mimik sucht bei jedem Start nach Updates."
   checkUpdates: "Nach Updates suchen"
-  traySetArea: "Aufnahmebereich festlegen"
   trayQuit: "Mimik beenden"
   trayRecording: "Mimik nimmt auf. Zum Beenden klicken."
   cannotRecord: "Mimik kann nicht aufnehmen"
@@ -214,6 +233,7 @@ desktop:
   restartNow: "Jetzt neu starten"
   later: "Später"
   updateFailed: "Suche nach Updates fehlgeschlagen"
+  updateFailedMessage: "Mimik konnte den Update-Server nicht erreichen. Versuche es später noch einmal."
   upToDate: "Auf dem neuesten Stand"
   upToDateMessage: "Mimik $1 ist aktuell."
   cardScreenshots: "Screenshots"
@@ -226,9 +246,11 @@ desktop:
   zoomGuide: "Zoom"
   recordKeys: "Kürzel und benannte Tasten aufzeichnen"
   recordTyping: "Eingaben aufzeichnen"
+  recordTypingHint: "Alles, was du in ein Feld tippst, wird ein Schritt."
   typingDebounce: "Eingabeschritt beenden nach"
-  cardScreenshotsHint: "Was jeder Schritt aufnimmt"
-  cardKeyboardHint: "Was die Tastatur zur Anleitung beiträgt"
+  typingDebounceHint: "Eine so lange Pause beendet den Eingabeschritt."
+  cardScreenshotsHint: "Was der Screenshot jedes Schritts zeigt."
+  cardKeyboardHint: "Was deine Tastatur zu einer Anleitung beiträgt."
   captureModeHint: "Fenster folgt der App, die du anklickst."
   screenshotDelayHint: "Wartezeit vor dem Screenshot, für Menüs mit Animation."
   recordKeysHint: "Strg+S, Enter und Ähnliches werden zu Schritten."

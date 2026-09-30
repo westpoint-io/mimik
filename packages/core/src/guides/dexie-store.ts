@@ -1,7 +1,7 @@
 import { buildFallbackDescription } from '@/core/capture/step-description';
 import type { NarrationUpdate } from '@/core/capture/voice/narration-updates';
 import type { NarrationTranscript } from '@/core/capture/voice/types';
-import { i18n } from '@/core/env';
+import { client, i18n } from '@/core/env';
 import type { ScreenshotEdits } from '@/core/screenshot/types';
 import type { ParsedBundle } from '@/core/transfer/parse';
 import { db } from './db';
@@ -24,15 +24,22 @@ import type {
 export type GuideChangeEvent = { type: 'starred'; id: string; starred: boolean } | { type: 'mutated' };
 
 const guidesChannel = new BroadcastChannel('mimik-guides');
+const sameWindow = new EventTarget();
 
 export function onGuidesChanged(callback: (event: GuideChangeEvent) => void): () => void {
   const handler = (e: MessageEvent<GuideChangeEvent>) => callback(e.data);
+  const local = (e: Event) => callback((e as CustomEvent<GuideChangeEvent>).detail);
   guidesChannel.addEventListener('message', handler);
-  return () => guidesChannel.removeEventListener('message', handler);
+  sameWindow.addEventListener('change', local);
+  return () => {
+    guidesChannel.removeEventListener('message', handler);
+    sameWindow.removeEventListener('change', local);
+  };
 }
 
 function notifyGuidesChanged(event: GuideChangeEvent) {
   guidesChannel.postMessage(event);
+  if (client() === 'desktop') sameWindow.dispatchEvent(new CustomEvent('change', { detail: event }));
 }
 
 async function hydrate(row: StoredScreenshot | undefined): Promise<Screenshot | undefined> {

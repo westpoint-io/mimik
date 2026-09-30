@@ -1,3 +1,4 @@
+import { resolveGuideMetaInputs } from '@mimik/core/capture/ai/guide-description';
 import { settleDescriptions } from '@mimik/core/capture/ai/settle-descriptions';
 import type { CaptureStepData } from '@mimik/core/capture/sink';
 import { i18n } from '@mimik/core/env';
@@ -30,12 +31,17 @@ window.mimik.onRequest('mimik:capture:removeStep', async (payload) => {
 window.mimik.onRequest('mimik:capture:finishGuide', async (payload) => {
   const guideId = payload as string;
   const steps = await getStepsForGuide(guideId);
+  if (steps.length === 0) return true;
   const app = steps.find((step) => step.app?.name)?.app?.name;
-  await updateGuideTitle(guideId, app ? i18n.t('desktop.guideInApp', [app]) : i18n.t('background.newGuide'));
+  const fallback = app ? i18n.t('desktop.guideInApp', [app]) : i18n.t('background.newGuide');
+  if (!(await resolveGuideMetaInputs(guideId)).ok) {
+    await updateGuideTitle(guideId, fallback);
+    return true;
+  }
 
   await settleDescriptions(guideId);
   const meta = await nameGuide(guideId);
-  if (meta?.title) await updateGuideTitle(guideId, meta.title);
+  await updateGuideTitle(guideId, meta?.title || fallback);
   if (meta?.description) await updateGuideDescription(guideId, meta.description);
   return true;
 });

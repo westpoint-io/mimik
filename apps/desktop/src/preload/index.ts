@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 import type { CaptureInsert } from '../main/capture/insert';
 import type { CaptureSettings } from '../main/capture/settings';
 import type { OverlayAiFailure } from '../main/overlay';
+import type { CapturePermissions, PermissionKind } from '../main/permissions';
 
 interface Region {
   x: number;
@@ -23,12 +24,25 @@ const api = {
       set: (patch: Partial<CaptureSettings>): Promise<CaptureSettings> =>
         ipcRenderer.invoke('mimik:capture:settings:set', patch),
     },
+    onOpenSheet: (handler: () => void): void => {
+      ipcRenderer.on('mimik:capture:openSheet', () => handler());
+    },
     onCommand: (handler: (command: string, state: string, region: Region, guideId: string | null) => void): void => {
       ipcRenderer.on(
         'mimik:capture:command',
         (_event, command: string, state: string, region: Region, guideId: string | null) =>
           handler(command, state, region, guideId),
       );
+    },
+  },
+  permissions: {
+    get: (): Promise<CapturePermissions & { pending: boolean }> => ipcRenderer.invoke('mimik:permissions:get'),
+    request: (kind: PermissionKind): Promise<void> => ipcRenderer.invoke('mimik:permissions:request', kind),
+    continue: (): void => ipcRenderer.send('mimik:permissions:continue'),
+    cancel: (): void => ipcRenderer.send('mimik:permissions:cancel'),
+    restart: (): void => ipcRenderer.send('mimik:permissions:restart'),
+    onShow: (handler: () => void): void => {
+      ipcRenderer.on('mimik:permissions:show', () => handler());
     },
   },
   ai: {
@@ -45,6 +59,9 @@ const api = {
     });
   },
   relocalise: (): void => ipcRenderer.send('mimik:app:relocalise'),
+  onOpen: (handler: (target: 'library' | 'capture' | 'settings') => void): void => {
+    ipcRenderer.on('mimik:app:open', (_event, target) => handler(target));
+  },
   locale: (code: string): void => ipcRenderer.send('mimik:app:locale', code),
   updates: {
     check: (): Promise<void> => ipcRenderer.invoke('mimik:updates:check'),

@@ -1,5 +1,5 @@
 import { validateApiKey } from '@mimik/core/capture/ai/validate';
-import { localStorage } from '@mimik/core/env';
+import { i18n, localStorage } from '@mimik/core/env';
 import {
   AISetupStep,
   AppFrame,
@@ -13,11 +13,12 @@ import {
   useRoute,
   VoiceStep,
 } from '@mimik/ui';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { CaptureInsert } from '../main/capture/insert';
 import { CaptureSheet } from './CaptureSheet';
 import { GuideZoom } from './GuideZoom';
 import { requestMicrophoneAccess } from './lib/request-microphone-access';
+import { PermissionsDialog } from './PermissionsDialog';
 import { REOPEN_SETTINGS } from './settings/lib/reopen-settings';
 import { SettingsDialog } from './settings/SettingsDialog';
 
@@ -29,6 +30,26 @@ export function App() {
   const [sheet, setSheet] = useState<{ insert?: CaptureInsert } | null>(null);
   const [guideKey, setGuideKey] = useState(0);
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
+  const [permissionsOpen, setPermissionsOpen] = useState(false);
+  const [version, setVersion] = useState('');
+
+  useEffect(() => {
+    void window.mimik.version().then(setVersion);
+    window.mimik.permissions.onShow(() => setPermissionsOpen(true));
+    window.mimik.capture.onOpenSheet(() => setSheet({}));
+    window.mimik.onOpen((target) => {
+      setSettingsOpen(target === 'settings');
+      setSheet(target === 'capture' ? {} : null);
+      if (target === 'library') navigate({ page: 'library', category: 'all' });
+    });
+    void window.mimik.permissions.get().then((found) => found.pending && setPermissionsOpen(true));
+  }, []);
+
+  const closePermissions = useCallback((granted: boolean) => {
+    setPermissionsOpen(false);
+    if (granted) window.mimik.permissions.continue();
+    else window.mimik.permissions.cancel();
+  }, []);
 
   useEffect(() => {
     void localStorage.get(['onboardingCompleted']).then((stored) => setOnboarded(stored.onboardingCompleted === true));
@@ -65,6 +86,7 @@ export function App() {
         route={route}
         onStartCapture={() => setSheet({})}
         onSettings={() => setSettingsOpen(true)}
+        version={version && i18n.t('desktop_version', [version])}
         guideActions={
           route.page === 'guide' ? (
             <GuideZoom guideId={route.guideId} onDone={() => setGuideKey((n) => n + 1)} />
@@ -92,6 +114,7 @@ export function App() {
       <SearchModal />
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
       {sheet && <CaptureSheet insert={sheet.insert} onClose={() => setSheet(null)} />}
+      <PermissionsDialog open={permissionsOpen} onClose={closePermissions} />
     </TooltipProvider>
   );
 }
