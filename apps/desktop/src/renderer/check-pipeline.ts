@@ -5,9 +5,11 @@ import { exportGuideAsDOCX } from '@mimik/core/export/docx-export';
 import { exportGuideAsHTML } from '@mimik/core/export/html-export';
 import { exportGuideAsMarkdown } from '@mimik/core/export/markdown-export';
 import { exportGuideAsPDF } from '@mimik/core/export/pdf-export';
-import { allScreenshotIds, getGuide, permanentlyDeleteGuide } from '@mimik/core/guides/service';
+import { allScreenshotIds, getGuide, importGuide, permanentlyDeleteGuide } from '@mimik/core/guides/service';
 import { elementSource } from '@mimik/core/guides/types';
 import { resolveViewport } from '@mimik/core/screenshot/geometry';
+import { exportGuideAsBundle } from '@mimik/core/transfer/bundle';
+import { readBundle } from '@mimik/core/transfer/parse';
 import { DesktopCaptureSink } from './capture-sink';
 
 interface CheckResult {
@@ -153,6 +155,28 @@ window.mimik.onRequest('mimik:check:verify', async (payload) => {
         detail: error instanceof Error ? error.message : String(error),
       });
     }
+  }
+
+  try {
+    const imported = await getGuide(
+      await importGuide(await readBundle(await exportGuideAsBundle(guide, steps, screenshots))),
+    );
+    const shots = imported ? [...imported.screenshots.values()] : [];
+    results.push({
+      name: 'a .mimik file round-trips',
+      ok:
+        imported?.steps.length === steps.length &&
+        shots.length === screenshots.size &&
+        shots.every((s) => s.blob.size > 0),
+      detail: `${imported?.steps.length ?? 0} of ${steps.length} steps, ${shots.length} screenshot(s) back`,
+    });
+    if (imported) await permanentlyDeleteGuide(imported.guide.id);
+  } catch (error) {
+    results.push({
+      name: 'a .mimik file round-trips',
+      ok: false,
+      detail: error instanceof Error ? error.message : String(error),
+    });
   }
 
   return results;
