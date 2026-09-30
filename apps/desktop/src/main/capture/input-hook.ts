@@ -1,3 +1,6 @@
+import type { HookEvent } from '@mimik/capture-native';
+import { loadNative } from './native';
+
 export interface PointerAction {
   kind: 'click';
   button: number;
@@ -23,6 +26,27 @@ export type InputHookStart =
   | { ok: true }
   | { ok: false; reason: 'unsupported-session' | 'unavailable'; detail: string };
 
+const macTap: { started: boolean; listener: ((action: InputAction) => void) | null } = {
+  started: false,
+  listener: null,
+};
+
+function fromTap(event: HookEvent): InputAction {
+  const at = Date.now();
+  if (event.kind === 'click') {
+    return { kind: 'click', button: event.button, x: event.x, y: event.y, clicks: event.clicks, at };
+  }
+  return {
+    kind: 'keydown',
+    keycode: event.keycode,
+    shift: event.shift,
+    alt: event.alt,
+    ctrl: event.ctrl,
+    meta: event.meta,
+    at,
+  };
+}
+
 export class InputHook {
   private hook: typeof import('uiohook-napi').uIOhook | null = null;
   private running = false;
@@ -40,6 +64,23 @@ export class InputHook {
         reason: 'unsupported-session',
         detail: 'Global input capture uses X11 XRecord; a Wayland session delivers no events.',
       };
+    }
+
+    if (process.platform === 'darwin') {
+      try {
+        macTap.listener = onAction;
+        if (!macTap.started) {
+          const native = await loadNative();
+          if (!native) throw new Error('the capture addon is missing');
+          native.startInputHook((event) => macTap.listener?.(fromTap(event)));
+          macTap.started = true;
+        }
+        this.running = true;
+        return { ok: true };
+      } catch (error) {
+        macTap.listener = null;
+        return { ok: false, reason: 'unavailable', detail: error instanceof Error ? error.message : String(error) };
+      }
     }
 
     try {
@@ -79,10 +120,14 @@ export class InputHook {
   }
 
   stop(): void {
-    if (!this.running || !this.hook) return;
-    this.hook.removeAllListeners();
-    this.hook.stop();
+    if (!this.running) return;
     this.running = false;
+    if (process.platform === 'darwin') {
+      macTap.listener = null;
+      return;
+    }
+    this.hook?.removeAllListeners();
+    this.hook?.stop();
     this.hook = null;
   }
 

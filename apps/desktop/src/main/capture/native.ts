@@ -1,4 +1,4 @@
-import type { ActiveWindow, UiElement } from '@mimik/capture-native';
+import type { ActiveWindow, HookEvent, UiElement } from '@mimik/capture-native';
 
 export type Addon = {
   elementAtPoint(x: number, y: number): Promise<UiElement | null>;
@@ -9,6 +9,7 @@ export type Addon = {
   resolveKey(keycode: number, shift: boolean, ctrl: boolean, alt: boolean): string | null;
   clearDeadKey(): void;
   isSupported(): boolean;
+  startInputHook(callback: (event: HookEvent) => void): void;
 };
 
 let addon: Addon | null | undefined;

@@ -40,8 +40,10 @@ function fromNative(found: ActiveWindow): FocusedWindowResult {
   };
 }
 
+const NATIVE_WINDOWS = new Set<NodeJS.Platform>(['win32', 'darwin']);
+
 export async function windowAt(point: { x: number; y: number }): Promise<FocusedWindowResult> {
-  if (process.platform === 'win32') {
+  if (NATIVE_WINDOWS.has(process.platform)) {
     const physical = typeof screen.dipToScreenPoint === 'function' ? screen.dipToScreenPoint(point) : point;
     const found = await loadNative()
       .then((native) => native?.windowAt(Math.round(physical.x), Math.round(physical.y)) ?? null)
@@ -60,7 +62,7 @@ export async function focusedWindow(): Promise<FocusedWindowResult> {
     };
   }
 
-  if (process.platform === 'win32') {
+  if (NATIVE_WINDOWS.has(process.platform)) {
     const found = await loadNative()
       .then((native) => native?.activeWindow() ?? null)
       .catch(() => null);
