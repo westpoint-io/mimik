@@ -6,8 +6,8 @@ import type { GuidePlace } from '../types';
 function placeOf(steps: Step[]): GuidePlace | null {
   const domain = getMostCommonDomain(steps);
   if (domain) return { kind: 'site', name: domain };
-  const app = steps.find((step) => step.app?.name)?.app?.name;
-  return app ? { kind: 'app', name: app } : null;
+  const app = steps.find((step) => step.app?.name)?.app;
+  return app ? { kind: 'app', name: app.name, id: app.id } : null;
 }
 
 export async function loadCardData(

@@ -66,11 +66,13 @@ export function GuideGridView({
             </div>
             <div className="px-3.5 pt-3 pb-3.5 flex flex-col gap-1.5">
               <span className="flex items-center gap-1.5 min-w-0 h-4 text-[11.5px] text-muted-foreground">
-                {place && (
+                {place ? (
                   <>
-                    <FaviconImg domain={place.name} size={16} letterOnly={place.kind === 'app'} />
+                    <FaviconImg domain={place.name} size={16} letterOnly={place.kind === 'app'} appId={place.id} />
                     <span className="truncate">{place.name}</span>
                   </>
+                ) : (
+                  <span>&mdash;</span>
                 )}
               </span>
               <div className="flex items-start gap-2">

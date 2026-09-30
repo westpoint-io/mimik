@@ -56,7 +56,7 @@ export function SearchResults({ guides, thumbnails, places, query, selected, onS
               <p className="flex min-w-0 items-center gap-1.5 text-[11.5px] text-muted-foreground">
                 {place && (
                   <>
-                    <FaviconImg domain={place.name} size={14} letterOnly={place.kind === 'app'} />
+                    <FaviconImg domain={place.name} size={14} letterOnly={place.kind === 'app'} appId={place.id} />
                     <span className="truncate">{place.name}</span>
                     <span>&middot;</span>
                   </>

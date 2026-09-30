@@ -64,7 +64,7 @@ export function GuideListView({
               <p className="flex items-center gap-1.5 min-w-0 text-[11.5px] text-muted-foreground">
                 {place && (
                   <>
-                    <FaviconImg domain={place.name} size={16} letterOnly={place.kind === 'app'} />
+                    <FaviconImg domain={place.name} size={16} letterOnly={place.kind === 'app'} appId={place.id} />
                     <span className="truncate">{place.name}</span>
                     <span>&middot;</span>
                   </>

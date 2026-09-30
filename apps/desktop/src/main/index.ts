@@ -1,6 +1,8 @@
-import { join } from 'node:path';
+import { readFile } from 'node:fs/promises';
+import { basename, join } from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, protocol, screen, shell, Tray } from 'electron';
 import { registerAiFetch } from './ai-fetch';
+import { APP_ICON_SCHEME, registerAppIconProtocol } from './app-icon';
 import { ask } from './ask';
 import type { CaptureInsert } from './capture/insert';
 import { DesktopRecorder, frameFor } from './capture/recorder';
@@ -27,6 +29,22 @@ const OPEN_CAPTURE_FLAG = '--open-capture';
 let pendingStart: (() => void) | null = process.argv.includes(OPEN_CAPTURE_FLAG)
   ? () => mainWindow?.webContents.send('mimik:capture:openSheet')
   : null;
+
+const BUNDLE_SUFFIX = '.mimik';
+
+function bundleArg(argv: string[]): string | null {
+  return argv.find((arg) => arg.toLowerCase().endsWith(BUNDLE_SUFFIX)) ?? null;
+}
+
+let openedFile = bundleArg(process.argv);
+
+function openBundle(path: string | null): void {
+  if (!path) return;
+  openedFile = path;
+  if (!app.isReady()) return;
+  showWindow();
+  mainWindow?.webContents.send('mimik:app:fileOpened');
+}
 
 let screenWarmed = false;
 
@@ -335,17 +353,27 @@ function quit(): void {
 
 protocol.registerSchemesAsPrivileged([
   { scheme: SCREENSHOT_SCHEME, privileges: { standard: true, secure: true, supportFetchAPI: true } },
+  { scheme: APP_ICON_SCHEME, privileges: { standard: true, secure: true } },
 ]);
+
+app.on('open-file', (event, path) => {
+  event.preventDefault();
+  openBundle(path);
+});
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
-  app.on('second-instance', () => showWindow());
+  app.on('second-instance', (_event, argv) => {
+    showWindow();
+    openBundle(bundleArg(argv));
+  });
 
   app.whenReady().then(() => {
     mainI18n.setLocale(app.getLocale());
     if (!app.getLoginItemSettings().wasOpenedAsHidden) openSplash();
     registerScreenshotProtocol();
+    registerAppIconProtocol();
     registerAiFetch();
     ipcMain.handle('mimik:openAtLogin:get', () => opensAtLogin());
     ipcMain.handle('mimik:openAtLogin:set', (_event, enabled: boolean) => {
@@ -353,6 +381,16 @@ if (!app.requestSingleInstanceLock()) {
       return opensAtLogin();
     });
     ipcMain.handle('mimik:version', () => app.getVersion());
+    ipcMain.handle('mimik:app:takeOpenedFile', async () => {
+      const path = openedFile;
+      openedFile = null;
+      if (!path) return null;
+      try {
+        return { name: basename(path), bytes: await readFile(path) };
+      } catch {
+        return null;
+      }
+    });
     ipcMain.handle('mimik:updates:check', () => checkForUpdates({ notifyWhenUpToDate: true }));
     ipcMain.handle('mimik:screenshots:sweep', (_event, keep: string[]) => sweepScreenshots(keep));
     ipcMain.on('mimik:app:relocalise', () => {

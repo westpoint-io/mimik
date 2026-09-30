@@ -5,4 +5,5 @@ export type LibraryDisplay = 'list' | 'grid';
 export interface GuidePlace {
   kind: 'site' | 'app';
   name: string;
+  id?: string;
 }
