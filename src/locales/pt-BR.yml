@@ -286,14 +286,12 @@ sort:
   listView: Ver em lista
 
 search:
-  startTyping: "Digite para buscar um guia"
-  noMatchingGuides: Nenhum guia encontrado
+  recent: "Recentes"
+  results: "$1 guias"
+  resultsOne: "1 guia"
+  noMatch: "Nenhum guia corresponde a “$1”"
+  noMatchHint: "Tente uma palavra do título do guia."
   noGuidesYet: Nenhum guia ainda
-
-keyboard:
-  navigate: navegar
-  open: abrir
-  close: fechar
 
 confirmDelete:
   title: "Excluir este guia?"

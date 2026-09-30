@@ -286,14 +286,12 @@ sort:
   listView: 列表视图
 
 search:
-  startTyping: 开始输入以查找指南
-  noMatchingGuides: 没有匹配的指南
+  recent: "最近"
+  results: "$1 个指南"
+  resultsOne: "1 个指南"
+  noMatch: "没有与“$1”匹配的指南"
+  noMatchHint: "试试指南标题中的某个词。"
   noGuidesYet: 暂无指南
-
-keyboard:
-  navigate: 导航
-  open: 打开
-  close: 关闭
 
 confirmDelete:
   title: "删除指南？"

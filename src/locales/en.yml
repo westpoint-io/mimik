@@ -286,14 +286,12 @@ sort:
   listView: List view
 
 search:
-  startTyping: Start typing to find a guide
-  noMatchingGuides: No matching guides
+  recent: "Recent"
+  results: "$1 guides"
+  resultsOne: "1 guide"
+  noMatch: "No guides match “$1”"
+  noMatchHint: "Try a word from the guide's title."
   noGuidesYet: No guides yet
-
-keyboard:
-  navigate: navigate
-  open: open
-  close: close
 
 confirmDelete:
   title: "Delete guide?"

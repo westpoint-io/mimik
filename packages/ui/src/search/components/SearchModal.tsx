@@ -1,19 +1,19 @@
 import { i18n } from '@mimik/core/env';
-import { getGuideDomain, getGuides } from '@mimik/core/guides/service';
-import type { Guide } from '@mimik/core/guides/types';
-import { Search, X } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { getGuides } from '@mimik/core/guides/service';
+import type { Guide, Screenshot } from '@mimik/core/guides/types';
+import { Search } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { MascotIcon } from '../../common/components/MascotIcon';
 import { Dialog, DialogPortal } from '../../components/ui/dialog';
 import { Input } from '../../components/ui/input';
+import { loadCardData } from '../../library/lib/load-card-data';
+import type { GuidePlace } from '../../library/types';
 import { navigate } from '../../navigation/lib/navigate';
 import { useFullview } from '../../stores/use-fullview';
-import { KeyboardHints } from './KeyboardHints';
 import { SearchResults } from './SearchResults';
 
-interface GuideResult {
-  guide: Guide;
-  domain: string;
-}
+const RECENT = 5;
+const SHOWN = 8;
 
 export function SearchModal() {
   const {
@@ -27,20 +27,11 @@ export function SearchModal() {
   }));
 
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<GuideResult[]>([]);
+  const [guides, setGuides] = useState<Guide[] | null>(null);
+  const [thumbnails, setThumbnails] = useState(new Map<string, Screenshot>());
+  const [places, setPlaces] = useState(new Map<string, GuidePlace>());
   const [selected, setSelected] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const loadResults = useCallback(async () => {
-    const guides = await getGuides();
-    const withFavicons = await Promise.all(
-      guides.map(async (guide) => {
-        const domain = await getGuideDomain(guide.id);
-        return { guide, domain: domain || '' };
-      }),
-    );
-    setResults(withFavicons);
-  }, []);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -54,15 +45,33 @@ export function SearchModal() {
   }, [toggleSearch]);
 
   useEffect(() => {
-    if (open) {
-      setQuery('');
-      setSelected(0);
-      loadResults();
-      setTimeout(() => inputRef.current?.focus(), 50);
-    }
-  }, [open, loadResults]);
+    if (!open) return;
+    setQuery('');
+    setSelected(0);
+    setGuides(null);
+    void getGuides().then(setGuides);
+    setTimeout(() => inputRef.current?.focus(), 50);
+  }, [open]);
 
-  const filtered = query ? results.filter((r) => r.guide.title.toLowerCase().includes(query.toLowerCase())) : [];
+  const shown = useMemo(() => {
+    if (!guides) return [];
+    const needle = query.trim().toLowerCase();
+    if (!needle) return guides.slice(0, RECENT);
+    return guides.filter((g) => g.title.toLowerCase().includes(needle)).slice(0, SHOWN);
+  }, [guides, query]);
+
+  useEffect(() => {
+    if (!shown.length) return;
+    let live = true;
+    void loadCardData(shown).then((data) => {
+      if (!live) return;
+      setThumbnails(data.thumbnails);
+      setPlaces(data.places);
+    });
+    return () => {
+      live = false;
+    };
+  }, [shown]);
 
   const handleSelect = useCallback(
     (guideId: string) => {
@@ -76,32 +85,41 @@ export function SearchModal() {
     (e: React.KeyboardEvent) => {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        setSelected((s) => Math.min(s + 1, filtered.length - 1));
+        setSelected((s) => Math.min(s + 1, shown.length - 1));
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         setSelected((s) => Math.max(s - 1, 0));
       } else if (e.key === 'Enter') {
         e.preventDefault();
-        if (filtered[selected]) handleSelect(filtered[selected].guide.id);
+        if (shown[selected]) handleSelect(shown[selected].id);
       }
     },
-    [filtered, selected, handleSelect],
+    [shown, selected, handleSelect],
   );
+
+  const typed = query.trim();
+  const heading = !typed
+    ? i18n.t('search_recent')
+    : shown.length === 1
+      ? i18n.t('search_resultsOne')
+      : i18n.t('search_results', [String(shown.length)]);
 
   return (
     <Dialog open={open} onOpenChange={setSearchOpen} modal={false}>
       <DialogPortal>
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-start justify-center bg-primary/25 px-4 pt-[12vh]"
           onClick={() => setSearchOpen(false)}
         >
           <div
-            className="w-full max-w-[640px] rounded-xl overflow-hidden bg-card shadow-lg"
+            role="dialog"
+            aria-label={i18n.t('fullview_searchPlaceholder')}
+            className="w-full max-w-[620px] overflow-hidden rounded-2xl border border-border bg-card shadow-[0_30px_80px_rgba(30,27,75,0.3)]"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={handleKeyDown}
           >
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
-              <Search size={18} className="text-accent shrink-0" />
+            <div className="flex h-[58px] items-center gap-3 border-b border-secondary px-[18px]">
+              <Search size={19} className="shrink-0 text-foreground" />
               <Input
                 ref={inputRef}
                 placeholder={i18n.t('fullview_searchPlaceholder')}
@@ -110,41 +128,32 @@ export function SearchModal() {
                   setQuery(e.target.value);
                   setSelected(0);
                 }}
-                className="flex-1 text-[15px] font-medium border-0 bg-transparent p-0 shadow-none focus-visible:ring-0 h-auto text-foreground"
+                className="h-auto flex-1 border-0 bg-transparent p-0 text-base font-medium text-foreground shadow-none focus-visible:ring-0"
               />
-              {query && (
-                <button onClick={() => setQuery('')} className="p-0.5 rounded text-purple">
-                  <X size={14} />
-                </button>
-              )}
             </div>
-            {filtered.length > 0 ? (
-              <div className="max-h-[320px] overflow-y-auto py-1">
+            {guides && shown.length > 0 && (
+              <div className="px-2 pt-1.5 pb-2">
+                <p className="px-3 pt-2.5 pb-1 text-[11px] font-semibold text-muted-foreground">{heading}</p>
                 <SearchResults
-                  results={filtered}
-                  query={query}
+                  guides={shown}
+                  thumbnails={thumbnails}
+                  places={places}
+                  query={typed}
                   selected={selected}
                   onSelect={handleSelect}
                   onHover={setSelected}
                 />
               </div>
-            ) : (
-              <div className="flex flex-col items-center py-7 gap-2.5">
-                <svg width="56" height="52" viewBox="0 0 56 52" fill="none">
-                  <rect x="8" y="16" width="40" height="24" rx="3" fill="#1E1B4B" />
-                  <path d="M8 16 L8 11 Q8 3, 28 3 Q48 3, 48 11 L48 16 Z" fill="#3730A3" />
-                  <rect x="8" y="15" width="40" height="1.5" fill="#C7D2FE" />
-                  <path d="M17 27 Q20.5 23 24 27" stroke="#C7D2FE" strokeWidth="2" fill="none" strokeLinecap="round" />
-                  <path d="M22 36 Q28 40 34 36" stroke="#C7D2FE" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-                  <circle cx="38" cy="24" r="8" stroke="#1E1B4B" strokeWidth="2" fill="none" />
-                  <line x1="44" y1="30" x2="50" y2="36" stroke="#1E1B4B" strokeWidth="2.5" strokeLinecap="round" />
-                  <circle cx="38" cy="24" r="3" fill="#C7D2FE" />
-                  <circle cx="39" cy="23.5" r="1" fill="#1E1B4B" />
-                </svg>
-                <span className="text-[13px] font-medium text-muted-foreground/50">{i18n.t('search_startTyping')}</span>
+            )}
+            {guides && shown.length === 0 && (
+              <div className="flex flex-col items-center gap-2 px-6 pt-7 pb-8 text-center">
+                <MascotIcon size={52} pose="lookaway" />
+                <p className="text-sm font-semibold text-foreground">
+                  {typed ? i18n.t('search_noMatch', [typed]) : i18n.t('search_noGuidesYet')}
+                </p>
+                {typed && <p className="text-[12.5px] text-muted-foreground">{i18n.t('search_noMatchHint')}</p>}
               </div>
             )}
-            <KeyboardHints />
           </div>
         </div>
       </DialogPortal>

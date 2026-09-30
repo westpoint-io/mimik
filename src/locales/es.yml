@@ -286,14 +286,12 @@ sort:
   listView: Ver lista
 
 search:
-  startTyping: Escribe para buscar una guía
-  noMatchingGuides: No se encontraron guías
+  recent: "Recientes"
+  results: "$1 guías"
+  resultsOne: "1 guía"
+  noMatch: "Ninguna guía coincide con «$1»"
+  noMatchHint: "Prueba con una palabra del título de la guía."
   noGuidesYet: No hay guías todavía
-
-keyboard:
-  navigate: navegar
-  open: abrir
-  close: cerrar
 
 confirmDelete:
   title: "¿Eliminar esta guía?"

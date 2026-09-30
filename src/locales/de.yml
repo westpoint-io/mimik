@@ -286,14 +286,12 @@ sort:
   listView: Listenansicht
 
 search:
-  startTyping: Tippe, um eine Anleitung zu finden
-  noMatchingGuides: Keine passenden Anleitungen
+  recent: "Zuletzt"
+  results: "$1 Anleitungen"
+  resultsOne: "1 Anleitung"
+  noMatch: "Keine Anleitung passt zu „$1“"
+  noMatchHint: "Versuche ein Wort aus dem Titel der Anleitung."
   noGuidesYet: Noch keine Anleitungen
-
-keyboard:
-  navigate: navigieren
-  open: öffnen
-  close: schließen
 
 confirmDelete:
   title: "Anleitung löschen?"
