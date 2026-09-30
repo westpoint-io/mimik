@@ -785,4 +785,5 @@ module.exports.focusedElement = nativeBinding.focusedElement
 module.exports.isSupported = nativeBinding.isSupported
 module.exports.keyLabel = nativeBinding.keyLabel
 module.exports.resolveKey = nativeBinding.resolveKey
+module.exports.startInputHook = nativeBinding.startInputHook
 module.exports.windowAt = nativeBinding.windowAt

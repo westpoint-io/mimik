@@ -9,7 +9,7 @@
   "files": ["index.js", "index.d.ts", "*.node"],
   "napi": {
     "binaryName": "capture-native",
-    "targets": ["x86_64-pc-windows-msvc"]
+    "targets": ["x86_64-pc-windows-msvc", "x86_64-apple-darwin", "aarch64-apple-darwin"]
   },
   "scripts": {
     "build": "napi build --platform --release",

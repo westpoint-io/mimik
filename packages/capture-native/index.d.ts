@@ -39,11 +39,26 @@ export interface ElementRect {
 
 export declare function focusedElement(): Promise<UiElement | null>
 
+export interface HookEvent {
+  kind: string
+  button: number
+  x: number
+  y: number
+  clicks: number
+  keycode: number
+  shift: boolean
+  ctrl: boolean
+  alt: boolean
+  meta: boolean
+}
+
 export declare function isSupported(): boolean
 
 export declare function keyLabel(keycode: number): string | null
 
 export declare function resolveKey(keycode: number, shift: boolean, ctrl: boolean, alt: boolean): string | null
+
+export declare function startInputHook(callback: (event: HookEvent) => void): void
 
 export interface UiElement {
   role?: string
