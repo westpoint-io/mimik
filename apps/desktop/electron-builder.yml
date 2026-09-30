@@ -20,6 +20,12 @@ extraFiles:
 extraResources:
   - from: resources
     to: .
+fileAssociations:
+  - ext: mimik
+    name: Mimik guide
+    description: Mimik guide
+    role: Editor
+    mimeType: application/x-mimik
 publish:
   provider: github
   owner: westpoint-io

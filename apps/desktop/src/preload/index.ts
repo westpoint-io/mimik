@@ -69,6 +69,12 @@ const api = {
   screenshots: {
     sweep: (keep: string[]): Promise<number> => ipcRenderer.invoke('mimik:screenshots:sweep', keep),
   },
+  openedFile: {
+    take: (): Promise<{ name: string; bytes: Uint8Array } | null> => ipcRenderer.invoke('mimik:app:takeOpenedFile'),
+    onOpen: (handler: () => void): void => {
+      ipcRenderer.on('mimik:app:fileOpened', () => handler());
+    },
+  },
   openAtLogin: {
     get: (): Promise<boolean> => ipcRenderer.invoke('mimik:openAtLogin:get'),
     set: (enabled: boolean): Promise<boolean> => ipcRenderer.invoke('mimik:openAtLogin:set', enabled),

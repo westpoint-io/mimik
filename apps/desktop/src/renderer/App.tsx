@@ -10,6 +10,7 @@ import {
   OnboardingFlow,
   SearchModal,
   TooltipProvider,
+  useFullview,
   useRoute,
   VoiceStep,
 } from '@mimik/ui';
@@ -32,6 +33,20 @@ export function App() {
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
   const [permissionsOpen, setPermissionsOpen] = useState(false);
   const [version, setVersion] = useState('');
+  const setImportFile = useFullview((s) => s.setImportFile);
+
+  useEffect(() => {
+    const take = () =>
+      void window.mimik.openedFile.take().then((opened) => {
+        if (!opened) return;
+        setSettingsOpen(false);
+        setSheet(null);
+        navigate({ page: 'library', category: 'all' });
+        setImportFile(new File([new Uint8Array(opened.bytes)], opened.name));
+      });
+    take();
+    window.mimik.openedFile.onOpen(take);
+  }, [setImportFile]);
 
   useEffect(() => {
     void window.mimik.version().then(setVersion);
