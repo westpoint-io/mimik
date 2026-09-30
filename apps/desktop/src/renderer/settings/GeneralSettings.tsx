@@ -6,6 +6,8 @@ import { AppLanguage } from './AppLanguage';
 import { Card } from './Card';
 import { Row } from './Row';
 
+const LOGIN_HINT = navigator.userAgent.includes('Mac') ? 'desktop_startAtLoginHintMac' : 'desktop_startAtLoginHint';
+
 export function GeneralSettings() {
   const [version, setVersion] = useState('');
   const [atLogin, setAtLogin] = useState(false);
@@ -24,7 +26,7 @@ export function GeneralSettings() {
       </Card>
 
       <Card icon={Power} title={i18n.t('desktop_cardStartup')}>
-        <Row label={i18n.t('desktop_startAtLogin')} hint={i18n.t('desktop_startAtLoginHint')}>
+        <Row label={i18n.t('desktop_startAtLogin')} hint={i18n.t(LOGIN_HINT)}>
           <Switch
             checked={atLogin}
             label={i18n.t('desktop_startAtLogin')}
