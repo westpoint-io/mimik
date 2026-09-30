@@ -1,0 +1,50 @@
+name: Desktop macOS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  mac:
+    name: macOS ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15
+            arch: arm64
+          - runner: macos-15-intel
+            arch: x64
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build the accessibility addon
+        run: pnpm --filter @mimik/capture-native build
+
+      - name: Storage check
+        run: pnpm --filter @mimik/desktop check:storage
+
+      - name: Pipeline check
+        run: pnpm --filter @mimik/desktop check:pipeline
+
+      - name: Build the disk image
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: |
+          pnpm build:desktop
+          pnpm --filter @mimik/desktop exec electron-builder --mac dmg --${{ matrix.arch }} --publish never
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mimik-macos-${{ matrix.arch }}
+          path: apps/desktop/dist/*.dmg
+          if-no-files-found: error
