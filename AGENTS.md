@@ -1303,7 +1303,11 @@ the list and grid share.
 
 `SearchModal` listens for Ctrl or ⌘ with K itself. The listener used to live in the extension's
 `FullViewApp`, so the desktop mounted the same dialog and the shortcut did nothing there. The search
-box shows ⌘K on a Mac and Ctrl K everywhere else.
+box shows ⌘K on a Mac and Ctrl K everywhere else. The dialog sits near the top of the window rather than its middle. Before
+anything is typed it lists the five most recent guides; typing narrows every guide by title, eight at
+most, with the match marked. Each row is the library's list row shrunk: the first screenshot, the
+title, where it happened, the step count and the date. The selected row takes the lavender wash, not
+the navy fill. There is no key legend: arrows, Enter and Esc work without one.
 
 A page of the library never scrolls. `usePageFit` fits as many columns as the width allows, none
 narrower than 300 px and at most six, and as many rows of cards or list rows as fit between the top
