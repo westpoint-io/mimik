@@ -2,7 +2,7 @@ import { SERVER } from '@mimik/core/capture/ai/keys';
 import { CUSTOM_MODEL_VALUE } from '@mimik/core/capture/ai/models';
 import { AI_LANGUAGES, type AILanguageCode } from '@mimik/core/capture/ai/prompts';
 import { i18n } from '@mimik/core/env';
-import { Globe, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { SettingsCard } from '../../common/components/SettingsCard';
 import { Input } from '../../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
@@ -28,7 +28,11 @@ export function AiSettings({ keys, onOpenKeys, onChange }: AiSettingsProps) {
       : !keys.keys[provider] && i18n.t('settings.aiNoKey');
 
   return (
-    <SettingsCard icon={Sparkles} title={i18n.t('settings.aiDescriptions')}>
+    <SettingsCard
+      icon={Sparkles}
+      title={i18n.t('settings.aiDescriptions')}
+      hint={i18n.t('settings.aiDescriptionsHint')}
+    >
       <div>
         <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.provider')}</label>
         <ProviderSelect
@@ -70,10 +74,7 @@ export function AiSettings({ keys, onOpenKeys, onChange }: AiSettingsProps) {
       </div>
 
       <div>
-        <label className="block text-[11px] font-semibold text-foreground mb-1">
-          <Globe size={11} className="inline mr-1 -mt-px" />
-          {i18n.t('settings.aiLanguage')}
-        </label>
+        <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.aiLanguage')}</label>
         <Select value={language} onValueChange={(v) => setLanguage(v as AILanguageCode)}>
           <SelectTrigger className="h-8">
             <SelectValue />

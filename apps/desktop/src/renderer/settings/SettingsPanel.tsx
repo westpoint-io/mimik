@@ -148,7 +148,7 @@ export function SettingsPanel() {
                   />
                 </Row>
 
-                <Row label={i18n.t('desktop_keepClicksBeyondArea')}>
+                <Row label={i18n.t('desktop_keepClicksBeyondArea')} hint={i18n.t('desktop_keepClicksBeyondAreaHint')}>
                   <Switch
                     checked={settings.keepClicksBeyondArea}
                     label={i18n.t('desktop_keepClicksBeyondArea')}
@@ -159,14 +159,14 @@ export function SettingsPanel() {
               </Card>
 
               <Card icon={Keyboard} title={i18n.t('desktop_cardKeyboard')} hint={i18n.t('desktop_cardKeyboardHint')}>
-                <Row label={i18n.t('desktop_recordTyping')}>
+                <Row label={i18n.t('desktop_recordTyping')} hint={i18n.t('desktop_recordTypingHint')}>
                   <Switch
                     checked={settings.recordTyping}
                     label={i18n.t('desktop_recordTyping')}
                     onChange={(recordTyping) => save({ recordTyping })}
                   />
                 </Row>
-                <Row label={i18n.t('desktop_typingDebounce')}>
+                <Row label={i18n.t('desktop_typingDebounce')} hint={i18n.t('desktop_typingDebounceHint')}>
                   <Slider
                     label={i18n.t('desktop_typingDebounce')}
                     min={200}

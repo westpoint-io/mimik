@@ -7,8 +7,9 @@ import { SettingsCard } from '../../common/components/SettingsCard';
 import { Input } from '../../components/ui/input';
 import { useKeyCheck } from '../hooks/use-key-check';
 import type { ValidateKey } from '../types';
-import { KeyStatusIcon } from './KeyStatusIcon';
 import { KeyStatusNote } from './KeyStatusNote';
+import { KeyStatusPill } from './KeyStatusPill';
+import { ProviderLogo } from './ProviderLogo';
 import { SecretInput } from './SecretInput';
 
 interface ServerSettingsProps {
@@ -45,23 +46,25 @@ export function ServerSettings({ server, onChange, validate }: ServerSettingsPro
       <div className="-mt-1 divide-y divide-secondary">
         <div className="py-2.5">
           <label className="flex items-center gap-3">
-            <span className="w-[152px] shrink-0 flex items-center gap-1.5 text-[13px] font-semibold text-foreground">
+            <span className="w-[152px] shrink-0 text-[13px] font-semibold text-foreground">
               {i18n.t('settings.baseUrl')}
-              <KeyStatusIcon status={keyCheck.status} />
             </span>
-            <Input
-              value={server.url}
-              onChange={(e) => change({ url: e.target.value })}
-              onBlur={() => probe(server)}
-              placeholder="http://localhost:11434/v1"
-              className="h-8 flex-1 text-[13px] rounded-lg border-border font-mono"
-            />
+            <span className="relative flex min-w-0 flex-1">
+              <Input
+                value={server.url}
+                onChange={(e) => change({ url: e.target.value })}
+                onBlur={() => probe(server)}
+                placeholder="http://localhost:11434/v1"
+                className={`h-8 flex-1 text-[13px] rounded-lg border-border ${keyCheck.status ? 'pr-32' : ''}`}
+              />
+              <span className="pointer-events-none absolute right-2 top-1/2 flex -translate-y-1/2">
+                <KeyStatusPill status={keyCheck.status} />
+              </span>
+            </span>
           </label>
-          {keyCheck.status !== 'valid' && keyCheck.status !== 'checking' && (
-            <div className="pl-[164px]">
-              <KeyStatusNote status={keyCheck.status} />
-            </div>
-          )}
+          <div className="pl-[164px]">
+            <KeyStatusNote status={keyCheck.status} />
+          </div>
         </div>
         <div className="flex items-center gap-3 py-2.5">
           <span className="w-[152px] shrink-0 text-[13px] font-semibold text-foreground">
@@ -83,8 +86,16 @@ export function ServerSettings({ server, onChange, validate }: ServerSettingsPro
             label={i18n.t('settings.serverSpeaks')}
             value={server.protocol}
             options={[
-              { value: 'openai' as const, label: i18n.t('settings.protocolOpenai') },
-              { value: 'anthropic' as const, label: i18n.t('settings.protocolAnthropic') },
+              {
+                value: 'openai' as const,
+                label: i18n.t('settings.protocolOpenai'),
+                logo: <ProviderLogo provider="openai" />,
+              },
+              {
+                value: 'anthropic' as const,
+                label: i18n.t('settings.protocolAnthropic'),
+                logo: <ProviderLogo provider="anthropic" />,
+              },
             ]}
             onChange={(protocol) => {
               change({ protocol });
