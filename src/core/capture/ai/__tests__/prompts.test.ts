@@ -58,6 +58,11 @@ describe('getLanguageSuffix', () => {
     }
   });
 
+  it('writes the Japanese instruction in Japanese', () => {
+    expect(getLanguageSuffix('ja')).toContain('日本語');
+    expect(getLanguageSuffix('ja')).toContain('翻訳しないでください');
+  });
+
   it('writes the German instruction in German', () => {
     expect(getLanguageSuffix('de')).toContain('auf Deutsch');
   });
@@ -70,8 +75,8 @@ describe('getLanguageSuffix', () => {
 });
 
 describe('AI_LANGUAGES', () => {
-  it('has 6 supported languages', () => {
-    expect(AI_LANGUAGES).toHaveLength(6);
+  it('has 7 supported languages', () => {
+    expect(AI_LANGUAGES).toHaveLength(7);
   });
 
   it('includes English as first entry', () => {
