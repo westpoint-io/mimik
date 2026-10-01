@@ -116,6 +116,24 @@ const EXAMPLES: Record<AILanguageCode, PromptExamples> = {
       '配置哪些 Slack 频道发送桌面通知，并设置免打扰时间。',
     ],
   },
+  ja: {
+    steps: [
+      'Submit ボタンをクリックする',
+      'Email フィールドにメールアドレスを入力する',
+      'Role ドロップダウンから "Admin" を選択する',
+      'Settings ページに移動する',
+    ],
+    titles: [
+      'claude-code の Pull Request をレビューする',
+      'Slack の通知設定を変更する',
+      'Workday で経費精算を申請する',
+      'GitHub Organization にリポジトリを作成する',
+    ],
+    descriptions: [
+      'Okta 管理画面からロックされたユーザーのパスワードをリセットします。IT サポート担当者向けです。',
+      'デスクトップ通知を送信する Slack チャンネルを設定し、サイレント時間帯を指定します。',
+    ],
+  },
 };
 
 export function resolveExamples(locale: string): PromptExamples {
