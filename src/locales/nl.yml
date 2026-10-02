@@ -1,0 +1,649 @@
+meta:
+  locale: nl
+
+app:
+  name: Mimik
+  store_title: "Mimik: Stap-voor-stap handleidingen"
+  description: "Leg elke browser-workflow vast als stap-voor-stap handleiding. Bewerk, spreek in, exporteer als video, PDF of DOCX. Lokaal, open source."
+
+common:
+  loading: Laden…
+  cancel: Annuleren
+  save: Opslaan
+  delete: Verwijderen
+  back: Terug
+  continue: Doorgaan
+  skip: Overslaan
+  export: Exporteren
+  close: Sluiten
+  undo: Ongedaan maken
+  star: Markeren
+  unstar: Markering verwijderen
+  restore: Herstellen
+  updated: "Bijgewerkt naar v$1"
+  whatsNew: Bekijk wat er nieuw is
+
+sidepanel:
+  connected: Verbonden
+  connecting: Verbinden…
+  heroTitle: Wat wil je vastleggen?
+  heroSubtitle: Leg elke workflow automatisch vast
+  startCapture: "Opname starten"
+  searchPlaceholder: Handleidingen zoeken…
+  recentLabel: Recent
+  notRecordable: Open een website om te beginnen met opnemen.
+
+library:
+  noGuidesTitle: Nog geen handleidingen
+  noGuidesSub: Start een opname om je eerste handleiding te maken
+  noStarredTitle: Geen gemarkeerde handleidingen
+  noStarredSub: Markeer een handleiding om hem snel terug te vinden
+  trashEmptyTitle: Prullenbak is leeg
+  trashEmptySub: Brandschoon!
+  noMatchingGuides: Geen overeenkomende handleidingen
+  moveToTrash: Naar prullenbak verplaatsen
+  deletePermanently: Definitief verwijderen
+  openInFullView: Openen in volledig scherm
+  openDashboard: "Dashboard openen"
+  openDashboardHint: "Blader, importeer en exporteer handleidingen daar"
+  duplicate: Dupliceren
+  copyOfTitle: "Kopie van $1"
+  duplicateFailed: Kon deze handleiding niet dupliceren
+
+guideme:
+  live: Live
+  roadblock: "Deze stap is niet te vinden op de pagina. Voer hem zelf uit om door te gaan."
+  manualStep: "Bewerkte stappen kunnen niet worden gedetecteerd. Klik op Volgende als je klaar bent."
+  stepOf: "Stap $1 van $2"
+  noDescription: Geen beschrijving
+  prev: Vorige
+  next: Volgende
+  finish: "Afronden"
+  exitTitle: Klaar?
+  exitMessage: "De walkthrough en de pagina-overlay worden gesloten."
+  stay: Blijven
+  exit: Afsluiten
+  guideNotFound: Handleiding niet gevonden
+
+guidemeCompletion:
+  title: "Helemaal klaar, goed gedaan!"
+  stepsCompleted: "$1 stap voltooid."
+  stepsCompletedPlural: "Alle $1 stappen voltooid."
+  allDone: "Klaar"
+  runAgain: "Opnieuw uitvoeren"
+
+recording:
+  capturePaused: Opname gepauzeerd
+  capturePausedBlur: "blur modus · opname gepauzeerd"
+  pauseCapture: Opname pauzeren
+  resumeCapture: Opname hervatten
+  recording: "Opname \xB7 $1 stap"
+  recordingPlural: "Opname \xB7 $1 stappen"
+  readyTitle: "Klaar om vast te leggen"
+  readySub: Klik op de pagina om te starten
+  finishRecording: "Opname beëindigen"
+  smartBlur: "Slim wazigmaken"
+  discard: Verwijderen
+  deleteStep: Stap verwijderen
+  justNow: Zojuist
+  secondsAgo: "$1s geleden"
+  minutesAgo: "$1m geleden"
+
+settings:
+  title: Instellingen
+  aiDescriptions: "AI-beschrijvingen"
+  provider: Provider
+  model: Model
+  modelCustom: Aangepast model
+  baseUrl: Basis-URL
+  useOwnServer: Eigen server gebruiken
+  ownServerHintOpenai: "Werkt met Ollama, LM Studio, vLLM of een OpenAI-compatibele server."
+  ownServerHintAnthropic: "Werkt met een LiteLLM-proxy of een Anthropic-compatibele server."
+  apiKey: "API-sleutel"
+  showKey: Sleutel tonen
+  hideKey: Sleutel verbergen
+  clearKey: Sleutel wissen
+  aiLanguage: "Beschrijvingstaal"
+  voiceover: "Video-voice-over"
+  textToSpeech: "tekst → spraak"
+  voiceoverHint: "Mimik spreekt de tekst van elke stap in over de geëxporteerde video."
+  voiceoverUsingAiKey: "Gebruikt de OpenAI-sleutel van AI-beschrijvingen."
+  voiceoverNoKey: "Voeg een API-sleutel toe om video's in te spreken."
+  voice: "Stem"
+  speechToText: "spraak → tekst"
+  voiceNarrationHint: "Vertel de workflow en Mimik schrijft elke stap op uit wat je zei."
+  voiceNarration: "Spraakcommentaar"
+  voiceUsingAiKey: "Gebruikt de OpenAI-sleutel van AI-beschrijvingen."
+  aiNoKey: "Zonder API-sleutel krijgen stappen eenvoudige regelgebaseerde beschrijvingen."
+  voiceNoKey: "Voeg een API-sleutel toe om opnames in te spreken."
+  microphone: Microfoon
+  microphoneDefault: Systeemstandaard
+  microphoneNeedsAccess: Geef microfoontoestemming om je apparaatnamen te zien.
+  microphoneGrantAccess: Microfoontoestemming verlenen
+  microphoneNone: "Geen microfoon gevonden. Sluit er een aan om hem hier te zien."
+  microphoneUnavailable: Microfoon niet beschikbaar
+  microphoneMissing: "De gekozen microfoon is niet verbonden. De systeemstandaard wordt gebruikt."
+  microphoneTest: Microfoon testen
+  microphoneStatusAllowed: Toegestaan
+  microphoneStatusBlocked: Geblokkeerd
+  microphoneStatusPending: Nog niet toegestaan
+  microphoneBlocked: "Microfoon geblokkeerd. Klik op het pictogram links van de adresbalk en stel Microfoon in op Toestaan."
+  microphoneUnblockHow: Hoe deblokkeer ik hem?
+  microphoneTestStop: Test stoppen
+  microphoneTestFailed: "Kon die microfoon niet openen. Probeer een andere."
+  targetColor: "Merkkleur"
+  targetColorHint: "Klikmarkeringen en exportaccenten"
+  branding: "Exportbranding"
+  brandLogo: "Logo"
+  uploadLogo: "Logo uploaden"
+  replaceLogo: "Vervangen"
+  removeLogo: "Logo verwijderen"
+  footerLine: "Voettekst"
+  footerLinePlaceholder: "bijv. Vertrouwelijk · Alleen voor intern gebruik"
+  footerPresetConfidential: "Vertrouwelijk · Alleen voor intern gebruik"
+  footerPresetNoDistribute: "Niet verspreiden"
+  attribution: 'Toon "Made with Mimik"'
+  saveSettings: "Instellingen opslaan"
+  saved: Opgeslagen
+  validatingKey: "Sleutel controleren\u2026"
+  keyValid: API-sleutel geverifieerd.
+  keyInvalid: "De provider heeft deze sleutel geweigerd. Controleer hem en probeer opnieuw."
+  keyModelRequired: Kies een model voordat je deze sleutel controleert.
+  keyModelInvalid: Het geselecteerde model is niet beschikbaar bij deze provider.
+  checkKey: Sleutel controleren
+  keyCannotSpend: "Deze sleutel heeft geen tegoed. Alleen gratis modellen werken."
+  keyUnreachable: "Kon de provider niet bereiken. Controleer je verbinding."
+  modelsFound: "$1 modellen beschikbaar"
+  smartBlur: "Slim wazigmaken"
+  privacyNotice: "Sleutels en audio gaan alleen naar de provider die je kiest."
+  bugReport: "Een bug gevonden? Meld hem op GitHub"
+  starCtaTitle: "Bevalt het je?"
+  starCtaMessage: "Een GitHub-ster helpt andere mensen Mimik te vinden."
+  starOnGithub: Ster op GitHub
+
+blurPresets:
+  email: E-mail
+  phoneNumbers: "Telefoonnummers"
+  ssn: BSN
+  creditCard: "Creditcard"
+  ipAddress: "IP-adres"
+  macAddress: "MAC-adres"
+
+fullview:
+  allGuides: "Alle handleidingen"
+  starred: Gemarkeerd
+  trash: Prullenbak
+  searchPlaceholder: Handleidingen zoeken…
+  guideMe: "Begeleid mij"
+  untitledGuide: "Naamloze handleiding"
+  writingTitle: Titel schrijven op basis van je vastgelegde stappen...
+  writingDescription: "Beschrijving schrijven\u2026"
+  guideNotFound: "Handleiding niet gevonden"
+  stepCount: "$1 stap"
+  stepCountPlural: "$1 stappen"
+  pageOf: "$1 / $2"
+
+sort:
+  recentFirst: Nieuwste eerst
+  oldestFirst: Oudste eerst
+  alphaAZ: "A–Z"
+  mostSteps: Meeste stappen
+  gridView: Rasterweergave
+  listView: Lijstweergave
+
+search:
+  startTyping: Begin te typen om een handleiding te vinden
+  noMatchingGuides: Geen overeenkomende handleidingen
+  noGuidesYet: Nog geen handleidingen
+
+keyboard:
+  navigate: navigeren
+  open: openen
+  close: sluiten
+
+confirmDelete:
+  title: "Handleiding verwijderen?"
+  message: Dit verwijdert deze handleiding definitief. Dit kan niet ongedaan worden gemaakt.
+  confirm: Definitief verwijderen
+
+editor:
+  backToLibrary: Terug naar bibliotheek
+  openInDashboard: Openen
+  openInDashboardHint: Openen in het dashboard om te bewerken of exporteren
+  guideMe: "Begeleid mij"
+  guideMeUnavailable: Geen herhaalbare stappen in deze handleiding
+  deleteThisStep: "Deze stap verwijderen?"
+  selectStep: Stap selecteren
+  selectedCount: "$1 geselecteerd"
+  deleteSelectedStep: "$1 geselecteerde stap verwijderen?"
+  deleteSelectedSteps: "$1 geselecteerde stappen verwijderen?"
+  copyScreenshot: Schermafbeelding kopiëren
+  noScreenshot: Geen schermafbeelding
+  edit: Bewerken
+  done: Klaar
+  versionHistory: Versiegeschiedenis
+  moreActions: Meer acties
+  generateDescription: Beschrijving genereren
+  regenerateDescription: Beschrijving opnieuw genereren
+  generatingDescription: "Genereren\u2026"
+  descriptionPlaceholder: Beschrijving toevoegen
+  descriptionErrorNoApiKey: "Voeg een AI-API-sleutel toe in Instellingen om beschrijvingen te genereren."
+  descriptionErrorNoSteps: "Deze handleiding heeft geen beschreven stappen om samen te vatten."
+  descriptionErrorFailed: Kon geen beschrijving genereren. Probeer opnieuw.
+  descriptionErrorSaveFailed: "Kon de nieuwe beschrijving niet opslaan. Probeer opnieuw."
+  writingStepDescription: "Beschrijving schrijven\u2026"
+  transcribingStepDescription: "Jouw commentaar transcriberen…"
+  rewriteAskAi: AI vragen
+  rewritePlaceholder: "Vertel de AI hoe deze tekst bewerkt moet worden\u2026"
+  rewriteEnter: Enter
+  rewriteShorter: Korter
+  rewriteDetail: Meer detail
+  rewriteGrammar: Grammatica corrigeren
+  rewriteFormal: Formeler
+  rewriteCasual: Informeler
+  rewriteReplace: Vervangen
+  rewriteDiscard: Verwerpen
+  rewriteErrorNoApiKey: "Voeg een AI-API-sleutel toe in Instellingen om tekst te herschrijven."
+  rewriteErrorFailed: Kon de selectie niet herschrijven. Probeer opnieuw.
+  rewriteErrorStale: De tekst is gewijzigd. Selecteer hem opnieuw.
+  restoreSpoken: Gesproken tekst herstellen
+
+capture:
+  recordSteps: Stappen opnemen
+  moreStepsTitle: Meer stappen vastleggen
+  moreStepsBody: Nieuwe stappen worden hier ingevoegd. Kies het tabblad om in op te nemen.
+  startCapture: Opname starten
+  noRecordableTabs: Er zijn geen opneembare tabbladen open in dit venster.
+
+blocks:
+  add: Blok toevoegen
+  heading: Kop
+  callout: Opmerking
+  headingPlaceholder: Sectietitel
+  calloutPlaceholder: Schrijf een opmerking
+  deleteHeading: "Deze kop verwijderen?"
+  deleteCallout: "Deze opmerking verwijderen?"
+  variantInfo: Info
+  variantWarning: Waarschuwing
+  variantError: Fout
+  variantSuccess: Geslaagd
+  variantCustom: Aangepast
+
+history:
+  title: "Versiegeschiedenis"
+  current: Huidig
+  restore: Herstellen
+  unchangedVersions: "Ongewijzigde versies ($1)"
+  readOnlyBanner: "Je bekijkt een eerdere versie. Sluit de versiegeschiedenis om terug te gaan."
+  loadError: Kon de versiegeschiedenis niet laden. Probeer opnieuw.
+  restoreError: Kon niet herstellen. Probeer het over een moment opnieuw.
+  storageFull: Onvoldoende opslag voor een herstelpunt. Verwijder een handleiding en probeer opnieuw.
+  empty: "Nog geen eerdere versies. Bewerk de handleiding om er een te maken."
+  nameVersion: Deze versie benoemen
+  namePlaceholder: Versienaam
+  allVersions: Alle versies
+  namedOnly: Alleen benoemde versies
+  emptyNamed: "Nog geen benoemde versies."
+  renameError: Kon die naam niet opslaan. Probeer opnieuw.
+  changeTitle: Titel gewijzigd
+  changeStepAdded: "$1 stap toegevoegd"
+  changeStepsAdded: "$1 stappen toegevoegd"
+  changeStepRemoved: "$1 stap verwijderd"
+  changeStepsRemoved: "$1 stappen verwijderd"
+  changeStepEdited: "$1 stap bewerkt"
+  changeStepsEdited: "$1 stappen bewerkt"
+  changeStepReordered: Stappen opnieuw geordend
+  changeLink: "$1 link gewijzigd"
+  changeLinks: "$1 links gewijzigd"
+  changeImageReplaced: "$1 afbeelding vervangen"
+  changeImagesReplaced: "$1 afbeeldingen vervangen"
+  changeImageCropped: "$1 afbeelding bijgesneden"
+  changeImagesCropped: "$1 afbeeldingen bijgesneden"
+  changeImageAnnotated: "$1 afbeelding geannoteerd"
+  changeImagesAnnotated: "$1 afbeeldingen geannoteerd"
+  changeImageBlurred: "$1 afbeelding wazig gemaakt"
+  changeImagesBlurred: "$1 afbeeldingen wazig gemaakt"
+  changeAltText: Alternatieve tekst bewerkt
+
+emptyGuide:
+  title: Deze handleiding is leeg
+  subtitle: "Neem stappen op om hem te vullen"
+
+blurPanel:
+  title: "Slim wazigmaken"
+  manualMode: "Handmatige modus"
+  selectElements: Elementen selecteren om wazig te maken
+  done: Klaar
+  doneResume: "Klaar · Opname hervatten"
+  resetAll: "Alles resetten"
+
+screenshotView:
+  zoomIn: Inzoomen
+  zoomOut: Uitzoomen
+  saved: Opgeslagen
+  editMenu: Schermafbeelding bewerken
+  downloadEdited: "Bewerkte afbeelding"
+  downloadOriginal: "Originele afbeelding"
+  edit: "Bewerken"
+  addImage: Afbeelding toevoegen
+  replaceImage: Afbeelding vervangen
+  replaceHint: "Kies een nieuwe afbeelding voor deze stap"
+  replaceDrop: "Klik om te bladeren of sleep een afbeelding hierheen"
+  replaceFormats: "PNG, JPG of WebP"
+  download: Downloaden
+  deleteImage: Afbeelding verwijderen
+  deleteConfirm: "Deze schermafbeelding verwijderen? Dit kan niet ongedaan worden gemaakt."
+  imageDeleted: Afbeelding verwijderd
+  altButton: ALT
+  altLabel: Alternatieve tekst
+  altPlaceholder: Beschrijf deze afbeelding voor schermlezers
+
+annotationEditor:
+  title: Schermafbeelding bewerken
+  toolBox: Rechthoek
+  toolArrow: Pijl
+  toolText: Tekst
+  toolSelect: "Selecteren"
+  addTarget: "Klikdoel toevoegen"
+  toolRedact: Verwijderen
+  toolCrop: Bijsnijden
+  colorLabel: "Kleur"
+  textPlaceholder: Typ iets…
+  targetBorder: Randstijl
+  modeAnnotate: "Annoteren"
+  toolLine: "Lijn"
+  duplicate: "Dupliceren"
+  toolEllipse: "Ellips"
+  lineColor: "Lijnkleur"
+  fillColor: "Vulkleur"
+  lineWidth: "Lijndikte"
+  cornerRadius: "Hoekradius"
+  font: "Lettertype"
+  bold: "Vet"
+  italic: "Cursief"
+  lineHeight: "Regelafstand"
+  width_none: "Geen omtrek"
+  width_xs: "Extra dun"
+  width_sm: "Dun"
+  width_ms: "Medium dun"
+  width_md: "Medium"
+  width_ml: "Medium dik"
+  width_lg: "Dik"
+  width_xl: "Extra dik"
+  zoom: "Zoom"
+  cropHint: "Sleep om bij te snijden, of sleep een hoek om de grootte aan te passen"
+  resetCrop: "Bijsnijden resetten"
+  arrowEnd: "Pijlpunt"
+  fontSize: "Lettergrootte"
+  undo: "Ongedaan maken"
+  redo: "Opnieuw"
+  end_none: "Geen"
+  end_bar: "Balk"
+  end_arrow: "Pijl"
+  end_arrow_solid: "Pijl gevuld"
+  end_circle: "Cirkel"
+  end_circle_solid: "Cirkel gevuld"
+  end_square: "Vierkant"
+  end_square_solid: "Vierkant gevuld"
+  done: Klaar
+
+exportPreview:
+  voiceover: "Voice-over"
+  voiceoverHint: "Elke stap hardop voorlezen. Stappen worden vastgehouden totdat de stem klaar is."
+  audio: "Audio"
+  audioSilent: "Stil"
+  audioNarrated: "Ingesproken"
+  voiceoverNoKey: "Voeg een OpenAI- of ElevenLabs-sleutel toe in Instellingen om video's in te spreken."
+  videoLength: "Videolengte $1"
+  videoLengthVoice: "Videolengte $1 → $2 met voice-over"
+  voiceoverCost: "$1 clips · ongeveer $2 tekens te synthetiseren"
+  voiceoverFailed: "Voice-over mislukt. Controleer de API-sleutel in Instellingen."
+  voiceoverNoAudioCodec: "De video heeft geen geluid. Deze browser kan geen audio aan video's toevoegen."
+  voiceoverNoKeySkip: "De video heeft geen geluid. Voeg een voice-over API-sleutel toe in Instellingen."
+  voiceoverNothingToSay: "De video heeft geen geluid. Deze handleiding heeft geen tekst om voor te lezen."
+  narrating: "Stap $1 van $2 inspreken"
+  stepDescriptions: "Stapteksten"
+  stepDescriptionsHint: "De staptekst op elk videoframe tekenen"
+  resolution: "Videokwaliteit"
+  gifQuality: "GIF-kwaliteit"
+  gif_low: "Laag"
+  gif_medium: "Gemiddeld"
+  gif_high: "Hoog"
+  res_720p: "720p"
+  res_1080p: "1080p"
+  title: "Exportvoorvertoning"
+  cover: "Voorpagina"
+  coverHint: "Een apart eerste blad met de titel en details"
+  screenshots: "Schermafbeeldingen"
+  screenshotsHint: "Uitschakelen voor een compact document met alleen tekst"
+  stepUrls: "Staplinks"
+  stepUrlsHint: "Het paginaadres van elke stap tonen"
+  imageScale: "Schermafbeeldingsgrootte"
+  scale_small: "Klein"
+  scale_medium: "Gemiddeld"
+  scale_large: "Groot"
+  download: "$1 exporteren"
+  rendering: "Voorvertoning bijwerken"
+  videoReady: "$1 stappen · ongeveer $2 min video"
+  videoReadyHint: "Lange handleidingen worden niet automatisch gecodeerd. De voorvertoning dekt elke stap."
+  videoGenerate: "Voorvertoning genereren"
+  modeDocument: "Document"
+  modeVideo: "Video"
+  encodingVideo: "Videovoorvertoning coderen"
+  videoFailed: "De videovoorvertoning kon niet worden gemaakt"
+  bundle: "Mimik-bestand"
+  bundleHint: "Een .mimik-bestand dat iemand anders kan importeren en bewerken"
+  bundleStripInputs: "Getypte tekst verwijderen"
+  bundleStripInputsHint: "Verwijdert het uit stapteksten en links. Schermafbeeldingen tonen nog steeds wat er op het scherm stond."
+  bundleUrls: "Linkdetail"
+  url_origin: "Site"
+  url_path: "Pagina"
+  url_full: "Volledig"
+  bundleRedactionNote: "Wazig gemaakte gebieden worden verwijderd uit de geëxporteerde afbeeldingen."
+  bundleTypedWarning: "$1 schermafbeelding toont tekst die je hebt getypt. Maak hem wazig voordat je deelt."
+  bundleTypedWarningPlural: "$1 schermafbeeldingen tonen tekst die je hebt getypt. Maak ze wazig voordat je deelt."
+
+videoPlayer:
+  stepCount: "$1 stappen"
+  previousStep: "Vorige stap"
+  nextStep: "Volgende stap"
+  speed: "Afspeelsnelheid"
+  mute: "Dempen"
+  unmute: "Dempen opheffen"
+  spoken: "Ingesproken stap"
+  play: "Afspelen"
+  pause: "Pauzeren"
+  fullscreen: "Volledig scherm"
+  exitFullscreen: "Volledig scherm verlaten"
+
+exportMenu:
+  docx: DOCX
+  html: HTML
+  markdown: Markdown
+  pdf: PDF
+  gif: GIF
+  video: Video
+  cancelProgress: "Annuleren · $1%"
+  bundle: "Mimik-bestand"
+
+onboarding:
+  welcomeBadge: Welkom
+  welcomeTitle: "Je hebt Mimik succesvol geïnstalleerd!"
+  welcomeMessage: "Met slechts een paar stappen ben je klaar om browser-workflows automatisch vast te leggen en stap-voor-stap handleidingen te maken. Geen account nodig \u2014 alles blijft in je browser."
+  getStarted: Aan de slag
+  stepOf: "Stap $1 van $2"
+  aiTitle: "AI-beschrijvingen"
+  aiMessage: Verbind je eigen API-sleutel om AI-gegenereerde stapbeschrijvingen te krijgen. Dit is optioneel en kan later worden gewijzigd in instellingen.
+  aiGenerated: AI-gegenereerd
+  aiGeneratedDescription: AI-gegenereerde beschrijving
+  voiceTitle: Praat, dan handel
+  voiceMessage: "Zeg wat je gaat doen, doe het dan. Mimik koppelt jouw woorden aan de volgende actie."
+  voiceRecordHint: "Spraakcommentaar staat standaard uit. Zet het per handleiding aan met de microfoonknop in het zijpaneel."
+  voiceDataNotice: "Audio gaat naar de provider die je kiest, met jouw API-sleutel."
+  voiceDemoLabel: Hoe commentaar wordt gekoppeld
+  voiceDemoSay: Je zegt
+  voiceDemoQuote: "Nu open ik de factuurinstellingen"
+  voiceDemoAct: Dan klik je
+  voiceDemoAction: Klik op het tabblad Facturering
+  voiceDemoBadge: Van jouw stem
+  blurTitle: "Slim wazigmaken"
+  blurMessage: Gevoelige informatie in schermafbeeldingen automatisch wazig maken. Kies welke patronen worden gedetecteerd.
+  screenshotPreview: Schermafbeeldingsvoorvertoning
+  notEnabled: Niet ingeschakeld
+  categoriesProtected: "$1 categorieën beveiligd"
+  pinTitle: Mimik vastmaken
+  pinMessage: "Maak Mimik vast aan je werkbalk voor snelle toegang."
+  pinStep1Title: Klik op het puzzelstukpictogram
+  pinStep1Sub: Rechtsboven in je browserwerkbalk
+  pinStep2Title: Zoek Mimik
+  pinStep2Sub: In het extensiesmenu
+  pinStep3Title: Klik op het speldpictogram
+  pinStep3Sub: Mimik verschijnt dan in je werkbalk
+  pinScreenshotAlt: Mimik-extensie vastmaken
+  starTitle: Wil je ons een ster geven?
+  starMessage: "Mimik is gratis en open source. Een ster helpt andere mensen het te vinden."
+  starAction: Ster op GitHub
+  starLater: Misschien later
+  doneTitle: "Je bent klaar"
+  doneMessage: "Klik op \"Opname starten\" in het zijpaneel om je eerste handleiding op te nemen."
+  featureAutoCapture: Automatisch vastleggen
+  featureAIAssist: AI-assistent
+  featureVoice: Spraakcommentaar
+  featureAnnotate: Annoteren en redigeren
+  featureExports: "Exporteren naar PDF, video & meer"
+  featureSmartBlur: Slim wazigmaken
+  openMimik: Mimik openen
+
+steps:
+  pressKey: "$1 indrukken op $2"
+  toggleCheckbox: "$1 in-/uitschakelen"
+  selectRadio: "$1 selecteren"
+  toggleSwitch: "$1 in-/uitschakelen"
+  clickLink: 'Klik op link "$1"'
+  click: "Klik op $1"
+  typeIntoField: "Typen in veld $1 $2"
+  typeInto: "Typen in $1"
+  typeSecret: "Wachtwoord typen"
+  typeValueInto: '"$1" typen in $2'
+  clearField: "$1 leegmaken"
+  textField: "tekstveld"
+  copyFrom: "Kopiëren van $1"
+  pasteInto: "Plakken in $1"
+  cutFrom: "Knippen van $1"
+  drag: "$1 slepen"
+  navigate: Navigeren naar pagina
+  defaultAction: "$1 $2"
+
+export:
+  guideLabel: "HANDLEIDING"
+  endLabel: "HANDLEIDING VOLTOOID"
+  stepsRange: "Stappen $1–$2 van $3"
+  stepOf: "Stap $1 van $2"
+  madeWith: "Made with Mimik"
+  created: Gemaakt
+  source: Bron
+  step: Stap
+  steps: Stappen
+  stepLabel: "Stap $1"
+  stepsCount: "$1 stappen"
+  createdLabel: "Gemaakt op $1"
+  sourceLabel: "Bron: $1"
+
+background:
+  guideOnDomain: "Handleiding op $1"
+  newGuide: "Nieuwe handleiding"
+
+voice:
+  turnOn: Spraakcommentaar inschakelen
+  turnOff: Spraakcommentaar uitschakelen
+  needsApiKey: Voeg een transcriptie-API-sleutel toe in Instellingen om in te spreken
+  pausedWithCapture: Spraakcommentaar is gepauzeerd met de opname
+  micStarting: Microfoon starten…
+  micHearing: Ik hoor je
+  micQuiet: Geen geluid
+  nextRecording: Spraakcommentaar is ingeschakeld en start met je volgende opname.
+  orderHint: Zeg wat je gaat doen, doe het dan. Jouw woorden worden gekoppeld aan de volgende actie.
+  transcribing: Jouw spraakcommentaar transcriberen…
+  transcribingHint: "Stapbeschrijvingen worden bijgewerkt als het klaar is."
+  narrated: "Spraakcommentaar toegevoegd aan $1 stap."
+  narratedPlural: "Spraakcommentaar toegevoegd aan $1 stappen."
+  narratedNone: "Geen van jouw commentaar matchte een stap."
+  guideSafe: "Je handleiding en schermafbeeldingen zijn niet aangetast."
+  openSettings: Instellingen openen
+  errorPermissionDenied: "Microfoontoestemming werd geweigerd."
+  errorNoDevice: "Geen microfoon gevonden."
+  errorNoAudio: "De microfoon heeft geen geluid opgevangen."
+  errorMissingApiKey: "Spraakcommentaar heeft een transcriptie-API-sleutel nodig."
+  errorStreamEnded: "De microfoon viel halverwege uit."
+  errorNotRecording: "Spraakcommentaar liep niet."
+  errorAlreadyRecording: "Spraakcommentaar liep al."
+  errorUnsupported: Deze browser kan geen spraakcommentaar opnemen.
+  errorUnknown: "Spraakcommentaar is onverwacht gestopt."
+
+micPermission:
+  title: Microfoontoestemming toestaan
+  checkingMessage: "Microfoontoestemming controleren…"
+  promptingMessage: "Kies Toestaan in de browsermelding. Dit tabblad sluit zichzelf."
+  grantedTitle: Microfoon gereed
+  grantedMessage: "Je wordt teruggebracht."
+  deniedTitle: Microfoontoestemming is geweigerd
+  deniedMessage: "Klik op het pictogram links van de adresbalk, stel Microfoon in op Toestaan en probeer opnieuw."
+  retry: Opnieuw proberen
+  privacy: "Audio gaat naar jouw transcriptieprovider. Mimik slaat het nooit op."
+
+aiStatus:
+  rejected: "$1 heeft jouw API-sleutel geweigerd."
+  noCredits: "Je $1-account heeft geen tegoed."
+  rateLimited: "$1 beperkt de verzoeken van Mimik."
+  modelInvalid: "$1 biedt dat model niet aan voor jouw account."
+  quota: "Dat verzoek was te groot voor dit model."
+  network: "Mimik kon $1 niet bereiken."
+  unknown: "$1 heeft het verzoek geweigerd."
+  actionCheckKey: "Controleer jouw sleutel in Instellingen."
+  actionAddCredits: "Voeg tegoed toe en controleer de sleutel opnieuw."
+  actionWait: "Wacht even voordat je meer opneemt."
+  actionPickModel: "Kies een ander model in Instellingen."
+  actionConnection: "Controleer jouw verbinding."
+
+stepSource:
+  ai: "AI"
+  voice: "Stem"
+  basic: "Basis"
+  edited: "Bewerkt"
+  hint: "Waar deze beschrijving vandaan komt"
+
+import:
+  title: "Handleiding importeren"
+  dialogDescription: "Bekijk een handleidingsbestand voordat je het aan je bibliotheek toevoegt"
+  button: "Importeren"
+  dropHere: "Sleep een .mimik-bestand om te importeren"
+  reading: "Bestand lezen"
+  confirm: "Aan bibliotheek toevoegen"
+  cancel: "Annuleren"
+  guideMeHint: "Opgenomen op $1. Begeleid mij werkt alleen opnieuw op die site."
+  noteRedacted: "Wazig gemaakte gebieden zijn verwijderd door de auteur en kunnen niet worden hersteld."
+  noteInputs: "Tekst getypt in velden is weggelaten."
+  noteUrls: "Links zijn ingekort tot het paginaadres."
+  noteUrlsOrigin: "Links zijn ingekort tot het siteadres."
+  errorUnreadable: "Dit bestand kon niet worden geopend. Het is mogelijk beschadigd of onvolledig."
+  errorNotABundle: "Dit is geen Mimik-bestand. Kies een bestand dat is geëxporteerd vanuit Mimik."
+  errorVersion: "Dit bestand is gemaakt met een nieuwere Mimik. Werk Mimik bij en probeer opnieuw."
+  errorEmpty: "Dit bestand heeft geen stappen."
+  errorFailed: "De handleiding kon niet worden opgeslagen in je bibliotheek. Probeer opnieuw te importeren."
+
+transcript:
+  title: Transcript
+  empty: Er is niets ingesproken in deze opname.
+  loadError: Kon het transcript niet laden. Probeer opnieuw.
+  filterAll: "Alles ($1)"
+  filterUnused: "Ongebruikt ($1)"
+  privacyNote: "Alleen op dit apparaat bewaard. Nooit opgenomen in geëxporteerde handleidingen, en verwijderd met de handleiding."
+  usedInStep: "Stap $1"
+  readOnlyHint: Zet Bewerken aan in de bovenste balk om deze regels aan een stap toe te voegen.
+  notUsed: Ongebruikt
+  filteredOut: Uitgefilterd
+  addToStep: "Toevoegen aan stap $1"
+  copyAll: Alles kopiëren
+  download: Downloaden
+  delete: Transcript verwijderen
+  confirmDelete: "Dit transcript verwijderen? Dit kan niet ongedaan worden gemaakt."
