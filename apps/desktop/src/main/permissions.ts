@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { app, desktopCapturer, shell, systemPreferences } from 'electron';
 
@@ -15,6 +15,8 @@ const SETTINGS_PANE: Record<PermissionKind, string> = {
 };
 
 const PROMPTED_FILE = 'permission-prompts.json';
+const HELD_FILE = 'held-capture.json';
+const HELD_FOR_MS = 10 * 60 * 1000;
 
 export function readPermissions(): CapturePermissions {
   if (process.platform !== 'darwin') return { accessibility: true, screen: true };
@@ -22,6 +24,21 @@ export function readPermissions(): CapturePermissions {
     accessibility: systemPreferences.isTrustedAccessibilityClient(false),
     screen: systemPreferences.getMediaAccessStatus('screen') === 'granted',
   };
+}
+
+export function holdCapture(held: boolean): void {
+  const file = join(app.getPath('userData'), HELD_FILE);
+  if (held) writeFileSync(file, JSON.stringify({ at: Date.now() }));
+  else rmSync(file, { force: true });
+}
+
+export function captureWasHeld(): boolean {
+  try {
+    const { at } = JSON.parse(readFileSync(join(app.getPath('userData'), HELD_FILE), 'utf8'));
+    return Date.now() - at < HELD_FOR_MS;
+  } catch {
+    return false;
+  }
 }
 
 function prompted(): PermissionKind[] {

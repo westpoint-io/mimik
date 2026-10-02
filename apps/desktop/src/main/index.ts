@@ -11,7 +11,7 @@ import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from 
 import { type CaptureMode, type CaptureSettings, loadSettings, saveSettings } from './capture/settings';
 import { mainI18n } from './i18n';
 import { CaptureOverlay, type OverlayAiFailure, type OverlayCommand, type OverlayStep } from './overlay';
-import { type PermissionKind, readPermissions, requestPermission } from './permissions';
+import { captureWasHeld, holdCapture, type PermissionKind, readPermissions, requestPermission } from './permissions';
 import { bindShortcuts, type ShortcutName, shortcutMap, unbindShortcuts } from './shortcuts';
 import { checkForUpdates } from './updater';
 
@@ -25,8 +25,7 @@ let describing = true;
 let captureSettings: CaptureSettings | null = null;
 let steps: OverlayStep[] = [];
 
-const OPEN_CAPTURE_FLAG = '--open-capture';
-let pendingStart: (() => void) | null = process.argv.includes(OPEN_CAPTURE_FLAG)
+let pendingStart: (() => void) | null = captureWasHeld()
   ? () => mainWindow?.webContents.send('mimik:capture:openSheet')
   : null;
 
@@ -62,6 +61,7 @@ function whenPermitted(start: () => void): void {
     return;
   }
   pendingStart = start;
+  holdCapture(true);
   showWindow();
   mainWindow?.webContents.send('mimik:permissions:show');
 }
@@ -498,20 +498,24 @@ if (!app.requestSingleInstanceLock()) {
         overlay?.arm();
       });
     });
-    ipcMain.handle('mimik:permissions:get', () => ({ ...readPermissions(), pending: pendingStart !== null }));
+    ipcMain.handle('mimik:permissions:get', () => {
+      if (pendingStart) holdCapture(true);
+      return { ...readPermissions(), pending: pendingStart !== null };
+    });
     ipcMain.handle('mimik:permissions:request', (_event, kind: PermissionKind) => requestPermission(kind));
     ipcMain.on('mimik:permissions:continue', () => {
       const start = pendingStart;
       pendingStart = null;
+      holdCapture(false);
       warmScreenCapture();
       start?.();
     });
     ipcMain.on('mimik:permissions:cancel', () => {
       pendingStart = null;
+      holdCapture(false);
     });
     ipcMain.on('mimik:permissions:restart', () => {
-      const args = process.argv.slice(1).filter((arg) => arg !== OPEN_CAPTURE_FLAG);
-      app.relaunch({ args: [...args, OPEN_CAPTURE_FLAG] });
+      app.relaunch();
       quit();
     });
 
