@@ -581,5 +581,6 @@ fn framed(front: HWND) -> Option<ActiveWindow> {
     y: f64::from(rect.top),
     width: f64::from(rect.right - rect.left),
     height: f64::from(rect.bottom - rect.top),
+    on_menu: false,
   })
 }

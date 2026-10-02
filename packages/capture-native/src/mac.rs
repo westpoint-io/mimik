@@ -6,7 +6,10 @@ use std::sync::Mutex;
 
 use napi::Result;
 
-use crate::macmap::{is_control, is_label, mac_keycode, named_key, printable, role, PROMOTE_DEPTH};
+use crate::macmap::{
+  is_control, is_label, mac_keycode, named_key, printable, role, window_for_click, LayeredWindow,
+  PROMOTE_DEPTH,
+};
 use crate::{ActiveWindow, ElementNode, ElementRect, UiElement};
 
 type CFTypeRef = *const c_void;
@@ -447,6 +450,7 @@ pub fn clear_dead_key() {
 
 struct WindowInfo {
   pid: i32,
+  layer: f64,
   owner: Option<String>,
   title: Option<String>,
   bounds: CGRect,
@@ -466,7 +470,7 @@ fn number(dictionary: CFDictionaryRef, key: CFStringRef, kind: isize) -> Option<
   }
 }
 
-fn windows() -> Vec<WindowInfo> {
+fn windows(any_layer: bool) -> Vec<WindowInfo> {
   let Some(list) = Owned::new(unsafe { CGWindowListCopyWindowInfo(ON_SCREEN_ONLY | EXCLUDE_DESKTOP, 0) })
   else {
     return Vec::new();
@@ -478,7 +482,7 @@ fn windows() -> Vec<WindowInfo> {
       let layer = number(entry, unsafe { kCGWindowLayer }, NUMBER_INT32)?;
       let alpha = number(entry, unsafe { kCGWindowAlpha }, NUMBER_FLOAT64).unwrap_or(1.0);
       let pid = number(entry, unsafe { kCGWindowOwnerPID }, NUMBER_INT32)? as i32;
-      if layer != 0.0 || alpha <= 0.0 || pid == own {
+      if (!any_layer && layer != 0.0) || alpha <= 0.0 || pid == own {
         return None;
       }
       let mut bounds = CGRect::default();
@@ -488,6 +492,7 @@ fn windows() -> Vec<WindowInfo> {
       }
       (bounds.size.width > 1.0 && bounds.size.height > 1.0).then(|| WindowInfo {
         pid,
+        layer,
         owner: string_of(unsafe { CFDictionaryGetValue(entry, kCGWindowOwnerName) }),
         title: string_of(unsafe { CFDictionaryGetValue(entry, kCGWindowName) }),
         bounds,
@@ -512,7 +517,7 @@ fn app_bundle(path: &str) -> String {
     .map_or_else(|| path.to_string(), |found| found.to_string_lossy().into_owned())
 }
 
-fn framed(found: &WindowInfo) -> ActiveWindow {
+fn framed(found: &WindowInfo, on_menu: bool) -> ActiveWindow {
   let path = process_path(found.pid).map(|path| app_bundle(&path));
   let app_name = found
     .owner
@@ -532,6 +537,7 @@ fn framed(found: &WindowInfo) -> ActiveWindow {
     y: found.bounds.origin.y,
     width: found.bounds.size.width,
     height: found.bounds.size.height,
+    on_menu,
   }
 }
 
@@ -542,25 +548,31 @@ fn frontmost_pid() -> Option<i32> {
 }
 
 pub fn active_window() -> Option<ActiveWindow> {
-  let all = windows();
+  let all = windows(false);
   let front = frontmost_pid();
   all
     .iter()
     .find(|found| Some(found.pid) == front)
     .or_else(|| all.first())
-    .map(framed)
+    .map(|found| framed(found, false))
 }
 
 pub fn window_at(x: i32, y: i32) -> Option<ActiveWindow> {
   let (x, y) = (f64::from(x), f64::from(y));
-  windows()
+  let all = windows(true);
+  let layered: Vec<LayeredWindow> = all
     .iter()
-    .find(|found| {
+    .map(|found| {
       let bounds = found.bounds;
-      x >= bounds.origin.x
-        && y >= bounds.origin.y
-        && x < bounds.origin.x + bounds.size.width
-        && y < bounds.origin.y + bounds.size.height
+      LayeredWindow {
+        pid: found.pid,
+        layer: found.layer,
+        under_point: x >= bounds.origin.x
+          && y >= bounds.origin.y
+          && x < bounds.origin.x + bounds.size.width
+          && y < bounds.origin.y + bounds.size.height,
+      }
     })
-    .map(framed)
+    .collect();
+  window_for_click(&layered, frontmost_pid()).map(|(index, on_menu)| framed(&all[index], on_menu))
 }

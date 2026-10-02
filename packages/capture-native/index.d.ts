@@ -19,6 +19,7 @@ export interface ActiveWindow {
   y: number
   width: number
   height: number
+  onMenu: boolean
 }
 
 export declare function clearDeadKey(): void

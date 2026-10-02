@@ -35,7 +35,7 @@ function fromNative(found: ActiveWindow): FocusedWindowResult {
     window: {
       title: found.title ?? null,
       app: { name: found.appName, id: found.appPath },
-      bounds: toDip({ x: found.x, y: found.y, width: found.width, height: found.height }),
+      bounds: found.onMenu ? null : toDip({ x: found.x, y: found.y, width: found.width, height: found.height }),
     },
   };
 }

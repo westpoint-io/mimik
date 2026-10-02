@@ -57,6 +57,7 @@ pub struct ActiveWindow {
   pub y: f64,
   pub width: f64,
   pub height: f64,
+  pub on_menu: bool,
 }
 
 #[napi(object)]

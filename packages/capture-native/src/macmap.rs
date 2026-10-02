@@ -223,13 +223,42 @@ pub fn named_key(keycode: u32) -> Option<String> {
     .map(|(_, number)| format!("F{number}"))
 }
 
+pub const MENU_BAR_LAYER: f64 = 24.0;
+
+pub struct LayeredWindow {
+  pub pid: i32,
+  pub layer: f64,
+  pub under_point: bool,
+}
+
+pub fn window_for_click(windows: &[LayeredWindow], front: Option<i32>) -> Option<(usize, bool)> {
+  let hit = windows.iter().find(|found| found.under_point)?;
+  if hit.layer == 0.0 {
+    return windows
+      .iter()
+      .position(|found| found.under_point)
+      .map(|index| (index, false));
+  }
+  let front = front?;
+  if hit.pid != front && hit.layer != MENU_BAR_LAYER {
+    return None;
+  }
+  windows
+    .iter()
+    .position(|found| found.layer == 0.0 && found.pid == front)
+    .map(|index| (index, true))
+}
+
 pub fn printable(text: &str) -> Option<String> {
   (!text.is_empty() && text.chars().all(|found| !found.is_control())).then(|| text.to_string())
 }
 
 #[cfg(test)]
 mod tests {
-  use super::{hook_keycode, is_control, is_label, mac_keycode, named_key, printable, role};
+  use super::{
+    hook_keycode, is_control, is_label, mac_keycode, named_key, printable, role, window_for_click,
+    LayeredWindow, MENU_BAR_LAYER,
+  };
 
   #[test]
   fn mac_keys_come_back_as_hook_codes() {
@@ -294,6 +323,37 @@ mod tests {
     assert_eq!(named_key(0xe04b).as_deref(), Some("ArrowLeft"));
     assert_eq!(named_key(0x58).as_deref(), Some("F12"));
     assert_eq!(named_key(0x1e), None);
+  }
+
+  fn window(pid: i32, layer: f64, under_point: bool) -> LayeredWindow {
+    LayeredWindow {
+      pid,
+      layer,
+      under_point,
+    }
+  }
+
+  #[test]
+  fn menus_belong_to_the_app_in_front() {
+    let menu_over_another_app = [
+      window(7, 101.0, true),
+      window(7, 0.0, false),
+      window(9, 0.0, true),
+    ];
+    assert_eq!(window_for_click(&menu_over_another_app, Some(7)), Some((1, true)));
+    let menu_over_its_own_app = [window(7, 101.0, true), window(7, 0.0, true)];
+    assert_eq!(window_for_click(&menu_over_its_own_app, Some(7)), Some((1, true)));
+    let menu_bar = [
+      window(0, MENU_BAR_LAYER, true),
+      window(9, 0.0, false),
+      window(7, 0.0, false),
+    ];
+    assert_eq!(window_for_click(&menu_bar, Some(7)), Some((2, true)));
+    let plain = [window(9, 0.0, true), window(7, 0.0, true)];
+    assert_eq!(window_for_click(&plain, Some(7)), Some((0, false)));
+    let dock = [window(3, 20.0, true), window(7, 0.0, true)];
+    assert_eq!(window_for_click(&dock, Some(7)), None);
+    assert_eq!(window_for_click(&menu_bar, None), None);
   }
 
   #[test]
