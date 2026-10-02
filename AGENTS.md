@@ -1686,8 +1686,15 @@ granted; `permission-prompts.json` in userData remembers which prompts have been
 seconds while it is open, and once both are on the dialog closes and the held start runs. macOS
 applies Screen Recording to a running app only after it relaunches, so when the window regains
 focus after that button with the permission still off, the card offers Restart Mimik instead:
-`app.relaunch` with `--open-capture`, which leaves a pending start that opens the capture sheet, so
-the person lands where they were. Closing the dialog drops the held start.
+`app.relaunch`. The held start survives the relaunch because it is written to `held-capture.json`
+in userData, not passed on the command line, and the next launch within ten minutes of the dialog's last
+look at the permissions turns it back into a pending start that opens the capture sheet, so the person lands where they were. It used to
+ride on a `--open-capture` argument, which only our own relaunch carried: macOS shows its own Quit &
+Reopen the moment Screen Recording is switched on, and that relaunch, like reopening by hand, landed
+on the library. The dialog re-reads the permissions every two seconds, and each read rewrites the file's time, so a
+person can take as long as they like in System Settings; counted from the moment the start was held,
+the window had closed before a slow grant ever reached Quit & Reopen. Closing the dialog, or the
+start running, deletes the file.
 
 Screen Recording is not the last prompt. macOS Sequoia asks again, in its own words — Mimik "is
 requesting to bypass the system private window picker" — the first time an app grabs the screen
