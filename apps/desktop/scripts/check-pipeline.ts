@@ -242,6 +242,49 @@ app.whenReady().then(async () => {
     detail: `${windowShot?.width ?? 0} px wide for a ${clickedWindow.width} px window`,
   });
 
+  const findField = { x: clickedWindow.x + 20, y: clickedWindow.y + 10, width: 200, height: 22 };
+  const typedInto = new DesktopRecorder(
+    () => region,
+    (fn) => fn(),
+    (request) => {
+      framedBy = request;
+      return Promise.resolve(null);
+    },
+    {
+      grab: async () => syntheticDisplay,
+      settings: () => ({ ...DEFAULT_CAPTURE_SETTINGS, captureMode: 'window' }),
+      focused: () =>
+        Promise.resolve({
+          role: 'textbox',
+          name: null,
+          textContent: 'ttys002',
+          ariaLabel: 'Find',
+          altText: null,
+          password: false,
+          ancestors: [],
+          children: [],
+          rect: findField,
+        }),
+      windowAt: (point) =>
+        Promise.resolve(
+          point.x >= clickedWindow.x &&
+            point.x < clickedWindow.x + clickedWindow.width &&
+            point.y >= clickedWindow.y &&
+            point.y < clickedWindow.y + clickedWindow.height
+            ? { ok: true, window: { title: 'Terminal', app: { name: 'Terminal' }, bounds: clickedWindow } }
+            : { ok: false, reason: 'unknown', detail: 'no window there' },
+        ),
+    },
+  );
+  framedBy = null;
+  await typedInto.writeTyping('ttys002');
+  const typedShot = (framedBy as CaptureRequest | null)?.image;
+  results.push({
+    name: 'a typing step frames the window its field is in',
+    ok: typedShot?.width === Math.round(clickedWindow.width * display.scaleFactor),
+    detail: `${typedShot?.width ?? 0} px wide for a ${clickedWindow.width} px window`,
+  });
+
   const control: ScreenElement = {
     role: 'button',
     name: 'SaveButton',

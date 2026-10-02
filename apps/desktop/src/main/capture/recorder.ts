@@ -439,15 +439,17 @@ export class DesktopRecorder {
     frame?: Promise<Frame>,
   ): Promise<void> {
     const field = seen ? seen.field : await this.focused();
-    const where = centreOf(field) ?? cursorPoint();
+    const centre = centreOf(field);
+    const where = centre ?? cursorPoint();
     const shot = frame ?? this.shoot(where);
+    const place = centre ? this.windowAt(centre).catch(() => focusedWindow()) : undefined;
     if (field?.password) {
-      await this.write('input', where, Promise.resolve(field), shot);
+      await this.write('input', where, Promise.resolve(field), shot, undefined, place);
       return;
     }
     const typed = typedTextFor(field, buffer, seen?.fresh ?? true);
     if (!typed) return;
-    await this.write('input', where, Promise.resolve(field), shot, typed);
+    await this.write('input', where, Promise.resolve(field), shot, typed, place);
   }
 
   private async write(
