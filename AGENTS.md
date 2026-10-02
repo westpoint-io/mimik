@@ -442,9 +442,18 @@ names its label; the placeholder rides in the help text, and a password is `AXSe
 whose value is never read. `macmap.rs` holds the role table and the key tables with no FFI in them,
 so they are tested on Linux beside `hit.rs`.
 
-Windows on macOS come from `CGWindowListCopyWindowInfo`, front to back, keeping layer 0 only: menus,
-popovers and the menu bar sit on higher layers, so a click in a dropdown frames the window under it
-without any popup rule, which Windows needs because its menus are top-level windows. The
+Windows on macOS come from `CGWindowListCopyWindowInfo`, front to back. Only layer 0 is ever framed,
+but the click is matched against every layer first, because menus, popovers and the menu bar sit
+above it: a dropdown from the menu bar hangs over whatever app is behind it, and matching layer 0
+alone framed and named that app, so a Terminal menu became a Safari step. `window_for_click` in
+`macmap.rs` decides: a layer-0 window under the point is the one, and a menu or popup of the front
+app, or the menu bar itself, stands for the front app's window and comes back with `onMenu` set, and
+`windowAt` then drops its bounds so `frameFor` takes the whole display. A menu belongs to the menu
+bar, not to any window, and the display is the only frame that always shows it; cropping to the
+window under it only worked when that window happened to be big enough. The step is still named
+after the front app. Anything else above layer 0, the Dock or another
+process's menu-bar icon, frames the display with no app. Windows needs its own popup rule because its
+menus are top-level windows. The
 frontmost window is the first one owned by `AXFocusedApplication`. The app name is the window's
 owner name and the path is the `.app` bundle around `proc_pidpath`. Points are Quartz points with
 the origin at the top left of the main display, which is exactly Electron's DIP, so none of the
@@ -893,9 +902,13 @@ window in front. The foreground moves only once the clicked application has hand
 foreground read soon after it still names the application clicked before — with two windows side by
 side, every switch between them read the other one, whose rectangle does not hold the click, and the
 step fell back to the whole screen. The window under the pointer is the one being clicked by
-definition. Typing and key steps have no pointer to go by, so they still read the focused window,
-after the grab and at least the settle delay after the key, which runs beside the grab and costs the
-screenshot nothing.
+definition. A typing step has a point too, the centre of the field it was typed into, and frames the
+window under that; it used to read the focused window when the session closed, and a session closed
+by a click elsewhere, such as the cancel button of Terminal's find bar, came back with a different
+window, so the step fell back to the whole screen. `check:pipeline` asserts a typing step crops to
+the window its field is in. Key steps have neither pointer nor field, so they still read the focused
+window, after the grab and at least the settle delay after the key, which runs beside the grab and
+costs the screenshot nothing.
 
 The card itself is not focusable, so clicking Pause or Finish never makes the app frontmost and never
 changes what active-window mode will frame next. The region editors stay focusable because they read
