@@ -490,8 +490,11 @@ app.whenReady().then(async () => {
       typedTextFor(editor('a short note'), 'a sho') === 'a short note' &&
       typedTextFor(editor(null), 'typed') === 'typed' &&
       typedTextFor({ ...editor('\uFEFFhi\u200B'), role: 'textbox' }, '') === 'hi' &&
-      typedTextFor(control, 'typed') === null,
-    detail: 'a document far longer than the buffer yields the buffer, a short one yields the field, markers are stripped, a button yields nothing',
+      typedTextFor(control, 'typed') === null &&
+      typedTextFor(editor('x'.repeat(81)), 'ab') === 'ab' &&
+      typedTextFor(editor('y'.repeat(100)), 'z'.repeat(60)) === 'y'.repeat(100),
+    detail:
+      'a field longer than twice the buffer and 80 characters yields the buffer, a shorter one yields the field, markers are stripped, a button yields nothing',
   });
 
   const typedThenClicked = async (keysAfterSnapshot: number) => {

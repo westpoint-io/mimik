@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { CaptureImage } from '@mimik/core/capture/sink';
 import type { ElementMeta } from '@mimik/core/guides/types';
-import { screen } from 'electron';
+import { clipboard, screen } from 'electron';
 import { cursorPoint } from './displays';
 import {
   clearDeadKey,
@@ -25,8 +25,7 @@ const SETTLE_MS = 60;
 const SNAPSHOT_MS = 400;
 const REPEAT_CLICK_MS = 500;
 const MARKER_CODE_POINTS = new Set([0x200b, 0xfeff, 0xfff9, 0xfffa, 0xfffb, 0xfffc, 0xfffd]);
-const FIELD_SLACK: Record<string, number> = { document: 24 };
-const DEFAULT_FIELD_SLACK = 120;
+const FIELD_FLOOR = 80;
 
 const KEY = {
   escape: 1,
@@ -43,6 +42,8 @@ const KEY = {
   altRight: 3640,
   meta: 3675,
   metaRight: 3676,
+  a: 30,
+  v: 47,
 } as const;
 
 const MODIFIER_KEYS: ReadonlySet<number> = new Set([
@@ -162,8 +163,7 @@ export function typedTextFor(field: ScreenElement | null, buffer: string, readFi
   const shown = [...(field.textContent ?? '')].filter((char) => !MARKER_CODE_POINTS.has(char.codePointAt(0) ?? 0));
   if (!shown.join('').trim()) return buffer || null;
   const typed = [...buffer].length;
-  const slack = FIELD_SLACK[field.role ?? ''] ?? DEFAULT_FIELD_SLACK;
-  return typed > 0 && shown.length > typed + slack ? buffer : shown.join('');
+  return typed > 0 && shown.length > Math.max(2 * typed, FIELD_FLOOR) ? buffer : shown.join('');
 }
 
 export function isBoundShortcut(accelerator: string | null, action: KeyAction, key: string): boolean {
@@ -398,18 +398,27 @@ export class DesktopRecorder {
     const settings = this.settings();
     if (isTextKey(action)) {
       if (!settings.recordTyping) return;
-      this.typing = true;
-      this.keys += 1;
       this.buffered(action);
-      if (this.idle) clearTimeout(this.idle);
-      this.idle = setTimeout(() => this.commitTyping(true), settings.typingDebounceMs);
-      this.idle.unref?.();
-      if (this.snapshotTimer) clearTimeout(this.snapshotTimer);
-      this.snapshotTimer = setTimeout(() => {
-        this.snapshot = { field: this.focused().catch(() => null), keys: this.keys };
-      }, SNAPSHOT_MS);
-      this.snapshotTimer.unref?.();
+      this.extendTyping(settings);
       return;
+    }
+
+    const primary = process.platform === 'darwin' ? action.meta : action.ctrl;
+    if (primary && !action.alt && settings.recordTyping) {
+      const pasted = action.keycode === KEY.v ? clipboard.readText() : '';
+      if (pasted) {
+        this.appending = this.appending.then(() => {
+          this.buffer += pasted;
+        });
+        this.extendTyping(settings);
+        return;
+      }
+      if (action.keycode === KEY.a && this.typing) {
+        this.appending = this.appending.then(() => {
+          this.buffer = '';
+        });
+        return;
+      }
     }
 
     const submitted = this.typing;
@@ -423,6 +432,19 @@ export class DesktopRecorder {
     if (submitted && !action.ctrl && !action.alt && !action.meta) return;
     if (!settings.recordKeys) return;
     this.enqueue(() => this.captureKey(action));
+  }
+
+  private extendTyping(settings: CaptureSettings): void {
+    this.typing = true;
+    this.keys += 1;
+    if (this.idle) clearTimeout(this.idle);
+    this.idle = setTimeout(() => this.commitTyping(true), settings.typingDebounceMs);
+    this.idle.unref?.();
+    if (this.snapshotTimer) clearTimeout(this.snapshotTimer);
+    this.snapshotTimer = setTimeout(() => {
+      this.snapshot = { field: this.focused().catch(() => null), keys: this.keys };
+    }, SNAPSHOT_MS);
+    this.snapshotTimer.unref?.();
   }
 
   async captureKey(action: KeyAction): Promise<void> {
