@@ -315,9 +315,9 @@ one writing every step. The tray icon carries a red dot for as long as a recordi
 it then finishes the recording rather than opening the window. On a Mac every overlay calls `setVisibleOnAllWorkspaces` with `visibleOnFullScreen`, so the card
 floats over another app's full-screen space, and Electron does that by turning the whole app into an
 accessory app, which has no Dock icon and no ⌘-Tab entry. Nothing turned it back, so after the first
-recording Mimik was reachable only from the menu bar. `showWindow` therefore calls `app.dock.show()`
-every time it brings the window back, from the tray or at the end of a recording, while a recording
-itself stays an accessory app, with the window hidden anyway. Its menu is All guides, Start capture and
+recording Mimik was reachable only from the menu bar. `overlayWindow` therefore hides the Dock icon
+itself just before that call and shows it again straight after: the window keeps the flag, and the
+app is a regular one again, Dock icon and ⌘-Tab included, for the rest of the recording. Its menu is All guides, Start capture and
 Settings, each opening the window on that place in the words the app already uses for it, then the
 version, greyed out, and Quit Mimik. Start at login and Check for updates live in Settings, and
 drawing the area in the capture sheet, so the menu repeats neither.
@@ -782,7 +782,10 @@ against half of it — white on a light app, purple on a dark one. Its Cancel an
 standard action bar at the top, with Esc and Enter doing the same.
 
 Where editing returns depends on where it began. From the Ready state it arms as before.
-From a recording, Done carries on recording: picking Area on the paused card and pressing Enter
+Pausing in Area mode, from the card or the shortcut, opens the editor at once on the area in use,
+because redrawing it mid-recording used to need Pause and then a click on the Area button that was
+already selected, which nobody found. Cancel or Esc leaves the recording paused with the area as it
+was; Done or Enter keeps the new area and resumes. From a recording, Done carries on recording: picking Area on the paused card and pressing Enter
 resumes straight away, because drawing the area is the last thing between the person and the next
 step. Cancel goes back to the pause after restoring the mode that was active before Area was picked. Picking Area mid-recording used to only save the setting, so the next steps were
 cropped to whatever area was stored last with no way to draw one, and the editor's Esc sent `cancel`,
@@ -1338,6 +1341,14 @@ repeats a title: the highlighted sidebar item says where you are, and a guide's 
 over its steps. A breadcrumb and a heading saying "All Guides" were both tried and both only said the
 same thing twice.
 
+The top bar fits whatever width it is given, down to the 720 px minimum window. A guide's bar holds
+search and up to six actions, about 950 px, and used to push the whole page sideways in a narrow
+window. `TopBar` measures itself with `useElementWidth`: under 960 px the search box shrinks to its
+icon and ⌘K, and the Zoom control, through a container query since it is the desktop's own element,
+drops the word Zoom and keeps its level; under 740 px Edit, Version history, Transcript and
+Duplicate become icon buttons, each `BarButton` naming itself in a tooltip. Export always keeps its
+label.
+
 The sidebar collapses to icons on its own when Version history is open or the window is under
 1100 px, because a 232 px sidebar, the guide column and the history panel do not fit side by side in
 a 1280 px window, and the extension's tab loses 400 px whenever the browser's side panel is open.
@@ -1375,12 +1386,19 @@ most, with the match marked. Each row is the library's list row shrunk: the firs
 title, where it happened, the step count and the date. The selected row takes the lavender wash, not
 the navy fill. There is no key legend: arrows, Enter and Esc work without one.
 
-A page of the library never scrolls. `usePageFit` fits as many columns as the width allows, none
-narrower than 300 px and at most six, and as many rows of cards or list rows as fit between the top
-of the library and the pager pinned to the bottom of the window, and that is the page size. A fixed
-three columns in a capped width left most of a wide window empty, and a fixed nine per page pushed
-the taller cards and rows past the bottom of it. The list view is capped at `max-w-6xl`, since a row
-that spans a wide window is mostly empty line. Each card is the first step's screenshot at 16:9,
+A page of the library never scrolls, and it never leaves a hole above the pager either. The cards'
+text block is a fixed 113 px and their 16:9 thumbnail grew with the width, so whole rows of them fit
+the height only by chance, and up to a whole row was left empty. `usePageFit` therefore lets the
+thumbnail's height flex between a 2.8:1 strip and the full 16:9: for every column count that keeps
+cards at least 240 px wide, at most six, it fits as many rows as the short thumbnail allows, grows
+the thumbnails until those rows fill the height above the pager, and keeps the count that shows the
+most guides with under 4% of the height left over. Every library thumbnail, grid, list and search row alike, draws
+the screenshot with `ScreenshotView`'s `cover`: the zoomed crop is scaled to fill the box and the
+overflow trimmed equally on both sides, centred on the zoom around the click. It used to be fitted
+whole inside a 16:9 frame, which put lavender bars beside every capture not shaped like the frame, a
+window or a narrow page, and the shorter thumbnails made them wider. The list view is unchanged,
+as many rows as fit. The list view is capped at `max-w-6xl`, since a row
+that spans a wide window is mostly empty line. Each card is the first step's screenshot,
 cropped the way the guide shows it — zoomed toward the click on the desktop, around the element in
 the extension — then where the guide happened, its title on up to two lines, and its step count and
 date, with a star on the picture when it is starred. Where it happened is the most common site among
