@@ -1085,13 +1085,20 @@ by default, because it is what is actually on screen and it survives caret movem
 autocomplete. It is always read — a switch to use only the keystroke buffer was taken out, because it
 existed for edge cases nobody would set on purpose. The
 keystroke buffer wins in three cases: the focused element reports no value, the value is empty, or
-the field holds more than was typed by a margin that depends on its type — 24 characters for a
-document, 120 for anything else. That last rule is what makes rich text work — in a word processor
-the "field" is the whole document, so its value is the entire text rather than the sentence just
-typed, and the buffer is the only thing that knows which part is new. A document gets the small
-margin because holding text beyond this session is what a document normally does, while a single
-field holding far more than was typed is the exception. A non-text role yields nothing at all, so a keypress in a file manager is not a
+the field holds more than both twice what was typed and 80 characters. That last rule is what
+makes rich text and terminals work: in a word processor the "field" is the whole document, and in a
+terminal it is the whole screen, so its value is everything shown rather than what was just typed,
+and the buffer is the only thing that knows which part is new. It used to be a margin of 120
+characters beyond what was typed, 24 for a document, and a terminal screen holding only its login
+line and a prompt stayed under it, so the first command typed into a fresh terminal read as the
+whole screen. A screen shorter than 80 characters still does. A non-text role yields nothing at all, so a keypress in a file manager is not a
 step.
+
+Two shortcuts feed the buffer rather than becoming steps. A paste, Cmd+V on a Mac and Ctrl+V
+elsewhere, appends the clipboard's text and opens or extends the typing session, so a command pasted
+into a terminal is a typing step with that command; select all, Cmd+A or Ctrl+A, empties the buffer
+while a session is open, since what is typed next replaces the field. Both match the key's position,
+the QWERTY V and A, not the letter the layout puts there.
 
 Building that buffer is the only place a keystroke becomes a character. `resolveKey` runs
 `ToUnicodeEx` against the foreground layout with the modifier state the hook reported and the real
@@ -1367,7 +1374,9 @@ its steps, with its favicon, or the application the first step names, with the a
 never comes from a favicon service, because the request would send the application's name to it. The
 desktop serves it from the operating system instead: a step's `app.id` is the path of the `.app` bundle
 or `.exe`, `appIconUrl` in the UI env turns it into a `mimik-app-icon:` URL, and main answers with
-`app.getFileIcon`. The extension has no such URL, and neither does an older step whose id is not a
+the icon: a 64 px Quick Look thumbnail of the bundle on macOS, `app.getFileIcon` elsewhere. On macOS
+`getFileIcon` picks the icon by extension rather than by file, so every `.app` came back as the same
+blurry 32 px generic application icon. The extension has no such URL, and neither does an older step whose id is not a
 path, so those keep the letter tile. The desktop's page policy allows the favicon service in
 `img-src`; without it every site showed its letter tile there too. A card with no place at all reads
 "—" on that line. `loadCardData` reads both for the page being shown. The list view is the same card laid
