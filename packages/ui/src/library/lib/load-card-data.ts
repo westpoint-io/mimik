@@ -1,4 +1,5 @@
 import { getMostCommonDomain } from '@mimik/core/guides/domain';
+import { getMostCommonApp } from '@mimik/core/guides/most-common-app';
 import { getFirstScreenshot, getStepsForGuide } from '@mimik/core/guides/service';
 import type { Guide, Screenshot, Step } from '@mimik/core/guides/types';
 import type { GuidePlace } from '../types';
@@ -6,7 +7,7 @@ import type { GuidePlace } from '../types';
 function placeOf(steps: Step[]): GuidePlace | null {
   const domain = getMostCommonDomain(steps);
   if (domain) return { kind: 'site', name: domain };
-  const app = steps.find((step) => step.app?.name)?.app;
+  const app = getMostCommonApp(steps);
   return app ? { kind: 'app', name: app.name, id: app.id } : null;
 }
 

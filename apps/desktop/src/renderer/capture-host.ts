@@ -2,6 +2,7 @@ import { resolveGuideMetaInputs } from '@mimik/core/capture/ai/guide-description
 import { settleDescriptions } from '@mimik/core/capture/ai/settle-descriptions';
 import type { CaptureStepData } from '@mimik/core/capture/sink';
 import { i18n } from '@mimik/core/env';
+import { getMostCommonApp } from '@mimik/core/guides/most-common-app';
 import {
   allScreenshotIds,
   createSnapshot,
@@ -32,7 +33,7 @@ window.mimik.onRequest('mimik:capture:finishGuide', async (payload) => {
   const guideId = payload as string;
   const steps = await getStepsForGuide(guideId);
   if (steps.length === 0) return true;
-  const app = steps.find((step) => step.app?.name)?.app?.name;
+  const app = getMostCommonApp(steps)?.name;
   const fallback = app ? i18n.t('desktop.guideInApp', [app]) : i18n.t('background.newGuide');
   if (!(await resolveGuideMetaInputs(guideId)).ok) {
     await updateGuideTitle(guideId, fallback);
