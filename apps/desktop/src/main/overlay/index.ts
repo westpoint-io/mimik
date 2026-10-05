@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import type { AiFailureReason } from '@mimik/core/capture/ai/errors';
-import { BrowserWindow, ipcMain, screen } from 'electron';
+import { app, BrowserWindow, ipcMain, screen } from 'electron';
 import { clampToDisplays, loadRegion, type Region, saveRegion } from '../capture/region';
 import type { CaptureMode } from '../capture/settings';
 
@@ -116,7 +116,9 @@ function overlayWindow(
   });
 
   win.setAlwaysOnTop(true, 'screen-saver');
+  app.dock?.hide();
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  void app.dock?.show();
   if (!interactive) win.setIgnoreMouseEvents(true);
   const load = process.env.ELECTRON_RENDERER_URL
     ? win.loadURL(`${process.env.ELECTRON_RENDERER_URL}/overlay.html#${hash}`)
@@ -459,6 +461,7 @@ export class CaptureOverlay {
       this.hide();
     }
     this.onCommand(command);
+    if (command === 'pause' && this.mode() === 'region') this.edit();
   }
 
   async withHidden<T>(fn: () => Promise<T>): Promise<T> {

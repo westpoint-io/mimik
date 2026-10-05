@@ -152,10 +152,13 @@ app.whenReady().then(async () => {
   );
   await windowWithHash('controls')?.webContents.executeJavaScript("document.querySelector('#secondary').click()");
   await settle();
+  const pausedInto = overlay.state;
+  overlay.run('cancel');
+  await settle();
   check(
-    'Pause reaches the host and pauses',
-    commands.includes('pause') && overlay.state === 'paused',
-    `commands: ${commands.join(', ')}; state is ${overlay.state}`,
+    'Pause in Area mode pauses and opens the area editor, and Cancel leaves it paused',
+    commands.includes('pause') && pausedInto === 'editing' && overlay.state === 'paused',
+    `commands: ${commands.join(', ')}; pause opened ${pausedInto}, cancel left ${overlay.state}`,
   );
   await windowWithHash('controls')?.webContents.executeJavaScript("document.querySelector('#primary').click()");
   await settle();

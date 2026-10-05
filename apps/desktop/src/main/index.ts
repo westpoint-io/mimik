@@ -117,7 +117,6 @@ function showWindow(): void {
     return;
   }
   if (mainWindow.isMinimized()) mainWindow.restore();
-  void app.dock?.show();
   mainWindow.show();
   mainWindow.focus();
 }
