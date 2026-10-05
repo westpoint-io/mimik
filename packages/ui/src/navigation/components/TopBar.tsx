@@ -8,8 +8,10 @@ import { Button } from '../../components/ui/button';
 import { ExportPreviewModal } from '../../export/components/ExportPreviewModal';
 import { LibraryTools } from '../../library/components/LibraryTools';
 import { useFullview } from '../../stores/use-fullview';
+import { useElementWidth } from '../hooks/use-element-width';
 import { navigate } from '../lib/navigate';
 import type { Route } from '../types';
+import { BarButton } from './BarButton';
 
 interface TopBarProps {
   route: Route;
@@ -22,6 +24,8 @@ const NAV_CONTROL =
 const SEARCH_KEY = navigator.userAgent.includes('Mac') ? '⌘K' : 'Ctrl K';
 
 const DUPLICATE_SETTLE_MS = 700;
+const COMPACT_SEARCH_PX = 960;
+const ICON_ONLY_PX = 740;
 
 export function TopBar({ route, guideActions }: TopBarProps) {
   const {
@@ -50,6 +54,9 @@ export function TopBar({ route, guideActions }: TopBarProps) {
   const [exportOpen, setExportOpen] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
   const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const bar = useRef<HTMLElement>(null);
+  const barWidth = useElementWidth(bar);
+  const iconOnly = barWidth < ICON_ONLY_PX;
 
   const routeKey = route.page === 'guide' ? `guide/${route.guideId}` : `library/${route.category}`;
   const [duplicateFailedOnRoute, setDuplicateFailedOnRoute] = useState<string | null>(null);
@@ -97,15 +104,21 @@ export function TopBar({ route, guideActions }: TopBarProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex items-center gap-3 px-7 h-16 shrink-0 bg-card border-b border-border">
+      <header
+        ref={bar}
+        className="@container sticky top-0 z-30 flex items-center gap-3 px-7 h-16 shrink-0 bg-card border-b border-border"
+      >
         <Button
           size="sm"
           variant="ghost"
+          aria-label={i18n.t('fullview_searchPlaceholder')}
           onClick={() => setSearchOpen(true)}
-          className={`w-72 justify-start ${NAV_CONTROL}`}
+          className={`${barWidth < COMPACT_SEARCH_PX ? 'w-auto' : 'w-72'} justify-start ${NAV_CONTROL}`}
         >
           <Search size={14} className="shrink-0 text-muted-foreground" />
-          <span className="flex-1 text-left text-muted-foreground">{i18n.t('fullview_searchPlaceholder')}</span>
+          {barWidth >= COMPACT_SEARCH_PX && (
+            <span className="flex-1 text-left text-muted-foreground">{i18n.t('fullview_searchPlaceholder')}</span>
+          )}
           <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-secondary text-muted-foreground">
             {SEARCH_KEY}
           </span>
@@ -116,42 +129,43 @@ export function TopBar({ route, guideActions }: TopBarProps) {
           {route.page === 'guide' && exportData && (
             <>
               {guideActions}
-              <Button
-                size="sm"
+              <BarButton
                 variant="ghost"
+                iconOnly={iconOnly}
+                icon={editing ? <Check size={14} /> : <Pencil size={14} />}
+                label={editing ? i18n.t('editor.done') : i18n.t('editor.edit')}
                 onClick={() => toggleEditing(exportData.guideId)}
                 className={NAV_CONTROL}
-              >
-                {editing ? <Check size={14} /> : <Pencil size={14} />}
-                {editing ? i18n.t('editor.done') : i18n.t('editor.edit')}
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => setHistoryOpen(!historyOpen)} className={NAV_CONTROL}>
-                <History size={14} />
-                {i18n.t('editor.versionHistory')}
-              </Button>
+              />
+              <BarButton
+                variant="ghost"
+                iconOnly={iconOnly}
+                icon={<History size={14} />}
+                label={i18n.t('editor.versionHistory')}
+                onClick={() => setHistoryOpen(!historyOpen)}
+                className={NAV_CONTROL}
+              />
               {hasTranscript && (
-                <Button
-                  size="sm"
+                <BarButton
                   variant="ghost"
+                  iconOnly={iconOnly}
+                  icon={<MessageSquareQuote size={14} />}
+                  label={i18n.t('transcript.title')}
                   onClick={() => setTranscriptOpen(!transcriptOpen)}
                   className={NAV_CONTROL}
-                >
-                  <MessageSquareQuote size={14} />
-                  {i18n.t('transcript.title')}
-                </Button>
+                />
               )}
               {!editing && (
                 <>
-                  <Button
-                    size="sm"
+                  <BarButton
                     variant="ghost"
+                    iconOnly={iconOnly}
+                    icon={<Copy size={14} />}
+                    label={i18n.t('library.duplicate')}
                     disabled={duplicating}
                     onClick={() => handleDuplicate(exportData.guideId)}
                     className={NAV_CONTROL}
-                  >
-                    <Copy size={14} />
-                    {i18n.t('library.duplicate')}
-                  </Button>
+                  />
                   <Button size="sm" onClick={() => setExportOpen(true)} className="h-8 rounded-lg text-[13px]">
                     <Download size={14} />
                     {i18n.t('common.export')}

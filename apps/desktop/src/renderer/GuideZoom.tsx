@@ -52,10 +52,11 @@ export function GuideZoom({ guideId, onDone }: { guideId: string; onDone: () => 
         className="h-8 w-auto gap-1.5 rounded-lg border-border bg-card px-3 text-[13px] font-medium text-foreground hover:bg-secondary hover:text-accent"
       >
         <ZoomIn size={14} />
-        {i18n.t('desktop_zoomGuide')}
+        <span className="@max-[960px]:hidden">{i18n.t('desktop_zoomGuide')}</span>
         {current !== null && (
           <span className="text-muted-foreground">
-            · {current === 'auto' ? i18n.t('desktop_zoomAuto') : `${current}×`}
+            <span className="@max-[960px]:hidden">· </span>
+            {current === 'auto' ? i18n.t('desktop_zoomAuto') : `${current}×`}
           </span>
         )}
       </SelectTrigger>
