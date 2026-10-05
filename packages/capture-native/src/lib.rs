@@ -43,6 +43,7 @@ pub struct UiElement {
   pub value: Option<String>,
   pub help_text: Option<String>,
   pub is_password: bool,
+  pub value_length: Option<u32>,
   pub rect: Option<ElementRect>,
   pub ancestors: Vec<ElementNode>,
   pub children: Vec<ElementNode>,
@@ -169,6 +170,12 @@ pub fn window_at(x: i32, y: i32) -> Option<ActiveWindow> {
 pub fn clear_dead_key() {
   #[cfg(any(windows, target_os = "macos"))]
   platform::clear_dead_key();
+}
+
+#[napi]
+pub fn release_web_content() {
+  #[cfg(target_os = "macos")]
+  platform::release_web_content();
 }
 
 #[napi]

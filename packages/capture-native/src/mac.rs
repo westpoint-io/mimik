@@ -57,6 +57,7 @@ extern "C" {
   fn CFRelease(value: CFTypeRef);
   fn CFGetTypeID(value: CFTypeRef) -> usize;
   fn CFStringGetTypeID() -> usize;
+  fn CFNumberGetTypeID() -> usize;
   fn CFArrayGetTypeID() -> usize;
   fn CFStringCreateWithBytes(
     allocator: *const c_void,
@@ -74,6 +75,7 @@ extern "C" {
   fn CFNumberGetValue(number: CFTypeRef, kind: isize, value: *mut c_void) -> Boolean;
   fn CFDataGetBytePtr(data: CFTypeRef) -> *const u8;
   static kCFBooleanTrue: CFTypeRef;
+  static kCFBooleanFalse: CFTypeRef;
 }
 
 #[link(name = "ApplicationServices", kind = "framework")]
@@ -219,6 +221,17 @@ fn secure(element: AXUIElementRef) -> bool {
   text(element, "AXSubrole").as_deref() == Some("AXSecureTextField")
 }
 
+fn secure_length(element: AXUIElementRef) -> Option<u32> {
+  let counted = attribute(element, "AXNumberOfCharacters")
+    .filter(|found| unsafe { CFGetTypeID(found.0) == CFNumberGetTypeID() })
+    .and_then(|found| {
+      let mut out = 0i32;
+      (unsafe { CFNumberGetValue(found.0, NUMBER_INT32, (&mut out as *mut i32).cast()) } != 0)
+        .then_some(out.max(0) as u32)
+    });
+  counted.or_else(|| text(element, "AXValue").map(|value| value.chars().count() as u32))
+}
+
 fn label_of(element: AXUIElementRef) -> Option<String> {
   text(element, "AXTitle")
     .or_else(|| text(element, "AXDescription"))
@@ -241,6 +254,7 @@ fn describe(element: AXUIElementRef) -> UiElement {
     },
     help_text: text(element, "AXHelp").or_else(|| text(element, "AXPlaceholderValue")),
     is_password,
+    value_length: if is_password { secure_length(element) } else { None },
     rect: rect_of(element),
     ancestors: Vec::new(),
     children: Vec::new(),
@@ -300,6 +314,8 @@ fn promoted(hit: Owned) -> Owned {
 }
 
 static OPENED: Mutex<Option<HashSet<i32>>> = Mutex::new(None);
+static ENHANCED: Mutex<Vec<i32>> = Mutex::new(Vec::new());
+const ENHANCED_UI: &str = "AXEnhancedUserInterface";
 
 fn pid_of(element: AXUIElementRef) -> Option<i32> {
   let mut pid = 0;
@@ -321,8 +337,32 @@ fn open_web_content(element: AXUIElementRef) -> bool {
   let Some(app) = Owned::new(unsafe { AXUIElementCreateApplication(pid) }) else {
     return false;
   };
-  let key = cf_string("AXManualAccessibility");
-  unsafe { AXUIElementSetAttributeValue(app.0, key.0, kCFBooleanTrue) == 0 }
+  let manual = cf_string("AXManualAccessibility");
+  let opened = unsafe { AXUIElementSetAttributeValue(app.0, manual.0, kCFBooleanTrue) == 0 };
+  let already = attribute(app.0, ENHANCED_UI).is_some_and(|value| value.0 == unsafe { kCFBooleanTrue });
+  let enhanced = cf_string(ENHANCED_UI);
+  if !already && unsafe { AXUIElementSetAttributeValue(app.0, enhanced.0, kCFBooleanTrue) == 0 } {
+    ENHANCED
+      .lock()
+      .unwrap_or_else(|poisoned| poisoned.into_inner())
+      .push(pid);
+    return true;
+  }
+  opened
+}
+
+pub fn release_web_content() {
+  OPENED
+    .lock()
+    .unwrap_or_else(|poisoned| poisoned.into_inner())
+    .take();
+  let pids = std::mem::take(&mut *ENHANCED.lock().unwrap_or_else(|poisoned| poisoned.into_inner()));
+  let key = cf_string(ENHANCED_UI);
+  for pid in pids {
+    if let Some(app) = Owned::new(unsafe { AXUIElementCreateApplication(pid) }) {
+      unsafe { AXUIElementSetAttributeValue(app.0, key.0, kCFBooleanFalse) };
+    }
+  }
 }
 
 fn system() -> Option<Owned> {

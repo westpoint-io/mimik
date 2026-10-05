@@ -141,6 +141,7 @@ fn describe(found: &IUIAutomationElement) -> UiElement {
     is_password: unsafe { found.CurrentIsPassword() }
       .map(|flag| flag.as_bool())
       .unwrap_or(false),
+    value_length: None,
     rect: rect_of(found),
     ancestors: Vec::new(),
     children: Vec::new(),

@@ -12,6 +12,7 @@ export interface ScreenElement {
   ariaLabel: string | null;
   altText: string | null;
   password: boolean;
+  length?: number | null;
   rect: { x: number; y: number; width: number; height: number } | null;
   ancestors: { role: string | null; name: string | null }[];
   children: { role: string | null; name: string | null }[];
@@ -50,6 +51,7 @@ function describe(found: UiElement): ScreenElement {
     ariaLabel: found.name ?? null,
     altText: found.helpText ?? null,
     password: found.isPassword,
+    length: found.valueLength ?? null,
     rect: toDip(found.rect ?? null),
     ancestors: (found.ancestors ?? []).map(node),
     children: (found.children ?? []).map(node),
@@ -89,6 +91,11 @@ export async function resolveKey(keycode: number, shift: boolean, ctrl: boolean,
 export async function clearDeadKey(): Promise<void> {
   const native = await load();
   native?.clearDeadKey();
+}
+
+export async function releaseWebContent(): Promise<void> {
+  const native = await load();
+  native?.releaseWebContent();
 }
 
 export async function elementLookupAvailable(): Promise<boolean> {

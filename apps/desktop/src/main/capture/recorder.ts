@@ -9,6 +9,7 @@ import {
   focusedField,
   isTextField,
   keyLabel,
+  releaseWebContent,
   resolveKey,
   type ScreenElement,
 } from './element';
@@ -81,6 +82,7 @@ export interface RecorderHooks {
   label?: (keycode: number) => Promise<string | null>;
   resolve?: (keycode: number, shift: boolean, ctrl: boolean, alt: boolean) => Promise<string | null>;
   reset?: () => Promise<void>;
+  release?: () => Promise<void>;
   drained?: () => void;
   progress?: (fraction: number, ms: number) => void;
   aimed?: (aim: { x: number; y: number; aspect: number }) => void;
@@ -90,6 +92,22 @@ export interface RecorderHooks {
 export type RecorderStart = { ok: true } | { ok: false; reason: string; detail: string };
 
 const CAPTURE_ESTIMATE_MS = 450;
+const SECURE_INPUT_HIDES_KEYS = process.platform === 'darwin';
+const FOCUS_SETTLE_MS = 200;
+const PASSWORD_POLL_MS = 400;
+
+interface PasswordWatch {
+  field: ScreenElement;
+  start: number;
+  last: number;
+  shot: Promise<Frame> | null;
+  timer: NodeJS.Timeout;
+  idle: NodeJS.Timeout | null;
+}
+
+function sameRect(a: ScreenElement['rect'], b: ScreenElement['rect']): boolean {
+  return a?.x === b?.x && a?.y === b?.y && a?.width === b?.width && a?.height === b?.height;
+}
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -212,6 +230,7 @@ export class DesktopRecorder {
   private snapshotTimer: NodeJS.Timeout | null = null;
   private appending: Promise<unknown> = Promise.resolve();
   private idle: NodeJS.Timeout | null = null;
+  private passwordWatch: PasswordWatch | null = null;
   private readonly grab: (point: Point) => Promise<Frame>;
   private readonly settings: () => CaptureSettings;
   private readonly ignores: (point: Point) => boolean;
@@ -221,6 +240,7 @@ export class DesktopRecorder {
   private readonly label: (keycode: number) => Promise<string | null>;
   private readonly resolve: (keycode: number, shift: boolean, ctrl: boolean, alt: boolean) => Promise<string | null>;
   private readonly reset: () => Promise<void>;
+  private readonly release: () => Promise<void>;
   private readonly drained: () => void;
   private readonly progress: (fraction: number, ms: number) => void;
   private readonly aimed: (aim: { x: number; y: number; aspect: number }) => void;
@@ -242,6 +262,7 @@ export class DesktopRecorder {
     this.label = hooks.label ?? keyLabel;
     this.resolve = hooks.resolve ?? resolveKey;
     this.reset = hooks.reset ?? clearDeadKey;
+    this.release = hooks.release ?? releaseWebContent;
     this.drained = hooks.drained ?? (() => {});
     this.progress = hooks.progress ?? (() => {});
     this.aimed = hooks.aimed ?? (() => {});
@@ -272,6 +293,7 @@ export class DesktopRecorder {
   stop(): void {
     this.commitTyping();
     this.hook.stop();
+    void this.release().catch(() => undefined);
     this.running = false;
     this.paused = false;
   }
@@ -298,10 +320,77 @@ export class DesktopRecorder {
 
   private clickAt(action: string, point: Point): void {
     this.commitTyping();
+    this.watchPassword();
     const element = this.lookup(point);
     const frame = this.shoot(point);
     const place = this.windowAt(point).catch(() => focusedWindow());
     this.enqueue(() => this.write(action, point, element, frame, undefined, place));
+  }
+
+  private watchPassword(): void {
+    if (!SECURE_INPUT_HIDES_KEYS || !this.settings().recordTyping) return;
+    const settle = setTimeout(async () => {
+      const field = await this.focused().catch(() => null);
+      if (!field?.password || this.passwordWatch || !this.isRecording) return;
+      const length = field.length ?? 0;
+      const watch: PasswordWatch = {
+        field,
+        start: length,
+        last: length,
+        shot: null,
+        timer: setInterval(() => void this.pollPassword(watch), PASSWORD_POLL_MS),
+        idle: null,
+      };
+      watch.timer.unref?.();
+      this.passwordWatch = watch;
+    }, FOCUS_SETTLE_MS);
+    settle.unref?.();
+  }
+
+  private async pollPassword(watch: PasswordWatch): Promise<void> {
+    const now = await this.focused().catch(() => null);
+    if (this.passwordWatch !== watch || !now) return;
+    if (!now.password || !sameRect(now.rect, watch.field.rect)) {
+      this.closePassword();
+      return;
+    }
+    const length = now.length ?? watch.last;
+    if (length === watch.last) return;
+    watch.last = length;
+    watch.shot = this.grab(centreOf(watch.field) ?? cursorPoint());
+    watch.shot.catch(() => undefined);
+    if (watch.idle) clearTimeout(watch.idle);
+    watch.idle = setTimeout(() => {
+      if (this.passwordWatch === watch) this.writePassword(watch, Promise.resolve(watch.last));
+    }, this.settings().typingDebounceMs);
+    watch.idle.unref?.();
+  }
+
+  private writePassword(watch: PasswordWatch, final: Promise<number>): void {
+    if (watch.idle) clearTimeout(watch.idle);
+    watch.idle = null;
+    const { start, field } = watch;
+    const centre = centreOf(field) ?? cursorPoint();
+    const shot = watch.shot ?? this.grab(centre);
+    shot.catch(() => undefined);
+    watch.shot = null;
+    watch.start = watch.last;
+    this.enqueue(async () => {
+      if ((await final) === start) return;
+      const place = this.windowAt(centre).catch(() => focusedWindow());
+      await this.write('input', centre, Promise.resolve(field), shot, undefined, place);
+    });
+  }
+
+  private closePassword(): void {
+    const watch = this.passwordWatch;
+    if (!watch) return;
+    this.passwordWatch = null;
+    clearInterval(watch.timer);
+    const final = this.focused()
+      .catch(() => null)
+      .then((now) => (now?.password && sameRect(now.rect, watch.field.rect) ? (now.length ?? watch.last) : watch.last));
+    this.writePassword(watch, final);
   }
 
   private onKey(action: KeyAction): void {
@@ -325,6 +414,7 @@ export class DesktopRecorder {
 
     const submitted = this.typing;
     this.commitTyping(true);
+    if (action.keycode === KEY.tab) this.watchPassword();
 
     const at = Date.now();
     const repeat = isRepeatKey(this.lastKey, action.keycode, at);
@@ -357,6 +447,7 @@ export class DesktopRecorder {
   }
 
   private commitTyping(live = false): void {
+    this.closePassword();
     if (this.idle) clearTimeout(this.idle);
     if (this.snapshotTimer) clearTimeout(this.snapshotTimer);
     this.idle = null;
@@ -444,6 +535,7 @@ export class DesktopRecorder {
     const shot = frame ?? this.shoot(where);
     const place = centre ? this.windowAt(centre).catch(() => focusedWindow()) : undefined;
     if (field?.password) {
+      if (SECURE_INPUT_HIDES_KEYS) return;
       await this.write('input', where, Promise.resolve(field), shot, undefined, place);
       return;
     }

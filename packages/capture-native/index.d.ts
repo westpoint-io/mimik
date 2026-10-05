@@ -24,6 +24,8 @@ export interface ActiveWindow {
 
 export declare function clearDeadKey(): void
 
+export declare function releaseWebContent(): void
+
 export declare function elementAtPoint(x: number, y: number): Promise<UiElement | null>
 
 export interface ElementNode {
@@ -68,6 +70,7 @@ export interface UiElement {
   value?: string
   helpText?: string
   isPassword: boolean
+  valueLength?: number
   rect?: ElementRect
   ancestors: Array<ElementNode>
   children: Array<ElementNode>
