@@ -312,7 +312,12 @@ The window also hides the moment a capture begins — Start in the sheet or the
 start shortcut — so Mimik never records itself, and it comes back when the guide is finished, or on
 Cancel when it was open beforehand. Its renderer keeps full speed while hidden, because it is the
 one writing every step. The tray icon carries a red dot for as long as a recording runs, and clicking
-it then finishes the recording rather than opening the window. Its menu is All guides, Start capture and
+it then finishes the recording rather than opening the window. On a Mac every overlay calls `setVisibleOnAllWorkspaces` with `visibleOnFullScreen`, so the card
+floats over another app's full-screen space, and Electron does that by turning the whole app into an
+accessory app, which has no Dock icon and no ⌘-Tab entry. Nothing turned it back, so after the first
+recording Mimik was reachable only from the menu bar. `showWindow` therefore calls `app.dock.show()`
+every time it brings the window back, from the tray or at the end of a recording, while a recording
+itself stays an accessory app, with the window hidden anyway. Its menu is All guides, Start capture and
 Settings, each opening the window on that place in the words the app already uses for it, then the
 version, greyed out, and Quit Mimik. Start at login and Check for updates live in Settings, and
 drawing the area in the capture sheet, so the menu repeats neither.
