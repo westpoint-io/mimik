@@ -471,7 +471,16 @@ and then shifted, because the AZERTY number row only gives a digit with Shift. `
 the dead-key state in an atomic between calls, and `clearDeadKey` zeroes it. The layout calls stay
 synchronous because Text Input Sources must be read on the main thread, which is where Electron's
 main process runs JavaScript. On a Mac, Option is how people type accented letters and symbols, so
-`isTextKey` counts an Option key as typing there, and `comboLabel` names the modifiers Cmd and Option.
+`isTextKey` counts an Option key as typing there. On a Mac every shortcut Mimik shows is written
+with the system's symbols, in its order, `⌃⌥⇧⌘`, and no separator: the key steps `comboLabel`
+writes, the tips on the recording card and the shortcuts in Settings, all through `shortcutLabel` in
+`renderer/lib`, which main imports as well. Control stays `⌃`, its own key, and only Command,
+Super, Meta and `CommandOrControl` become `⌘`. Elsewhere the names stay as words joined by `+`.
+A key step's title draws its shortcut in the same chip the card's tip uses, on the recording card,
+in the guide and in the HTML export: `splitAtShortcut` in core finds the step's `keydown:` key in
+its title and splits around it, so an AI or hand-written title that still names the key keeps the
+chip, and one that does not is plain text. The editor's text field, PDF, Markdown and DOCX stay
+plain text.
 
 The implementation is `IUIAutomation::ElementFromPoint` and six property reads, plus a walk of the
 control view when the element has no name. Named elements skip the walk, because every step of it is
@@ -1226,7 +1235,7 @@ buttons, where the side panel shows it above Finish, until the next recording st
 `catch { return null }`, so a rejected key and no network both looked exactly like having no key.
 `aiFailureKey` and `aiActionKey` moved from the side panel into `capture/ai/errors.ts` for it.
 
-Naming follows the extension. With no key the fallback — the recorded application, or a generic name
+Naming follows the extension. With no key the fallback — the application most steps happened in, or a generic name
 where none was identified — is written at once. With one, the guide stays "Untitled guide" under
 the shimmer until the descriptions settle and `generateGuideMeta` answers, and the fallback is written
 only if it returns no title, so the guide always ends up named and never shows an application name
@@ -1370,7 +1379,8 @@ that spans a wide window is mostly empty line. Each card is the first step's scr
 cropped the way the guide shows it — zoomed toward the click on the desktop, around the element in
 the extension — then where the guide happened, its title on up to two lines, and its step count and
 date, with a star on the picture when it is starred. Where it happened is the most common site among
-its steps, with its favicon, or the application the first step names, with the application's own icon; that icon
+its steps, with its favicon, or the application most of its steps happened in, counted the same way with ties going to the
+earliest (`getMostCommonApp`), with the application's own icon; that icon
 never comes from a favicon service, because the request would send the application's name to it. The
 desktop serves it from the operating system instead: a step's `app.id` is the path of the `.app` bundle
 or `.exe`, `appIconUrl` in the UI env turns it into a `mimik-app-icon:` URL, and main answers with
