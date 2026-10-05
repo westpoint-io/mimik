@@ -435,7 +435,13 @@ a button's label returns the label's static text. A text or image hit is therefo
 nearest control within three parents — button, link, menu item, tab, row, cell and the toggles —
 and anything else is left as it is. Chromium and Electron build their accessibility tree only when
 something asks, so the first hit in an application sets `AXManualAccessibility` on it, once per
-process, and repeats the hit test; other applications refuse the attribute and nothing changes. A
+process, and repeats the hit test; other applications refuse the attribute and nothing changes.
+Electron honours that attribute but Chrome does not: a web page stayed one unnamed pane, so no field
+in it was a text field and typing there wrote no step. The first hit therefore also sets
+`AXEnhancedUserInterface`, the attribute VoiceOver sets, which Chrome does honour. It slows window
+animations in that application and upsets window managers such as Rectangle, so `releaseWebContent`
+clears it again when the recording stops, on every process Mimik turned it on for and on none that
+already had it, so a running VoiceOver keeps its own. A
 hit that lands on Mimik's own overlay answers null rather than naming the card. The accessible name
 is `AXTitle`, then `AXDescription`, then the value of `AXTitleUIElement`, which is how a text field
 names its label; the placeholder rides in the help text, and a password is `AXSecureTextField`,
@@ -732,6 +738,13 @@ scoped under `body.controls` for that reason: an unscoped `#hint` already existe
 editor, absolutely positioned and dark, and it silently captured the card's hint the first time both
 used the name. `check:overlay` asserts the card's hint computes to `position: static`, which is the
 cheapest way to catch the next collision.
+
+The card can be dragged anywhere: the window is created unmovable like every overlay and then made
+movable, and the whole card is a drag region except its buttons. Once it has been dragged, its
+bottom-right corner is where it stays for the rest of the session, so growing, shrinking and
+collapsing keep it in place rather than snapping it back to the corner of the work area. Only
+`will-move` marks a drag, since it fires for a manual move alone: the card's own repositioning
+also fires `move`, and on X11 with stale coordinates, which pinned it to the top-left.
 
 The card sizes itself. The renderer reports `scrollHeight` after every render and main moves the
 window to match, so a long step title or a collapse does not need a table of per-state pixel heights.
@@ -1040,7 +1053,20 @@ moved to the document, and the step named the new tab page and photographed its 
 Closing a session does not guarantee a step. The focused element is read first, and nothing is
 written unless it is a text field with something to show for it. A password field is the exception
 in the other direction: it reports no value by design, and the step is written anyway with no
-`inputValue`, worded "Type password" rather than naming any contents.
+`inputValue`, worded "Type password" rather than naming any contents. On macOS the keys never
+arrive at all: a focused password field turns on Secure Event Input, and macOS then delivers no
+keystrokes to any event tap, so no typing session ever opens there. What still shows is how long the
+field is: the addon reports `valueLength` for a password field, from `AXNumberOfCharacters` or the
+length of its masked value, and never the value itself. After every click and every Tab the focused
+element is read 200 ms later, and when it is a password field its length is read every 400 ms while
+it keeps focus, with a screenshot taken each time it changes. Chrome answers the focus read with
+nothing every few seconds while the field still has focus, so an empty read is no answer, and only
+another element holding focus counts as leaving the field. It closes like any typing session: once the
+length has held still for the typing pause, or when the field loses focus or a click, key, pause or
+stop ends it, a length that differs from the one it started with writes the "Type password" step
+with the last of those screenshots. The field stays watched after a pause, so typing in it again is
+a new step, as it is anywhere else; a field clicked and left alone writes nothing. A typing session that does reach a password field writes nothing, so a field whose keys
+leak through is not recorded twice.
 
 Keys that are not typing get their own step, unless `recordKeys` is off. A shortcut always does; `Enter`, `Tab` and `Escape` do
 only when no typing session was open, because the `Enter` that submits a field is part of that
