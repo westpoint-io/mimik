@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { CaptureImage } from '@mimik/core/capture/sink';
 import type { ElementMeta } from '@mimik/core/guides/types';
 import { clipboard, screen } from 'electron';
+import { shortcutLabel } from '../../renderer/lib/shortcut-label';
 import { cursorPoint } from './displays';
 import {
   clearDeadKey,
@@ -143,14 +144,13 @@ export function isRepeatKey(previous: { keycode: number; at: number } | null, ke
   return previous !== null && previous.keycode === keycode && at - previous.at <= REPEAT_CLICK_MS;
 }
 
-export function comboLabel(action: KeyAction, key: string): string {
+export function comboLabel(action: KeyAction, key: string, mac = process.platform === 'darwin'): string {
   const held: string[] = [];
-  const mac = process.platform === 'darwin';
-  if (action.meta) held.push(mac ? 'Cmd' : 'Meta');
+  if (action.meta) held.push(mac ? 'Command' : 'Meta');
   if (action.ctrl) held.push('Ctrl');
-  if (action.alt) held.push(mac ? 'Option' : 'Alt');
+  if (action.alt) held.push('Alt');
   if (action.shift) held.push('Shift');
-  return [...held, key].join('+');
+  return mac ? shortcutLabel([...held, key].join('+'), true) : [...held, key].join('+');
 }
 
 export function clickAction(button: number): string {

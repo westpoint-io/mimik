@@ -1,3 +1,4 @@
+import { splitAtShortcut } from '@mimik/core/capture/split-at-shortcut';
 import { i18n } from '@mimik/core/env';
 import { replaceScreenshot, restoreNarratedDescription } from '@mimik/core/guides/service';
 import type { Screenshot, Step } from '@mimik/core/guides/types';
@@ -46,6 +47,7 @@ export function StepCard({
   hasApiKey,
 }: StepCardProps) {
   const [description, setDescription] = useState(step.description);
+  const shortcut = splitAtShortcut(step.description, step.action);
   const [dragOver, setDragOver] = useState(false);
   const [copied, setCopied] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -150,7 +152,17 @@ export function StepCard({
             </span>
           ) : readOnly ? (
             <p className="text-[13px] font-medium leading-snug flex-1 text-foreground whitespace-pre-wrap">
-              {step.description}
+              {shortcut ? (
+                <>
+                  {shortcut[0]}
+                  <kbd className="rounded-[5px] border border-border bg-card px-1.5 py-px font-[inherit] text-[0.85em] font-semibold whitespace-nowrap">
+                    {shortcut[1]}
+                  </kbd>
+                  {shortcut[2]}
+                </>
+              ) : (
+                step.description
+              )}
             </p>
           ) : (
             <textarea

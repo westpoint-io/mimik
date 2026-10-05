@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, protocol, screen, shell, Tray } from 'electron';
+import { shortcutLabel } from '../renderer/lib/shortcut-label';
 import { registerAiFetch } from './ai-fetch';
 import { APP_ICON_SCHEME, registerAppIconProtocol } from './app-icon';
 import { ask } from './ask';
@@ -403,8 +404,8 @@ if (!app.requestSingleInstanceLock()) {
     });
 
     captureSettings = loadSettings();
-    const shortcutLabel = (accelerator: string | null) =>
-      accelerator?.replace(/CommandOrControl|CmdOrCtrl/g, process.platform === 'darwin' ? 'Cmd' : 'Ctrl') || null;
+    const labelOf = (accelerator: string | null) =>
+      accelerator ? shortcutLabel(accelerator, process.platform === 'darwin') : null;
     overlay = new CaptureOverlay(
       (command) => void onOverlayCommand(command),
       () => (captureSettings ?? loadSettings()).captureMode,
@@ -416,7 +417,7 @@ if (!app.requestSingleInstanceLock()) {
         },
         shortcuts: () => {
           const { shortcuts } = captureSettings ?? loadSettings();
-          return { startStop: shortcutLabel(shortcuts.startStop), capture: shortcutLabel(shortcuts.capture) };
+          return { startStop: labelOf(shortcuts.startStop), capture: labelOf(shortcuts.capture) };
         },
       },
     );
@@ -437,6 +438,7 @@ if (!app.requestSingleInstanceLock()) {
             id: reply.stepId,
             index: steps.length + 1 + (insert?.afterStep ?? 0),
             title: reply.title,
+            action: request.action,
             src: request.image?.src ?? '',
             source: 'heuristic',
             pending: reply.pending === true,

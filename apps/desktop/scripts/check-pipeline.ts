@@ -457,7 +457,8 @@ app.whenReady().then(async () => {
     name: 'a shortcut is its own step',
     ok:
       shortcut?.action === 'keydown:Ctrl+S' &&
-      comboLabel(pressed(31, { ctrl: true, shift: true }), 'S') === 'Ctrl+Shift+S' &&
+      comboLabel(pressed(31, { ctrl: true, shift: true }), 'S', false) === 'Ctrl+Shift+S' &&
+      comboLabel(pressed(31, { meta: true, shift: true, alt: true }), 'S', true) === '⌥⇧⌘S' &&
       unnamed === null &&
       isRepeatKey({ keycode: 28, at: 1_000 }, 28, 1_400) &&
       !isRepeatKey({ keycode: 28, at: 1_000 }, 28, 1_600) &&

@@ -1,3 +1,4 @@
+import { splitAtShortcut } from '@/core/capture/split-at-shortcut';
 import { i18n } from '@/core/env';
 import { fitLogo, loadBranding } from '@/core/export/branding';
 import { type ExportOptions, IMAGE_SCALE_FACTORS, loadExportOptions } from '@/core/export/options';
@@ -41,6 +42,13 @@ function embedScreenshot(screenshot: Screenshot): Promise<EmbeddedImage> {
   image.catch(() => imageCache.delete(screenshot));
   imageCache.set(screenshot, { edits: screenshot.edits, image });
   return image;
+}
+
+function titleHtml(step: Step): string {
+  const split = splitAtShortcut(step.description, step.action);
+  if (!split) return escapeHtml(step.description);
+  const [before, key, after] = split.map(escapeHtml);
+  return `${before}<kbd style="font:inherit;font-size:.85em;padding:1px 6px;border:1px solid #C7D2FE;border-radius:5px;background:#fff;white-space:nowrap;">${key}</kbd>${after}`;
 }
 
 function blockSection(step: Step): string {
@@ -103,7 +111,7 @@ export async function exportGuideAsHTML(
       <section data-step="${number}" style="display:flex;gap:8mm;margin-bottom:13mm;">
         <div style="flex:0 0 22mm;font-size:34px;font-weight:700;color:${accent};line-height:.9;">${stepNumber}</div>
         <div style="flex:1;min-width:0;border-top:1px solid #1E1B4B;padding-top:6px;">
-          <p style="margin:0;font-size:17px;font-weight:700;line-height:1.45;color:#1E1B4B;overflow-wrap:anywhere;">${escapeHtml(step.description)}${
+          <p style="margin:0;font-size:17px;font-weight:700;line-height:1.45;color:#1E1B4B;overflow-wrap:anywhere;">${titleHtml(step)}${
             urlHtml ? `<span style="color:#6B7280;font-weight:400;"> &nbsp;·&nbsp; </span>${urlHtml}` : ''
           }</p>
           ${imgHtml}

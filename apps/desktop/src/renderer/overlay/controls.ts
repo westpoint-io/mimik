@@ -1,4 +1,5 @@
 import { aiFailureNotice } from '@mimik/core/capture/ai/errors';
+import { splitAtShortcut } from '@mimik/core/capture/split-at-shortcut';
 import { i18n } from '@mimik/core/env';
 import type { OverlayView } from '../../main/overlay';
 import { icon } from '../icons';
@@ -234,7 +235,10 @@ export function controls(): void {
     veil.hidden = !paused || capturing;
     remove.hidden = !step || capturing || armed;
 
-    stepTitle.textContent = step?.title ?? '\u00a0';
+    const title = step?.title ?? '\u00a0';
+    const split = splitAtShortcut(title, step?.action);
+    if (split) stepTitle.replaceChildren(split[0], el('kbd', {}, split[1]), split[2]);
+    else stepTitle.textContent = title;
     const extra = stepTitle.getBoundingClientRect().height - Number.parseFloat(getComputedStyle(stepTitle).lineHeight);
     preview.style.setProperty('--title-extra', `${step ? Math.max(0, extra) : 0}px`);
     source.hidden = !step;

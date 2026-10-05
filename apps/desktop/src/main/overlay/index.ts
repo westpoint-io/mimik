@@ -23,6 +23,7 @@ export interface OverlayStep {
   id: string;
   index: number;
   title: string;
+  action: string;
   src: string;
   source: 'heuristic' | 'ai';
   pending: boolean;

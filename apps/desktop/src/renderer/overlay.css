@@ -772,7 +772,8 @@ body.controls #keyHint strong {
   font-weight: 600;
 }
 
-body.controls #hintKey {
+body.controls #hintKey,
+body.controls #stepTitle kbd {
   padding: 1px 6px;
   border: 1px solid var(--lavender);
   border-radius: 5px;
@@ -782,6 +783,10 @@ body.controls #hintKey {
   font: inherit;
   font-size: 10.5px;
   font-weight: 600;
+}
+
+body.controls #stepTitle kbd {
+  font-size: 0.85em;
 }
 
 body.controls #modeBlock {
