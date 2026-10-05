@@ -31,6 +31,7 @@ interface ScreenshotViewProps {
   animate?: boolean;
   crop?: boolean;
   frameRatio?: number;
+  cover?: boolean;
   readOnly?: boolean;
   cache?: boolean;
   onOpenEditor?: (tool: 'annotate' | 'redact' | 'crop' | 'target') => void;
@@ -63,6 +64,7 @@ export function ScreenshotView({
   animate = false,
   crop = false,
   frameRatio,
+  cover = false,
   readOnly = false,
   cache = false,
   onOpenEditor,
@@ -305,7 +307,10 @@ export function ScreenshotView({
 
   if (!fullUrl) {
     return (
-      <div className={`rounded-lg bg-secondary p-4 flex flex-col gap-2.5 ${className}`} style={{ aspectRatio: ratio }}>
+      <div
+        className={`rounded-lg bg-secondary p-4 flex flex-col gap-2.5 ${cover ? 'h-full' : ''} ${className}`}
+        style={cover ? undefined : { aspectRatio: ratio }}
+      >
         <div className="h-7 rounded-md bg-border/60 animate-pulse" />
         <div className="flex-1 flex gap-3">
           <div className="w-[30%] flex flex-col gap-2">
@@ -345,15 +350,18 @@ export function ScreenshotView({
 
   const vpRatio = displayedViewport.width / displayedViewport.height;
   const letterbox =
-    frameRatio !== undefined && Math.abs(vpRatio - frameRatio) > FRAME_RATIO_EPSILON ? frameRatio : undefined;
+    !cover && frameRatio !== undefined && Math.abs(vpRatio - frameRatio) > FRAME_RATIO_EPSILON ? frameRatio : undefined;
+  const coverFit: React.CSSProperties | undefined = cover
+    ? { minWidth: '100%', minHeight: '100%', flex: 'none' }
+    : undefined;
   const frameFit: React.CSSProperties | undefined =
     letterbox === undefined ? undefined : vpRatio >= letterbox ? { width: '100%' } : { height: '100%' };
 
   const frame = (
     <div
       data-screenshot-frame=""
-      className={letterbox === undefined ? 'relative overflow-hidden w-full' : 'relative overflow-hidden'}
-      style={{ aspectRatio: `${displayedViewport.width} / ${displayedViewport.height}`, ...frameFit }}
+      className={letterbox === undefined && !cover ? 'relative overflow-hidden w-full' : 'relative overflow-hidden'}
+      style={{ aspectRatio: `${displayedViewport.width} / ${displayedViewport.height}`, ...frameFit, ...coverFit }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerEnd}
@@ -370,7 +378,9 @@ export function ScreenshotView({
   );
 
   return (
-    <div className={`relative overflow-hidden rounded-lg border border-border ${className}`}>
+    <div
+      className={`relative overflow-hidden rounded-lg border border-border ${cover ? 'h-full flex items-center justify-center' : ''} ${className}`}
+    >
       {letterbox === undefined ? (
         frame
       ) : (
