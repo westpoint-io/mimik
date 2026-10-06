@@ -10,9 +10,9 @@ import { cameraMascot } from './camera-mascot';
 import { el } from './el';
 
 const MODES = [
-  { id: 'window', label: 'desktop_modeWindow', glyph: 'window' },
-  { id: 'screen', label: 'desktop_modeScreen', glyph: 'monitor' },
-  { id: 'area', label: 'desktop_modeArea', glyph: 'area' },
+  { id: 'window', label: 'desktop.modeWindow', glyph: 'window' },
+  { id: 'screen', label: 'desktop.modeScreen', glyph: 'monitor' },
+  { id: 'area', label: 'desktop.modeArea', glyph: 'area' },
 ] as const;
 
 const AI_WAIT_MS = 8000;
@@ -36,13 +36,13 @@ export function controls(): void {
   const shot = el('img', { id: 'shot', alt: '' });
   const veilPause = el('span', { id: 'veilPause' }, icon('pause', 16));
   const veil = el('div', { id: 'veil' }, veilPause);
-  const remove = el('button', { id: 'remove', type: 'button', title: i18n.t('recording_deleteStep') });
-  remove.setAttribute('aria-label', i18n.t('recording_deleteStep'));
+  const remove = el('button', { id: 'remove', type: 'button', title: i18n.t('recording.deleteStep') });
+  remove.setAttribute('aria-label', i18n.t('recording.deleteStep'));
   remove.append(icon('trash', 13));
   const preview = el('div', { id: 'preview' }, shot, veil, remove);
 
   const stepTitle = el('p', { id: 'stepTitle' });
-  const source = el('span', { id: 'source', title: i18n.t('stepSource_hint') });
+  const source = el('span', { id: 'source', title: i18n.t('stepSource.hint') });
   const metaText = el('span', { id: 'metaText' });
   const stepMeta = el('div', { id: 'stepMeta' }, source, metaText);
 
@@ -79,7 +79,7 @@ export function controls(): void {
   const voiceBars = el('span', { id: 'voiceBars' });
   const bars = VOICE_BARS.map(() => voiceBars.appendChild(el('i', {})));
   const voiceLabel = el('strong', {});
-  const voiceHint = el('p', { id: 'voiceHint' }, i18n.t('voice_orderHint'));
+  const voiceHint = el('p', { id: 'voiceHint' }, i18n.t('voice.orderHint'));
   const voice = el(
     'div',
     { id: 'voice', role: 'status' },
@@ -88,7 +88,7 @@ export function controls(): void {
   );
   const body = el('div', { id: 'body' }, stage, intro, hint, voice);
 
-  const modeLabel = el('p', { id: 'modeLabel' }, i18n.t('desktop_captureMode'));
+  const modeLabel = el('p', { id: 'modeLabel' }, i18n.t('desktop.captureMode'));
   const modeRow = el('div', { id: 'modes' });
   const modeButtons = MODES.map(({ id, label: text, glyph }) => {
     const button = el('button', { type: 'button', className: 'mode' }, icon(glyph, 13), i18n.t(text));
@@ -206,11 +206,11 @@ export function controls(): void {
     label.textContent = starting
       ? 'Starting…'
       : recording
-        ? i18n.t(count === 1 ? 'recording_recording' : 'recording_recordingPlural', counted)
+        ? i18n.t(count === 1 ? 'recording.recording' : 'recording.recordingPlural', counted)
         : paused
-          ? i18n.t('recording_capturePaused')
-          : i18n.t('desktop_ready');
-    counter.textContent = i18n.t(count === 1 ? 'fullview_stepCount' : 'fullview_stepCountPlural', counted);
+          ? i18n.t('recording.capturePaused')
+          : i18n.t('desktop.ready');
+    counter.textContent = i18n.t(count === 1 ? 'fullview.stepCount' : 'fullview.stepCountPlural', counted);
     counter.hidden = !paused;
 
     const modeId = mode;
@@ -226,7 +226,7 @@ export function controls(): void {
     if (micState !== shownMic) {
       shownMic = micState;
       const micLabel = i18n.t(
-        paused ? 'voice_pausedWithCapture' : micLocked ? 'voice_needsApiKey' : micOn ? 'voice_turnOff' : 'voice_turnOn',
+        paused ? 'voice.pausedWithCapture' : micLocked ? 'voice.needsApiKey' : micOn ? 'voice.turnOff' : 'voice.turnOn',
       );
       mic.className = micLocked ? 'locked' : micOn ? 'on' : 'off';
       mic.title = micLabel;
@@ -272,7 +272,7 @@ export function controls(): void {
     source.textContent = i18n.t(STEP_SOURCE_LABELS[step?.source ?? 'heuristic']);
     source.className = sourceKind;
     metaText.textContent =
-      [step ? i18n.t('export_stepLabel', [String(step.number)]) : '', step?.app ?? ''].filter(Boolean).join(' · ') ||
+      [step ? i18n.t('export.stepLabel', [String(step.number)]) : '', step?.app ?? ''].filter(Boolean).join(' · ') ||
       '\u00a0';
 
     intro.hidden = !(armed || waiting || resting);
@@ -286,12 +286,12 @@ export function controls(): void {
     voice.hidden = collapsed || !narration;
     const voiceFailed = Boolean(narration?.reason);
     voiceHint.hidden = intro.hidden && !voiceFailed;
-    voiceHint.textContent = i18n.t(voiceFailed ? 'voice_guideSafe' : 'voice_orderHint');
+    voiceHint.textContent = i18n.t(voiceFailed ? 'voice.guideSafe' : 'voice.orderHint');
     voiceBars.hidden = voiceFailed;
     voiceBars.classList.toggle('speaking', narration?.speaking === true);
     voiceLabel.textContent = narration?.reason
       ? i18n.t(voiceErrorKey(narration.reason))
-      : i18n.t(narration?.speaking ? 'voice_micHearing' : 'voice_micQuiet');
+      : i18n.t(narration?.speaking ? 'voice.micHearing' : 'voice.micQuiet');
     bars.forEach((bar, index) => {
       const scale = Math.max(VOICE_BAR_FLOOR, Math.min(1, (narration?.level ?? 0) * VOICE_BARS[index]));
       bar.style.transform = `scaleY(${scale})`;
@@ -305,12 +305,12 @@ export function controls(): void {
 
     if (state !== shownIcon) {
       shownIcon = state;
-      const secondaryLabel = i18n.t(armed ? 'common_close' : recording ? 'desktop_pause' : 'desktop_resume');
+      const secondaryLabel = i18n.t(armed ? 'common.close' : recording ? 'desktop.pause' : 'desktop.resume');
       secondary.replaceChildren(icon(armed ? 'close' : recording ? 'pause' : 'play', 16));
       secondary.title = secondaryLabel;
       secondary.setAttribute('aria-label', secondaryLabel);
       primary.replaceChildren(icon(armed ? 'video' : 'check'));
-      primary.append(i18n.t(armed ? 'desktop_startButton' : 'desktop_finish'));
+      primary.append(i18n.t(armed ? 'desktop.startButton' : 'desktop.finish'));
     }
     secondary.dataset.command = armed ? 'disarm' : recording ? 'pause' : 'resume';
     primary.dataset.command = armed ? 'start' : 'stop';

@@ -17,20 +17,20 @@ export function ConfirmDeleteModal({ open, onClose, onConfirm }: ConfirmDeleteMo
             <Trash2 size={22} className="text-destructive" />
           </div>
         </div>
-        <DialogTitle className="text-center text-base">{i18n.t('confirmDelete_title')}</DialogTitle>
-        <DialogDescription className="text-center">{i18n.t('confirmDelete_message')}</DialogDescription>
+        <DialogTitle className="text-center text-base">{i18n.t('confirmDelete.title')}</DialogTitle>
+        <DialogDescription className="text-center">{i18n.t('confirmDelete.message')}</DialogDescription>
         <div className="flex flex-col gap-2 mt-2">
           <button
             onClick={onConfirm}
             className="w-full py-2.5 rounded-lg bg-destructive text-white text-sm font-semibold hover:bg-destructive/90 transition-colors"
           >
-            {i18n.t('confirmDelete_confirm')}
+            {i18n.t('confirmDelete.confirm')}
           </button>
           <button
             onClick={onClose}
             className="w-full py-2.5 rounded-lg bg-secondary text-foreground text-sm font-semibold hover:bg-lavender transition-colors"
           >
-            {i18n.t('common_cancel')}
+            {i18n.t('common.cancel')}
           </button>
         </div>
       </DialogContent>

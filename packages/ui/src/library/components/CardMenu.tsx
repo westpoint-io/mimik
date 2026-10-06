@@ -43,7 +43,7 @@ export function CardMenu({
   if (category === 'trash') {
     items.push({
       icon: <RotateCcw size={13} />,
-      label: i18n.t('common_restore'),
+      label: i18n.t('common.restore'),
       onClick: (e) => {
         onRestore(e, guideId);
         setOpen(false);
@@ -51,7 +51,7 @@ export function CardMenu({
     });
     items.push({
       icon: <Trash2 size={13} />,
-      label: i18n.t('library_deletePermanently'),
+      label: i18n.t('library.deletePermanently'),
       onClick: (e) => {
         onPermanentDelete(e, guideId);
         setOpen(false);
@@ -61,7 +61,7 @@ export function CardMenu({
   } else {
     items.push({
       icon: starred ? <StarOff size={13} /> : <Star size={13} />,
-      label: starred ? i18n.t('common_unstar') : i18n.t('common_star'),
+      label: starred ? i18n.t('common.unstar') : i18n.t('common.star'),
       onClick: (e) => {
         onStar(e, guideId);
         setOpen(false);
@@ -69,7 +69,7 @@ export function CardMenu({
     });
     items.push({
       icon: <Copy size={13} />,
-      label: i18n.t('library_duplicate'),
+      label: i18n.t('library.duplicate'),
       onClick: (e) => {
         onDuplicate(e, guideId);
         setOpen(false);
@@ -77,7 +77,7 @@ export function CardMenu({
     });
     items.push({
       icon: <Trash2 size={13} />,
-      label: i18n.t('library_moveToTrash'),
+      label: i18n.t('library.moveToTrash'),
       onClick: (e) => {
         onTrash(e, guideId);
         setOpen(false);

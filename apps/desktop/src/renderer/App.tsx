@@ -92,7 +92,7 @@ export function App() {
         route={route}
         onStartCapture={() => setSheet({})}
         onSettings={() => setSettingsOpen(true)}
-        version={version && i18n.t('desktop_version', [version])}
+        version={version && i18n.t('desktop.version', [version])}
         guideActions={
           route.page === 'guide' ? (
             <GuideZoom guideId={route.guideId} onDone={() => setGuideKey((n) => n + 1)} />

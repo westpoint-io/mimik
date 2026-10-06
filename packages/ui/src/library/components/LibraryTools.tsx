@@ -8,10 +8,10 @@ import { bundleFrom } from '../lib/bundle-from';
 import type { SortKey } from '../types';
 
 const sortLabelKeys: Record<SortKey, string> = {
-  recent: 'sort_recentFirst',
-  oldest: 'sort_oldestFirst',
-  alpha: 'sort_alphaAZ',
-  steps: 'sort_mostSteps',
+  recent: 'sort.recentFirst',
+  oldest: 'sort.oldestFirst',
+  alpha: 'sort.alphaAZ',
+  steps: 'sort.mostSteps',
 };
 
 export function LibraryTools() {
@@ -93,7 +93,7 @@ export function LibraryTools() {
           </button>
         </TooltipTrigger>
         <TooltipContent align="end">
-          {display === 'list' ? i18n.t('sort_gridView') : i18n.t('sort_listView')}
+          {display === 'list' ? i18n.t('sort.gridView') : i18n.t('sort.listView')}
         </TooltipContent>
       </Tooltip>
     </div>

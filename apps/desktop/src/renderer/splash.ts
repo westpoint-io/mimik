@@ -10,6 +10,6 @@ document.body.append(
     { id: 'splash' },
     el('div', { id: 'mascot' }, mascot(116)),
     el('p', { id: 'wordmark' }, 'Mimik'),
-    el('div', { id: 'meter', role: 'progressbar', ariaLabel: i18n.t('common_loading') }, el('span', {})),
+    el('div', { id: 'meter', role: 'progressbar', ariaLabel: i18n.t('common.loading') }, el('span', {})),
   ),
 );

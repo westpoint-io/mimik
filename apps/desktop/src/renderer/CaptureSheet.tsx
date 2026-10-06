@@ -8,9 +8,9 @@ import type { CaptureSettings } from '../main/capture/settings';
 type Mode = CaptureSettings['captureMode'];
 
 const MODES: { id: Mode; label: string; Icon: typeof AppWindow }[] = [
-  { id: 'window', label: 'desktop_modeWindow', Icon: AppWindow },
-  { id: 'screen', label: 'desktop_modeScreen', Icon: Monitor },
-  { id: 'area', label: 'desktop_modeArea', Icon: Crop },
+  { id: 'window', label: 'desktop.modeWindow', Icon: AppWindow },
+  { id: 'screen', label: 'desktop.modeScreen', Icon: Monitor },
+  { id: 'area', label: 'desktop.modeArea', Icon: Crop },
 ];
 
 export function CaptureSheet({ insert, onClose }: { insert?: CaptureInsert; onClose(): void }) {
@@ -42,7 +42,7 @@ export function CaptureSheet({ insert, onClose }: { insert?: CaptureInsert; onCl
     <div className="fixed inset-0 z-50 flex justify-end">
       <button
         type="button"
-        aria-label={i18n.t('common_close')}
+        aria-label={i18n.t('common.close')}
         onClick={onClose}
         className="absolute inset-0 bg-deep/40"
       />
@@ -51,19 +51,19 @@ export function CaptureSheet({ insert, onClose }: { insert?: CaptureInsert; onCl
         <div className={`flex border-b border-secondary px-6 pb-4 pt-5 ${insert ? 'items-start' : 'items-center'}`}>
           <div className="mr-auto flex flex-col gap-1">
             <h2 className="text-base font-semibold text-foreground">
-              {i18n.t(insert ? 'capture_moreStepsTitle' : 'desktop_startSheetTitle')}
+              {i18n.t(insert ? 'capture.moreStepsTitle' : 'desktop.startSheetTitle')}
             </h2>
             {insert && (
               <p className="text-[12.5px] text-muted-foreground">
                 {insert.afterStep === 0
-                  ? i18n.t('desktop_moreStepsFirst')
-                  : i18n.t('desktop_moreStepsAfter', [String(insert.afterStep)])}
+                  ? i18n.t('desktop.moreStepsFirst')
+                  : i18n.t('desktop.moreStepsAfter', [String(insert.afterStep)])}
               </p>
             )}
           </div>
           <button
             type="button"
-            aria-label={i18n.t('common_close')}
+            aria-label={i18n.t('common.close')}
             onClick={onClose}
             className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
           >
@@ -74,7 +74,7 @@ export function CaptureSheet({ insert, onClose }: { insert?: CaptureInsert; onCl
         <div className="flex flex-1 flex-col gap-5 px-6 py-5">
           <div>
             <p className="mb-2.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-              {i18n.t('desktop_captureMode')}
+              {i18n.t('desktop.captureMode')}
             </p>
             <div className="flex flex-col gap-2">
               {MODES.map(({ id, label, Icon }) => {
@@ -115,11 +115,11 @@ export function CaptureSheet({ insert, onClose }: { insert?: CaptureInsert; onCl
 
         <div className="flex gap-2.5 border-t border-secondary px-6 pb-5 pt-4">
           <Button variant="outline" className="flex-1" onClick={onClose}>
-            {i18n.t('common_cancel')}
+            {i18n.t('common.cancel')}
           </Button>
           <Button className="flex-[1.6]" disabled={!settings} onClick={start}>
             <Video size={17} />
-            {i18n.t('desktop_startButton')}
+            {i18n.t('desktop.startButton')}
           </Button>
         </div>
       </aside>

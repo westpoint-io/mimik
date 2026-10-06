@@ -71,8 +71,8 @@ export function GuideListView({
                 )}
                 <span className="shrink-0">
                   {guide.stepIds.length !== 1
-                    ? i18n.t('fullview_stepCountPlural', [String(guide.stepIds.length)])
-                    : i18n.t('fullview_stepCount', [String(guide.stepIds.length)])}{' '}
+                    ? i18n.t('fullview.stepCountPlural', [String(guide.stepIds.length)])
+                    : i18n.t('fullview.stepCount', [String(guide.stepIds.length)])}{' '}
                   &middot; {formatDate(guide.updatedAt)}
                 </span>
               </p>
@@ -88,7 +88,7 @@ export function GuideListView({
                       <Star size={15} fill={guide.starred ? 'currentColor' : 'none'} />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent>{guide.starred ? i18n.t('common_unstar') : i18n.t('common_star')}</TooltipContent>
+                  <TooltipContent>{guide.starred ? i18n.t('common.unstar') : i18n.t('common.star')}</TooltipContent>
                 </Tooltip>
               )}
               <CardMenu

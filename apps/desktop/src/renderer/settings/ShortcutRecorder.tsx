@@ -39,13 +39,13 @@ export function ShortcutRecorder({ label, value, onChange }: ShortcutRecorderPro
               : 'border-border bg-card text-foreground hover:border-violet'
           }`}
         >
-          {listening ? i18n.t('desktop_shortcutPress') : value ? shortcutLabel(value, MAC) : '—'}
+          {listening ? i18n.t('desktop.shortcutPress') : value ? shortcutLabel(value, MAC) : '—'}
         </button>
         <Button
           type="button"
           variant="outline"
           size="icon"
-          aria-label={i18n.t('desktop_shortcutClear')}
+          aria-label={i18n.t('desktop.shortcutClear')}
           onClick={() => onChange(null)}
           disabled={!value}
           className="rounded-lg text-muted-foreground hover:text-accent"

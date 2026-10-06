@@ -32,14 +32,14 @@ export function editor(origin: { x: number; y: number }): void {
   const cancel = el(
     'button',
     { type: 'button', className: 'secondary' },
-    i18n.t('common_cancel'),
+    i18n.t('common.cancel'),
     el('kbd', {}, 'Esc'),
   );
   const done = el(
     'button',
     { type: 'button', className: 'primary' },
     icon('check', 15),
-    i18n.t('annotationEditor_done'),
+    i18n.t('annotationEditor.done'),
     el('kbd', {}, 'Enter'),
   );
   cancel.addEventListener('click', () => window.mimikOverlay.command('cancelEdit'));

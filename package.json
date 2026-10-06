@@ -16,7 +16,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage",
-    "lint": "biome check . && node scripts/check-exports.mjs",
+    "lint": "biome check . && node scripts/check-exports.mjs && node scripts/check-locale-keys.mjs",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
     "prepare": "husky",

@@ -38,23 +38,23 @@ import { Slider } from './Slider';
 type Section = 'general' | 'capture' | 'ai' | 'branding' | 'shortcuts' | 'keys';
 
 const SECTIONS: { id: Section; labelKey: string; Icon: typeof AppWindow }[] = [
-  { id: 'general', labelKey: 'desktop_generalSection', Icon: SlidersHorizontal },
-  { id: 'capture', labelKey: 'desktop_capturingSection', Icon: MonitorPlay },
-  { id: 'ai', labelKey: 'settings_aiSection', Icon: Sparkles },
-  { id: 'branding', labelKey: 'settings_branding', Icon: ImageIcon },
-  { id: 'shortcuts', labelKey: 'desktop_shortcutsSection', Icon: Command },
-  { id: 'keys', labelKey: 'settings_apiKeys', Icon: KeyRound },
+  { id: 'general', labelKey: 'desktop.generalSection', Icon: SlidersHorizontal },
+  { id: 'capture', labelKey: 'desktop.capturingSection', Icon: MonitorPlay },
+  { id: 'ai', labelKey: 'settings.aiSection', Icon: Sparkles },
+  { id: 'branding', labelKey: 'settings.branding', Icon: ImageIcon },
+  { id: 'shortcuts', labelKey: 'desktop.shortcutsSection', Icon: Command },
+  { id: 'keys', labelKey: 'settings.apiKeys', Icon: KeyRound },
 ];
 
 const MODES: { id: CaptureSettings['captureMode']; labelKey: string; Icon: typeof AppWindow }[] = [
-  { id: 'window', labelKey: 'desktop_modeWindow', Icon: AppWindow },
-  { id: 'screen', labelKey: 'desktop_modeScreen', Icon: Monitor },
-  { id: 'area', labelKey: 'desktop_modeArea', Icon: Crop },
+  { id: 'window', labelKey: 'desktop.modeWindow', Icon: AppWindow },
+  { id: 'screen', labelKey: 'desktop.modeScreen', Icon: Monitor },
+  { id: 'area', labelKey: 'desktop.modeArea', Icon: Crop },
 ];
 const KEYS: { id: keyof CaptureShortcuts; labelKey: string }[] = [
-  { id: 'startStop', labelKey: 'desktop_shortcutStartStop' },
-  { id: 'pauseResume', labelKey: 'desktop_shortcutPauseResume' },
-  { id: 'capture', labelKey: 'desktop_shortcutCapture' },
+  { id: 'startStop', labelKey: 'desktop.shortcutStartStop' },
+  { id: 'pauseResume', labelKey: 'desktop.shortcutPauseResume' },
+  { id: 'capture', labelKey: 'desktop.shortcutCapture' },
 ];
 
 export function SettingsPanel() {
@@ -124,76 +124,76 @@ export function SettingsPanel() {
             <>
               <Card
                 icon={MonitorPlay}
-                title={i18n.t('desktop_cardScreenshots')}
-                hint={i18n.t('desktop_cardScreenshotsHint')}
+                title={i18n.t('desktop.cardScreenshots')}
+                hint={i18n.t('desktop.cardScreenshotsHint')}
               >
-                <Row label={i18n.t('desktop_captureMode')} hint={i18n.t('desktop_captureModeHint')}>
+                <Row label={i18n.t('desktop.captureMode')} hint={i18n.t('desktop.captureModeHint')}>
                   <Segmented
-                    label={i18n.t('desktop_captureMode')}
+                    label={i18n.t('desktop.captureMode')}
                     value={settings.captureMode}
                     options={MODES.map((mode) => ({ value: mode.id, label: i18n.t(mode.labelKey), Icon: mode.Icon }))}
                     onChange={(captureMode) => save({ captureMode })}
                   />
                 </Row>
 
-                <Row label={i18n.t('desktop_screenshotDelay')} hint={i18n.t('desktop_screenshotDelayHint')}>
+                <Row label={i18n.t('desktop.screenshotDelay')} hint={i18n.t('desktop.screenshotDelayHint')}>
                   <Slider
-                    label={i18n.t('desktop_screenshotDelay')}
+                    label={i18n.t('desktop.screenshotDelay')}
                     min={0}
                     max={2000}
                     step={50}
                     value={settings.screenshotDelayMs}
-                    shown={`${settings.screenshotDelayMs} ${i18n.t('desktop_milliseconds')}`}
+                    shown={`${settings.screenshotDelayMs} ${i18n.t('desktop.milliseconds')}`}
                     onChange={(screenshotDelayMs) => save({ screenshotDelayMs })}
                   />
                 </Row>
 
-                <Row label={i18n.t('desktop_zoomLevel')} hint={i18n.t('desktop_zoomLevelHint')} stack>
+                <Row label={i18n.t('desktop.zoomLevel')} hint={i18n.t('desktop.zoomLevelHint')} stack>
                   <Segmented
-                    label={i18n.t('desktop_zoomLevel')}
+                    label={i18n.t('desktop.zoomLevel')}
                     value={settings.zoomLevel}
                     options={zoomLevels(settings.zoomLevel).map((level) => ({
                       value: level,
-                      label: level === null ? i18n.t('desktop_zoomAuto') : `${level}\u00d7`,
+                      label: level === null ? i18n.t('desktop.zoomAuto') : `${level}\u00d7`,
                     }))}
                     onChange={(zoomLevel) => save({ zoomLevel })}
                   />
                 </Row>
 
-                <Row label={i18n.t('desktop_keepClicksBeyondArea')} hint={i18n.t('desktop_keepClicksBeyondAreaHint')}>
+                <Row label={i18n.t('desktop.keepClicksBeyondArea')} hint={i18n.t('desktop.keepClicksBeyondAreaHint')}>
                   <Switch
                     checked={settings.keepClicksBeyondArea}
-                    label={i18n.t('desktop_keepClicksBeyondArea')}
+                    label={i18n.t('desktop.keepClicksBeyondArea')}
                     disabled={settings.captureMode !== 'area'}
                     onChange={(keepClicksBeyondArea) => save({ keepClicksBeyondArea })}
                   />
                 </Row>
               </Card>
 
-              <Card icon={Keyboard} title={i18n.t('settings_cardKeyboard')} hint={i18n.t('settings_cardKeyboardHint')}>
-                <Row label={i18n.t('desktop_recordTyping')} hint={i18n.t('desktop_recordTypingHint')}>
+              <Card icon={Keyboard} title={i18n.t('settings.cardKeyboard')} hint={i18n.t('settings.cardKeyboardHint')}>
+                <Row label={i18n.t('desktop.recordTyping')} hint={i18n.t('desktop.recordTypingHint')}>
                   <Switch
                     checked={settings.recordTyping}
-                    label={i18n.t('desktop_recordTyping')}
+                    label={i18n.t('desktop.recordTyping')}
                     onChange={(recordTyping) => save({ recordTyping })}
                   />
                 </Row>
-                <Row label={i18n.t('desktop_typingDebounce')} hint={i18n.t('desktop_typingDebounceHint')}>
+                <Row label={i18n.t('desktop.typingDebounce')} hint={i18n.t('desktop.typingDebounceHint')}>
                   <Slider
-                    label={i18n.t('desktop_typingDebounce')}
+                    label={i18n.t('desktop.typingDebounce')}
                     min={200}
                     max={5000}
                     step={100}
                     value={settings.typingDebounceMs}
-                    shown={`${(settings.typingDebounceMs / 1000).toFixed(1)} ${i18n.t('desktop_seconds')}`}
+                    shown={`${(settings.typingDebounceMs / 1000).toFixed(1)} ${i18n.t('desktop.seconds')}`}
                     disabled={!settings.recordTyping}
                     onChange={(typingDebounceMs) => save({ typingDebounceMs })}
                   />
                 </Row>
-                <Row label={i18n.t('settings_recordKeys')} hint={i18n.t('settings_recordKeysHint')}>
+                <Row label={i18n.t('settings.recordKeys')} hint={i18n.t('settings.recordKeysHint')}>
                   <Switch
                     checked={settings.recordKeys}
-                    label={i18n.t('settings_recordKeys')}
+                    label={i18n.t('settings.recordKeys')}
                     onChange={(recordKeys) => save({ recordKeys })}
                   />
                 </Row>
@@ -204,7 +204,7 @@ export function SettingsPanel() {
           {section === 'general' && <GeneralSettings />}
 
           {section === 'shortcuts' && settings && (
-            <Card icon={Command} title={i18n.t('desktop_cardGlobalKeys')} hint={i18n.t('desktop_cardGlobalKeysHint')}>
+            <Card icon={Command} title={i18n.t('desktop.cardGlobalKeys')} hint={i18n.t('desktop.cardGlobalKeysHint')}>
               {KEYS.map((key) => (
                 <ShortcutRecorder
                   key={key.id}

@@ -105,8 +105,8 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
       const newTitle = result.guide.title;
       const prev = titleRef.current;
       if (
-        prev === i18n.t('fullview_untitledGuide') &&
-        newTitle !== i18n.t('fullview_untitledGuide') &&
+        prev === i18n.t('fullview.untitledGuide') &&
+        newTitle !== i18n.t('fullview.untitledGuide') &&
         result.steps.length > 0
       ) {
         setTypingTitle(newTitle);
@@ -114,7 +114,7 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
         titleRef.current = newTitle;
         setTitle(newTitle);
       }
-      document.title = `${newTitle} — ${i18n.t('app_name')}`;
+      document.title = `${newTitle} — ${i18n.t('app.name')}`;
       setGuideTitle(newTitle);
       setGuideStepCount(actionSteps(result.steps).length);
     }
@@ -147,7 +147,7 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
     if (!data || next === data.guide.title) return;
     await updateGuideTitle(guideId, next);
     setData((prev) => (prev ? { ...prev, guide: { ...prev.guide, title: next } } : prev));
-    document.title = `${next} — ${i18n.t('app_name')}`;
+    document.title = `${next} — ${i18n.t('app.name')}`;
   }, [data, guideId, title, setGuideTitle]);
 
   const handleGuideDescriptionBlur = useCallback(async () => {
@@ -268,7 +268,7 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
         </div>
       </div>
     );
-  if (!data) return <p className="text-sm py-12 text-center text-purple">{i18n.t('fullview_guideNotFound')}</p>;
+  if (!data) return <p className="text-sm py-12 text-center text-purple">{i18n.t('fullview.guideNotFound')}</p>;
 
   const sidePanelOpen = historyOpen || transcriptOpen;
   const previewView = preview && previewData?.snapshotId === preview.id ? previewData : null;
@@ -279,7 +279,7 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
   const editingScreenshot = editingStepId ? data.screenshots.get(editingStepId) : undefined;
   const animatingTitle = preview ? null : typingTitle;
   const untitledPending =
-    !preview && !typingTitle && title === i18n.t('fullview_untitledGuide') && viewSteps.length > 0;
+    !preview && !typingTitle && title === i18n.t('fullview.untitledGuide') && viewSteps.length > 0;
   const metaGenerating = (untitledPending || animatingTitle !== null) && !desc.text;
 
   return (
@@ -305,7 +305,7 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
           <div className={untitledPending ? 'min-h-[88px]' : ''}>
             {untitledPending ? (
               <div className="text-[32px] font-extrabold leading-tight animate-gradient-text bg-[length:300%_100%] bg-clip-text text-transparent bg-gradient-to-r from-muted-foreground via-violet to-muted-foreground max-w-[480px]">
-                {i18n.t('fullview_writingTitle')}
+                {i18n.t('fullview.writingTitle')}
               </div>
             ) : animatingTitle ? (
               <div className="relative text-[32px] font-extrabold leading-tight">
@@ -367,7 +367,7 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
             <div className="mt-3">
               {metaGenerating ? (
                 <div className="max-w-[720px] text-[15px] leading-relaxed animate-gradient-text bg-[length:300%_100%] bg-clip-text text-transparent bg-gradient-to-r from-muted-foreground via-violet to-muted-foreground">
-                  {i18n.t('fullview_writingDescription')}
+                  {i18n.t('fullview.writingDescription')}
                 </div>
               ) : editing ? (
                 <div className="flex items-start gap-2 max-w-[720px]">
@@ -441,8 +441,8 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
             </span>
             <span className="inline-flex items-center text-[11px] font-medium text-muted-foreground bg-card border border-border px-2.5 py-0.5 rounded-full">
               {actionCount !== 1
-                ? i18n.t('fullview_stepCountPlural', [String(actionCount)])
-                : i18n.t('fullview_stepCount', [String(actionCount)])}
+                ? i18n.t('fullview.stepCountPlural', [String(actionCount)])
+                : i18n.t('fullview.stepCount', [String(actionCount)])}
             </span>
             {domain && (
               <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground bg-card border border-border pl-1.5 pr-2.5 py-0.5 rounded-full">
@@ -459,7 +459,7 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
                 className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary-foreground bg-primary hover:bg-primary/90 px-3 py-0.5 rounded-full transition-colors ml-auto"
               >
                 <Play size={11} />
-                {i18n.t('fullview_guideMe')}
+                {i18n.t('fullview.guideMe')}
               </button>
             )}
           </div>

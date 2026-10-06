@@ -48,20 +48,20 @@ export function GuideZoom({ guideId, onDone }: { guideId: string; onDone: () => 
       onOpenChange={(open) => open && refresh()}
     >
       <SelectTrigger
-        aria-label={i18n.t('desktop_zoomLevel')}
+        aria-label={i18n.t('desktop.zoomLevel')}
         className="h-8 w-auto gap-1.5 rounded-lg border-border bg-card px-3 text-[13px] font-medium text-foreground hover:bg-secondary hover:text-accent"
       >
         <ZoomIn size={14} />
-        <span className="@max-[960px]:hidden">{i18n.t('desktop_zoomGuide')}</span>
+        <span className="@max-[960px]:hidden">{i18n.t('desktop.zoomGuide')}</span>
         {current !== null && (
           <span className="text-muted-foreground">
             <span className="@max-[960px]:hidden">· </span>
-            {current === 'auto' ? i18n.t('desktop_zoomAuto') : `${current}×`}
+            {current === 'auto' ? i18n.t('desktop.zoomAuto') : `${current}×`}
           </span>
         )}
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="auto">{i18n.t('desktop_zoomAuto')}</SelectItem>
+        <SelectItem value="auto">{i18n.t('desktop.zoomAuto')}</SelectItem>
         {LEVELS.map((level) => (
           <SelectItem key={level} value={String(level)}>
             {String(level)}&times;

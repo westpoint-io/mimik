@@ -20,11 +20,11 @@ export function AppLanguage() {
 
   return (
     <Select value={chosen} onValueChange={change}>
-      <SelectTrigger aria-label={i18n.t('desktop_appLanguage')} className="h-9 w-56">
+      <SelectTrigger aria-label={i18n.t('desktop.appLanguage')} className="h-9 w-56">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="system">{i18n.t('desktop_languageSystem')}</SelectItem>
+        <SelectItem value="system">{i18n.t('desktop.languageSystem')}</SelectItem>
         {AI_LANGUAGES.map((language) => (
           <SelectItem key={language.code} value={language.code}>
             {language.label}
