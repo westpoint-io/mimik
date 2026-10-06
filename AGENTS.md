@@ -447,7 +447,11 @@ in it was a text field and typing there wrote no step. The first hit therefore a
 animations in that application and upsets window managers such as Rectangle, so `releaseWebContent`
 clears it again when the recording stops, on every process Mimik turned it on for and on none that
 already had it, so a running VoiceOver keeps its own. A
-hit that lands on Mimik's own overlay answers null rather than naming the card. The accessible name
+hit that lands on Mimik's own overlay answers null rather than naming the card. Chromium lays an empty, unnamed group over its whole tab strip, the tab-drag layer the Windows
+lookup already skips, and the hit test answers with it, so a click on a tab or its close button read
+"Click here". A hit that is an unnamed group with nothing inside it is therefore narrowed the Windows
+way: the elements beside it, four levels down, are searched for the smallest one holding the point,
+with the same `smallest_under`. The accessible name
 is `AXTitle`, then `AXDescription`, then the value of `AXTitleUIElement`, which is how a text field
 names its label; the placeholder rides in the help text, and a password is `AXSecureTextField`,
 whose value is never read. `macmap.rs` holds the role table and the key tables with no FFI in them,

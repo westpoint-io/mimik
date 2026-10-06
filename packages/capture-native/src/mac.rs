@@ -6,6 +6,7 @@ use std::sync::Mutex;
 
 use napi::Result;
 
+use crate::hit::{smallest_under, Bounds};
 use crate::macmap::{
   is_control, is_label, mac_keycode, named_key, printable, role, window_for_click, LayeredWindow,
   PROMOTE_DEPTH,
@@ -30,6 +31,8 @@ const EXCLUDE_DESKTOP: u32 = 16;
 const AX_CALL_TIMEOUT: f32 = 1.0;
 const MAX_ANCESTORS: usize = 4;
 const MAX_CHILDREN: usize = 12;
+const NARROW_DEPTH: usize = 4;
+const NARROW_LIMIT: usize = 200;
 
 #[repr(C)]
 #[derive(Default, Clone, Copy)]
@@ -55,6 +58,7 @@ struct CGRect {
 #[link(name = "CoreFoundation", kind = "framework")]
 extern "C" {
   fn CFRelease(value: CFTypeRef);
+  fn CFRetain(value: CFTypeRef) -> CFTypeRef;
   fn CFGetTypeID(value: CFTypeRef) -> usize;
   fn CFStringGetTypeID() -> usize;
   fn CFNumberGetTypeID() -> usize;
@@ -313,6 +317,58 @@ fn promoted(hit: Owned) -> Owned {
   hit
 }
 
+fn child_list(element: AXUIElementRef) -> Option<Owned> {
+  attribute(element, "AXChildren").filter(|list| unsafe { CFGetTypeID(list.0) == CFArrayGetTypeID() })
+}
+
+fn is_cover(element: AXUIElementRef) -> bool {
+  role_of(element).as_deref() == Some("group")
+    && label_of(element).is_none()
+    && child_list(element).is_none_or(|list| unsafe { CFArrayGetCount(list.0) } == 0)
+}
+
+fn bounds(rect: ElementRect) -> Bounds {
+  (
+    rect.x as i32,
+    rect.y as i32,
+    (rect.x + rect.width) as i32,
+    (rect.y + rect.height) as i32,
+  )
+}
+
+fn narrowed(hit: Owned, x: i32, y: i32) -> Owned {
+  if !is_cover(hit.0) {
+    return hit;
+  }
+  let Some(holder) = parent(hit.0) else { return hit };
+  let mut lists = Vec::new();
+  let mut elements = Vec::new();
+  let mut boxes = Vec::new();
+  let mut level = vec![holder.0];
+  for _ in 0..NARROW_DEPTH {
+    let mut next = Vec::new();
+    for element in level {
+      let Some(list) = child_list(element) else { continue };
+      for index in 0..unsafe { CFArrayGetCount(list.0) } {
+        let child = unsafe { CFArrayGetValueAtIndex(list.0, index) };
+        if let Some(rect) = rect_of(child) {
+          elements.push(child);
+          boxes.push(bounds(rect));
+        }
+        next.push(child);
+      }
+      lists.push(list);
+    }
+    if boxes.len() >= NARROW_LIMIT {
+      break;
+    }
+    level = next;
+  }
+  smallest_under(&boxes, x, y)
+    .and_then(|index| Owned::new(unsafe { CFRetain(elements[index]) }))
+    .unwrap_or(hit)
+}
+
 static OPENED: Mutex<Option<HashSet<i32>>> = Mutex::new(None);
 static ENHANCED: Mutex<Vec<i32>> = Mutex::new(Vec::new());
 const ENHANCED_UI: &str = "AXEnhancedUserInterface";
@@ -391,7 +447,7 @@ pub fn element_at_point(x: i32, y: i32) -> Result<Option<UiElement>> {
       hit = again;
     }
   }
-  let found = promoted(hit);
+  let found = promoted(narrowed(hit, x, y));
   let mut element = describe(found.0);
   if element.name.is_none() {
     element.ancestors = ancestors(found.0);
