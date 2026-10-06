@@ -27,7 +27,7 @@ const NUMBER_INT32: isize = 3;
 const NUMBER_FLOAT64: isize = 6;
 const ON_SCREEN_ONLY: u32 = 1;
 const EXCLUDE_DESKTOP: u32 = 16;
-const MESSAGING_TIMEOUT_SECONDS: f32 = 1.0;
+const AX_CALL_TIMEOUT: f32 = 1.0;
 const MAX_ANCESTORS: usize = 4;
 const MAX_CHILDREN: usize = 12;
 
@@ -367,7 +367,7 @@ pub fn release_web_content() {
 
 fn system() -> Option<Owned> {
   let wide = Owned::new(unsafe { AXUIElementCreateSystemWide() })?;
-  unsafe { AXUIElementSetMessagingTimeout(wide.0, MESSAGING_TIMEOUT_SECONDS) };
+  unsafe { AXUIElementSetMessagingTimeout(wide.0, AX_CALL_TIMEOUT) };
   Some(wide)
 }
 
