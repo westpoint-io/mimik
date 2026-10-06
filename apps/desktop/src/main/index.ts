@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
+import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import { isLive } from '@mimik/core/capture/is-live';
 import { CaptureState, captureMachine } from '@mimik/core/capture/machine';
 import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, protocol, screen, shell, Tray } from 'electron';
@@ -8,7 +9,6 @@ import { shortcutLabel } from '../renderer/lib/shortcut-label';
 import { registerAiFetch } from './ai-fetch';
 import { APP_ICON_SCHEME, registerAppIconProtocol } from './app-icon';
 import { ask } from './ask';
-import type { CaptureInsert } from './capture/insert';
 import { DesktopRecorder, frameFor } from './capture/recorder';
 import { grabDisplay } from './capture/screenshot';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from './capture/screenshot-store';
@@ -366,10 +366,14 @@ async function onOverlayCommand(command: OverlayCommand): Promise<void> {
       await ask(
         mainWindow?.webContents ?? null,
         'mimik:capture:mergeGuideInto',
-        { guideId: currentGuideId, targetGuideId: target.guideId, atIndex: target.atIndex },
+        {
+          guideId: currentGuideId,
+          insertTargetGuideId: target.insertTargetGuideId,
+          insertAtIndex: target.insertAtIndex,
+        },
         45_000,
       ).catch(() => undefined);
-      if (steps.length > 0) finished = target.guideId;
+      if (steps.length > 0) finished = target.insertTargetGuideId;
     } else if (currentGuideId) {
       finished = currentGuideId;
       void ask(mainWindow?.webContents ?? null, 'mimik:capture:finishGuide', finished, 45_000).catch(() => undefined);
@@ -450,7 +454,7 @@ if (!app.requestSingleInstanceLock()) {
       (command) => void onOverlayCommand(command),
       () => (captureSettings ?? loadSettings()).captureMode,
       {
-        insert: () => (insert ? { insertTargetGuideId: insert.guideId, insertAtIndex: insert.atIndex } : null),
+        insert: () => insert,
         introFrame: async () => {
           const { captureMode } = captureSettings ?? loadSettings();
           const region = overlay?.region ?? { x: 0, y: 0, width: 0, height: 0 };

@@ -1,5 +1,6 @@
 import { join } from 'node:path';
 import type { AiFailureReason } from '@mimik/core/capture/ai/errors';
+import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import {
   CaptureState,
   type CaptureStateValue,
@@ -89,7 +90,7 @@ export interface OverlayView {
 
 export interface OverlayOptions {
   introFrame?: () => Promise<Region>;
-  insert?: () => { insertTargetGuideId: string; insertAtIndex: number } | null;
+  insert?: () => CaptureInsert | null;
   shortcuts?: () => OverlayShortcuts;
 }
 
@@ -410,7 +411,12 @@ export class CaptureOverlay {
     const finished = await this.playIntro(frame);
     this.starting = false;
     if (!finished || this.state !== CaptureState.ARMED) return;
-    this.capture.send({ type: 'START_RECORDING', ...(this.options.insert?.() ?? {}) });
+    const target = this.options.insert?.();
+    this.capture.send({
+      type: 'START_RECORDING',
+      insertTargetGuideId: target?.insertTargetGuideId,
+      insertAtIndex: target?.insertAtIndex,
+    });
     this.onCommand('start');
   }
 

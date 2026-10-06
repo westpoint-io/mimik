@@ -1,5 +1,5 @@
+import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import { contextBridge, ipcRenderer } from 'electron';
-import type { CaptureInsert } from '../main/capture/insert';
 import type { CaptureSettings } from '../main/capture/settings';
 import type { OverlayAiFailure, OverlayCommand, OverlayNarration } from '../main/overlay';
 import type { CapturePermissions, MicrophoneAccess, PermissionKind } from '../main/permissions';

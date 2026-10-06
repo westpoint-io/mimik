@@ -53,11 +53,15 @@ window.mimik.onRequest('mimik:capture:finishGuide', async (payload) => {
 });
 
 window.mimik.onRequest('mimik:capture:mergeGuideInto', async (payload) => {
-  const { guideId, targetGuideId, atIndex } = payload as { guideId: string; targetGuideId: string; atIndex: number };
+  const { guideId, insertTargetGuideId, insertAtIndex } = payload as {
+    guideId: string;
+    insertTargetGuideId: string;
+    insertAtIndex: number;
+  };
   await narration.settle();
   await settleDescriptions(guideId);
-  await createSnapshot(targetGuideId);
-  await mergeGuideInto(guideId, targetGuideId, atIndex);
+  await createSnapshot(insertTargetGuideId);
+  await mergeGuideInto(guideId, insertTargetGuideId, insertAtIndex);
   return true;
 });
 

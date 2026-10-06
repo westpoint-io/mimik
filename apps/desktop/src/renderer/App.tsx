@@ -1,3 +1,4 @@
+import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import { i18n, localStorage } from '@mimik/core/env';
 import {
   AppFrame,
@@ -11,7 +12,6 @@ import {
   VoiceNotice,
 } from '@mimik/ui';
 import { useCallback, useEffect, useState } from 'react';
-import type { CaptureInsert } from '../main/capture/insert';
 import { CaptureSheet } from './CaptureSheet';
 import { DesktopOnboarding } from './DesktopOnboarding';
 import { GuideZoom } from './GuideZoom';

@@ -709,7 +709,7 @@ app.whenReady().then(async () => {
     const before = await ask<string | null>(win.webContents, 'mimik:check:title', target, 20_000);
     const staging = await ask<string>(app_.webContents, 'mimik:capture:createGuide', { staging: true }, 20_000);
     await labelled(staging, 'Second');
-    await ask(app_.webContents, 'mimik:capture:mergeGuideInto', { guideId: staging, targetGuideId: target, atIndex: 1 }, 20_000);
+    await ask(app_.webContents, 'mimik:capture:mergeGuideInto', { guideId: staging, insertTargetGuideId: target, insertAtIndex: 1 }, 20_000);
     const order = (await ask<string[] | null>(win.webContents, 'mimik:check:steps', target, 20_000)) ?? [];
     const left = await ask<string[] | null>(win.webContents, 'mimik:check:steps', staging, 20_000);
     const after = await ask<string | null>(win.webContents, 'mimik:check:title', target, 20_000);

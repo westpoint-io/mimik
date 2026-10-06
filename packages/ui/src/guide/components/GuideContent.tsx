@@ -1,4 +1,5 @@
 import { AI_CREDENTIAL_SETTINGS, resolveAiCredentials } from '@mimik/core/capture/ai/keys';
+import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import { i18n, localStorage } from '@mimik/core/env';
 import { formatDate } from '@mimik/core/export/utils';
 import { isReplayable } from '@mimik/core/guideme/session';
@@ -33,13 +34,14 @@ import { VersionHistoryPanel } from '../../history/components/VersionHistoryPane
 import { useFullview } from '../../stores/use-fullview';
 import { buildPreview } from '../lib/build-preview';
 import type { PreviewData } from '../types';
+import { CaptureTabDialog } from './CaptureTabDialog';
 import { GuideStepList } from './GuideStepList';
 
 interface GuideContentProps {
   guideId: string;
   initialStepId?: string;
   initialTool?: 'annotate' | 'redact' | 'crop' | 'target';
-  onCaptureMore?: (target: { guideId: string; atIndex: number; afterStep: number }) => void;
+  onCaptureMore?: (target: CaptureInsert) => void;
 }
 
 interface GuideData {
@@ -78,6 +80,7 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
   }));
 
   const [data, setData] = useState<GuideData | null>(null);
+  const [pendingInsert, setPendingInsert] = useState<CaptureInsert | null>(null);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
   const [typingTitle, setTypingTitle] = useState<string | null>(null);
@@ -472,13 +475,21 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
             readOnly={!editing || preview !== null}
             hasApiKey={desc.hasApiKey}
             onChanged={loadGuide}
-            onInsertRecording={(targetGuideId, insertAtIndex, tabId) => {
-              panel.open();
-              void tabs.startInsertRecording(targetGuideId, insertAtIndex, tabId);
-            }}
-            onCaptureMore={onCaptureMore && ((atIndex, afterStep) => onCaptureMore({ guideId, atIndex, afterStep }))}
+            onCaptureMore={onCaptureMore ?? setPendingInsert}
           />
         </div>
+
+        <CaptureTabDialog
+          open={pendingInsert !== null}
+          onCancel={() => setPendingInsert(null)}
+          onStart={(tabId) => {
+            const target = pendingInsert;
+            setPendingInsert(null);
+            if (!target) return;
+            panel.open();
+            void tabs.startInsertRecording(target.insertTargetGuideId, target.insertAtIndex, tabId);
+          }}
+        />
 
         {transcriptOpen && (
           <TranscriptPanel

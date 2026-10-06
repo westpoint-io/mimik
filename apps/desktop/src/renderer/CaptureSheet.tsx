@@ -1,8 +1,8 @@
+import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import { i18n } from '@mimik/core/env';
 import { Button } from '@mimik/ui';
 import { AppWindow, Crop, Monitor, Video, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import type { CaptureInsert } from '../main/capture/insert';
 import type { CaptureSettings } from '../main/capture/settings';
 
 type Mode = CaptureSettings['captureMode'];
