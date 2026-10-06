@@ -601,7 +601,7 @@ export class DesktopRecorder {
     await this.send({
       action,
       elementMeta: {
-        source: target ? 'uia' : 'screen',
+        source: target ? (process.platform === 'darwin' ? 'ax' : 'uia') : 'screen',
         textContent: target?.textContent ?? null,
         ariaLabel: target?.ariaLabel ?? null,
         placeholder: null,

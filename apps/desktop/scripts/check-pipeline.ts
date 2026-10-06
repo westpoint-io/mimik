@@ -334,7 +334,7 @@ app.whenReady().then(async () => {
   results.push({
     name: 'accessibility metadata reaches the step',
     ok:
-      meta?.source === 'uia' &&
+      meta?.source === (MAC ? 'ax' : 'uia') &&
       meta.ariaLabel === 'Save' &&
       meta.name === 'SaveButton' &&
       meta.role === 'button' &&
