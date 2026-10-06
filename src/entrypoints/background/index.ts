@@ -35,10 +35,10 @@ import { registerNavigationListeners } from './navigation';
 import { pauseCapture, resumeFromPause, whenPauseSettled } from './pause';
 import { handleCaptureStep, handleFinalizeInputStep, handleUpdateInputStep } from './step-pipeline';
 import {
+  broadcastAttachCapture,
   broadcastClearBlur,
-  broadcastStartCapture,
-  broadcastStopCapture,
-  broadcastStopCaptureAndFlush,
+  broadcastDetachCapture,
+  broadcastDetachCaptureAndFlush,
   isInjectableTab,
   showNotificationOnTab,
 } from './tab-manager';
@@ -150,7 +150,7 @@ export default defineBackground(() => {
 
     await startVoiceNarration(activeTab?.id);
 
-    await broadcastStartCapture(guideId);
+    await broadcastAttachCapture(guideId);
     return { guideId };
   });
 
@@ -159,7 +159,7 @@ export default defineBackground(() => {
     await whenPauseSettled();
     const actor = getActor();
     const { currentGuideId: guideId, insertTargetGuideId, insertAtIndex } = actor.getSnapshot().context;
-    await broadcastStopCaptureAndFlush();
+    await broadcastDetachCaptureAndFlush();
     await broadcastClearBlur();
     actor.send({ type: 'STOP_RECORDING' });
 
@@ -182,7 +182,7 @@ export default defineBackground(() => {
     await whenPauseSettled();
     const actor = getActor();
     const { currentGuideId: guideId, insertTargetGuideId } = actor.getSnapshot().context;
-    await broadcastStopCapture();
+    await broadcastDetachCapture();
     await broadcastClearBlur();
     actor.send({ type: 'STOP_RECORDING' });
     await abortVoiceNarration();

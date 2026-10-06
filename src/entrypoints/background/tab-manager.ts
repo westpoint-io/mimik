@@ -27,16 +27,16 @@ export async function showNotificationOnTab(tabId: number): Promise<void> {
   }
 }
 
-export async function broadcastStartCapture(guideId: string): Promise<void> {
+export async function broadcastAttachCapture(guideId: string): Promise<void> {
   try {
     const tabs = await queryTabs({});
     for (const tab of tabs) {
       if (tab.id && isInjectableTab(tab)) {
-        sendMessageToTab(tab.id, { type: TabMessage.START_CAPTURE, guideId }).catch(() => {});
+        sendMessageToTab(tab.id, { type: TabMessage.ATTACH_CAPTURE, guideId }).catch(() => {});
       }
     }
   } catch (err) {
-    logger.warn(' broadcastStartCapture failed', err);
+    logger.warn(' broadcastAttachCapture failed', err);
   }
 }
 
@@ -63,28 +63,28 @@ async function broadcastBlur(type: TabMessageType): Promise<void> {
 
 const FLUSH_TIMEOUT_MS = 1500;
 
-export async function broadcastStopCaptureAndFlush(): Promise<void> {
+export async function broadcastDetachCaptureAndFlush(): Promise<void> {
   try {
     const tabs = await queryTabs({});
     const sends = tabs
       .filter((tab): tab is typeof tab & { id: number } => tab.id !== undefined)
-      .map((tab) => sendMessageToTab(tab.id, { type: TabMessage.STOP_CAPTURE }).catch(() => {}));
+      .map((tab) => sendMessageToTab(tab.id, { type: TabMessage.DETACH_CAPTURE }).catch(() => {}));
     const timeout = new Promise<void>((resolve) => setTimeout(resolve, FLUSH_TIMEOUT_MS));
     await Promise.race([Promise.allSettled(sends), timeout]);
   } catch (err) {
-    logger.warn(' broadcastStopCaptureAndFlush failed', err);
+    logger.warn(' broadcastDetachCaptureAndFlush failed', err);
   }
 }
 
-export async function broadcastStopCapture(): Promise<void> {
+export async function broadcastDetachCapture(): Promise<void> {
   try {
     const tabs = await queryTabs({});
     for (const tab of tabs) {
       if (tab.id) {
-        sendMessageToTab(tab.id, { type: TabMessage.STOP_CAPTURE }).catch(() => {});
+        sendMessageToTab(tab.id, { type: TabMessage.DETACH_CAPTURE }).catch(() => {});
       }
     }
   } catch (err) {
-    logger.warn(' broadcastStopCapture failed', err);
+    logger.warn(' broadcastDetachCapture failed', err);
   }
 }

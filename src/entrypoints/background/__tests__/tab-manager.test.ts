@@ -13,8 +13,8 @@ vi.mock('@mimik/core/logger', () => ({ logger: { info: vi.fn(), debug: vi.fn(), 
 
 import {
   broadcastClearBlur,
+  broadcastDetachCaptureAndFlush,
   broadcastDismissBlur,
-  broadcastStopCaptureAndFlush,
   isInjectableTab,
 } from '../tab-manager';
 
@@ -43,7 +43,7 @@ describe('blur broadcasts', () => {
   });
 });
 
-describe('broadcastStopCaptureAndFlush', () => {
+describe('broadcastDetachCaptureAndFlush', () => {
   it('waits for every tab to answer before resolving', async () => {
     let answered = 0;
     sendMessageToTab.mockImplementation(
@@ -56,20 +56,20 @@ describe('broadcastStopCaptureAndFlush', () => {
         }),
     );
 
-    await broadcastStopCaptureAndFlush();
+    await broadcastDetachCaptureAndFlush();
 
     expect(answered).toBe(2);
-    expect(typesSent()).toEqual(['STOP_CAPTURE', 'STOP_CAPTURE']);
+    expect(typesSent()).toEqual(['DETACH_CAPTURE', 'DETACH_CAPTURE']);
   });
 
   it('resolves even when a tab never answers', async () => {
     sendMessageToTab.mockImplementation(() => new Promise(() => {}));
-    await expect(broadcastStopCaptureAndFlush()).resolves.toBeUndefined();
+    await expect(broadcastDetachCaptureAndFlush()).resolves.toBeUndefined();
   });
 
   it('resolves when a tab rejects', async () => {
     sendMessageToTab.mockRejectedValue(new Error('no receiving end'));
-    await expect(broadcastStopCaptureAndFlush()).resolves.toBeUndefined();
+    await expect(broadcastDetachCaptureAndFlush()).resolves.toBeUndefined();
   });
 });
 

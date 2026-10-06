@@ -3,9 +3,9 @@ import { CaptureState, type PauseReason } from '@/core/capture/machine';
 import { getActiveTab } from '@/lib/browser-api/get-active-tab';
 import { getActor } from './actor';
 import {
+  broadcastAttachCapture,
+  broadcastDetachCaptureAndFlush,
   broadcastDismissBlur,
-  broadcastStartCapture,
-  broadcastStopCaptureAndFlush,
   injectContentScript,
   isInjectableTab,
 } from './tab-manager';
@@ -45,7 +45,7 @@ async function pauseAndStopNarration(reason: PauseReason): Promise<boolean> {
   if (actor.getSnapshot().value !== CaptureState.RECORDING) return false;
 
   const narrationWasLive = (await isNarrationLive()) || isNarrationSettling();
-  await broadcastStopCaptureAndFlush();
+  await broadcastDetachCaptureAndFlush();
   if (actor.getSnapshot().value !== CaptureState.RECORDING) return false;
   actor.send({ type: 'PAUSE_CAPTURE', reason, narrationWasLive });
 
@@ -66,7 +66,7 @@ export async function resumeCapture(tryStartNarration?: NarrationStarter): Promi
   if (guideId) {
     const activeTab = await getActiveTab();
     if (activeTab?.id && isInjectableTab(activeTab)) await injectContentScript(activeTab.id);
-    await broadcastStartCapture(guideId);
+    await broadcastAttachCapture(guideId);
   }
 
   if (narrationWasLive && tryStartNarration) {
