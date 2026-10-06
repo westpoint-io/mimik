@@ -26,6 +26,7 @@ import { VoiceStatus } from './VoiceStatus';
 interface RecordingViewProps {
   guideId: string;
   onStop: () => void;
+  onDiscard: () => void;
   voice: PanelVoiceUpdate;
   aiFailure: PanelAiUpdate | null;
   paused: boolean;
@@ -37,7 +38,15 @@ interface LiveStep {
   screenshot?: Screenshot;
 }
 
-export function RecordingView({ guideId, onStop, voice, aiFailure, paused, pauseReason }: RecordingViewProps) {
+export function RecordingView({
+  guideId,
+  onStop,
+  onDiscard,
+  voice,
+  aiFailure,
+  paused,
+  pauseReason,
+}: RecordingViewProps) {
   const [steps, setSteps] = useState<LiveStep[]>([]);
   const [siteUrl, setSiteUrl] = useState('');
   const [voiceEnabled, setVoiceEnabled] = useState(false);
@@ -252,7 +261,7 @@ export function RecordingView({ guideId, onStop, voice, aiFailure, paused, pause
           <Tooltip>
             <TooltipTrigger asChild>
               <button
-                onClick={onStop}
+                onClick={onDiscard}
                 className="w-9 h-9 shrink-0 rounded-full border border-border flex items-center justify-center transition-colors text-purple hover:border-destructive/30 hover:text-destructive"
               >
                 <X size={16} />

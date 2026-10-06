@@ -166,12 +166,23 @@ export function App() {
     }
   }, []);
 
+  const handleDiscardRecording = useCallback(async () => {
+    try {
+      await sendMessage('discardRecording', undefined);
+      setIsRecording(false);
+      setView({ name: 'library' });
+    } catch (err) {
+      logger.error(' DISCARD_RECORDING error', err);
+    }
+  }, []);
+
   function renderView() {
     if (view.name === 'recording') {
       return (
         <RecordingView
           guideId={view.guideId}
           onStop={handleStopRecording}
+          onDiscard={handleDiscardRecording}
           voice={voice}
           aiFailure={aiFailure}
           paused={paused}
