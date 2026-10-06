@@ -826,14 +826,17 @@ is the same mascot dropped by `CAMERA_MASCOT_DROP` with `CAMERA_MASCOT_PARTS` ov
 coordinates — copying the paths into the overlay would have made it the fifth copy of this drawing in
 the repository.
 
-The footer is always the same two slots: the transient action on the left, the one that moves the
-recording forward on the right, filled. That filled button is `--deep` in every state. A paused
+The footer is the extension's recording bar: one wide filled pill that moves the recording forward,
+then round icon buttons, the microphone and the transient action, each naming itself in a tooltip.
+That filled button is `--deep` in every state. A paused
 variant that filled it with `--accent` was tried and removed: the design system reserves the accent
 for icons, links, focus rings, toggles and meters and never for a button fill, and the header
 already says "Paused" beside a stopped dot, so the colour was carrying no information the card did
-not already show. Close then Start while armed, Pause then Finish while
-recording, Resume then Finish while paused. Finish keeps the right-hand slot for the whole recording
-so it never moves under the cursor.
+not already show. Start, the mic and Close while armed; Finish, the mic and Pause while recording;
+Finish, the mic and Resume while paused. Finish keeps the left-hand slot for the whole recording so
+it never moves under the cursor. It used to sit on the right with a labelled Pause, and a mic squeezed
+between two wide buttons looked out of place, so the card took the side panel's arrangement and the
+two surfaces now read the same.
 
 A capture is in flight from the moment the grab starts until the capture queue is empty again, and
 `overlay.setBusy` spans exactly that: the grab sets it and the recorder's `drained` hook clears it.
@@ -878,8 +881,8 @@ the extension, a `src` on the desktop — into a row with the bounds in CSS pixe
 the click point, and the dashed target scaled by that ratio. Scaling the target is the part worth
 having once: a rectangle multiplied in one surface and not the other puts the dashed box on the wrong
 thing, and nothing about that fails a build. The description queue is shared too, as below. The rest
-of the two paths genuinely differs — voice narration and the input finalisation exist only in the
-extension, and the application name only on the desktop.
+of the two paths genuinely differs — the input finalisation exists only in the extension, and the
+application name only on the desktop.
 
 Main cannot `invoke` a renderer, so `ask()` sends a request with a generated reply channel and waits
 for `ipcMain.once` on it, with a timeout. The preload's `onRequest` is the other half. A handler that throws
@@ -1180,7 +1183,9 @@ renderer names the url and main is the one holding the network. A text, JSON or 
 response comes back as text and anything else as base64, which the renderer decodes into bytes:
 voice-over audio went through the same path as JSON and arrived as mangled text. The voice-over
 client calls `coreFetch` for that reason rather than the global `fetch`, which a renderer origin
-cannot use against a provider. The request's abort signal crosses too: `mainFetch` stops waiting the moment the signal fires and
+cannot use against a provider, and so does the narration transcriber. Its body is a form carrying the
+audio, and `mainFetch` used to send only string bodies, so it now encodes any other body through a
+`Request` and sends the bytes with the multipart content type that encoding chose. The request's abort signal crosses too: `mainFetch` stops waiting the moment the signal fires and
 sends `mimik:ai:abort` with the request's id, and main aborts its `net.fetch`. It used to drop the
 signal, so neither the 60-second limit on a voice-over clip nor cancelling the export ever reached the
 request, and one stalled clip held the export on "Narrating step 3 of 6" forever.
@@ -1630,8 +1635,10 @@ that genuinely differs — the extension goes through background messaging becau
 what has `host_permissions`, and the desktop calls `validateApiKey` directly on top of the main
 process fetch.
 
-The rest of `SettingsView` stayed put. Voice narration and smart blur have no desktop card yet, and it
-reaches into `@/lib/browser-api/`. `MicrophonePicker` moved to `packages/ui/src/voice` with the
+The rest of `SettingsView` stayed put: smart blur has no desktop card, and it reaches into
+`@/lib/browser-api/`. Voice narration is `NarrationSettings` in `packages/ui/src/voice`, the provider
+and the microphone, saved as each changes, and the desktop shows it in the AI section, between
+Step descriptions and voice-over, since narration is an AI feature. `MicrophonePicker` moved to `packages/ui/src/voice` with the
 onboarding, taking `onRequestAccess`: the extension opens its permission page, because a side panel
 cannot show the browser's microphone prompt, and the desktop calls `getUserMedia`, which Electron
 grants. It mounts the API keys card at the top,
@@ -1649,9 +1656,14 @@ privacy note, the bug link and the star card stay in the side panel, which keeps
 The options page used to centre its card vertically in a box the height of the window, and
 once the settings outgrew the window the header and the API keys card sat above it, out of reach.
 
-The key rows line up the same way on every surface: the field runs to the card's edge with its status
-inside it, and your own server's labels share the width of the name column, so its fields start where
-the key fields do. Every field is Poppins, the server's address included, which used to be monospace.
+The key rows line up the same way on every surface wide enough for them: the field runs to the card's
+edge with its status inside it, and your own server's labels share the width of the name column, so its fields start where
+the key fields do. Every field is Poppins, the server's address included, which used to be monospace. The side panel is not wide enough for that: a field
+reserving 160px for its pill beside a 112px name could not shrink below about 174px and spilled past
+the card. The key list is therefore a container, and under 440px the pill moves out of the field to a
+small coloured line under the provider's name, which narrows to 96px. The switch is the card's own
+width, not the surface, because the extension's options page is as wide as the desktop dialog. A row
+only reserves room for a pill while it has one to show.
 
 A feature whose chosen provider has lost its key keeps the choice and says so: the select shows a red
 No key pill at its right end, in the Verified pill's place and shape, and the list ticks only
@@ -1690,7 +1702,64 @@ what they buy is a screen they can only skip.
 
 Done writes `onboardingCompleted`, and the desktop `App` shows the flow until it is set, reading it
 through core's `localStorage` like every other setting. The narration step saves the provider and
-microphone the desktop's narration will read; the recording card has no microphone button yet.
+microphone the desktop's narration reads.
+
+## Desktop Narration
+
+The recording card has the extension's microphone toggle, the first round button after Finish, as
+in the side panel: on, off, or dashed and inert while the narration provider has no key. While the
+microphone is open, the lavender box that holds the keyboard tip holds the extension's level meter
+instead, five bars with Hearing you or No sound, and before the first step the extension's hint on
+how to narrate, in smaller grey text on a line of its own, as the side panel lays them out; after a step lands it sits under the step. The app window sends the recorder's level
+through `mimik:capture:narration` and main puts it on the overlay view as `narration`, null whenever
+the microphone is closed. It is the same `voiceEnabled` setting the extension's toggle writes. The card reads it, and
+the key, from the window's own `localStorage`, which it shares with the app window, and redraws on
+the `storage` event, so a refusal written by the app window turns the button off on the card. A
+click sends `mic:on` or `mic:off`; the overlay passes those to main without touching its state,
+since any command it does not know closes the card. On a Mac main asks for the microphone first with
+`askForMediaAccess`, or opens the Microphone pane of System Settings when it was refused, and drops
+`mic:on` unless it is granted. The command then reaches the app window, which writes the setting.
+
+The app window records, because it stays alive and at full speed while hidden. `DesktopNarration`
+runs core's `MicRecorder`, the extension's offscreen recorder moved into
+`core/capture/voice` with `narrateRecording`, `usableRecording` and `readTranscriptionSettings`.
+It opens the microphone on `start` and `resume` when the setting and a key are both there, and on
+`mic:on` mid-recording. Pause, `mic:off` and the end each cut the audio into a slice and transcribe
+it against the guide's steps in the background, the way the extension stops on pause and starts
+again on resume: each slice keeps its own epoch, and `applyNarrationToSteps` appends a later slice's
+words to a step an earlier one already narrated. Finish and the insert merge wait up to 30 s for
+those slices before descriptions settle and the guide is named. `cancel` drops the audio. A refused
+microphone turns the setting off rather than failing the recording.
+
+Settings cannot take the microphone's state from the browser. Electron grants the page's own
+microphone permission without asking, so the picker's badge read Allowed on a Mac that had never been
+asked. The desktop therefore reads macOS instead, through `mimik:microphone:get`, which answers
+`granted`, `ask` or `denied` from `getMediaAccessStatus` and `granted` everywhere else. While it is
+not granted, the Voice narration card shows a Microphone access row whose button asks macOS, or opens
+the Microphone pane once refused, and the picker is greyed out. Once granted the row is gone, since a
+row reading Granted beside a badge reading Allowed said one thing twice. The picker's `live`
+mode drops the badge and the Test button and runs the level meter for as long as the card is open,
+and both surfaces use it, so the card reads the same in each. In the extension, where the browser's
+permission is the real one, the picker itself shows the same access row (`MicrophoneAccessRow` in
+`packages/ui/src/voice`) while access is not granted: Allow opens the permission page, and once
+blocked it carries the browser's unblock instructions and Try again. The cost is Chrome's recording
+indicator on the settings tab while the card is open.
+
+Each step is narrated as it lands, as in the extension. While the microphone is open a step is
+written pending and its AI description is held back rather than queued; `DesktopNarration.step`
+transcribes the audio from the last slice up to that step's timestamp, against that step alone, and
+writes the words straight into it. Only a step nothing was said for falls back to its AI
+description, or to its basic one without a key, so narration comes first and AI is the fallback,
+and a narrated step costs no description. Pause, `mic:off` and the end transcribe the tail against
+every step once the slices still in flight have landed, then describe whatever narration never
+reached. The card hears the spoken text through `mimik:capture:described` with source `narration`
+and badges it Voice, the guide's own word for it. An AI description that finishes after narration
+landed writes nothing, since `clearStepAiPending` never writes over a narrated step, and the card is
+not told about it.
+
+The signed `.dmg` carries `resources/entitlements.mac.plist`, with
+`com.apple.security.device.audio-input`, because the hardened runtime denies the microphone without
+it whatever the user grants.
 
 ## Capture Shortcuts
 
