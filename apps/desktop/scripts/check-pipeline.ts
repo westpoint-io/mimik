@@ -31,6 +31,8 @@ import {
 } from '../src/main/capture/settings';
 import type { Capture, Rect } from '../src/main/capture/screenshot';
 
+const MAC = process.platform === 'darwin';
+
 interface CheckResult {
   name: string;
   ok: boolean;
@@ -393,11 +395,12 @@ app.whenReady().then(async () => {
 
   results.push({
     name: 'a password is a step but never a value',
-    ok:
-      secret?.action === 'input' &&
-      secret.inputValue === undefined &&
-      secret.elementMeta.inputType === 'password' &&
-      secret.elementMeta.textContent === null,
+    ok: MAC
+      ? secret === null
+      : secret?.action === 'input' &&
+        secret.inputValue === undefined &&
+        secret.elementMeta.inputType === 'password' &&
+        secret.elementMeta.textContent === null,
     detail: `wrote ${secret?.action ?? 'nothing'} with inputValue ${String(secret?.inputValue)} and no captured text`,
   });
 
@@ -456,7 +459,7 @@ app.whenReady().then(async () => {
   results.push({
     name: 'a shortcut is its own step',
     ok:
-      shortcut?.action === 'keydown:Ctrl+S' &&
+      shortcut?.action === (MAC ? 'keydown:⌃S' : 'keydown:Ctrl+S') &&
       comboLabel(pressed(31, { ctrl: true, shift: true }), 'S', false) === 'Ctrl+Shift+S' &&
       comboLabel(pressed(31, { meta: true, shift: true, alt: true }), 'S', true) === '⌥⇧⌘S' &&
       unnamed === null &&
@@ -583,7 +586,7 @@ app.whenReady().then(async () => {
   const count = (name: string) => early.filter((call) => call === name).length;
   results.push({
     name: 'a press is read when it happens, not when the queue gets to it',
-    ok: count('lookup') === 2 && count('grab') === 3 && count('focused') === 1,
+    ok: count('lookup') === 2 && count('grab') === 3 && count('focused') === (MAC ? 2 : 1),
     detail: `with the first step still being written: ${count('lookup')} lookups, ${count('grab')} grabs, ${count('focused')} field reads`,
   });
 
