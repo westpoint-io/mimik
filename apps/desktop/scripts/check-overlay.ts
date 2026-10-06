@@ -235,7 +235,7 @@ app.whenReady().then(async () => {
     `badge ${badgeWhileRecording.badge}, paused tip ${resting.tip}, mascot shown ${resting.intro}`,
   );
 
-  overlay.showStep({ id: 'one', index: 1, title: 'Click "Save"', action: 'click', src, source: 'heuristic', pending: false, app: 'Explorer' });
+  overlay.showStep({ id: 'one', number: 1, title: 'Click "Save"', action: 'click', src, source: 'heuristic', pending: false, app: 'Explorer' });
   await settle();
   const step = await card(
     "intro: getComputedStyle(document.querySelector('#intro')).display, title: document.querySelector('#stepTitle').textContent, source: document.querySelector('#source').textContent, meta: document.querySelector('#metaText').textContent",
@@ -246,12 +246,12 @@ app.whenReady().then(async () => {
     `intro display: ${step.intro}, title: ${step.title}, source: ${step.source}, meta: ${step.meta}`,
   );
 
-  overlay.showStep({ id: 'one', index: 1, title: 'Click "Save"', action: 'click', src, source: 'heuristic', pending: true, app: 'Explorer' });
+  overlay.showStep({ id: 'one', number: 1, title: 'Click "Save"', action: 'click', src, source: 'heuristic', pending: true, app: 'Explorer' });
   await settle();
   const pendingStep = await card(
     "title: document.querySelector('#stepTitle').textContent, source: document.querySelector('#source').textContent, loaders: document.querySelectorAll('#writing, #skeleton, #pillWriting').length",
   );
-  overlay.showStep({ id: 'one', index: 1, title: 'Save the file', action: 'click', src, source: 'ai', pending: false, app: 'Explorer' });
+  overlay.showStep({ id: 'one', number: 1, title: 'Save the file', action: 'click', src, source: 'ai', pending: false, app: 'Explorer' });
   await settle();
   const rewritten = await card("source: document.querySelector('#source').textContent, title: document.querySelector('#stepTitle').textContent");
   check(
@@ -264,7 +264,7 @@ app.whenReady().then(async () => {
     `while pending: ${pendingStep.source} "${pendingStep.title}", ${pendingStep.loaders} writing loaders; then ${rewritten.source} "${rewritten.title}"`,
   );
 
-  overlay.showStep({ id: 'one', index: 1, title: 'Press ⌃S on "Search"', action: 'keydown:⌃S', src, source: 'heuristic', pending: false, app: 'Chrome' });
+  overlay.showStep({ id: 'one', number: 1, title: 'Press ⌃S on "Search"', action: 'keydown:⌃S', src, source: 'heuristic', pending: false, app: 'Chrome' });
   await settle();
   const keyed = await card(
     "key: document.querySelector('#stepTitle kbd')?.textContent ?? null, title: document.querySelector('#stepTitle').textContent",
@@ -338,13 +338,13 @@ app.whenReady().then(async () => {
       aimed.src === src,
     `before: marker ${unaimed.aim}, developing ${unaimed.developing}; after: marker ${aimed.aim} at ${aimed.left}, developing ${aimed.developing}`,
   );
-  overlay.showStep({ id: 'two', index: 2, title: 'Click "Open"', action: 'click', src, source: 'heuristic', pending: true, app: 'Explorer' });
+  overlay.showStep({ id: 'two', number: 2, title: 'Click "Open"', action: 'click', src, source: 'heuristic', pending: true, app: 'Explorer' });
   overlay.setBusy(false);
   await settle();
   const describing = await card(
     "printer: !document.querySelector('#printer').hidden, title: getComputedStyle(document.querySelector('#stepTitle')).visibility",
   );
-  overlay.showStep({ id: 'two', index: 2, title: 'Open the file', action: 'click', src, source: 'ai', pending: false, app: 'Explorer' });
+  overlay.showStep({ id: 'two', number: 2, title: 'Open the file', action: 'click', src, source: 'ai', pending: false, app: 'Explorer' });
   await new Promise((resolve) => setTimeout(resolve, 900));
   await settle();
   const aiLanded = await card(
@@ -360,10 +360,10 @@ app.whenReady().then(async () => {
     `while describing: printer ${describing.printer}, title ${describing.title}; landed: printer ${aiLanded.printer}, ${aiLanded.source} "${aiLanded.title}"`,
   );
   const shortTitle = await card("height: document.body.scrollHeight, preview: document.querySelector('#preview').offsetHeight");
-  overlay.showStep({ id: 'one', index: 1, title: 'Click '.repeat(40), action: 'click', src, source: 'ai', pending: false, app: 'Explorer' });
+  overlay.showStep({ id: 'one', number: 1, title: 'Click '.repeat(40), action: 'click', src, source: 'ai', pending: false, app: 'Explorer' });
   await settle();
   const longTitle = await card("height: document.body.scrollHeight, preview: document.querySelector('#preview').offsetHeight");
-  overlay.showStep({ id: 'one', index: 1, title: 'Save the file', action: 'click', src, source: 'ai', pending: false, app: 'Explorer' });
+  overlay.showStep({ id: 'one', number: 1, title: 'Save the file', action: 'click', src, source: 'ai', pending: false, app: 'Explorer' });
   await settle();
   check(
     'the card keeps its height when a step lands, and a long title takes it from the screenshot',

@@ -3,6 +3,7 @@ import { splitAtShortcut } from '@mimik/core/capture/split-at-shortcut';
 import { hasVoiceApiKey, VOICE_KEY_SETTINGS } from '@mimik/core/capture/voice/api-key';
 import { voiceErrorKey } from '@mimik/core/capture/voice/voice-error-key';
 import { i18n, localStorage } from '@mimik/core/env';
+import { STEP_SOURCE_LABELS } from '@mimik/core/guides/step-source-labels';
 import type { OverlayView } from '../../main/overlay';
 import { icon } from '../icons';
 import { cameraMascot } from './camera-mascot';
@@ -128,7 +129,7 @@ export function controls(): void {
   let gaveUp: string | null = null;
   let landing = false;
   let landedId: string | null = null;
-  let printingIndex = 1;
+  let printingNumber = 1;
   let shownPercent = 0;
 
   const resetPercent = () => {
@@ -165,13 +166,13 @@ export function controls(): void {
     const resting = paused && !step && !busy;
 
     if (busy && !wasBusy) {
-      printingIndex = (step?.index ?? 0) + 1;
+      printingNumber = (step?.number ?? 0) + 1;
       if (step) landedId = step.id;
       resetPercent();
       printingStep = true;
     }
     wasBusy = busy;
-    const printed = step && step.index >= printingIndex ? step : null;
+    const printed = step && step.number >= printingNumber ? step : null;
     const developed = printed?.src ?? print.src;
     if (printingStep && developed && filmShot.getAttribute('src') !== developed) filmShot.src = developed;
     photo.classList.toggle('developing', Boolean(printingStep && developed));
@@ -200,7 +201,7 @@ export function controls(): void {
     document.body.classList.toggle('resting', resting);
     document.body.classList.toggle('busy', busy);
 
-    const count = capturing ? printingIndex - 1 : (step?.index ?? 0);
+    const count = capturing ? printingNumber - 1 : (step?.number ?? 0);
     const counted = [String(count)];
     label.textContent = starting
       ? 'Starting…'
@@ -255,7 +256,7 @@ export function controls(): void {
       aim.style.left = `${(width - shownWidth) / 2 + aimed.x * shownWidth}px`;
       aim.style.top = `${(height - shownHeight) / 2 + aimed.y * shownHeight}px`;
     }
-    printing.textContent = `Capturing step ${printingIndex}`;
+    printing.textContent = `Capturing step ${printingNumber}`;
     shot.hidden = !step?.src;
     veil.hidden = !paused || capturing;
     remove.hidden = !step || capturing || armed;
@@ -268,10 +269,10 @@ export function controls(): void {
     preview.style.setProperty('--title-extra', `${step ? Math.max(0, extra) : 0}px`);
     source.hidden = !step;
     const sourceKind = step?.source === 'ai' ? 'ai' : step?.source === 'narration' ? 'voice' : 'basic';
-    source.textContent = i18n.t(`stepSource_${sourceKind}`);
+    source.textContent = i18n.t(STEP_SOURCE_LABELS[step?.source ?? 'heuristic']);
     source.className = sourceKind;
     metaText.textContent =
-      [step ? i18n.t('export_stepLabel', [String(step.index)]) : '', step?.app ?? ''].filter(Boolean).join(' · ') ||
+      [step ? i18n.t('export_stepLabel', [String(step.number)]) : '', step?.app ?? ''].filter(Boolean).join(' · ') ||
       '\u00a0';
 
     intro.hidden = !(armed || waiting || resting);

@@ -481,7 +481,7 @@ if (!app.requestSingleInstanceLock()) {
         if (reply?.stepId && reply.title) {
           const step: OverlayStep = {
             id: reply.stepId,
-            index: steps.length + 1 + (insert?.afterStep ?? 0),
+            number: steps.length + 1 + (insert?.afterStep ?? 0),
             title: reply.title,
             action: request.action,
             src: request.image?.src ?? '',
