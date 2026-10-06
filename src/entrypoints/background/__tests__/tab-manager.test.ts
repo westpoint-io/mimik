@@ -80,6 +80,8 @@ describe('isInjectableTab', () => {
     ['chrome://extensions', false],
     ['chrome-extension://abc/fullview.html', false],
     ['about:blank', false],
+    ['https://chrome.google.com/webstore/detail/abc', false],
+    ['https://chromewebstore.google.com/detail/abc', false],
     ['', false],
   ])('%s → %s', (url, expected) => {
     expect(isInjectableTab({ url })).toBe(expected);
