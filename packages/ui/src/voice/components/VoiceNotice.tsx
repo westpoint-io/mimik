@@ -1,13 +1,9 @@
-import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui';
+import { voiceNotice } from '@mimik/core/capture/voice/voice-notice';
+import type { VoiceUpdate } from '@mimik/core/capture/voice/voice-update';
+import { i18n } from '@mimik/core/env';
 import { Check, Loader2, TriangleAlert, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { browser, i18n } from '#imports';
-import { getVoiceStatus } from '@/lib/offscreen/get-voice-status';
-import { observeVoiceFromBackground } from '@/lib/port/observe-voice-from-background';
-import type { PanelVoiceUpdate } from '@/lib/port/types';
-import { voiceNotice } from '../lib/voice-notice';
-
-const IDLE: PanelVoiceUpdate = { type: 'VOICE_UPDATE', phase: 'idle' };
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
 
 const TONE_ICONS = {
   progress: Loader2,
@@ -21,47 +17,14 @@ const TONE_CLASSES = {
   failed: 'text-destructive',
 };
 
-export function VoiceNotice() {
-  const [update, setUpdate] = useState<PanelVoiceUpdate>(IDLE);
-  const [seenLive, setSeenLive] = useState(false);
+interface VoiceNoticeProps {
+  update: VoiceUpdate;
+  seenLive: boolean;
+  onOpenSettings: () => void;
+}
+
+export function VoiceNotice({ update, seenLive, onOpenSettings }: VoiceNoticeProps) {
   const [dismissed, setDismissed] = useState<string | null>(null);
-
-  useEffect(() => {
-    let stop: (() => void) | null = null;
-
-    const receive = (next: PanelVoiceUpdate) => {
-      if (next.phase !== 'idle') setSeenLive(true);
-      setUpdate(next);
-    };
-
-    const resync = () => {
-      getVoiceStatus()
-        .then((status) => {
-          if (!status?.transcribing) return;
-          setSeenLive(true);
-          setUpdate({ type: 'VOICE_UPDATE', phase: 'transcribing' });
-        })
-        .catch(() => undefined);
-    };
-
-    const follow = () => {
-      if (document.visibilityState === 'visible') {
-        stop ??= observeVoiceFromBackground(receive, resync);
-        return;
-      }
-      stop?.();
-      stop = null;
-    };
-
-    follow();
-    document.addEventListener('visibilitychange', follow);
-
-    return () => {
-      document.removeEventListener('visibilitychange', follow);
-      stop?.();
-    };
-  }, []);
-
   const notice = voiceNotice(update, seenLive);
   const signature = notice?.signature;
   const autoDismissMs = notice?.autoDismissMs;
@@ -90,7 +53,8 @@ export function VoiceNotice() {
             )}
             {shown.showSettings && (
               <button
-                onClick={() => browser.runtime.openOptionsPage()}
+                type="button"
+                onClick={onOpenSettings}
                 className="mt-1.5 text-[11px] font-semibold text-accent hover:underline"
               >
                 {i18n.t('voice.openSettings')}
@@ -101,6 +65,7 @@ export function VoiceNotice() {
           <Tooltip>
             <TooltipTrigger asChild>
               <button
+                type="button"
                 onClick={() => setDismissed(shown.signature)}
                 className="shrink-0 p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors"
               >

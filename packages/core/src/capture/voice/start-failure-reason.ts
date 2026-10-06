@@ -1,4 +1,4 @@
-import type { VoiceErrorReason } from './voice-message';
+import type { VoiceErrorReason } from './voice-update';
 
 export function startFailureReason(error: unknown): VoiceErrorReason {
   if (!(error instanceof Error)) return 'unknown';

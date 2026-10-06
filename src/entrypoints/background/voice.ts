@@ -4,6 +4,7 @@ import { hasVoiceApiKey, VOICE_KEY_SETTINGS } from '@/core/capture/voice/api-key
 import { narrateRecording, type VoiceRecording } from '@/core/capture/voice/narrate-recording';
 import { narrationUpdates } from '@/core/capture/voice/narration-updates';
 import { readTranscriptionSettings } from '@/core/capture/voice/read-transcription-settings';
+import type { VoicePhase } from '@/core/capture/voice/voice-update';
 import { applyNarrationToSteps, findExistingStepIds, getStepsForGuide, saveTranscript } from '@/core/guides/service';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import { onMessage as onRuntimeMessage } from '@/lib/browser-api/on-message';
@@ -21,7 +22,7 @@ import { startVoiceCapture } from '@/lib/offscreen/start-voice-capture';
 import { stopVoiceCapture } from '@/lib/offscreen/stop-voice-capture';
 import { supportsVoice } from '@/lib/offscreen/supports-voice';
 import { broadcastVoiceToPanel } from '@/lib/port/broadcast-voice-to-panel';
-import type { PanelVoiceUpdate, VoicePhase } from '@/lib/port/types';
+import type { PanelVoiceUpdate } from '@/lib/port/types';
 import { handedOffPcm } from '@/lib/voice/handed-off-pcm';
 import { isVoiceMessageFor } from '@/lib/voice/is-voice-message-for';
 import { isVoiceStatus } from '@/lib/voice/is-voice-status';

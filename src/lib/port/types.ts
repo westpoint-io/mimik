@@ -1,7 +1,7 @@
 import type { browser } from '#imports';
 import type { AiFailureReason } from '@/core/capture/ai/errors';
 import type { CaptureStateValue, PauseReason } from '@/core/capture/machine';
-import type { VoiceErrorReason } from '@/lib/voice/voice-message';
+import type { VoiceUpdate } from '@/core/capture/voice/voice-update';
 
 export interface PanelStateUpdate {
   type: 'STATE_UPDATE';
@@ -11,14 +11,8 @@ export interface PanelStateUpdate {
   pauseReason: PauseReason | null;
 }
 
-export type VoicePhase = 'idle' | 'recording' | 'transcribing' | 'error';
-
-export interface PanelVoiceUpdate {
+export interface PanelVoiceUpdate extends VoiceUpdate {
   type: 'VOICE_UPDATE';
-  phase: VoicePhase;
-  reason?: VoiceErrorReason;
-  error?: string;
-  narrated?: number;
 }
 
 export interface PanelAiUpdate {

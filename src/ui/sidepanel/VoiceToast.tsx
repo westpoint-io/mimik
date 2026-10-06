@@ -2,10 +2,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui';
 import { Check, Loader2, TriangleAlert, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { i18n } from '#imports';
+import { narratedKey } from '@/core/capture/voice/narrated-key';
+import { voiceErrorKey } from '@/core/capture/voice/voice-error-key';
+import { voiceSignature } from '@/core/capture/voice/voice-signature';
 import type { PanelVoiceUpdate } from '@/lib/port/types';
-import { voiceSignature } from '@/ui/fullview/lib/voice-signature';
-import { narratedKey } from './lib/narrated-key';
-import { voiceErrorKey } from './lib/voice-error-key';
 
 const CONFIRM_MS = 7000;
 

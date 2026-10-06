@@ -3,13 +3,13 @@ import { MicRecorder } from '@/core/capture/voice/mic-recorder';
 import { EMPTY_NARRATION, narrateRecording, type VoiceRecording } from '@/core/capture/voice/narrate-recording';
 import { partialRecording } from '@/core/capture/voice/partial-recording';
 import type { TranscriptionSettings } from '@/core/capture/voice/read-transcription-settings';
+import { startFailureReason } from '@/core/capture/voice/start-failure-reason';
 import type { NarrationResult } from '@/core/capture/voice/types';
 import { usableRecording } from '@/core/capture/voice/usable-recording';
 import { getExtensionURL } from '../browser-api/get-extension-url';
 import { sendMessage } from '../browser-api/send-message';
 import { describeError } from './describe-error';
 import { permissionState } from './permission-state';
-import { startFailureReason } from './start-failure-reason';
 import {
   VOICE_BACKGROUND_TARGET,
   VOICE_SIDEPANEL_TARGET,
