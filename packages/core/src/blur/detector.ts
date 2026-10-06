@@ -1,4 +1,4 @@
-import type { PresetKey } from './regexes';
+import type { PresetKey } from './patterns';
 
 export interface BlurDetector {
   start(presets: PresetKey[]): void;

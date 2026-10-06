@@ -1,9 +1,9 @@
 import { browser } from '#imports';
 import type { BlurDetector } from '@/core/blur/detector';
 import { BlurPanel } from '@/core/blur/panel';
-import { DEFAULT_PRESETS, type PresetKey } from '@/core/blur/regexes';
-import { BlurScanner } from '@/core/blur/scanner';
-import { injectBlurStyles, removeBlurStyles } from '@/core/blur/styles';
+import { DEFAULT_PRESETS, type PresetKey } from '@/core/blur/patterns';
+import { PageRedactor } from '@/core/blur/redactor';
+import { addRedactStyles, removeRedactStyles } from '@/core/blur/styles';
 import { sendMessage } from '@/lib/messaging';
 import { ElementPicker } from './element-picker';
 
@@ -15,7 +15,7 @@ export class BlurManager {
   private active = false;
   private generation = 0;
 
-  constructor(private detector: BlurDetector = new BlurScanner()) {}
+  constructor(private detector: BlurDetector = new PageRedactor()) {}
 
   async start() {
     if (this.active) return;
@@ -23,7 +23,7 @@ export class BlurManager {
 
     const generation = ++this.generation;
 
-    injectBlurStyles();
+    addRedactStyles();
     const presets = await this.loadPresets();
     if (!this.active || generation !== this.generation) return;
 
@@ -40,7 +40,7 @@ export class BlurManager {
   stop() {
     if (this.active) this.teardown();
     this.detector.stop();
-    removeBlurStyles();
+    removeRedactStyles();
   }
 
   dismiss() {

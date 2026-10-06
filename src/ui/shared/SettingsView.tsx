@@ -1,4 +1,4 @@
-import { PRESET_LABELS, type PresetKey } from '@mimik/core/blur/regexes';
+import { PRESET_LABELS, type PresetKey } from '@mimik/core/blur/patterns';
 import { i18n } from '@mimik/core/env';
 import type { VoiceoverProviderKey } from '@mimik/core/export/voiceover/providers';
 import {

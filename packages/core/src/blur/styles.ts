@@ -1,26 +1,20 @@
-const STYLE_ID = 'mimik-blur-style';
-const BLUR_PX = 10;
+export const REDACT_CLASS = 'mimik-redact';
+export const SHOWN_CLASS = 'mimik-redact-shown';
+export const PICKED_CLASS = 'mimik-redact-picked';
 
-export function injectBlurStyles() {
-  if (document.getElementById(STYLE_ID)) return;
-  const style = document.createElement('style');
-  style.id = STYLE_ID;
-  style.textContent = `
-    .mimik-blur {
-      filter: blur(${BLUR_PX}px);
-      transition: filter 120ms ease;
-    }
-    .mimik-blur.mimik-blur-peek {
-      filter: none;
-    }
-    .mimik-manual-blur {
-      filter: blur(${BLUR_PX}px);
-      transition: filter 120ms ease;
-    }
-  `;
-  document.head.appendChild(style);
+const SHEET_ID = 'mimik-redact-sheet';
+const SOFTNESS = 'blur(10px)';
+
+export function addRedactStyles() {
+  if (document.getElementById(SHEET_ID)) return;
+  const sheet = Object.assign(document.createElement('style'), { id: SHEET_ID });
+  sheet.textContent = [
+    `.${REDACT_CLASS}, .${PICKED_CLASS} { filter: ${SOFTNESS}; transition: filter 150ms ease-out; }`,
+    `.${REDACT_CLASS}.${SHOWN_CLASS} { filter: none; }`,
+  ].join('\n');
+  document.head.appendChild(sheet);
 }
 
-export function removeBlurStyles() {
-  document.getElementById(STYLE_ID)?.remove();
+export function removeRedactStyles() {
+  document.getElementById(SHEET_ID)?.remove();
 }

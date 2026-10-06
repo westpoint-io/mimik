@@ -1,0 +1,183 @@
+[
+ {
+  "html": "<p>Email jane@example.com and call 555-123-4567.</p>",
+  "kinds": 1,
+  "blurred": [
+   "text:jane@example.com"
+  ],
+  "restored": true
+ },
+ {
+  "html": "<p>Email jane@example.com and call 555-123-4567.</p>",
+  "kinds": 6,
+  "blurred": [
+   "text:jane@example.com",
+   "text:555-123-4567"
+  ],
+  "restored": true
+ },
+ {
+  "html": "<div><span>192.168.0.1</span> <b>4111 1111 1111 1111</b></div>",
+  "kinds": 1,
+  "blurred": [],
+  "restored": true
+ },
+ {
+  "html": "<div><span>192.168.0.1</span> <b>4111 1111 1111 1111</b></div>",
+  "kinds": 6,
+  "blurred": [
+   "text:192.168.0.1",
+   "text:4111 1111 1111 1111"
+  ],
+  "restored": true
+ },
+ {
+  "html": "<p>a <em>jane@</em>example.com split across nodes</p>",
+  "kinds": 1,
+  "blurred": [],
+  "restored": true
+ },
+ {
+  "html": "<p>a <em>jane@</em>example.com split across nodes</p>",
+  "kinds": 6,
+  "blurred": [],
+  "restored": true
+ },
+ {
+  "html": "<script>var x = \"jane@example.com\"</script><p>visible bob@example.com</p>",
+  "kinds": 1,
+  "blurred": [
+   "text:bob@example.com"
+  ],
+  "restored": true
+ },
+ {
+  "html": "<script>var x = \"jane@example.com\"</script><p>visible bob@example.com</p>",
+  "kinds": 6,
+  "blurred": [
+   "text:bob@example.com"
+  ],
+  "restored": true
+ },
+ {
+  "html": "<style>.a{content:\"x@y.com\"}</style><noscript>n@o.com</noscript>",
+  "kinds": 1,
+  "blurred": [],
+  "restored": true
+ },
+ {
+  "html": "<style>.a{content:\"x@y.com\"}</style><noscript>n@o.com</noscript>",
+  "kinds": 6,
+  "blurred": [],
+  "restored": true
+ },
+ {
+  "html": "<textarea>t@example.com</textarea><input value=\"i@example.com\"><input value=\"plain\">",
+  "kinds": 1,
+  "blurred": [
+   "field:t@example.com",
+   "field:i@example.com"
+  ],
+  "restored": false
+ },
+ {
+  "html": "<textarea>t@example.com</textarea><input value=\"i@example.com\"><input value=\"plain\">",
+  "kinds": 6,
+  "blurred": [
+   "field:t@example.com",
+   "field:i@example.com"
+  ],
+  "restored": false
+ },
+ {
+  "html": "<select><option>o@example.com</option></select>",
+  "kinds": 1,
+  "blurred": [],
+  "restored": true
+ },
+ {
+  "html": "<select><option>o@example.com</option></select>",
+  "kinds": 6,
+  "blurred": [],
+  "restored": true
+ },
+ {
+  "html": "<p title=\"attr@example.com\">no text match</p>",
+  "kinds": 1,
+  "blurred": [],
+  "restored": true
+ },
+ {
+  "html": "<p title=\"attr@example.com\">no text match</p>",
+  "kinds": 6,
+  "blurred": [],
+  "restored": true
+ },
+ {
+  "html": "<svg><text>svg@example.com</text></svg>",
+  "kinds": 1,
+  "blurred": [
+   "text:svg@example.com"
+  ],
+  "restored": true
+ },
+ {
+  "html": "<svg><text>svg@example.com</text></svg>",
+  "kinds": 6,
+  "blurred": [
+   "text:svg@example.com"
+  ],
+  "restored": true
+ },
+ {
+  "html": "<ul><li>123-45-6789</li><li>   </li><li></li><li>aa:bb:cc:dd:ee:ff</li></ul>",
+  "kinds": 1,
+  "blurred": [],
+  "restored": true
+ },
+ {
+  "html": "<ul><li>123-45-6789</li><li>   </li><li></li><li>aa:bb:cc:dd:ee:ff</li></ul>",
+  "kinds": 6,
+  "blurred": [
+   "text:123-45-6789",
+   "text:aa:bb:cc:dd:ee:ff"
+  ],
+  "restored": true
+ },
+ {
+  "html": "<p>one jane@example.com two bob@example.com three 10.0.0.1</p>",
+  "kinds": 1,
+  "blurred": [
+   "text:jane@example.com",
+   "text:bob@example.com"
+  ],
+  "restored": true
+ },
+ {
+  "html": "<p>one jane@example.com two bob@example.com three 10.0.0.1</p>",
+  "kinds": 6,
+  "blurred": [
+   "text:jane@example.com",
+   "text:bob@example.com",
+   "text:10.0.0.1"
+  ],
+  "restored": true
+ },
+ {
+  "html": "<input value=\"call 555-123-4567\"><input type=\"hidden\" value=\"h@example.com\">",
+  "kinds": 1,
+  "blurred": [
+   "field:h@example.com"
+  ],
+  "restored": false
+ },
+ {
+  "html": "<input value=\"call 555-123-4567\"><input type=\"hidden\" value=\"h@example.com\">",
+  "kinds": 6,
+  "blurred": [
+   "field:call 555-123-4567",
+   "field:h@example.com"
+  ],
+  "restored": false
+ }
+]

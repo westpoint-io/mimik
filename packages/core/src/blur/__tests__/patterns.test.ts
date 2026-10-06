@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { activePatterns, findMatches, PRESET_LABELS, PRESET_REGEXES, type PresetKey } from '../regexes';
+import { PRESET_LABELS, type PresetKey, patternsFor, sensitiveSpans } from '../patterns';
+
+const PRESET_REGEXES = Object.fromEntries(
+  (['email', 'phone', 'ssn', 'creditCard', 'ipAddress', 'macAddress'] as const).map((kind) => [
+    kind,
+    patternsFor([kind])[0],
+  ]),
+) as Record<PresetKey, RegExp>;
 
 describe('PRESET_LABELS', () => {
   it('has a label for every preset key', () => {
@@ -255,22 +262,22 @@ describe('MAC address regex', () => {
   });
 });
 
-describe('findMatches', () => {
+describe('sensitiveSpans', () => {
   it('returns empty array for empty input', () => {
-    expect(findMatches('', [PRESET_REGEXES.email])).toEqual([]);
+    expect(sensitiveSpans('', [PRESET_REGEXES.email])).toEqual([]);
   });
 
   it('returns empty array when no patterns match', () => {
-    expect(findMatches('no sensitive data here', [PRESET_REGEXES.email])).toEqual([]);
+    expect(sensitiveSpans('no sensitive data here', [PRESET_REGEXES.email])).toEqual([]);
   });
 
   it('returns empty array when patterns list is empty', () => {
-    expect(findMatches('user@example.com', [])).toEqual([]);
+    expect(sensitiveSpans('user@example.com', [])).toEqual([]);
   });
 
   it('returns correct indices for a single match', () => {
     const text = 'Email: user@example.com here';
-    const results = findMatches(text, [PRESET_REGEXES.email]);
+    const results = sensitiveSpans(text, [PRESET_REGEXES.email]);
     expect(results).toHaveLength(1);
     expect(results[0].start).toBe(7);
     expect(results[0].end).toBe(23);
@@ -279,7 +286,7 @@ describe('findMatches', () => {
 
   it('returns multiple non-overlapping matches', () => {
     const text = 'Email user@a.com and admin@b.org please';
-    const results = findMatches(text, [PRESET_REGEXES.email]);
+    const results = sensitiveSpans(text, [PRESET_REGEXES.email]);
     expect(results).toHaveLength(2);
     expect(text.slice(results[0].start, results[0].end)).toBe('user@a.com');
     expect(text.slice(results[1].start, results[1].end)).toBe('admin@b.org');
@@ -287,7 +294,7 @@ describe('findMatches', () => {
 
   it('merges overlapping ranges from different patterns', () => {
     const text = '123-45-6789';
-    const results = findMatches(text, [PRESET_REGEXES.ssn, PRESET_REGEXES.phone]);
+    const results = sensitiveSpans(text, [PRESET_REGEXES.ssn, PRESET_REGEXES.phone]);
     for (let i = 1; i < results.length; i++) {
       expect(results[i].start).toBeGreaterThanOrEqual(results[i - 1].end);
     }
@@ -297,39 +304,39 @@ describe('findMatches', () => {
     const fakePattern1 = /abc/g;
     const fakePattern2 = /bcd/g;
     const text = 'abcd';
-    const results = findMatches(text, [fakePattern1, fakePattern2]);
+    const results = sensitiveSpans(text, [fakePattern1, fakePattern2]);
     expect(results).toHaveLength(1);
     expect(results[0]).toEqual({ start: 0, end: 4 });
   });
 
   it('handles multiple pattern types simultaneously', () => {
     const text = 'Email: user@test.com Phone: 555-123-4567 IP: 192.168.1.1';
-    const results = findMatches(text, [PRESET_REGEXES.email, PRESET_REGEXES.phone, PRESET_REGEXES.ipAddress]);
+    const results = sensitiveSpans(text, [PRESET_REGEXES.email, PRESET_REGEXES.phone, PRESET_REGEXES.ipAddress]);
     expect(results.length).toBeGreaterThanOrEqual(3);
   });
 
   it('returns ranges sorted by start position', () => {
     const text = 'IP: 10.0.0.1 Email: z@a.com SSN: 123-45-6789';
-    const results = findMatches(text, [PRESET_REGEXES.ssn, PRESET_REGEXES.email, PRESET_REGEXES.ipAddress]);
+    const results = sensitiveSpans(text, [PRESET_REGEXES.ssn, PRESET_REGEXES.email, PRESET_REGEXES.ipAddress]);
     for (let i = 1; i < results.length; i++) {
       expect(results[i].start).toBeGreaterThanOrEqual(results[i - 1].start);
     }
   });
 
   it('handles text with only whitespace', () => {
-    expect(findMatches('   \n\t  ', [PRESET_REGEXES.email])).toEqual([]);
+    expect(sensitiveSpans('   \n\t  ', [PRESET_REGEXES.email])).toEqual([]);
   });
 
   it('resets lastIndex between calls', () => {
     const text = 'user@a.com';
-    findMatches(text, [PRESET_REGEXES.email]);
-    const second = findMatches(text, [PRESET_REGEXES.email]);
+    sensitiveSpans(text, [PRESET_REGEXES.email]);
+    const second = sensitiveSpans(text, [PRESET_REGEXES.email]);
     expect(second).toHaveLength(1);
   });
 
   it('does not produce overlapping ranges in output', () => {
     const text = 'Contact: 123-45-6789 or 123-456-7890';
-    const results = findMatches(text, [PRESET_REGEXES.ssn, PRESET_REGEXES.phone]);
+    const results = sensitiveSpans(text, [PRESET_REGEXES.ssn, PRESET_REGEXES.phone]);
     for (let i = 1; i < results.length; i++) {
       expect(results[i].start).toBeGreaterThanOrEqual(results[i - 1].end);
     }
@@ -337,13 +344,13 @@ describe('findMatches', () => {
 
   it('handles match at the very start of the string', () => {
     const text = 'user@test.com is an email';
-    const results = findMatches(text, [PRESET_REGEXES.email]);
+    const results = sensitiveSpans(text, [PRESET_REGEXES.email]);
     expect(results[0].start).toBe(0);
   });
 
   it('handles match at the very end of the string', () => {
     const text = 'Send to user@test.com';
-    const results = findMatches(text, [PRESET_REGEXES.email]);
+    const results = sensitiveSpans(text, [PRESET_REGEXES.email]);
     expect(results[results.length - 1].end).toBe(text.length);
   });
 });
@@ -363,20 +370,20 @@ describe('PRESET_REGEXES', () => {
   });
 });
 
-describe('activePatterns', () => {
+describe('patternsFor', () => {
   it('maps only the categories that are switched on', () => {
-    expect(activePatterns(['email', 'ssn'])).toHaveLength(2);
-    expect(activePatterns([])).toHaveLength(0);
+    expect(patternsFor(['email', 'ssn'])).toHaveLength(2);
+    expect(patternsFor([])).toHaveLength(0);
   });
 
   it('hands out fresh regexes so a stale lastIndex cannot drop a match', () => {
-    const [first] = activePatterns(['email']);
+    const [first] = patternsFor(['email']);
     first.exec('contact me at a@b.co please');
     expect(first.lastIndex).toBeGreaterThan(0);
 
-    const [second] = activePatterns(['email']);
+    const [second] = patternsFor(['email']);
     expect(second).not.toBe(first);
     expect(second.lastIndex).toBe(0);
-    expect(findMatches('a@b.co', activePatterns(['email']))).toHaveLength(1);
+    expect(sensitiveSpans('a@b.co', patternsFor(['email']))).toHaveLength(1);
   });
 });
