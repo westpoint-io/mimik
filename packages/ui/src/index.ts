@@ -56,4 +56,6 @@ export { VoiceStep } from './onboarding/components/VoiceStep';
 export type { StepProps } from './onboarding/types';
 export { SearchModal } from './search/components/SearchModal';
 export { useFullview } from './stores/use-fullview';
+export { MicrophoneAccessRow } from './voice/components/MicrophoneAccessRow';
 export { MicrophonePicker } from './voice/components/MicrophonePicker';
+export { NarrationSettings } from './voice/components/NarrationSettings';

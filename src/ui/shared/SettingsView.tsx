@@ -1,21 +1,17 @@
 import { PRESET_LABELS, type PresetKey } from '@mimik/core/blur/regexes';
-import { KEY_PROVIDER_LABELS } from '@mimik/core/capture/ai/keys';
-import type { VoiceProvider } from '@mimik/core/capture/voice/transcribe';
 import { i18n } from '@mimik/core/env';
 import type { VoiceoverProviderKey } from '@mimik/core/export/voiceover/providers';
 import {
   AiSettings,
   ApiKeysSettings,
   BrandingSettings,
-  MicrophonePicker,
-  MissingKeyNote,
-  ProviderSelect,
+  NarrationSettings,
   SettingsCard,
   Switch,
   useApiKeys,
   VoiceoverSettings,
 } from '@mimik/ui';
-import { ArrowLeft, Bug, Check, ChevronRight, EyeOff, Mic, Shield, Star } from 'lucide-react';
+import { ArrowLeft, Bug, Check, ChevronRight, EyeOff, Shield, Star } from 'lucide-react';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import { sendMessage } from '@/lib/messaging';
@@ -33,8 +29,6 @@ interface SettingsViewProps {
 export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
   const [section, setSection] = useState<SettingsSection>(() => settingsSection(window.location.hash));
   const [loaded, setLoaded] = useState(false);
-  const [voiceProvider, setVoiceProvider] = useState<VoiceProvider>('openai');
-  const [voiceMicrophoneId, setVoiceMicrophoneId] = useState('');
   const [blurPresets, setBlurPresets] = useState<Record<PresetKey, boolean>>({
     email: true,
     phone: true,
@@ -45,15 +39,13 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
   });
 
   useEffect(() => {
-    localStorage.get(['blurPresets', 'voiceProvider', 'voiceMicrophoneId']).then((result) => {
+    localStorage.get(['blurPresets']).then((result) => {
       if (result.blurPresets) setBlurPresets(result.blurPresets as Record<PresetKey, boolean>);
-      setVoiceProvider(result.voiceProvider === 'groq' ? 'groq' : 'openai');
-      if (result.voiceMicrophoneId) setVoiceMicrophoneId(result.voiceMicrophoneId as string);
       setLoaded(true);
     });
   }, []);
 
-  const { saved, queue } = useSettingsAutosave({ blurPresets, voiceProvider, voiceMicrophoneId }, loaded);
+  const { saved, queue } = useSettingsAutosave({ blurPresets }, loaded);
   const keys = useApiKeys({ onChange: queue });
 
   const showSection = (next: SettingsSection) => {
@@ -93,37 +85,13 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
   const sections: Record<SettingsSection, ReactNode> = {
     ai: <AiSettings keys={keys} onOpenKeys={openKeys} onChange={queue} />,
     narration: (
-      <SettingsCard icon={Mic} title={i18n.t('settings.voiceNarration')} hint={i18n.t('settings.voiceNarrationHint')}>
-        <div>
-          <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.provider')}</label>
-          <ProviderSelect
-            value={voiceProvider}
-            onChange={setVoiceProvider}
-            onOpenKeys={openKeys}
-            options={(['openai', 'groq'] as const).map((key) => ({
-              value: key,
-              label: KEY_PROVIDER_LABELS[key],
-              logo: key,
-              available: Boolean(keys.keys[key]),
-            }))}
-          />
-          {!keys.keys[voiceProvider] && (
-            <MissingKeyNote
-              text={i18n.t('settings.noKeyFor', [KEY_PROVIDER_LABELS[voiceProvider]])}
-              onOpenKeys={openKeys}
-            />
-          )}
-        </div>
-
-        {import.meta.env.BROWSER !== 'firefox' && (
-          <MicrophonePicker
-            value={voiceMicrophoneId}
-            onChange={setVoiceMicrophoneId}
-            onRequestAccess={requestMicrophoneAccess}
-            triggerClassName="h-8"
-          />
-        )}
-      </SettingsCard>
+      <NarrationSettings
+        keys={keys}
+        onOpenKeys={openKeys}
+        onChange={queue}
+        onRequestAccess={import.meta.env.BROWSER !== 'firefox' ? requestMicrophoneAccess : undefined}
+        liveMeter
+      />
     ),
     'voice-over': <VoiceoverSettings keys={keys.keys} listVoices={listVoices} onOpenKeys={openKeys} onChange={queue} />,
     branding: <BrandingSettings onChange={queue} />,

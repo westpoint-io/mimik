@@ -90,6 +90,9 @@ recording:
   minutesAgo: "$1 分钟前"
 
 settings:
+  microphoneAccess: "麦克风权限"
+  microphoneAccessAsk: "浏览器会先询问一次，Mimik 才能听到你的声音。"
+  microphoneAccessAllow: "允许"
   title: 设置
   aiDescriptions: "步骤描述"
   aiDescriptionsHint: "Mimik 使用你的 AI 服务商撰写每个步骤的文字并为指南命名。"
@@ -183,6 +186,9 @@ blurPresets:
   macAddress: MAC 地址
 
 desktop:
+  micAccessAsk: "macOS 会先询问一次，Mimik 才能听到你的声音。"
+  micAccessRefused: "已拒绝。请在“隐私与安全性”中打开 Mimik。"
+  micAccessOpen: "打开设置"
   ready: "就绪"
   pause: "暂停"
   resume: "继续"

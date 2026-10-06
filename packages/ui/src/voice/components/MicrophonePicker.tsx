@@ -11,6 +11,7 @@ import { toMicrophoneOptions } from '../lib/to-microphone-options';
 import { SYSTEM_DEFAULT_VALUE, toSelectValue } from '../lib/to-select-value';
 import { toStoredMicrophoneId } from '../lib/to-stored-microphone-id';
 import type { MicrophoneDevice } from '../types';
+import { MicrophoneAccessRow } from './MicrophoneAccessRow';
 import { StatusBadge } from './StatusBadge';
 
 interface MicrophonePickerProps {
@@ -18,6 +19,8 @@ interface MicrophonePickerProps {
   value: string;
   onChange: (deviceId: string) => void;
   onRequestAccess: () => Promise<void>;
+  live?: boolean;
+  disabled?: boolean;
 }
 
 interface MicTest {
@@ -30,7 +33,14 @@ const MICROPHONE: PermissionDescriptor = { name: 'microphone' as PermissionName 
 const ANALYSER_FFT_SIZE = 2048;
 const METER_INTERVAL_MS = 80;
 
-export function MicrophonePicker({ value, onChange, onRequestAccess, triggerClassName }: MicrophonePickerProps) {
+export function MicrophonePicker({
+  value,
+  onChange,
+  onRequestAccess,
+  triggerClassName,
+  live = false,
+  disabled = false,
+}: MicrophonePickerProps) {
   const [devices, setDevices] = useState<MicrophoneDevice[]>([]);
   const [testing, setTesting] = useState(false);
   const [level, setLevel] = useState(0);
@@ -133,6 +143,14 @@ export function MicrophonePicker({ value, onChange, onRequestAccess, triggerClas
   const missing = isMicrophoneMissing(value, options);
   const status = microphoneStatus(permission, state);
   const blocked = status === 'blocked';
+  const needsAccess = state === 'unlabelled' || blocked;
+  const metering = live && !disabled && state === 'ready' && !blocked;
+
+  useEffect(() => {
+    if (!metering) return;
+    void startTest();
+    return stopTest;
+  }, [metering, startTest, stopTest]);
 
   return (
     <div>
@@ -143,14 +161,25 @@ export function MicrophonePicker({ value, onChange, onRequestAccess, triggerClas
         >
           {i18n.t('settings.microphone')}
         </label>
-        <StatusBadge status={status} />
+        {!live && !disabled && <StatusBadge status={status} />}
       </div>
 
       {state === 'no-devices' && !blocked && (
         <p className="text-[10px] text-muted-foreground leading-relaxed">{i18n.t('settings.microphoneNone')}</p>
       )}
 
-      {(state === 'unlabelled' || blocked) && (
+      {live && needsAccess && (
+        <div className="mb-2">
+          <MicrophoneAccessRow
+            refused={blocked}
+            hint={i18n.t(blocked ? 'settings.microphoneBlocked' : 'settings.microphoneAccessAsk')}
+            action={i18n.t(blocked ? 'micPermission.retry' : 'settings.microphoneAccessAllow')}
+            onRequest={() => void requestAccess()}
+          />
+        </div>
+      )}
+
+      {!live && needsAccess && (
         <div className="space-y-2">
           {!blocked && (
             <p className="text-[10px] text-muted-foreground leading-relaxed">
@@ -180,9 +209,10 @@ export function MicrophonePicker({ value, onChange, onRequestAccess, triggerClas
         </div>
       )}
 
-      {state === 'ready' && !blocked && (
+      {((state === 'ready' && !blocked) || (live && needsAccess)) && (
         <div className="space-y-2">
           <Select
+            disabled={disabled || needsAccess}
             value={toSelectValue(value)}
             onValueChange={(next) => {
               stopTest();
@@ -212,15 +242,17 @@ export function MicrophonePicker({ value, onChange, onRequestAccess, triggerClas
             </p>
           )}
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => (testing ? stopTest() : void startTest())}
-            className="w-full rounded-lg bg-card text-[11px] font-semibold"
-          >
-            {testing ? <Square size={11} /> : <Mic size={11} />}
-            {i18n.t(testing ? 'settings.microphoneTestStop' : 'settings.microphoneTest')}
-          </Button>
+          {!live && !disabled && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => (testing ? stopTest() : void startTest())}
+              className="w-full rounded-lg bg-card text-[11px] font-semibold"
+            >
+              {testing ? <Square size={11} /> : <Mic size={11} />}
+              {i18n.t(testing ? 'settings.microphoneTestStop' : 'settings.microphoneTest')}
+            </Button>
+          )}
 
           {testing && (
             <div className="space-y-1">

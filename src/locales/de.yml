@@ -90,6 +90,9 @@ recording:
   minutesAgo: "vor $1 Min."
 
 settings:
+  microphoneAccess: "Mikrofonzugriff"
+  microphoneAccessAsk: "Dein Browser fragt einmal, bevor Mimik dich hören kann."
+  microphoneAccessAllow: "Erlauben"
   targetColorHint: "Färbt die Klickmarkierung und die Akzente in Exporten."
   branding: "Export-Branding"
   logoAndFooter: "Logo und Fußzeile"
@@ -183,6 +186,9 @@ blurPresets:
   macAddress: MAC-Adresse
 
 desktop:
+  micAccessAsk: "macOS fragt einmal, bevor Mimik dich hören kann."
+  micAccessRefused: "Abgelehnt. Aktiviere Mimik unter Datenschutz & Sicherheit."
+  micAccessOpen: "Einstellungen öffnen"
   ready: "Bereit"
   pause: "Pausieren"
   resume: "Fortsetzen"

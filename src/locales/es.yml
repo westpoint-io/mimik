@@ -90,6 +90,9 @@ recording:
   minutesAgo: "hace $1m"
 
 settings:
+  microphoneAccess: "Acceso al micrófono"
+  microphoneAccessAsk: "Tu navegador pregunta una vez antes de que Mimik pueda oírte."
+  microphoneAccessAllow: "Permitir"
   title: Ajustes
   aiDescriptions: "Descripciones de los pasos"
   aiDescriptionsHint: "Mimik escribe el texto de cada paso y nombra tu guía con tu proveedor de IA."
@@ -183,6 +186,9 @@ blurPresets:
   macAddress: "Dirección MAC"
 
 desktop:
+  micAccessAsk: "macOS pregunta una vez antes de que Mimik pueda oírte."
+  micAccessRefused: "Denegado. Activa Mimik en Privacidad y seguridad."
+  micAccessOpen: "Abrir ajustes"
   ready: "Listo"
   pause: "Pausar"
   resume: "Reanudar"
