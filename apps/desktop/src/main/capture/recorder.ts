@@ -25,8 +25,8 @@ const TARGET_SIZE = 28;
 const SETTLE_MS = 60;
 const SNAPSHOT_MS = 400;
 const REPEAT_CLICK_MS = 500;
-const MARKER_CODE_POINTS = new Set([0x200b, 0xfeff, 0xfff9, 0xfffa, 0xfffb, 0xfffc, 0xfffd]);
-const FIELD_FLOOR = 80;
+const HIDDEN_CHARACTERS = /[\p{Cf}\uFFFC\uFFFD]/gu;
+const STEP_TEXT_LIMIT = 200;
 
 const KEY = {
   escape: 1,
@@ -160,10 +160,10 @@ export function clickAction(button: number): string {
 export function typedTextFor(field: ScreenElement | null, buffer: string, readField = true): string | null {
   if (!field || !isTextField(field)) return null;
   if (!readField) return buffer || null;
-  const shown = [...(field.textContent ?? '')].filter((char) => !MARKER_CODE_POINTS.has(char.codePointAt(0) ?? 0));
-  if (!shown.join('').trim()) return buffer || null;
-  const typed = [...buffer].length;
-  return typed > 0 && shown.length > Math.max(2 * typed, FIELD_FLOOR) ? buffer : shown.join('');
+  const shown = (field.textContent ?? '').replace(HIDDEN_CHARACTERS, '');
+  if (!shown.trim()) return buffer || null;
+  const wholeCanvas = /[\r\n]/.test(shown) || [...shown].length > STEP_TEXT_LIMIT;
+  return buffer && wholeCanvas ? buffer : shown;
 }
 
 export function isBoundShortcut(accelerator: string | null, action: KeyAction, key: string): boolean {

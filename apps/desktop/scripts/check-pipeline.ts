@@ -495,10 +495,13 @@ app.whenReady().then(async () => {
       typedTextFor(editor(null), 'typed') === 'typed' &&
       typedTextFor({ ...editor('\uFEFFhi\u200B'), role: 'textbox' }, '') === 'hi' &&
       typedTextFor(control, 'typed') === null &&
-      typedTextFor(editor('x'.repeat(81)), 'ab') === 'ab' &&
-      typedTextFor(editor('y'.repeat(100)), 'z'.repeat(60)) === 'y'.repeat(100),
+      typedTextFor(editor('x'.repeat(201)), 'ab') === 'ab' &&
+      typedTextFor(editor('y'.repeat(200)), 'ab') === 'y'.repeat(200) &&
+      typedTextFor(editor('Last login: Thu Oct  1 12:39:09 on ttys000\n➜  ~ testing, clicking above showed the full desk'), 'testing, clicking above showed the full desk') === 'testing, clicking above showed the full desk' &&
+      typedTextFor(editor(`Last login\r\n➜  ~ ${'w'.repeat(60)}`), 'w'.repeat(60)) === 'w'.repeat(60) &&
+      typedTextFor(editor('line one\nline two'), '') === 'line one\nline two',
     detail:
-      'a field longer than twice the buffer and 80 characters yields the buffer, a shorter one yields the field, markers are stripped, a button yields nothing',
+      'a field spanning lines or longer than a step can show yields the keystrokes, any other field yields its text, hidden characters are stripped, a button yields nothing',
   });
 
   const typedThenClicked = async (keysAfterSnapshot: number) => {
