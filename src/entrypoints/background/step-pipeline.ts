@@ -2,6 +2,7 @@ import { logger } from '@mimik/core/logger';
 import { queueDescription } from '@/core/capture/ai/description-queue';
 import { AI_CREDENTIAL_SETTINGS, resolveAiCredentials } from '@/core/capture/ai/keys';
 import type { DOMContext } from '@/core/capture/dom/context';
+import { isLive } from '@/core/capture/is-live';
 import { CaptureState } from '@/core/capture/machine';
 import { buildFallbackDescription } from '@/core/capture/step-description';
 import {
@@ -54,10 +55,6 @@ async function takeScreenshot(stepId: string, meta: ElementMeta): Promise<string
 
 function isRecording(): boolean {
   return getActor().getSnapshot().value === CaptureState.RECORDING;
-}
-
-function isRecordingOrPaused(): boolean {
-  return getActor().getSnapshot().value !== CaptureState.IDLE;
 }
 
 let stepWrites: Promise<unknown> = Promise.resolve();
@@ -140,7 +137,7 @@ export async function handleFinalizeInputStep(
   elementMeta: ElementMeta,
   domContext: DOMContext | undefined,
 ) {
-  if (!isRecordingOrPaused()) return;
+  if (!isLive(getActor().getSnapshot().value)) return;
   const screenshotId = await takeScreenshot(stepId, elementMeta);
   await updateStepCapture(stepId, elementMeta, screenshotId);
 

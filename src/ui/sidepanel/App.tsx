@@ -1,3 +1,4 @@
+import { isLive } from '@mimik/core/capture/is-live';
 import { logger } from '@mimik/core/logger';
 import { Button, Input, TooltipProvider } from '@mimik/ui';
 import { Globe, Search, Settings, Video } from 'lucide-react';
@@ -63,7 +64,7 @@ export function App() {
       },
       onDisconnect: () => setIsAlive(false),
       onStateUpdate: (update) => {
-        const live = update.state === CaptureState.RECORDING || update.state === CaptureState.PAUSED;
+        const live = isLive(update.state);
         const isPaused = update.state === CaptureState.PAUSED;
         setPaused(isPaused);
         setPauseReason(isPaused ? (update.pauseReason ?? null) : null);
