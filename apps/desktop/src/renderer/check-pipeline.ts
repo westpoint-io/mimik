@@ -20,8 +20,8 @@ interface CheckResult {
 
 const sink = new DesktopCaptureSink();
 
-window.mimik.onRequest('mimik:capture:startGuide', () => sink.startGuide());
-window.mimik.onRequest('mimik:capture:step', (payload) => sink.captureStep(payload as CaptureStepData));
+window.mimik.onRequest('mimik:capture:createGuide', () => sink.createGuide());
+window.mimik.onRequest('mimik:capture:captureStep', (payload) => sink.captureStep(payload as CaptureStepData));
 
 window.mimik.onRequest('mimik:check:screenshotSrc', async (payload) => {
   const found = await getGuide(payload as string);

@@ -85,25 +85,25 @@ app.whenReady().then(async () => {
   const recorder = new DesktopRecorder(
     () => region,
     (fn) => fn(),
-    (request) => ask(win.webContents, 'mimik:capture:step', { ...request, guideId: activeGuide }),
+    (request) => ask(win.webContents, 'mimik:capture:captureStep', { ...request, guideId: activeGuide }),
     { grab: async () => syntheticDisplay, settings: () => settings, lookup: () => Promise.resolve(null) },
   );
 
-  activeGuide = await ask<string>(win.webContents, 'mimik:capture:startGuide');
+  activeGuide = await ask<string>(win.webContents, 'mimik:capture:createGuide');
   const guideId = activeGuide;
 
   await recorder.capture({ x: region.x + 120, y: region.y + 90 });
   await recorder.capture({ x: region.x + 400, y: region.y + 300 });
   const results = await ask<CheckResult[]>(win.webContents, 'mimik:check:verify', guideId, 60_000);
 
-  const blindGuide = await ask<string>(win.webContents, 'mimik:capture:startGuide');
+  const blindGuide = await ask<string>(win.webContents, 'mimik:capture:createGuide');
   let blindRequest: CaptureRequest | null = null;
   const blind = new DesktopRecorder(
     () => region,
     (fn) => fn(),
     (request) => {
       blindRequest = request;
-      return ask(win.webContents, 'mimik:capture:step', { ...request, guideId: blindGuide });
+      return ask(win.webContents, 'mimik:capture:captureStep', { ...request, guideId: blindGuide });
     },
     { grab: () => Promise.reject(new Error('display gone')), settings: () => settings, lookup: () => Promise.resolve(null) },
   );
@@ -635,7 +635,7 @@ app.whenReady().then(async () => {
     detail: 'a real rectangle wins; no element, one covering the frame, or one overflowing it falls back to the click box',
   });
 
-  activeGuide = await ask<string>(win.webContents, 'mimik:capture:startGuide');
+  activeGuide = await ask<string>(win.webContents, 'mimik:capture:createGuide');
 
   settings = { ...REGION_MODE, screenshotDelayMs: 400 };
   const before = Date.now();
@@ -664,7 +664,7 @@ app.whenReady().then(async () => {
   await app_.loadFile(join(__dirname, '../renderer/index.html'));
   let wired = 'no reply';
   try {
-    const id = await ask<string>(app_.webContents, 'mimik:capture:startGuide', undefined, 20_000);
+    const id = await ask<string>(app_.webContents, 'mimik:capture:createGuide', {}, 20_000);
     wired = typeof id === 'string' && id.length > 0 ? id : `unexpected reply ${JSON.stringify(id)}`;
     await ask(app_.webContents, 'mimik:check:cleanup', [id], 20_000).catch(() => undefined);
   } catch (error) {
@@ -678,7 +678,7 @@ app.whenReady().then(async () => {
 
   let titled = 'no reply';
   try {
-    const id = await ask<string>(app_.webContents, 'mimik:capture:startGuide', undefined, 20_000);
+    const id = await ask<string>(app_.webContents, 'mimik:capture:createGuide', {}, 20_000);
     await ask(app_.webContents, 'mimik:capture:finishGuide', id, 20_000);
     titled = (await ask<string | null>(win.webContents, 'mimik:check:title', id, 20_000)) ?? 'no guide';
     await ask(app_.webContents, 'mimik:check:cleanup', [id], 20_000).catch(() => undefined);
@@ -688,7 +688,7 @@ app.whenReady().then(async () => {
   let merged = 'no reply';
   try {
     const labelled = (guide: string, ariaLabel: string) =>
-      ask(app_.webContents, 'mimik:capture:step', {
+      ask(app_.webContents, 'mimik:capture:captureStep', {
         guideId: guide,
         action: 'click',
         elementMeta: {
@@ -703,13 +703,13 @@ app.whenReady().then(async () => {
           devicePixelRatio: 1,
         },
       }, 20_000);
-    const target = await ask<string>(app_.webContents, 'mimik:capture:startGuide', false, 20_000);
+    const target = await ask<string>(app_.webContents, 'mimik:capture:createGuide', { staging: false }, 20_000);
     await labelled(target, 'First');
     await labelled(target, 'Third');
     const before = await ask<string | null>(win.webContents, 'mimik:check:title', target, 20_000);
-    const staging = await ask<string>(app_.webContents, 'mimik:capture:startGuide', true, 20_000);
+    const staging = await ask<string>(app_.webContents, 'mimik:capture:createGuide', { staging: true }, 20_000);
     await labelled(staging, 'Second');
-    await ask(app_.webContents, 'mimik:capture:insertGuide', { guideId: staging, targetGuideId: target, atIndex: 1 }, 20_000);
+    await ask(app_.webContents, 'mimik:capture:mergeGuideInto', { guideId: staging, targetGuideId: target, atIndex: 1 }, 20_000);
     const order = (await ask<string[] | null>(win.webContents, 'mimik:check:steps', target, 20_000)) ?? [];
     const left = await ask<string[] | null>(win.webContents, 'mimik:check:steps', staging, 20_000);
     const after = await ask<string | null>(win.webContents, 'mimik:check:title', target, 20_000);
@@ -749,7 +749,13 @@ app.whenReady().then(async () => {
   });
 
   const stopped = 'bc4e4a1e-0000-4000-8000-000000000001';
-  app_.webContents.send('mimik:capture:command', 'stop', 'idle', region, stopped);
+  app_.webContents.send('mimik:capture:stateUpdate', {
+    command: 'stop',
+    state: 'IDLE',
+    pauseReason: null,
+    currentGuideId: stopped,
+    stepCount: 0,
+  });
   let shown = 'no navigation';
   for (let i = 0; i < 40 && !shown.startsWith('#guide/'); i++) {
     await new Promise((r) => setTimeout(r, 50));

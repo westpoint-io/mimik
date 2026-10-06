@@ -1,6 +1,9 @@
 import { readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
+import { isLive } from '@mimik/core/capture/is-live';
+import { CaptureState, captureMachine } from '@mimik/core/capture/machine';
 import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, protocol, screen, shell, Tray } from 'electron';
+import { createActor } from 'xstate';
 import { shortcutLabel } from '../renderer/lib/shortcut-label';
 import { registerAiFetch } from './ai-fetch';
 import { APP_ICON_SCHEME, registerAppIconProtocol } from './app-icon';
@@ -34,7 +37,8 @@ let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let overlay: CaptureOverlay | null = null;
 let recorder: DesktopRecorder | null = null;
-let guideId: string | null = null;
+const capture = createActor(captureMachine).start();
+let currentGuideId: string | null = null;
 let insert: CaptureInsert | null = null;
 let describing = true;
 let captureSettings: CaptureSettings | null = null;
@@ -114,13 +118,9 @@ function trayIcon(recording: boolean): Electron.NativeImage {
   return process.platform === 'darwin' ? icon.resize({ width: 16, height: 16 }) : icon;
 }
 
-function isCapturing(): boolean {
-  return overlay?.state === 'recording' || overlay?.state === 'paused';
-}
-
 function refreshTray(): void {
   if (!tray) return;
-  const recording = isCapturing();
+  const recording = isLive(capture.getSnapshot().value);
   tray.setImage(trayIcon(recording));
   tray.setToolTip(recording ? mainI18n.t('desktop.trayRecording') : 'Mimik');
 }
@@ -254,28 +254,42 @@ function createTray(): void {
   tray = new Tray(trayIcon(false));
   tray.setToolTip('Mimik');
   tray.on('click', () => {
-    if (isCapturing()) overlay?.run('stop');
+    if (isLive(capture.getSnapshot().value)) overlay?.run('stop');
     else showWindow();
   });
   refreshTrayMenu();
 }
 
-function broadcastOverlay(command: OverlayCommand, id: string | null): void {
-  mainWindow?.webContents.send('mimik:capture:command', command, overlay?.state, overlay?.region, id);
+function captureStateUpdate(command: OverlayCommand | null, guideId: string | null) {
+  const { value, context } = capture.getSnapshot();
+  return {
+    command,
+    state: value,
+    pauseReason: context.pauseReason,
+    currentGuideId: guideId,
+    stepCount: context.stepCount,
+  };
+}
+
+function broadcastState(command: OverlayCommand, guideId: string | null): void {
+  mainWindow?.webContents.send('mimik:capture:stateUpdate', captureStateUpdate(command, guideId));
 }
 
 function applyShortcuts(): void {
   setImmediate(() => {
     if (!overlay) return;
-    const recording = overlay.state === 'recording' || overlay.state === 'paused';
-    bindShortcuts(shortcutMap((captureSettings ?? loadSettings()).shortcuts, recording), onShortcut);
+    bindShortcuts(
+      shortcutMap((captureSettings ?? loadSettings()).shortcuts, isLive(capture.getSnapshot().value)),
+      onShortcut,
+    );
   });
 }
 
 function onShortcut(name: ShortcutName): void {
   if (!overlay) return;
+  const state = capture.getSnapshot().value;
   if (name === 'startStop') {
-    if (overlay.state === 'hidden') {
+    if (state === CaptureState.IDLE) {
       whenPermitted(() => {
         insert = null;
         enterCapture();
@@ -283,12 +297,12 @@ function onShortcut(name: ShortcutName): void {
       });
       return;
     }
-    overlay.run(overlay.state === 'armed' ? 'start' : 'stop');
+    overlay.run(state === CaptureState.ARMED ? 'start' : 'stop');
     return;
   }
   if (name === 'pauseResume') {
-    if (overlay.state === 'recording') overlay.run('pause');
-    else if (overlay.state === 'paused') overlay.run('resume');
+    if (state === CaptureState.RECORDING) overlay.run('pause');
+    else if (state === CaptureState.PAUSED) overlay.run('resume');
     return;
   }
   recorder?.captureNow(screen.getCursorScreenPoint());
@@ -301,34 +315,41 @@ async function onOverlayCommand(command: OverlayCommand): Promise<void> {
     overlay?.refresh();
     return;
   }
-  if (command === 'mic:on' || command === 'mic:off') {
-    if (command === 'mic:off' || (await askMicrophone())) broadcastOverlay(command, guideId);
+  if (command === 'narration:start' || command === 'narration:stop') {
+    if (command === 'narration:stop' || (await askMicrophone())) broadcastState(command, currentGuideId);
     return;
   }
-  if (command === 'remove') {
+  if (command === 'deleteStep') {
     const removed = steps.pop();
-    if (removed && guideId) {
-      await ask(mainWindow?.webContents ?? null, 'mimik:capture:removeStep', { guideId, stepId: removed.id }).catch(
-        () => undefined,
-      );
+    if (removed && currentGuideId) {
+      capture.send({ type: 'STEP_REMOVED' });
+      await ask(mainWindow?.webContents ?? null, 'mimik:capture:deleteStep', {
+        guideId: currentGuideId,
+        stepId: removed.id,
+      }).catch(() => undefined);
     }
     overlay?.showStep(steps.at(-1) ?? null);
     return;
   }
-  if (command === 'start' && !guideId) {
+  if (command === 'start') {
     steps = [];
     overlay?.setAiFailure(null);
+    currentGuideId = capture.getSnapshot().context.currentGuideId;
     try {
-      guideId = await ask<string>(mainWindow?.webContents ?? null, 'mimik:capture:startGuide', insert !== null);
+      await ask(mainWindow?.webContents ?? null, 'mimik:capture:createGuide', {
+        guideId: currentGuideId,
+        staging: insert !== null,
+      });
     } catch (error) {
-      overlay?.hide();
+      currentGuideId = null;
+      overlay?.reset();
       dialog.showErrorBox(mainI18n.t('desktop.cannotRecord'), error instanceof Error ? error.message : String(error));
       return;
     }
     const started = await recorder?.start();
     if (started && !started.ok) {
-      guideId = null;
-      overlay?.hide();
+      currentGuideId = null;
+      overlay?.reset();
       dialog.showErrorBox(mainI18n.t('desktop.cannotRecord'), started.detail);
       return;
     }
@@ -336,31 +357,31 @@ async function onOverlayCommand(command: OverlayCommand): Promise<void> {
     recorder?.pause();
   } else if (command === 'resume') {
     recorder?.resume();
-  } else if (command === 'stop' || command === 'cancel') {
+  } else if (command === 'stop') {
     recorder?.stop();
     await recorder?.drain();
     const target = insert;
     insert = null;
-    if (guideId && target) {
+    if (currentGuideId && target) {
       await ask(
         mainWindow?.webContents ?? null,
-        'mimik:capture:insertGuide',
-        { guideId, targetGuideId: target.guideId, atIndex: target.atIndex },
+        'mimik:capture:mergeGuideInto',
+        { guideId: currentGuideId, targetGuideId: target.guideId, atIndex: target.atIndex },
         45_000,
       ).catch(() => undefined);
-      if (command === 'stop' && steps.length > 0) finished = target.guideId;
-    } else {
-      if (command === 'stop') finished = guideId;
-      if (finished) {
-        void ask(mainWindow?.webContents ?? null, 'mimik:capture:finishGuide', finished, 45_000).catch(() => undefined);
-      }
+      if (steps.length > 0) finished = target.guideId;
+    } else if (currentGuideId) {
+      finished = currentGuideId;
+      void ask(mainWindow?.webContents ?? null, 'mimik:capture:finishGuide', finished, 45_000).catch(() => undefined);
     }
-    guideId = null;
+    currentGuideId = null;
+  } else if (command === 'disarm' || command === 'cancelEdit') {
+    insert = null;
   }
-  broadcastOverlay(command, finished ?? guideId);
+  broadcastState(command, finished ?? currentGuideId);
   applyShortcuts();
   refreshTray();
-  if (command === 'stop' || command === 'cancel') leaveCapture(Boolean(finished));
+  if (command === 'stop' || command === 'disarm' || command === 'cancelEdit') leaveCapture(Boolean(finished));
 }
 
 let isQuitting = false;
@@ -425,9 +446,11 @@ if (!app.requestSingleInstanceLock()) {
     const labelOf = (accelerator: string | null) =>
       accelerator ? shortcutLabel(accelerator, process.platform === 'darwin') : null;
     overlay = new CaptureOverlay(
+      capture,
       (command) => void onOverlayCommand(command),
       () => (captureSettings ?? loadSettings()).captureMode,
       {
+        insert: () => (insert ? { insertTargetGuideId: insert.guideId, insertAtIndex: insert.atIndex } : null),
         introFrame: async () => {
           const { captureMode } = captureSettings ?? loadSettings();
           const region = overlay?.region ?? { x: 0, y: 0, width: 0, height: 0 };
@@ -448,8 +471,8 @@ if (!app.requestSingleInstanceLock()) {
       async (request) => {
         const reply = await ask<{ stepId?: string; title?: string; pending?: boolean }>(
           mainWindow?.webContents ?? null,
-          'mimik:capture:step',
-          { ...request, guideId },
+          'mimik:capture:captureStep',
+          { ...request, guideId: currentGuideId },
         ).catch(() => undefined);
         if (reply?.stepId && reply.title) {
           const step: OverlayStep = {
@@ -463,6 +486,7 @@ if (!app.requestSingleInstanceLock()) {
             app: request.elementMeta.app?.name ?? null,
           };
           steps.push(step);
+          capture.send({ type: 'USER_ACTION' });
           describing = step.pending;
           overlay?.showStep(step);
           if (step.pending) overlay?.setProgress(95, 3500);
@@ -513,6 +537,7 @@ if (!app.requestSingleInstanceLock()) {
       },
     );
     ipcMain.handle('mimik:capture:region', () => overlay?.region);
+    ipcMain.handle('mimik:capture:getState', () => captureStateUpdate(null, currentGuideId));
     ipcMain.handle('mimik:capture:edit', (_event, target?: CaptureInsert) => {
       whenPermitted(() => {
         insert = target ?? null;

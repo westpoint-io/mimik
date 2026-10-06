@@ -165,9 +165,9 @@ export function controls(): void {
 
   const render = (view: OverlayView) => {
     const { state, step, busy, progress, print, starting, mode, shortcuts, aiFailure, narration } = view;
-    const armed = state === 'armed';
-    const recording = state === 'recording';
-    const paused = state === 'paused';
+    const armed = state === 'ARMED';
+    const recording = state === 'RECORDING';
+    const paused = state === 'PAUSED';
     const waiting = recording && !step && !busy;
     const resting = paused && !step && !busy;
 
@@ -311,7 +311,7 @@ export function controls(): void {
       primary.replaceChildren(icon(armed ? 'video' : 'check'));
       primary.append(i18n.t(armed ? 'desktop_startButton' : 'desktop_finish'));
     }
-    secondary.dataset.command = armed ? 'cancel' : recording ? 'pause' : 'resume';
+    secondary.dataset.command = armed ? 'disarm' : recording ? 'pause' : 'resume';
     primary.dataset.command = armed ? 'start' : 'stop';
     primary.disabled = starting || (busy && !armed);
     foot.hidden = collapsed;
@@ -362,10 +362,10 @@ export function controls(): void {
   }
 
   primary.addEventListener('click', () => window.mimikOverlay.command(primary.dataset.command ?? 'start'));
-  secondary.addEventListener('click', () => window.mimikOverlay.command(secondary.dataset.command ?? 'cancel'));
-  remove.addEventListener('click', () => window.mimikOverlay.command('remove'));
+  secondary.addEventListener('click', () => window.mimikOverlay.command(secondary.dataset.command ?? 'disarm'));
+  remove.addEventListener('click', () => window.mimikOverlay.command('deleteStep'));
   mic.addEventListener('click', () => {
-    if (shownMic !== 'locked') window.mimikOverlay.command(micOn ? 'mic:off' : 'mic:on');
+    if (shownMic !== 'locked') window.mimikOverlay.command(micOn ? 'narration:stop' : 'narration:start');
   });
   const readMic = () =>
     localStorage.get([...VOICE_KEY_SETTINGS, 'voiceEnabled']).then((stored) => {

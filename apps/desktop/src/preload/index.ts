@@ -1,8 +1,16 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { CaptureInsert } from '../main/capture/insert';
 import type { CaptureSettings } from '../main/capture/settings';
-import type { OverlayAiFailure, OverlayNarration } from '../main/overlay';
+import type { OverlayAiFailure, OverlayCommand, OverlayNarration } from '../main/overlay';
 import type { CapturePermissions, MicrophoneAccess, PermissionKind } from '../main/permissions';
+
+export interface CaptureStateUpdate {
+  command: OverlayCommand | null;
+  state: string;
+  pauseReason: string | null;
+  currentGuideId: string | null;
+  stepCount: number;
+}
 
 interface Region {
   x: number;
@@ -32,12 +40,9 @@ const api = {
     onOpenSheet: (handler: () => void): void => {
       ipcRenderer.on('mimik:capture:openSheet', () => handler());
     },
-    onCommand: (handler: (command: string, state: string, region: Region, guideId: string | null) => void): void => {
-      ipcRenderer.on(
-        'mimik:capture:command',
-        (_event, command: string, state: string, region: Region, guideId: string | null) =>
-          handler(command, state, region, guideId),
-      );
+    getState: (): Promise<CaptureStateUpdate> => ipcRenderer.invoke('mimik:capture:getState'),
+    onStateUpdate: (handler: (update: CaptureStateUpdate) => void): void => {
+      ipcRenderer.on('mimik:capture:stateUpdate', (_event, update: CaptureStateUpdate) => handler(update));
     },
   },
   microphone: {

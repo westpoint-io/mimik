@@ -64,7 +64,7 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    window.mimik.capture.onCommand((command, _state, _region, id) => {
+    window.mimik.capture.onStateUpdate(({ command, currentGuideId: id }) => {
       if (command !== 'stop' || !id) return;
       setSettingsOpen(false);
       setSheet(null);

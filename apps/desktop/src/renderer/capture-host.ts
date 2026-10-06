@@ -1,5 +1,6 @@
 import { resolveGuideMetaInputs } from '@mimik/core/capture/ai/guide-description';
 import { settleDescriptions } from '@mimik/core/capture/ai/settle-descriptions';
+import { CaptureState } from '@mimik/core/capture/machine';
 import type { CaptureStepData } from '@mimik/core/capture/sink';
 import { i18n, localStorage } from '@mimik/core/env';
 import { getMostCommonApp } from '@mimik/core/guides/most-common-app';
@@ -22,19 +23,23 @@ const sink = new DesktopCaptureSink(narration);
 
 allScreenshotIds().then((ids) => window.mimik.screenshots.sweep(ids));
 
-window.mimik.onRequest('mimik:capture:startGuide', (payload) => sink.startGuide(payload === true));
-window.mimik.onRequest('mimik:capture:step', (payload) => sink.captureStep(payload as CaptureStepData));
+window.mimik.onRequest('mimik:capture:createGuide', (payload) =>
+  sink.createGuide(payload as { guideId?: string; staging?: boolean }),
+);
+window.mimik.onRequest('mimik:capture:captureStep', (payload) => sink.captureStep(payload as CaptureStepData));
 
-window.mimik.capture.onCommand(async (command, state, _region, id) => {
-  if (command === 'mic:on' || command === 'mic:off') await localStorage.set({ voiceEnabled: command === 'mic:on' });
-  if (!id) return;
-  if (command === 'start' || command === 'resume' || (command === 'mic:on' && state === 'recording')) {
-    narration.listen(id);
-  } else if (command === 'pause' || command === 'mic:off') narration.cut();
-  else if (command === 'cancel') narration.abort();
+window.mimik.capture.onStateUpdate(async ({ command, state, currentGuideId }) => {
+  if (command === 'narration:start' || command === 'narration:stop') {
+    await localStorage.set({ voiceEnabled: command === 'narration:start' });
+  }
+  if (!currentGuideId) return;
+  const recording = state === CaptureState.RECORDING;
+  if (command === 'start' || command === 'resume' || (command === 'narration:start' && recording)) {
+    narration.listen(currentGuideId);
+  } else if (command === 'pause' || command === 'narration:stop') narration.cut();
 });
 
-window.mimik.onRequest('mimik:capture:removeStep', async (payload) => {
+window.mimik.onRequest('mimik:capture:deleteStep', async (payload) => {
   const { guideId, stepId } = payload as { guideId: string; stepId: string };
   await deleteStep(guideId, stepId);
   return true;
@@ -59,7 +64,7 @@ window.mimik.onRequest('mimik:capture:finishGuide', async (payload) => {
   return true;
 });
 
-window.mimik.onRequest('mimik:capture:insertGuide', async (payload) => {
+window.mimik.onRequest('mimik:capture:mergeGuideInto', async (payload) => {
   const { guideId, targetGuideId, atIndex } = payload as { guideId: string; targetGuideId: string; atIndex: number };
   await narration.finish();
   await settleDescriptions(guideId);
