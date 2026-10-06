@@ -725,8 +725,8 @@ app.whenReady().then(async () => {
   });
 
   results.push({
-    name: 'an empty recording keeps its untitled guide',
-    ok: titled.toLowerCase() === 'untitled guide',
+    name: 'an empty recording is named New guide, as in the extension',
+    ok: titled === 'New guide',
     detail: titled,
   });
 

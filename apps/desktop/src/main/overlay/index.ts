@@ -6,6 +6,7 @@ import {
   type captureMachine,
   type PauseReason,
 } from '@mimik/core/capture/machine';
+import type { VoiceErrorReason } from '@mimik/core/capture/voice/voice-update';
 import { app, BrowserWindow, ipcMain, screen } from 'electron';
 import type { Actor } from 'xstate';
 import { clampToDisplays, loadRegion, type Region, saveRegion } from '../capture/region';
@@ -57,6 +58,7 @@ export interface OverlayAiFailure {
 export interface OverlayNarration {
   level: number;
   speaking: boolean;
+  reason?: VoiceErrorReason;
 }
 
 export interface OverlayAim {

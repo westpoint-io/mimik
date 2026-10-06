@@ -74,8 +74,8 @@ export class DesktopCaptureSink implements CaptureSink {
 
     const description = buildFallbackDescription(data.action, meta, data.inputValue);
     const hasKey = (await credentials()) !== null;
-    const narrating = this.narration?.capturing === true;
-    const pending = hasKey || narrating;
+    const narrationCapturing = this.narration?.update.phase === 'recording';
+    const pending = hasKey || narrationCapturing;
     const timestamp = Date.now();
 
     await createStep({
@@ -103,7 +103,7 @@ export class DesktopCaptureSink implements CaptureSink {
       const written = (await getStep(stepId))?.descriptionSource === 'ai';
       window.mimik.capture.described(stepId, written ? text : null, failure);
     };
-    if (narrating) this.narration?.step(data.guideId, { stepId, timestamp }, hasKey ? describe : null);
+    if (narrationCapturing) this.narration?.flushForStep(data.guideId, { stepId, timestamp }, hasKey ? describe : null);
     else if (hasKey) queueDescription(data.guideId, describe);
 
     return { stepId, title: description, pending };

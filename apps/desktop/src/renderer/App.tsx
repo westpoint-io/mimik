@@ -8,18 +8,21 @@ import {
   TooltipProvider,
   useFullview,
   useRoute,
+  VoiceNotice,
 } from '@mimik/ui';
 import { useCallback, useEffect, useState } from 'react';
 import type { CaptureInsert } from '../main/capture/insert';
 import { CaptureSheet } from './CaptureSheet';
 import { DesktopOnboarding } from './DesktopOnboarding';
 import { GuideZoom } from './GuideZoom';
+import { useNarrationUpdate } from './hooks/use-narration-update';
 import { PermissionsDialog } from './PermissionsDialog';
 import { REOPEN_SETTINGS } from './settings/lib/reopen-settings';
 import { SettingsDialog } from './settings/SettingsDialog';
 
 export function App() {
   const route = useRoute();
+  const narration = useNarrationUpdate();
   const [settingsOpen, setSettingsOpen] = useState(() => sessionStorage.getItem(REOPEN_SETTINGS) !== null);
   const [sheet, setSheet] = useState<{ insert?: CaptureInsert } | null>(null);
   const [guideKey, setGuideKey] = useState(0);
@@ -116,6 +119,11 @@ export function App() {
       </AppFrame>
       <SearchModal />
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <VoiceNotice
+        update={narration.update}
+        seenLive={narration.seenLive}
+        onOpenSettings={() => setSettingsOpen(true)}
+      />
       {sheet && <CaptureSheet insert={sheet.insert} onClose={() => setSheet(null)} />}
       <PermissionsDialog open={permissionsOpen} onClose={closePermissions} />
     </TooltipProvider>

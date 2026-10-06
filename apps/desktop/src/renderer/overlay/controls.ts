@@ -1,6 +1,7 @@
 import { aiFailureNotice } from '@mimik/core/capture/ai/errors';
 import { splitAtShortcut } from '@mimik/core/capture/split-at-shortcut';
 import { hasVoiceApiKey, VOICE_KEY_SETTINGS } from '@mimik/core/capture/voice/api-key';
+import { voiceErrorKey } from '@mimik/core/capture/voice/voice-error-key';
 import { i18n, localStorage } from '@mimik/core/env';
 import type { OverlayView } from '../../main/overlay';
 import { icon } from '../icons';
@@ -227,12 +228,14 @@ export function controls(): void {
     }
     badge.hidden = paused || collapsed;
 
-    const micLocked = !micKeyed && !micOn;
-    const micState = micOn ? 'on' : micLocked ? 'locked' : 'off';
+    const micLocked = (!micKeyed && !micOn) || paused;
+    const micState = `${micOn ? 'on' : micLocked ? 'locked' : 'off'}${paused ? ':paused' : ''}`;
     if (micState !== shownMic) {
       shownMic = micState;
-      const micLabel = i18n.t(micLocked ? 'voice_needsApiKey' : micOn ? 'voice_turnOff' : 'voice_turnOn');
-      mic.className = micState;
+      const micLabel = i18n.t(
+        paused ? 'voice_pausedWithCapture' : micLocked ? 'voice_needsApiKey' : micOn ? 'voice_turnOff' : 'voice_turnOn',
+      );
+      mic.className = micLocked ? 'locked' : micOn ? 'on' : 'off';
       mic.title = micLabel;
       mic.setAttribute('aria-label', micLabel);
       mic.setAttribute('aria-pressed', String(micOn));
@@ -288,9 +291,14 @@ export function controls(): void {
     const key = armed ? shortcuts.startStop : shortcuts.capture;
     hint.hidden = intro.hidden || resting || !key || Boolean(narration);
     voice.hidden = collapsed || !narration;
-    voiceHint.hidden = intro.hidden;
+    const voiceFailed = Boolean(narration?.reason);
+    voiceHint.hidden = intro.hidden && !voiceFailed;
+    voiceHint.textContent = i18n.t(voiceFailed ? 'voice_guideSafe' : 'voice_orderHint');
+    voiceBars.hidden = voiceFailed;
     voiceBars.classList.toggle('speaking', narration?.speaking === true);
-    voiceLabel.textContent = i18n.t(narration?.speaking ? 'voice_micHearing' : 'voice_micQuiet');
+    voiceLabel.textContent = narration?.reason
+      ? i18n.t(voiceErrorKey(narration.reason))
+      : i18n.t(narration?.speaking ? 'voice_micHearing' : 'voice_micQuiet');
     bars.forEach((bar, index) => {
       const scale = Math.max(VOICE_BAR_FLOOR, Math.min(1, (narration?.level ?? 0) * VOICE_BARS[index]));
       bar.style.transform = `scaleY(${scale})`;
@@ -365,7 +373,7 @@ export function controls(): void {
   secondary.addEventListener('click', () => window.mimikOverlay.command(secondary.dataset.command ?? 'disarm'));
   remove.addEventListener('click', () => window.mimikOverlay.command('deleteStep'));
   mic.addEventListener('click', () => {
-    if (shownMic !== 'locked') window.mimikOverlay.command(micOn ? 'narration:stop' : 'narration:start');
+    if (mic.className !== 'locked') window.mimikOverlay.command(micOn ? 'narration:stop' : 'narration:start');
   });
   const readMic = () =>
     localStorage.get([...VOICE_KEY_SETTINGS, 'voiceEnabled']).then((stored) => {
