@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { CaptureState } from '@mimik/core/capture/machine';
 import { app, BrowserWindow, nativeImage, protocol, screen } from 'electron';
 import { ask } from '../src/main/ask';
 import type { ScreenElement } from '../src/main/capture/element';
@@ -752,7 +753,7 @@ app.whenReady().then(async () => {
   const stopped = 'bc4e4a1e-0000-4000-8000-000000000001';
   app_.webContents.send('mimik:capture:stateUpdate', {
     command: 'stop',
-    state: 'IDLE',
+    state: CaptureState.IDLE,
     pauseReason: null,
     currentGuideId: stopped,
     stepCount: 0,

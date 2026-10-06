@@ -1,4 +1,5 @@
 import { aiFailureNotice } from '@mimik/core/capture/ai/errors';
+import { CaptureState } from '@mimik/core/capture/machine';
 import { splitAtShortcut } from '@mimik/core/capture/split-at-shortcut';
 import { hasVoiceApiKey, VOICE_KEY_SETTINGS } from '@mimik/core/capture/voice/api-key';
 import { voiceErrorKey } from '@mimik/core/capture/voice/voice-error-key';
@@ -160,9 +161,9 @@ export function controls(): void {
 
   const render = (view: OverlayView) => {
     const { state, step, busy, progress, print, starting, mode, shortcuts, aiFailure, narration } = view;
-    const armed = state === 'ARMED';
-    const recording = state === 'RECORDING';
-    const paused = state === 'PAUSED';
+    const armed = state === CaptureState.ARMED;
+    const recording = state === CaptureState.RECORDING;
+    const paused = state === CaptureState.PAUSED;
     const waiting = recording && !step && !busy;
     const resting = paused && !step && !busy;
 
