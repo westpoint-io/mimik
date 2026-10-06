@@ -1,6 +1,6 @@
-import { resolveVoiceApiKey, VOICE_KEY_SETTINGS } from '@/core/capture/voice/api-key';
-import type { VoiceProvider } from '@/core/capture/voice/transcribe';
-import { localStorage } from '../browser-api/local-storage';
+import { localStorage } from '@/core/env';
+import { resolveVoiceApiKey, VOICE_KEY_SETTINGS } from './api-key';
+import type { VoiceProvider } from './transcribe';
 
 export interface TranscriptionSettings {
   provider: VoiceProvider;

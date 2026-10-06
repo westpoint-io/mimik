@@ -16,7 +16,7 @@ const recorderState = {
   durationSeconds: 1,
 };
 
-vi.mock('../mic-recorder', () => ({
+vi.mock('@/core/capture/voice/mic-recorder', () => ({
   MicRecorder: class {
     get recording() {
       return recorderState.recording;
@@ -49,8 +49,8 @@ vi.mock('../mic-recorder', () => ({
   },
 }));
 
-vi.mock('../narrate-recording', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../narrate-recording')>();
+vi.mock('@/core/capture/voice/narrate-recording', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/core/capture/voice/narrate-recording')>();
   return { ...actual, narrateRecording: (...args: unknown[]) => narrateRecording(...args) };
 });
 

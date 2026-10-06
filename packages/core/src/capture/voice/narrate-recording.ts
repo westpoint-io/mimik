@@ -1,11 +1,11 @@
-import { logger } from '@mimik/core/logger';
-import { detectSpeechByEnergy } from '@/core/capture/voice/energy-gate';
-import { runNarrationPipeline } from '@/core/capture/voice/pipeline';
-import { buildStepWindows } from '@/core/capture/voice/step-windows';
-import { createTranscriber } from '@/core/capture/voice/transcribe';
-import type { NarrationResult } from '@/core/capture/voice/types';
+import { logger } from '@/core/logger';
+import { detectSpeechByEnergy } from './energy-gate';
+import { runNarrationPipeline } from './pipeline';
 import type { TranscriptionSettings } from './read-transcription-settings';
-import type { VoiceStepMark } from './voice-message';
+import type { StepMark } from './step-windows';
+import { buildStepWindows } from './step-windows';
+import { createTranscriber } from './transcribe';
+import type { NarrationResult } from './types';
 
 export interface VoiceRecording {
   pcm: Int16Array;
@@ -30,7 +30,7 @@ export const EMPTY_NARRATION: NarrationResult = {
 
 export async function narrateRecording(
   recording: VoiceRecording,
-  steps: VoiceStepMark[],
+  steps: StepMark[],
   settings: TranscriptionSettings,
 ): Promise<NarrationResult> {
   try {
