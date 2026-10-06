@@ -23,8 +23,8 @@ function yaml(): PluginOption {
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin(), yaml()],
-    resolve: { alias: { '@mimik/locales': locales } },
+    plugins: [externalizeDepsPlugin({ exclude: ['@mimik/core'] }), yaml()],
+    resolve: { alias: { '@mimik/core': core, '@/core': core, '@mimik/locales': locales } },
     build: {
       outDir: resolve(__dirname, 'out/main'),
       rollupOptions: {
