@@ -22,10 +22,19 @@
 
 Closes #
 
+## Both apps
+
+<!-- Mimik is one codebase with two apps: the browser extension and the desktop app. -->
+
+- [ ] This change applies to: extension / desktop / both <!-- delete the ones that don't apply -->
+- [ ] If it applies to both, it lives in `packages/core` or `packages/ui`, or the other app got the same change
+- [ ] Anything that names a shared concept uses the name the other app already uses
+
 ## How this was tested
 
-- [ ] `pnpm lint && pnpm test && pnpm build && pnpm build:firefox` passes locally <!-- CI does not run on fork PRs until a maintainer approves it. -->
-- [ ] Tested by hand in the browser
+- [ ] `pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm build:firefox` passes locally
+- [ ] For desktop changes: `pnpm --filter @mimik/desktop check:pipeline` and `check:overlay` pass <!-- CI does not run on fork PRs until a maintainer approves it. -->
+- [ ] Tested by hand in the browser, and in the desktop app if it changed
 - [ ] Tests added or updated
 
 ## Screenshots
