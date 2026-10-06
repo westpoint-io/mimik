@@ -2,9 +2,9 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { app } from 'electron';
 
-export type CaptureMode = 'window' | 'screen' | 'region';
+export type CaptureMode = 'window' | 'screen' | 'area';
 
-export const CAPTURE_MODES: CaptureMode[] = ['window', 'screen', 'region'];
+export const CAPTURE_MODES: CaptureMode[] = ['window', 'screen', 'area'];
 export const MAX_SCREENSHOT_DELAY_MS = 2000;
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 5;
@@ -78,9 +78,10 @@ type LegacySettings = Partial<Record<'captureOutsideClicks' | 'captureKeys' | 'c
 export function normaliseSettings(input: Partial<CaptureSettings> & LegacySettings): CaptureSettings {
   const delay = Number(input.screenshotDelayMs);
   const debounce = input.typingDebounceMs === undefined ? Number.NaN : Number(input.typingDebounceMs);
+  const mode = (input.captureMode as string) === 'region' ? 'area' : input.captureMode;
   return {
-    captureMode: CAPTURE_MODES.includes(input.captureMode as CaptureMode)
-      ? (input.captureMode as CaptureMode)
+    captureMode: CAPTURE_MODES.includes(mode as CaptureMode)
+      ? (mode as CaptureMode)
       : DEFAULT_CAPTURE_SETTINGS.captureMode,
     screenshotDelayMs: Number.isFinite(delay) ? Math.min(Math.max(Math.round(delay), 0), MAX_SCREENSHOT_DELAY_MS) : 0,
     keepClicksBeyondArea: flag(

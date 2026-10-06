@@ -458,7 +458,7 @@ if (!app.requestSingleInstanceLock()) {
         introFrame: async () => {
           const { captureMode } = captureSettings ?? loadSettings();
           const region = overlay?.region ?? { x: 0, y: 0, width: 0, height: 0 };
-          return frameFor(captureMode === 'region' ? 'region' : 'screen', screen.getCursorScreenPoint(), region, null);
+          return frameFor(captureMode === 'area' ? 'area' : 'screen', screen.getCursorScreenPoint(), region, null);
         },
         shortcuts: () => {
           const { shortcuts } = captureSettings ?? loadSettings();

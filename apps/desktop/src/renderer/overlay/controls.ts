@@ -11,16 +11,8 @@ import { el } from './el';
 const MODES = [
   { id: 'window', label: 'desktop_modeWindow', glyph: 'window' },
   { id: 'screen', label: 'desktop_modeScreen', glyph: 'monitor' },
-  { id: 'area', label: 'desktop_modeRegion', glyph: 'area' },
+  { id: 'area', label: 'desktop_modeArea', glyph: 'area' },
 ] as const;
-
-const MODE_COMMAND: Record<string, string> = {
-  window: 'mode:window',
-  screen: 'mode:screen',
-  area: 'mode:region',
-};
-
-const MODE_ID: Record<string, string> = { window: 'window', screen: 'screen', region: 'area' };
 
 const AI_WAIT_MS = 8000;
 
@@ -100,7 +92,7 @@ export function controls(): void {
   const modeButtons = MODES.map(({ id, label: text, glyph }) => {
     const button = el('button', { type: 'button', className: 'mode' }, icon(glyph, 13), i18n.t(text));
     button.dataset.mode = id;
-    button.addEventListener('click', () => window.mimikOverlay.command(MODE_COMMAND[id]));
+    button.addEventListener('click', () => window.mimikOverlay.command(`mode:${id}`));
     modeRow.append(button);
     return button;
   });
@@ -220,7 +212,7 @@ export function controls(): void {
     counter.textContent = i18n.t(count === 1 ? 'fullview_stepCount' : 'fullview_stepCountPlural', counted);
     counter.hidden = !paused;
 
-    const modeId = MODE_ID[mode] ?? 'window';
+    const modeId = mode;
     if (modeId !== shownMode) {
       shownMode = modeId;
       const shown = MODES.find((candidate) => candidate.id === modeId) ?? MODES[0];

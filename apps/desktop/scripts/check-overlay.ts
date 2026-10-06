@@ -51,7 +51,7 @@ setTimeout(() => bail(new Error('check did not finish within 60s')), 60_000).unr
 
 app.whenReady().then(async () => {
   const commands: string[] = [];
-  let mode: CaptureMode = 'region';
+  let mode: CaptureMode = 'area';
   const capture = createActor(captureMachine).start();
   const record = () => {
     const state = capture.getSnapshot().value;
@@ -441,7 +441,7 @@ app.whenReady().then(async () => {
     'picking Area while paused opens the editor, Done resumes and Cancel stays paused',
     opened.state === 'editor' &&
       opened.editors === displays.length &&
-      opened.sent === 'mode:region' &&
+      opened.sent === 'mode:area' &&
       cancelled.state === CaptureState.PAUSED &&
       cancelled.editors === 0 &&
       cancelled.sent === 'mode:screen' &&

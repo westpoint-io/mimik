@@ -206,7 +206,7 @@ desktop:
   captureMode: 捕获范围
   modeWindow: 窗口
   modeScreen: 屏幕
-  modeRegion: 区域
+  modeArea: 区域
   startSheetTitle: 开始捕获
   permissionsTitle: "允许 Mimik 录制"
   permissionsIntro: "Mimik 需要几项权限才能录制。"

@@ -10,7 +10,7 @@ type Mode = CaptureSettings['captureMode'];
 const MODES: { id: Mode; label: string; Icon: typeof AppWindow }[] = [
   { id: 'window', label: 'desktop_modeWindow', Icon: AppWindow },
   { id: 'screen', label: 'desktop_modeScreen', Icon: Monitor },
-  { id: 'region', label: 'desktop_modeRegion', Icon: Crop },
+  { id: 'area', label: 'desktop_modeArea', Icon: Crop },
 ];
 
 export function CaptureSheet({ insert, onClose }: { insert?: CaptureInsert; onClose(): void }) {
@@ -34,7 +34,7 @@ export function CaptureSheet({ insert, onClose }: { insert?: CaptureInsert; onCl
 
   const start = async () => {
     onClose();
-    if (settings?.captureMode === 'region') await window.mimik.capture.edit(insert);
+    if (settings?.captureMode === 'area') await window.mimik.capture.edit(insert);
     else await window.mimik.capture.arm(insert);
   };
 

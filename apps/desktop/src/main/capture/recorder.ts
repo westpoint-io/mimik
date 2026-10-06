@@ -129,7 +129,7 @@ export function isRepeatClick(previousAt: number | null, at: number): boolean {
 }
 
 export function shouldCapture(settings: CaptureSettings, region: Region, point: Point): boolean {
-  if (settings.captureMode !== 'region') return true;
+  if (settings.captureMode !== 'area') return true;
   return inside(region, point) || settings.keepClicksBeyondArea;
 }
 
@@ -494,7 +494,7 @@ export class DesktopRecorder {
   private shoot(point: Point): Promise<Frame> {
     const { screenshotDelayMs, captureMode } = this.settings();
     const region = this.region();
-    const at = captureMode === 'region' ? { x: region.x + region.width / 2, y: region.y + region.height / 2 } : point;
+    const at = captureMode === 'area' ? { x: region.x + region.width / 2, y: region.y + region.height / 2 } : point;
     const grabbed = this.withHidden(async () => {
       this.progress(0, 0);
       this.progress(0.9, screenshotDelayMs + CAPTURE_ESTIMATE_MS);

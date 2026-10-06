@@ -206,7 +206,7 @@ desktop:
   captureMode: Was aufnehmen
   modeWindow: Fenster
   modeScreen: Bildschirm
-  modeRegion: Bereich
+  modeArea: Bereich
   startSheetTitle: Aufnahme starten
   permissionsTitle: "Mimik das Aufnehmen erlauben"
   permissionsIntro: "Mimik braucht ein paar Berechtigungen, um aufzunehmen."

@@ -206,7 +206,7 @@ desktop:
   captureMode: Quoi capturer
   modeWindow: Fenêtre
   modeScreen: Écran
-  modeRegion: Zone
+  modeArea: Zone
   startSheetTitle: Démarrer une capture
   permissionsTitle: "Autoriser Mimik à enregistrer"
   permissionsIntro: "Mimik a besoin de quelques autorisations pour enregistrer."

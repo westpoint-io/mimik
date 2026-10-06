@@ -79,7 +79,7 @@ app.whenReady().then(async () => {
     return Promise.resolve({ png: image.toPNG(), width, height, scaleFactor: scale, displayId: display.id });
   }
 
-  const REGION_MODE = { ...DEFAULT_CAPTURE_SETTINGS, captureMode: 'region' as const, recordKeys: true };
+  const REGION_MODE = { ...DEFAULT_CAPTURE_SETTINGS, captureMode: 'area' as const, recordKeys: true };
   let settings = { ...REGION_MODE };
   let activeGuide = '';
   const recorder = new DesktopRecorder(
@@ -155,8 +155,9 @@ app.whenReady().then(async () => {
       legacy.keepClicksBeyondArea &&
       !legacy.recordKeys &&
       !legacy.recordTyping &&
-      normaliseSettings({ recordTyping: true, captureTyping: false }).recordTyping,
-    detail: 'each old key maps onto its new name, and the new name wins when both are present',
+      normaliseSettings({ recordTyping: true, captureTyping: false }).recordTyping &&
+      normaliseSettings({ captureMode: 'region' as never }).captureMode === 'area',
+    detail: 'each old key maps onto its new name, the new name wins when both are present, and region mode reads as area',
   });
 
   results.push({
@@ -214,8 +215,8 @@ app.whenReady().then(async () => {
       sameRect(frameFor('window', insidePoint, region, windowRect), windowRect) &&
       sameRect(frameFor('window', insidePoint, region, elsewhere), display.bounds) &&
       sameRect(frameFor('window', insidePoint, region, null), display.bounds) &&
-      sameRect(frameFor('region', insidePoint, region, windowRect), region) &&
-      sameRect(frameFor('region', outsidePoint, region, windowRect), region),
+      sameRect(frameFor('area', insidePoint, region, windowRect), region) &&
+      sameRect(frameFor('area', outsidePoint, region, windowRect), region),
     detail: 'screen takes the display, window takes the window and falls back twice, region always takes the region',
   });
 

@@ -24,7 +24,7 @@ export type OverlayCommand =
   | 'stop'
   | 'mode:window'
   | 'mode:screen'
-  | 'mode:region'
+  | 'mode:area'
   | 'deleteStep'
   | 'narration:start'
   | 'narration:stop'
@@ -172,7 +172,7 @@ export class CaptureOverlay {
   constructor(
     private capture: CaptureActor,
     private onCommand: (command: OverlayCommand) => void,
-    private mode: () => CaptureMode = () => 'region',
+    private mode: () => CaptureMode = () => 'area',
     private options: OverlayOptions = {},
   ) {
     this.rect = loadRegion();
@@ -321,7 +321,7 @@ export class CaptureOverlay {
   }
 
   private ensureBoundary(): void {
-    if (this.mode() !== 'region') {
+    if (this.mode() !== 'area') {
       if (this.boundary && !this.boundary.isDestroyed()) this.boundary.destroy();
       this.boundary = null;
       return;
@@ -468,7 +468,7 @@ export class CaptureOverlay {
     if (command.startsWith('mode:')) {
       const before = this.mode();
       this.onCommand(command);
-      if (command === 'mode:region' && state === CaptureState.PAUSED && !this.editing) {
+      if (command === 'mode:area' && state === CaptureState.PAUSED && !this.editing) {
         this.edit();
         this.modeBeforeEdit = before;
       }
@@ -514,7 +514,7 @@ export class CaptureOverlay {
     }
     if (this.starting) return;
     if (command === 'pause' && state === CaptureState.RECORDING) {
-      const area = this.mode() === 'region';
+      const area = this.mode() === 'area';
       this.capture.send({ type: 'PAUSE_CAPTURE', reason: area ? 'area' : 'manual' });
       this.onCommand(command);
       if (area) this.edit();

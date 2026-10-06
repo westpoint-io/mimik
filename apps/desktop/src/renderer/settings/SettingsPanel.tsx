@@ -49,7 +49,7 @@ const SECTIONS: { id: Section; labelKey: string; Icon: typeof AppWindow }[] = [
 const MODES: { id: CaptureSettings['captureMode']; labelKey: string; Icon: typeof AppWindow }[] = [
   { id: 'window', labelKey: 'desktop_modeWindow', Icon: AppWindow },
   { id: 'screen', labelKey: 'desktop_modeScreen', Icon: Monitor },
-  { id: 'region', labelKey: 'desktop_modeRegion', Icon: Crop },
+  { id: 'area', labelKey: 'desktop_modeArea', Icon: Crop },
 ];
 const KEYS: { id: keyof CaptureShortcuts; labelKey: string }[] = [
   { id: 'startStop', labelKey: 'desktop_shortcutStartStop' },
@@ -164,7 +164,7 @@ export function SettingsPanel() {
                   <Switch
                     checked={settings.keepClicksBeyondArea}
                     label={i18n.t('desktop_keepClicksBeyondArea')}
-                    disabled={settings.captureMode !== 'region'}
+                    disabled={settings.captureMode !== 'area'}
                     onChange={(keepClicksBeyondArea) => save({ keepClicksBeyondArea })}
                   />
                 </Row>
