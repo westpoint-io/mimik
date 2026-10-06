@@ -1,29 +1,22 @@
-import { validateApiKey } from '@mimik/core/capture/ai/validate';
 import { i18n, localStorage } from '@mimik/core/env';
 import {
-  AISetupStep,
   AppFrame,
-  GitHubStarStep,
   GuideContent,
   LibraryContent,
   navigate,
-  OnboardingFlow,
   SearchModal,
   TooltipProvider,
   useFullview,
   useRoute,
-  VoiceStep,
 } from '@mimik/ui';
 import { useCallback, useEffect, useState } from 'react';
 import type { CaptureInsert } from '../main/capture/insert';
 import { CaptureSheet } from './CaptureSheet';
+import { DesktopOnboarding } from './DesktopOnboarding';
 import { GuideZoom } from './GuideZoom';
-import { requestMicrophoneAccess } from './lib/request-microphone-access';
 import { PermissionsDialog } from './PermissionsDialog';
 import { REOPEN_SETTINGS } from './settings/lib/reopen-settings';
 import { SettingsDialog } from './settings/SettingsDialog';
-
-const ONBOARDING_STEPS = [AISetupStep, VoiceStep, GitHubStarStep];
 
 export function App() {
   const route = useRoute();
@@ -85,12 +78,7 @@ export function App() {
   if (!onboarded) {
     return (
       <TooltipProvider>
-        <OnboardingFlow
-          steps={ONBOARDING_STEPS}
-          validate={validateApiKey}
-          requestMicrophoneAccess={requestMicrophoneAccess}
-          onFinish={() => setOnboarded(true)}
-        />
+        <DesktopOnboarding onFinish={() => setOnboarded(true)} />
       </TooltipProvider>
     );
   }
