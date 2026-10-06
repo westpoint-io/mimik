@@ -9,6 +9,7 @@ import {
   clearStepAiPending,
   createStep,
   getStep,
+  getStepsForGuide,
   saveScreenshot,
   updateStepCapture,
   updateStepDescription,
@@ -59,6 +60,14 @@ function isRecordingOrPaused(): boolean {
   return getActor().getSnapshot().value !== CaptureState.IDLE;
 }
 
+let stepWrites: Promise<unknown> = Promise.resolve();
+
+function writeInOrder(write: () => Promise<void>): Promise<void> {
+  const next = stepWrites.then(write, write);
+  stepWrites = next.catch(() => undefined);
+  return next;
+}
+
 async function tryAIDescription(stepId: string, domContext: DOMContext) {
   if (!resolveAiCredentials(await localStorage.get([...AI_CREDENTIAL_SETTINGS]))) return;
   try {
@@ -73,7 +82,6 @@ export async function handleCaptureStep(data: CaptureStepData): Promise<CaptureS
   const snap = getActor().getSnapshot();
   if (snap.value !== CaptureState.RECORDING) return { ignored: true };
 
-  const stepIndex = snap.context.stepCount;
   getActor().send({ type: 'USER_ACTION' });
 
   const guideId = snap.context.currentGuideId!;
@@ -91,20 +99,22 @@ export async function handleCaptureStep(data: CaptureStepData): Promise<CaptureS
   });
 
   const timestamp = Date.now();
-  await createStep({
-    id: stepId,
-    guideId,
-    index: stepIndex,
-    description: buildFallbackDescription(data.action, data.elementMeta),
-    action: data.action,
-    url: snap.context.currentUrl,
-    timestamp,
-    screenshotId,
-    elementMeta: data.elementMeta,
-    descriptionSource: 'heuristic',
-    aiPending: willUseAI || narrationCapturing,
+  await writeInOrder(async () => {
+    await createStep({
+      id: stepId,
+      guideId,
+      index: (await getStepsForGuide(guideId)).length,
+      description: buildFallbackDescription(data.action, data.elementMeta),
+      action: data.action,
+      url: snap.context.currentUrl,
+      timestamp,
+      screenshotId,
+      elementMeta: data.elementMeta,
+      descriptionSource: 'heuristic',
+      aiPending: willUseAI || narrationCapturing,
+    });
+    await addStepToGuide(guideId, stepId);
   });
-  await addStepToGuide(guideId, stepId);
 
   const domContext = data.domContext;
   if (data.action !== 'input' && domContext) {
