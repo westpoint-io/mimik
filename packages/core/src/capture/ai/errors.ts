@@ -10,6 +10,12 @@ export type AiFailureReason =
   | 'network'
   | 'unknown';
 
+export interface AiFailureUpdate {
+  reason: AiFailureReason;
+  status?: number;
+  provider: string;
+}
+
 export interface AiFailure {
   reason: AiFailureReason;
   status?: number;

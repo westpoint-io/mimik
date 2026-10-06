@@ -1,9 +1,8 @@
-import { localStorage } from '@/core/env';
 import { updateGuideDescription, updateGuideTitle } from '@/core/guides/service';
 import { logger } from '@/core/logger';
 import { resolveGuideMetaInputs } from './guide-description';
-import { AI_CREDENTIAL_SETTINGS, resolveAiCredentials } from './keys';
 import { generateGuideMeta } from './meta';
+import { readAiCredentials } from './read-ai-credentials';
 import { settleDescriptions } from './settle-descriptions';
 
 export interface FinishGuideOptions {
@@ -18,10 +17,7 @@ export async function finishGuide(guideId: string, { fallbackTitle, settleNarrat
     await settleDescriptions(guideId);
   };
 
-  const keys = await localStorage
-    .get([...AI_CREDENTIAL_SETTINGS])
-    .then(resolveAiCredentials)
-    .catch(() => null);
+  const keys = await readAiCredentials().catch(() => null);
   if (!keys) {
     const titled = applyFallbackTitle().catch((err) => logger.error('Fallback title write failed', err));
     await settle().catch((err) => logger.error('Settling step descriptions failed', err));

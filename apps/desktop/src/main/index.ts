@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
+import type { AiFailureUpdate } from '@mimik/core/capture/ai/errors';
 import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import { isLive } from '@mimik/core/capture/is-live';
 import { CaptureState, captureMachine } from '@mimik/core/capture/machine';
@@ -14,13 +15,7 @@ import { grabDisplay } from './capture/screenshot';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from './capture/screenshot-store';
 import { type CaptureMode, type CaptureSettings, loadSettings, saveSettings } from './capture/settings';
 import { mainI18n } from './i18n';
-import {
-  CaptureOverlay,
-  type OverlayAiFailure,
-  type OverlayCommand,
-  type OverlayNarration,
-  type OverlayStep,
-} from './overlay';
+import { CaptureOverlay, type OverlayCommand, type OverlayNarration, type OverlayStep } from './overlay';
 import {
   askMicrophone,
   captureWasHeld,
@@ -523,7 +518,7 @@ if (!app.requestSingleInstanceLock()) {
         _event,
         stepId: string,
         description: string | null,
-        failure: OverlayAiFailure | null,
+        failure: AiFailureUpdate | null,
         source: 'ai' | 'narration' = 'ai',
       ) => {
         if (failure) overlay?.setAiFailure(failure);

@@ -1,5 +1,5 @@
 import { join } from 'node:path';
-import type { AiFailureReason } from '@mimik/core/capture/ai/errors';
+import type { AiFailureUpdate } from '@mimik/core/capture/ai/errors';
 import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import {
   CaptureState,
@@ -52,11 +52,6 @@ export interface OverlayShortcuts {
   capture: string | null;
 }
 
-export interface OverlayAiFailure {
-  reason: AiFailureReason;
-  provider: string;
-}
-
 export interface OverlayNarration {
   level: number;
   speaking: boolean;
@@ -85,7 +80,7 @@ export interface OverlayView {
   print: OverlayPrint;
   starting: boolean;
   shortcuts: OverlayShortcuts;
-  aiFailure: OverlayAiFailure | null;
+  aiFailure: AiFailureUpdate | null;
   narration: OverlayNarration | null;
 }
 
@@ -164,7 +159,7 @@ export class CaptureOverlay {
   private busy = false;
   private progress: OverlayProgress = { percent: 0, ms: 0 };
   private print: OverlayPrint = { src: null, aim: null };
-  private aiFailure: OverlayAiFailure | null = null;
+  private aiFailure: AiFailureUpdate | null = null;
   private narration: OverlayNarration | null = null;
   private modeBeforeEdit: CaptureMode | null = null;
   private hiding: { shown: BrowserWindow[]; ready: Promise<unknown>; users: number } | null = null;
@@ -246,7 +241,7 @@ export class CaptureOverlay {
     this.broadcast();
   }
 
-  setAiFailure(failure: OverlayAiFailure | null): void {
+  setAiFailure(failure: AiFailureUpdate | null): void {
     this.aiFailure = failure;
     this.broadcast();
   }

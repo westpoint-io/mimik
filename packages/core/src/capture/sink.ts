@@ -1,5 +1,6 @@
 import type { DOMContext } from '@/core/capture/dom/context';
 import type { ElementMeta } from '@/core/guides/types';
+import type { StepAction } from './step-action';
 
 export interface CaptureImage {
   screenshotId: string;
@@ -10,7 +11,7 @@ export interface CaptureImage {
 
 export interface CaptureStepData {
   guideId: string;
-  action: string;
+  action: StepAction;
   elementMeta: ElementMeta;
   domContext?: DOMContext;
   image?: CaptureImage;

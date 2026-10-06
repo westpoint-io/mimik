@@ -1,7 +1,8 @@
+import type { AiFailureUpdate } from '@mimik/core/capture/ai/errors';
 import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import { contextBridge, ipcRenderer } from 'electron';
 import type { CaptureSettings } from '../main/capture/settings';
-import type { OverlayAiFailure, OverlayCommand, OverlayNarration } from '../main/overlay';
+import type { OverlayCommand, OverlayNarration } from '../main/overlay';
 import type { CapturePermissions, MicrophoneAccess, PermissionKind } from '../main/permissions';
 
 export interface CaptureStateUpdate {
@@ -28,7 +29,7 @@ const api = {
     described: (
       stepId: string,
       description: string | null,
-      failure: OverlayAiFailure | null,
+      failure: AiFailureUpdate | null,
       source: 'ai' | 'narration' = 'ai',
     ): void => ipcRenderer.send('mimik:capture:described', stepId, description, failure, source),
     narration: (narration: OverlayNarration | null): void => ipcRenderer.send('mimik:capture:narration', narration),
