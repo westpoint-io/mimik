@@ -28,7 +28,6 @@ sidepanel:
   connecting: "Connexion…"
   heroTitle: "Que voulez-vous capturer ?"
   heroSubtitle: "Enregistrez automatiquement n'importe quel parcours"
-  startCapture: Lancer la capture
   searchPlaceholder: "Rechercher des guides…"
   recentLabel: "Récents"
   notRecordable: "Ouvrez un site web pour lancer la capture"
@@ -190,13 +189,20 @@ blurPresets:
   macAddress: Adresse MAC
 
 desktop:
+  collapse: "Réduire"
+  expand: "Développer"
+  starting: "Démarrage…"
+  capturingStep: "Capture de l’étape $1"
+  tipArmed: "Chaque clic est enregistré comme une étape."
+  tipPaused: "Rien n’est enregistré pendant la pause."
+  tipWaiting: "Votre premier clic apparaîtra ici."
+  tipLabel: "Astuce :"
+  hintStartStop: "appuyez sur $1 pour démarrer et arrêter."
+  hintCapture: "appuyez sur $1 pour capturer sans cliquer."
   micAccessAsk: "macOS demande une fois avant que Mimik puisse vous entendre."
   micAccessRefused: "Refusé. Activez Mimik dans Confidentialité et sécurité."
   micAccessOpen: "Ouvrir les réglages"
-  ready: "Prêt"
-  pause: "Pause"
-  resume: "Reprendre"
-  finish: "Terminer"
+  armed: "Prêt"
   screenshotDelay: "Délai de capture"
   keepClicksBeyondArea: "Capturer les clics hors de la zone"
   keepClicksBeyondAreaHint: "En mode Zone, les clics hors de la zone deviennent aussi des étapes, cadrées sur la zone."

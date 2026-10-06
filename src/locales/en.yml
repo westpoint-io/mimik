@@ -28,7 +28,6 @@ sidepanel:
   connecting: Connecting…
   heroTitle: What would you like to capture?
   heroSubtitle: Record any workflow automatically
-  startCapture: "Start capture"
   searchPlaceholder: Search guides…
   recentLabel: Recent
   notRecordable: Open a website to start capturing
@@ -190,13 +189,20 @@ blurPresets:
   macAddress: "MAC address"
 
 desktop:
+  collapse: "Collapse"
+  expand: "Expand"
+  starting: "Starting…"
+  capturingStep: "Capturing step $1"
+  tipArmed: "Each click is saved as a step."
+  tipPaused: "Nothing is recorded while paused."
+  tipWaiting: "Your first click will show up here."
+  tipLabel: "Tip:"
+  hintStartStop: "you can press $1 to start and stop."
+  hintCapture: "you can press $1 to capture without clicking."
   micAccessAsk: "macOS asks once before Mimik can hear you."
   micAccessRefused: "Refused. Turn on Mimik in Privacy & Security."
   micAccessOpen: "Open settings"
-  ready: Ready
-  pause: Pause
-  resume: Resume
-  finish: Finish
+  armed: Ready
   screenshotDelay: Screenshot delay
   keepClicksBeyondArea: Capture clicks outside the area
   keepClicksBeyondAreaHint: "In Area mode, clicks outside the area still become steps, framed by the area."

@@ -270,7 +270,7 @@ export function App() {
               className="w-full py-3 px-4 h-auto rounded-lg font-semibold text-sm hover:-translate-y-px shadow-sm"
             >
               <Video size={18} />
-              {i18n.t('sidepanel.startCapture')}
+              {i18n.t('capture.startCapture')}
             </Button>
           ) : (
             <p className="flex items-center justify-center gap-1.5 rounded-lg border border-border py-2.5 text-xs font-medium text-muted-foreground">

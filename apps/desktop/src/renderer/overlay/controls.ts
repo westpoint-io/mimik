@@ -26,10 +26,10 @@ export function controls(): void {
   let collapsed = false;
 
   const dot = el('span', { id: 'dot' });
-  const label = el('span', { id: 'label' }, 'Ready');
+  const label = el('span', { id: 'label' }, i18n.t('desktop.armed'));
   const counter = el('span', { id: 'counter' });
   const badge = el('span', { id: 'badge' });
-  const collapse = el('button', { id: 'collapse', type: 'button', title: 'Collapse' });
+  const collapse = el('button', { id: 'collapse', type: 'button', title: i18n.t('desktop.collapse') });
   collapse.append(icon('chevronDown'));
   const head = el('div', { id: 'head' }, dot, label, counter, badge, collapse);
 
@@ -47,13 +47,14 @@ export function controls(): void {
   const stepMeta = el('div', { id: 'stepMeta' }, source, metaText);
 
   const tip = el('p', { id: 'tip' });
+  const hintBefore = el('span', {});
   const hintKey = el('kbd', { id: 'hintKey' });
   const hintText = el('span', {});
   const hint = el(
     'div',
     { id: 'keyHint' },
     icon('keyboard', 14),
-    el('p', {}, el('strong', {}, 'Tip:'), ' you can press ', hintKey, hintText),
+    el('p', {}, el('strong', {}, i18n.t('desktop.tipLabel')), ' ', hintBefore, hintKey, hintText),
   );
   const intro = el('div', { id: 'intro' }, el('div', { id: 'mascot' }, cameraMascot(56)), tip);
   const filmShot = el('img', { alt: '' });
@@ -204,12 +205,12 @@ export function controls(): void {
     const count = capturing ? printingNumber - 1 : (step?.number ?? 0);
     const counted = [String(count)];
     label.textContent = starting
-      ? 'Starting…'
+      ? i18n.t('desktop.starting')
       : recording
         ? i18n.t(count === 1 ? 'recording.recording' : 'recording.recordingPlural', counted)
         : paused
           ? i18n.t('recording.capturePaused')
-          : i18n.t('desktop.ready');
+          : i18n.t('desktop.armed');
     counter.textContent = i18n.t(count === 1 ? 'fullview.stepCount' : 'fullview.stepCountPlural', counted);
     counter.hidden = !paused;
 
@@ -240,7 +241,7 @@ export function controls(): void {
       shownChevron = chevron;
       collapse.replaceChildren(icon(collapsed ? 'chevronUp' : 'chevronDown'));
     }
-    collapse.title = collapsed ? 'Expand' : 'Collapse';
+    collapse.title = i18n.t(collapsed ? 'desktop.expand' : 'desktop.collapse');
 
     if (step && !capturing && shot.getAttribute('src') !== step.src) shot.src = step.src;
     stage.hidden = armed || !(capturing || step);
@@ -256,7 +257,7 @@ export function controls(): void {
       aim.style.left = `${(width - shownWidth) / 2 + aimed.x * shownWidth}px`;
       aim.style.top = `${(height - shownHeight) / 2 + aimed.y * shownHeight}px`;
     }
-    printing.textContent = `Capturing step ${printingNumber}`;
+    printing.textContent = i18n.t('desktop.capturingStep', [String(printingNumber)]);
     shot.hidden = !step?.src;
     veil.hidden = !paused || capturing;
     remove.hidden = !step || capturing || armed;
@@ -277,10 +278,10 @@ export function controls(): void {
 
     intro.hidden = !(armed || waiting || resting);
     tip.textContent = armed
-      ? 'Each click is saved as a step.'
+      ? i18n.t('desktop.tipArmed')
       : resting
-        ? 'Nothing is recorded while paused.'
-        : 'Your first click will show up here.';
+        ? i18n.t('desktop.tipPaused')
+        : i18n.t('desktop.tipWaiting');
     const key = armed ? shortcuts.startStop : shortcuts.capture;
     hint.hidden = intro.hidden || resting || !key || Boolean(narration);
     voice.hidden = collapsed || !narration;
@@ -297,7 +298,9 @@ export function controls(): void {
       bar.style.transform = `scaleY(${scale})`;
     });
     hintKey.textContent = key ?? '';
-    hintText.textContent = armed ? ' to start and stop.' : ' to capture without clicking.';
+    const [before, after] = i18n.t(armed ? 'desktop.hintStartStop' : 'desktop.hintCapture', ['\u0000']).split('\u0000');
+    hintBefore.textContent = before ?? '';
+    hintText.textContent = after ?? '';
     body.hidden = collapsed;
 
     modes.hidden = collapsed || !paused;
@@ -305,12 +308,14 @@ export function controls(): void {
 
     if (state !== shownIcon) {
       shownIcon = state;
-      const secondaryLabel = i18n.t(armed ? 'common.close' : recording ? 'desktop.pause' : 'desktop.resume');
+      const secondaryLabel = i18n.t(
+        armed ? 'common.close' : recording ? 'recording.pauseCapture' : 'recording.resumeCapture',
+      );
       secondary.replaceChildren(icon(armed ? 'close' : recording ? 'pause' : 'play', 16));
       secondary.title = secondaryLabel;
       secondary.setAttribute('aria-label', secondaryLabel);
       primary.replaceChildren(icon(armed ? 'video' : 'check'));
-      primary.append(i18n.t(armed ? 'desktop.startButton' : 'desktop.finish'));
+      primary.append(i18n.t(armed ? 'desktop.startButton' : 'recording.finishRecording'));
     }
     secondary.dataset.command = armed ? 'disarm' : recording ? 'pause' : 'resume';
     primary.dataset.command = armed ? 'start' : 'stop';

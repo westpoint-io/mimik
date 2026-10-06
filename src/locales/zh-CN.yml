@@ -28,7 +28,6 @@ sidepanel:
   connecting: 正在连接…
   heroTitle: 想要捕获什么内容？
   heroSubtitle: 自动录制任何工作流
-  startCapture: 开始捕获
   searchPlaceholder: 搜索指南…
   recentLabel: 最近使用
   notRecordable: 打开一个网站即可开始捕获
@@ -190,13 +189,20 @@ blurPresets:
   macAddress: MAC 地址
 
 desktop:
+  collapse: "收起"
+  expand: "展开"
+  starting: "正在开始…"
+  capturingStep: "正在捕获第 $1 步"
+  tipArmed: "每次点击都会保存为一个步骤。"
+  tipPaused: "暂停期间不会录制任何内容。"
+  tipWaiting: "你的第一次点击会显示在这里。"
+  tipLabel: "提示："
+  hintStartStop: "按 $1 开始或停止。"
+  hintCapture: "按 $1 无需点击即可捕获。"
   micAccessAsk: "macOS 会先询问一次，Mimik 才能听到你的声音。"
   micAccessRefused: "已拒绝。请在“隐私与安全性”中打开 Mimik。"
   micAccessOpen: "打开设置"
-  ready: "就绪"
-  pause: "暂停"
-  resume: "继续"
-  finish: "完成"
+  armed: "就绪"
   screenshotDelay: "截图延迟"
   keepClicksBeyondArea: "捕获区域外的点击"
   keepClicksBeyondAreaHint: "在区域模式下，区域外的点击也会成为步骤，并以该区域取景。"

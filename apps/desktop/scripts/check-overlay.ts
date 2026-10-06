@@ -391,7 +391,7 @@ app.whenReady().then(async () => {
   );
   check(
     'Finish leads the footer, with the mic and Pause after it',
-    /^\["primary:Finish","mic:","secondary:"\]$/.test(String(order)),
+    /^\["primary:Finish recording","mic:","secondary:"\]$/.test(String(order)),
     String(order),
   );
   check(

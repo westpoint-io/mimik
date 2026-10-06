@@ -33,7 +33,7 @@ export function Sidebar({
   const counts = useFullview((s) => s.counts);
   const row = collapsed ? 'justify-center w-9 mx-auto' : 'gap-2.5 px-2.5';
   const toggleLabel = i18n.t(collapsed ? 'fullview.expandSidebar' : 'fullview.collapseSidebar');
-  const startLabel = i18n.t('sidepanel.startCapture');
+  const startLabel = i18n.t('capture.startCapture');
   const settingsLabel = i18n.t('settings.title');
 
   return (

@@ -28,7 +28,6 @@ sidepanel:
   connecting: Conectando…
   heroTitle: "O que você quer capturar?"
   heroSubtitle: "Grave qualquer fluxo de trabalho automaticamente"
-  startCapture: Começar a capturar
   searchPlaceholder: Buscar guias…
   recentLabel: Recentes
   notRecordable: Abra um site para começar a gravar
@@ -190,13 +189,20 @@ blurPresets:
   macAddress: Endereço MAC
 
 desktop:
+  collapse: "Recolher"
+  expand: "Expandir"
+  starting: "Iniciando…"
+  capturingStep: "Capturando a etapa $1"
+  tipArmed: "Cada clique é salvo como uma etapa."
+  tipPaused: "Nada é gravado enquanto está pausado."
+  tipWaiting: "Seu primeiro clique vai aparecer aqui."
+  tipLabel: "Dica:"
+  hintStartStop: "pressione $1 para iniciar e parar."
+  hintCapture: "pressione $1 para capturar sem clicar."
   micAccessAsk: "O macOS pergunta uma vez antes que o Mimik possa ouvir você."
   micAccessRefused: "Recusado. Ative o Mimik em Privacidade e Segurança."
   micAccessOpen: "Abrir ajustes"
-  ready: "Pronto"
-  pause: "Pausar"
-  resume: "Retomar"
-  finish: "Concluir"
+  armed: "Pronto"
   screenshotDelay: "Atraso da captura"
   keepClicksBeyondArea: "Capturar cliques fora da área"
   keepClicksBeyondAreaHint: "No modo Área, cliques fora da área também viram etapas, enquadradas na área."
