@@ -1702,7 +1702,10 @@ what they buy is a screen they can only skip.
 
 Done writes `onboardingCompleted`, and the desktop `App` shows the flow until it is set, reading it
 through core's `localStorage` like every other setting. The narration step saves the provider and
-microphone the desktop's narration reads.
+microphone the desktop's narration reads. The step's microphone picker runs in its live mode on both surfaces, and on
+the desktop it sits under the same macOS Microphone access row as Settings, through
+`useMicrophoneGate`, so a first run asks macOS for the microphone instead of trusting Electron's silent
+grant. `DesktopOnboarding` holds that hook so its polling stops once onboarding is done.
 
 ## Desktop Narration
 
