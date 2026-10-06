@@ -11,8 +11,22 @@ import { grabDisplay } from './capture/screenshot';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from './capture/screenshot-store';
 import { type CaptureMode, type CaptureSettings, loadSettings, saveSettings } from './capture/settings';
 import { mainI18n } from './i18n';
-import { CaptureOverlay, type OverlayAiFailure, type OverlayCommand, type OverlayStep } from './overlay';
-import { captureWasHeld, holdCapture, type PermissionKind, readPermissions, requestPermission } from './permissions';
+import {
+  CaptureOverlay,
+  type OverlayAiFailure,
+  type OverlayCommand,
+  type OverlayNarration,
+  type OverlayStep,
+} from './overlay';
+import {
+  askMicrophone,
+  captureWasHeld,
+  holdCapture,
+  microphoneAccess,
+  type PermissionKind,
+  readPermissions,
+  requestPermission,
+} from './permissions';
 import { bindShortcuts, type ShortcutName, shortcutMap, unbindShortcuts } from './shortcuts';
 import { checkForUpdates } from './updater';
 
@@ -287,6 +301,10 @@ async function onOverlayCommand(command: OverlayCommand): Promise<void> {
     overlay?.refresh();
     return;
   }
+  if (command === 'mic:on' || command === 'mic:off') {
+    if (command === 'mic:off' || (await askMicrophone())) broadcastOverlay(command, guideId);
+    return;
+  }
   if (command === 'remove') {
     const removed = steps.pop();
     if (removed && guideId) {
@@ -468,15 +486,24 @@ if (!app.requestSingleInstanceLock()) {
       applyShortcuts();
       return captureSettings;
     });
+    ipcMain.on('mimik:capture:narration', (_event, narration: OverlayNarration | null) =>
+      overlay?.setNarration(narration),
+    );
     ipcMain.on(
       'mimik:capture:described',
-      (_event, stepId: string, description: string | null, failure: OverlayAiFailure | null) => {
+      (
+        _event,
+        stepId: string,
+        description: string | null,
+        failure: OverlayAiFailure | null,
+        source: 'ai' | 'narration' = 'ai',
+      ) => {
         if (failure) overlay?.setAiFailure(failure);
         const step = steps.find((candidate) => candidate.id === stepId);
         if (!step) return;
         if (description) {
           step.title = description;
-          step.source = 'ai';
+          step.source = source;
         }
         step.pending = false;
         if (step === steps.at(-1)) {
@@ -505,6 +532,11 @@ if (!app.requestSingleInstanceLock()) {
       return { ...readPermissions(), pending: pendingStart !== null };
     });
     ipcMain.handle('mimik:permissions:request', (_event, kind: PermissionKind) => requestPermission(kind));
+    ipcMain.handle('mimik:microphone:get', () => microphoneAccess());
+    ipcMain.handle('mimik:microphone:request', async () => {
+      await askMicrophone();
+      return microphoneAccess();
+    });
     ipcMain.on('mimik:permissions:continue', () => {
       const start = pendingStart;
       pendingStart = null;

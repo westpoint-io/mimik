@@ -5,6 +5,8 @@ import {
   AiSettings,
   ApiKeysSettings,
   BrandingSettings,
+  MicrophoneAccessRow,
+  NarrationSettings,
   Segmented,
   Switch,
   useApiKeys,
@@ -24,6 +26,8 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { CaptureSettings, CaptureShortcuts } from '../../main/capture/settings';
+import { useMicrophoneAccess } from '../hooks/use-microphone-access';
+import { requestMicrophoneAccess } from '../lib/request-microphone-access';
 import { Card } from './Card';
 import { GeneralSettings } from './GeneralSettings';
 import { REOPEN_SETTINGS } from './lib/reopen-settings';
@@ -61,6 +65,7 @@ export function SettingsPanel() {
     return reopened ?? 'general';
   });
   const keys = useApiKeys();
+  const microphone = useMicrophoneAccess();
   const [settings, setSettings] = useState<CaptureSettings | null>(null);
 
   useEffect(() => {
@@ -100,6 +105,28 @@ export function SettingsPanel() {
           {section === 'ai' && (
             <>
               <AiSettings keys={keys} onOpenKeys={() => setSection('keys')} />
+              <NarrationSettings
+                keys={keys}
+                onOpenKeys={() => setSection('keys')}
+                onRequestAccess={requestMicrophoneAccess}
+                access={
+                  microphone.access && microphone.access !== 'granted' ? (
+                    <MicrophoneAccessRow
+                      refused={microphone.access === 'denied'}
+                      hint={i18n.t(
+                        microphone.access === 'denied' ? 'desktop_micAccessRefused' : 'desktop_micAccessAsk',
+                      )}
+                      action={i18n.t(
+                        microphone.access === 'denied' ? 'desktop_micAccessOpen' : 'settings_microphoneAccessAllow',
+                      )}
+                      external={microphone.access === 'denied'}
+                      onRequest={() => void microphone.request()}
+                    />
+                  ) : null
+                }
+                microphoneDisabled={microphone.access !== 'granted'}
+                liveMeter
+              />
               <VoiceoverSettings keys={keys.keys} listVoices={fetchVoices} onOpenKeys={() => setSection('keys')} />
             </>
           )}

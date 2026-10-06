@@ -14,6 +14,8 @@ const SETTINGS_PANE: Record<PermissionKind, string> = {
   screen: 'x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture',
 };
 
+const MICROPHONE_PANE = 'x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone';
+
 const PROMPTED_FILE = 'permission-prompts.json';
 const HELD_FILE = 'held-capture.json';
 const HELD_FOR_MS = 10 * 60 * 1000;
@@ -59,4 +61,20 @@ export async function requestPermission(kind: PermissionKind): Promise<void> {
   writeFileSync(join(app.getPath('userData'), PROMPTED_FILE), JSON.stringify([...asked, kind]));
   if (kind === 'accessibility') systemPreferences.isTrustedAccessibilityClient(true);
   else await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: 1, height: 1 } }).catch(() => []);
+}
+
+export type MicrophoneAccess = 'granted' | 'ask' | 'denied';
+
+export function microphoneAccess(): MicrophoneAccess {
+  if (process.platform !== 'darwin') return 'granted';
+  const status = systemPreferences.getMediaAccessStatus('microphone');
+  return status === 'granted' ? 'granted' : status === 'not-determined' ? 'ask' : 'denied';
+}
+
+export async function askMicrophone(): Promise<boolean> {
+  const access = microphoneAccess();
+  if (access === 'granted') return true;
+  if (access === 'ask') return systemPreferences.askForMediaAccess('microphone');
+  await shell.openExternal(MICROPHONE_PANE);
+  return false;
 }

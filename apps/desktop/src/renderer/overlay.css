@@ -668,6 +668,11 @@ body.controls #source.basic {
   color: var(--lavender);
 }
 
+body.controls #source.voice {
+  background: rgba(5, 150, 105, 0.1);
+  color: var(--success);
+}
+
 body.controls #source.ai {
   background: #eef2ff;
   color: var(--accent);
@@ -814,10 +819,87 @@ body.controls #foot {
 }
 
 body.controls #foot button {
-  flex-grow: 1;
-  flex-basis: 0;
+  flex: none;
   justify-content: center;
   height: 40px;
+  border-radius: 999px;
+}
+
+body.controls #foot #primary {
+  flex: 1 1 0;
+}
+
+body.controls #foot #mic,
+body.controls #foot #secondary {
+  width: 40px;
+  padding: 0;
+  color: var(--muted);
+}
+
+body.controls #foot #secondary:hover,
+body.controls #foot #mic:hover {
+  color: var(--accent);
+}
+
+body.controls #foot #mic.on {
+  border-color: var(--accent);
+  background: #eef2ff;
+  color: var(--accent);
+}
+
+body.controls #foot #mic.locked {
+  border-style: dashed;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+body.controls #voice {
+  margin-top: 12px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: #eef2ff;
+}
+
+body.controls #voiceLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--deep);
+}
+
+body.controls #voiceHint {
+  margin: 4px 0 0;
+  font-size: 10.5px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+body.controls #voiceBars {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 2px;
+  height: 14px;
+}
+
+body.controls #voiceBars i {
+  width: 3px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--lavender);
+  transition: transform 0.3s ease-out;
+}
+
+body.controls #voiceBars.speaking i {
+  background: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.controls #voiceBars i {
+    transition: none;
+  }
 }
 
 body.controls button {

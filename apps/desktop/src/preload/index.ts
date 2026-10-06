@@ -1,8 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { CaptureInsert } from '../main/capture/insert';
 import type { CaptureSettings } from '../main/capture/settings';
-import type { OverlayAiFailure } from '../main/overlay';
-import type { CapturePermissions, PermissionKind } from '../main/permissions';
+import type { OverlayAiFailure, OverlayNarration } from '../main/overlay';
+import type { CapturePermissions, MicrophoneAccess, PermissionKind } from '../main/permissions';
 
 interface Region {
   x: number;
@@ -17,8 +17,13 @@ const api = {
     region: (): Promise<Region> => ipcRenderer.invoke('mimik:capture:region'),
     edit: (insert?: CaptureInsert): Promise<void> => ipcRenderer.invoke('mimik:capture:edit', insert),
     arm: (insert?: CaptureInsert): Promise<void> => ipcRenderer.invoke('mimik:capture:arm', insert),
-    described: (stepId: string, description: string | null, failure: OverlayAiFailure | null): void =>
-      ipcRenderer.send('mimik:capture:described', stepId, description, failure),
+    described: (
+      stepId: string,
+      description: string | null,
+      failure: OverlayAiFailure | null,
+      source: 'ai' | 'narration' = 'ai',
+    ): void => ipcRenderer.send('mimik:capture:described', stepId, description, failure, source),
+    narration: (narration: OverlayNarration | null): void => ipcRenderer.send('mimik:capture:narration', narration),
     settings: {
       get: (): Promise<CaptureSettings> => ipcRenderer.invoke('mimik:capture:settings:get'),
       set: (patch: Partial<CaptureSettings>): Promise<CaptureSettings> =>
@@ -34,6 +39,10 @@ const api = {
           handler(command, state, region, guideId),
       );
     },
+  },
+  microphone: {
+    get: (): Promise<MicrophoneAccess> => ipcRenderer.invoke('mimik:microphone:get'),
+    request: (): Promise<MicrophoneAccess> => ipcRenderer.invoke('mimik:microphone:request'),
   },
   permissions: {
     get: (): Promise<CapturePermissions & { pending: boolean }> => ipcRenderer.invoke('mimik:permissions:get'),

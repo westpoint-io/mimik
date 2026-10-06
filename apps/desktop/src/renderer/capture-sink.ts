@@ -15,6 +15,7 @@ import {
   clearStepAiPending,
   createGuide,
   createStep,
+  getStep,
   getStepsForGuide,
   saveScreenshot,
   updateStepDescription,
@@ -22,6 +23,7 @@ import {
 import { screenshotForElement } from '@mimik/core/screenshot/record';
 import { credentials } from './ai/credentials';
 import { describeStep } from './ai/describe-step';
+import type { DesktopNarration } from './narration';
 
 export type DesktopCaptureStepData = CaptureStepData & {
   inputValue?: string;
@@ -29,6 +31,8 @@ export type DesktopCaptureStepData = CaptureStepData & {
 };
 
 export class DesktopCaptureSink implements CaptureSink {
+  constructor(private readonly narration?: DesktopNarration) {}
+
   async startGuide(staging = false): Promise<string> {
     const guide = await createGuide(crypto.randomUUID(), staging);
     return guide.id;
@@ -63,7 +67,10 @@ export class DesktopCaptureSink implements CaptureSink {
     }
 
     const description = buildFallbackDescription(data.action, meta, data.inputValue);
-    const pending = (await credentials()) !== null;
+    const hasKey = (await credentials()) !== null;
+    const narrating = this.narration?.capturing === true;
+    const pending = hasKey || narrating;
+    const timestamp = Date.now();
 
     await createStep({
       id: stepId,
@@ -74,7 +81,7 @@ export class DesktopCaptureSink implements CaptureSink {
       url: '',
       app: meta.app,
       window: meta.window,
-      timestamp: Date.now(),
+      timestamp,
       screenshotId,
       elementMeta: meta,
       descriptionSource: 'heuristic',
@@ -83,15 +90,15 @@ export class DesktopCaptureSink implements CaptureSink {
     });
     await addStepToGuide(data.guideId, stepId);
 
-    if (pending) {
-      queueDescription(data.guideId, async () => {
-        const previous = (await getStepsForGuide(data.guideId)).find((step) => step.index === index - 1);
-        const { text, failure } = await describeStep(data.action, meta, previous?.description);
-        if (text) await updateStepDescription(stepId, text, 'ai');
-        await clearStepAiPending(stepId);
-        window.mimik.capture.described(stepId, text, failure);
-      });
-    }
+    const describe = async () => {
+      const previous = (await getStepsForGuide(data.guideId)).find((step) => step.index === index - 1);
+      const { text, failure } = await describeStep(data.action, meta, previous?.description);
+      await clearStepAiPending(stepId, text ?? undefined);
+      const written = (await getStep(stepId))?.descriptionSource === 'ai';
+      window.mimik.capture.described(stepId, written ? text : null, failure);
+    };
+    if (narrating) this.narration?.step(data.guideId, { stepId, timestamp }, hasKey ? describe : null);
+    else if (hasKey) queueDescription(data.guideId, describe);
 
     return { stepId, title: description, pending };
   }
