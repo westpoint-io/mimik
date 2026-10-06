@@ -204,15 +204,15 @@ desktop:
   modeScreen: Bildschirm
   modeRegion: Bereich
   startSheetTitle: Aufnahme starten
-  permissionsTitle: "Berechtigungen erforderlich"
+  permissionsTitle: "Mimik das Aufnehmen erlauben"
   permissionsIntro: "Mimik braucht ein paar Berechtigungen, um aufzunehmen."
   permissionAccessibility: "Bedienungshilfen"
-  permissionAccessibilityHint: "Erforderlich, um deine Klicks und Tastatureingaben aufzunehmen."
+  permissionAccessibilityHint: "Damit Mimik sieht, was du anklickst und tippst."
   permissionScreen: "Bildschirmaufnahme"
-  permissionScreenHint: "Erforderlich, um Screenshots für deine Anleitungen aufzunehmen."
+  permissionScreenHint: "Damit Mimik für jeden Schritt einen Screenshot aufnehmen kann."
   permissionScreenRestart: "Starte Mimik neu, um das Einschalten abzuschließen."
-  permissionGrant: "Berechtigung erteilen"
-  permissionGranted: "Erteilt"
+  permissionGrant: "Erlauben"
+  permissionGranted: "Erlaubt"
   permissionRestart: "Mimik neu starten"
   moreStepsAfter: "Neue Schritte werden nach Schritt $1 eingefügt."
   moreStepsFirst: "Neue Schritte werden vor Schritt 1 eingefügt."

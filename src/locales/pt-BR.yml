@@ -204,15 +204,15 @@ desktop:
   modeScreen: Tela
   modeRegion: Área
   startSheetTitle: Iniciar uma captura
-  permissionsTitle: "Permissões necessárias"
+  permissionsTitle: "Permita que o Mimik grave"
   permissionsIntro: "O Mimik precisa de algumas permissões para gravar."
   permissionAccessibility: "Acessibilidade"
-  permissionAccessibilityHint: "Necessária para gravar seus cliques e teclas digitadas."
+  permissionAccessibilityHint: "Permite que o Mimik veja onde você clica e o que digita."
   permissionScreen: "Gravação de tela"
-  permissionScreenHint: "Necessária para capturar as telas dos seus guias."
+  permissionScreenHint: "Permite que o Mimik tire a captura de cada passo."
   permissionScreenRestart: "Reinicie o Mimik para terminar de ativar."
-  permissionGrant: "Conceder permissão"
-  permissionGranted: "Concedida"
+  permissionGrant: "Permitir"
+  permissionGranted: "Permitido"
   permissionRestart: "Reiniciar o Mimik"
   moreStepsAfter: "As novas etapas entram depois da etapa $1."
   moreStepsFirst: "As novas etapas entram antes da etapa 1."

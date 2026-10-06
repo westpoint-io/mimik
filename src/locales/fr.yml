@@ -204,15 +204,15 @@ desktop:
   modeScreen: Écran
   modeRegion: Zone
   startSheetTitle: Démarrer une capture
-  permissionsTitle: "Autorisations requises"
+  permissionsTitle: "Autoriser Mimik à enregistrer"
   permissionsIntro: "Mimik a besoin de quelques autorisations pour enregistrer."
   permissionAccessibility: "Accessibilité"
-  permissionAccessibilityHint: "Nécessaire pour enregistrer vos clics et vos frappes."
+  permissionAccessibilityHint: "Permet à Mimik de voir où vous cliquez et ce que vous tapez."
   permissionScreen: "Enregistrement de l’écran"
-  permissionScreenHint: "Nécessaire pour prendre les captures d’écran de vos guides."
+  permissionScreenHint: "Permet à Mimik de prendre la capture de chaque étape."
   permissionScreenRestart: "Redémarrez Mimik pour finir de l’activer."
-  permissionGrant: "Accorder l’autorisation"
-  permissionGranted: "Accordée"
+  permissionGrant: "Autoriser"
+  permissionGranted: "Autorisé"
   permissionRestart: "Redémarrer Mimik"
   moreStepsAfter: "Les nouvelles étapes sont insérées après l'étape $1."
   moreStepsFirst: "Les nouvelles étapes sont insérées avant l'étape 1."

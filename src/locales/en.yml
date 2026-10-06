@@ -204,15 +204,15 @@ desktop:
   modeScreen: Screen
   modeRegion: Area
   startSheetTitle: Start a capture
-  permissionsTitle: "Permissions required"
+  permissionsTitle: "Allow Mimik to record"
   permissionsIntro: "Mimik needs a couple of permissions to record."
   permissionAccessibility: "Accessibility"
-  permissionAccessibilityHint: "Required to record your clicks and keystrokes."
+  permissionAccessibilityHint: "Lets Mimik see what you click and type."
   permissionScreen: "Screen Recording"
-  permissionScreenHint: "Required to capture screenshots for your guides."
+  permissionScreenHint: "Lets Mimik take the screenshot for each step."
   permissionScreenRestart: "Restart Mimik to finish turning this on."
-  permissionGrant: "Grant permission"
-  permissionGranted: "Granted"
+  permissionGrant: "Allow"
+  permissionGranted: "Allowed"
   permissionRestart: "Restart Mimik"
   moreStepsAfter: "New steps are inserted after step $1."
   moreStepsFirst: "New steps are inserted before step 1."
