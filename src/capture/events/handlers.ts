@@ -19,6 +19,7 @@ import { DEFAULT_TARGET_COLOR } from '@/core/screenshot/types';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import { HoverRing } from '@/lib/hover-ring';
 import { InputSession } from './input-session';
+import { isRecordableKey } from './is-recordable-key';
 
 const DEDUP_MS = 300;
 const DRAG_MIN_PX = 30;
@@ -68,6 +69,7 @@ class CaptureController {
   private ring = new HoverRing(DEFAULT_TARGET_COLOR);
   private hovered: HTMLElement | null = null;
   private busy = false;
+  private recordKeys = false;
 
   constructor(
     private guideId: string,
@@ -100,6 +102,12 @@ class CaptureController {
         })
         .catch(() => {});
     }
+    localStorage
+      .get(['recordKeys'])
+      .then(({ recordKeys }) => {
+        this.recordKeys = recordKeys === true;
+      })
+      .catch(() => {});
     for (const [event, handler, opts] of this.listeners) {
       window.addEventListener(event, handler, opts);
     }
@@ -235,6 +243,7 @@ class CaptureController {
     }
 
     if (isSensitiveField(target) || isTextField(target)) return;
+    if (!this.recordKeys || !isRecordableKey(ke)) return;
     this.enqueue(this.capture(`keydown:${ke.key}`, target));
   }
 

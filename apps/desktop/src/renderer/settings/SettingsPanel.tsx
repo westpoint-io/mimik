@@ -170,7 +170,7 @@ export function SettingsPanel() {
                 </Row>
               </Card>
 
-              <Card icon={Keyboard} title={i18n.t('desktop_cardKeyboard')} hint={i18n.t('desktop_cardKeyboardHint')}>
+              <Card icon={Keyboard} title={i18n.t('settings_cardKeyboard')} hint={i18n.t('settings_cardKeyboardHint')}>
                 <Row label={i18n.t('desktop_recordTyping')} hint={i18n.t('desktop_recordTypingHint')}>
                   <Switch
                     checked={settings.recordTyping}
@@ -190,10 +190,10 @@ export function SettingsPanel() {
                     onChange={(typingDebounceMs) => save({ typingDebounceMs })}
                   />
                 </Row>
-                <Row label={i18n.t('desktop_recordKeys')} hint={i18n.t('desktop_recordKeysHint')}>
+                <Row label={i18n.t('settings_recordKeys')} hint={i18n.t('settings_recordKeysHint')}>
                   <Switch
                     checked={settings.recordKeys}
-                    label={i18n.t('desktop_recordKeys')}
+                    label={i18n.t('settings_recordKeys')}
                     onChange={(recordKeys) => save({ recordKeys })}
                   />
                 </Row>

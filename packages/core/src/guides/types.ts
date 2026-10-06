@@ -102,6 +102,7 @@ export interface Settings {
   guideMeManual: boolean;
   onboardingCompleted: boolean;
   appLanguage: string;
+  recordKeys: boolean;
 }
 
 export type SettingsKey = keyof Settings;
