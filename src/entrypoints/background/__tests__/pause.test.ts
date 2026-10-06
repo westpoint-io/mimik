@@ -22,7 +22,7 @@ vi.mock('../actor', () => ({ getActor: () => actor }));
 vi.mock('../tab-manager', () => ({
   broadcastDismissBlur: record('dismissBlur'),
   broadcastClearBlur: record('clearBlur'),
-  broadcastStopCaptureAndFlush: record('flush'),
+  broadcastStopCaptureAndFlush: vi.fn(record('flush')),
   broadcastStartCapture: record('startCapture'),
   injectContentScript: record('inject'),
   isInjectableTab: (tab: { url?: string }) => !!tab.url?.startsWith('https://'),
@@ -57,6 +57,19 @@ describe('pauseCapture', () => {
     expect(actor.getSnapshot().value).toBe(CaptureState.PAUSED);
     expect(actor.getSnapshot().context.pauseReason).toBe('manual');
     expect(calls).toContain('flush');
+  });
+
+  it('flushes the frames while still recording, so a click made just before the pause is kept', async () => {
+    const { broadcastStopCaptureAndFlush } = await import('../tab-manager');
+    let stateDuringFlush: string | null = null;
+    vi.mocked(broadcastStopCaptureAndFlush).mockImplementationOnce(async () => {
+      stateDuringFlush = actor.getSnapshot().value;
+    });
+
+    await pauseCapture('manual');
+
+    expect(stateDuringFlush).toBe(CaptureState.RECORDING);
+    expect(actor.getSnapshot().value).toBe(CaptureState.PAUSED);
   });
 
   it('refuses when nothing is recording, without touching the frames', async () => {

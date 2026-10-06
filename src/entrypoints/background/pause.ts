@@ -28,6 +28,7 @@ export async function whenPauseSettled(): Promise<void> {
 }
 
 export function pauseCapture(reason: PauseReason): Promise<boolean> {
+  if (pauseInFlight) return Promise.resolve(false);
   if (getActor().getSnapshot().value !== CaptureState.RECORDING) return Promise.resolve(false);
   const pausing = pauseAndStopNarration(reason);
   pauseInFlight = pausing;
@@ -44,10 +45,11 @@ async function pauseAndStopNarration(reason: PauseReason): Promise<boolean> {
   if (actor.getSnapshot().value !== CaptureState.RECORDING) return false;
 
   const narrationWasLive = (await isNarrationLive()) || isNarrationSettling();
+  await broadcastStopCaptureAndFlush();
+  if (actor.getSnapshot().value !== CaptureState.RECORDING) return false;
   actor.send({ type: 'PAUSE_CAPTURE', reason, narrationWasLive });
 
   const guideId = actor.getSnapshot().context.currentGuideId;
-  await broadcastStopCaptureAndFlush();
   if (narrationWasLive && guideId) await stopVoiceNarration(guideId);
   return true;
 }
