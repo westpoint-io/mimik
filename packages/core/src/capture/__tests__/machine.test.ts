@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createActor } from 'xstate';
+import { isLive } from '../is-live';
 import { CaptureState, captureMachine } from '../machine';
 
 function startActor() {
@@ -213,5 +214,51 @@ describe('captureMachine', () => {
     expect(snap.value).toBe(CaptureState.PAUSED);
     expect(snap.context.pauseReason).toBe('blur');
     expect(snap.context.currentGuideId).toBe(guideId);
+  });
+
+  it('arms from IDLE, disarms back, and starts from ARMED', () => {
+    const actor = startActor();
+    actor.send({ type: 'ARM' });
+    expect(actor.getSnapshot().value).toBe(CaptureState.ARMED);
+    actor.send({ type: 'DISARM' });
+    expect(actor.getSnapshot().value).toBe(CaptureState.IDLE);
+    actor.send({ type: 'ARM' });
+    actor.send({ type: 'START_RECORDING', insertTargetGuideId: 'target', insertAtIndex: 2 });
+    const snap = actor.getSnapshot();
+    expect(snap.value).toBe(CaptureState.RECORDING);
+    expect(snap.context.currentGuideId).toHaveLength(36);
+    expect(snap.context.insertTargetGuideId).toBe('target');
+    expect(snap.context.insertAtIndex).toBe(2);
+  });
+
+  it('ignores steps, pauses and stops while ARMED', () => {
+    const actor = startActor();
+    actor.send({ type: 'ARM' });
+    actor.send({ type: 'USER_ACTION' });
+    actor.send({ type: 'PAUSE_CAPTURE', reason: 'manual' });
+    actor.send({ type: 'STOP_RECORDING' });
+    expect(actor.getSnapshot().value).toBe(CaptureState.ARMED);
+    expect(actor.getSnapshot().context.stepCount).toBe(0);
+  });
+
+  it('counts a removed step back down, never below zero, while recording or paused', () => {
+    const actor = startActor();
+    actor.send({ type: 'START_RECORDING' });
+    actor.send({ type: 'USER_ACTION' });
+    actor.send({ type: 'USER_ACTION' });
+    actor.send({ type: 'STEP_REMOVED' });
+    expect(actor.getSnapshot().context.stepCount).toBe(1);
+    actor.send({ type: 'PAUSE_CAPTURE', reason: 'area' });
+    expect(actor.getSnapshot().context.pauseReason).toBe('area');
+    actor.send({ type: 'STEP_REMOVED' });
+    actor.send({ type: 'STEP_REMOVED' });
+    expect(actor.getSnapshot().context.stepCount).toBe(0);
+  });
+
+  it('treats RECORDING and PAUSED as live, and IDLE and ARMED as not', () => {
+    expect(isLive(CaptureState.RECORDING)).toBe(true);
+    expect(isLive(CaptureState.PAUSED)).toBe(true);
+    expect(isLive(CaptureState.IDLE)).toBe(false);
+    expect(isLive(CaptureState.ARMED)).toBe(false);
   });
 });
