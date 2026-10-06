@@ -1105,13 +1105,15 @@ by default, because it is what is actually on screen and it survives caret movem
 autocomplete. It is always read — a switch to use only the keystroke buffer was taken out, because it
 existed for edge cases nobody would set on purpose. The
 keystroke buffer wins in three cases: the focused element reports no value, the value is empty, or
-the field holds more than both twice what was typed and 80 characters. That last rule is what
-makes rich text and terminals work: in a word processor the "field" is the whole document, and in a
-terminal it is the whole screen, so its value is everything shown rather than what was just typed,
-and the buffer is the only thing that knows which part is new. It used to be a margin of 120
-characters beyond what was typed, 24 for a document, and a terminal screen holding only its login
-line and a prompt stayed under it, so the first command typed into a fresh terminal read as the
-whole screen. A screen shorter than 80 characters still does. A non-text role yields nothing at all, so a keypress in a file manager is not a
+the field is a canvas rather than a box: it spans more than one line, or it holds more text than a
+step can show, the 200 characters a typing step is cut to. That last rule is what makes rich text
+and terminals work: in a word processor the "field" is the whole document, and in a terminal it is
+the whole screen, so its value is everything shown rather than what was just typed, and the buffer
+is the only thing that knows which part is new. A single-line field is read whole, which keeps
+autocomplete and edits right, so a terminal showing only one line, its prompt and the command,
+records the prompt with it. It used to be a margin of 120 characters beyond what was typed, and a
+terminal screen holding only its login line and a prompt stayed under it, so the first command typed
+into a fresh terminal read as the whole screen. A non-text role yields nothing at all, so a keypress in a file manager is not a
 step.
 
 Two shortcuts feed the buffer rather than becoming steps. A paste, Cmd+V on a Mac and Ctrl+V
@@ -1128,7 +1130,8 @@ after it, because it keeps that state per thread and every keystroke goes throug
 cost is that the state is real and can be left armed, so `clearDeadKey` flushes it whenever a
 session ends.
 
-Values are stripped of `\uFFF9`–`\uFFFD`, `\uFEFF` and `\u200B` before use. Accessibility
+Values are stripped of every format character (`\p{Cf}`, which covers `\uFEFF`, `\u200B` and
+the `\uFFF9`–`\uFFFB` annotation marks), `\uFFFC` and `\uFFFD` before use. Accessibility
 implementations use those to mark annotations and inline objects, and they arrive as invisible
 garbage in the middle of otherwise ordinary text.
 
@@ -1263,11 +1266,26 @@ is the accessible name first; a text field
 then falls back to its placeholder and help text but never its value, which is what was typed into
 it, and the machine identifier is used only when it does not read as one. An element with no name of its own borrows one: a group or pane from the first named control
 inside it, anything else from its nearest named ancestor, stopping at the window, because naming
-the window as the click target would be wrong. Chrome's internal window class names and bare numbers
-on panes are discarded, since the accessibility tree reports both as names, and invisible format
+the window as the click target would be wrong. Names Chromium gives its own plumbing are discarded,
+since the accessibility tree reports them as names: its window classes all start with `Chrome_`, its
+web content surface is named "Chrome Legacy Window", its compositor window "Intermediate D3D Window",
+and the embedded framework's browser window `CefBrowserWindow`, all of them visible in Chromium's open
+source. A bare number on a pane is discarded too, because it is a handle, not a label, and invisible format
 characters are stripped from every name — web pages wrap words in direction isolates and
 zero-width marks that the PDF font draws as boxes. When nothing is left the
-step reads "Click here" rather than "Click treeitem" — the control type is not a name. A
+step reads "Click here" rather than "Click treeitem" — the control type is not a name.
+
+How the name is chosen is one ranking rather than a chain of checks. `nameCandidates` lists every
+string that could name the step with a weight: the element's own label, placeholder, shown value, alt
+text and identifier first, in that order, then, for a group or pane, the controls inside it ahead of
+plain text inside it, then the areas around it up to the nearest window, document or pane, closest
+first. `elementName` takes the heaviest non-empty one. What each role contributes lives in
+`ROLE_TRAITS`: whether it is typed into (its value is the input, not its name), picked from (the verb
+is Select), lends its name to an unnamed holder, holds controls, or ends the search outward. A text
+field's value never names it because the value is what the person typed. The search stops at a pane
+because a pane is a region of its own, and a name from beyond it describes somewhere else. The titles
+this produces are pinned by `naming-baseline.test.ts`, 6000 generated controls recorded before the
+ranking replaced the old checks. A
 `screen`-sourced recording, with no lookup at all, is every step reading "Click here".
 
 The AI rewrite runs only when a provider key is saved, which is what enabling AI means here, and
@@ -2102,7 +2120,8 @@ Font: Poppins (loaded via `@fontsource/poppins`).
 - **Pausing waits for the frames to drain.** `broadcastStopCaptureAndFlush` is answered only once each content script's queue is idle, because `CaptureController.stop()` enqueues the input session's finalize. `handleFinalizeInputStep` is therefore gated on "not IDLE" rather than `RECORDING`: it only ever completes a step the user finished before pausing, and `enterBlurMode` awaits the flush before opening the overlay so that screenshot cannot catch it
 - **Navigation listeners treat `PAUSED` as live** (`navigation.ts:isLive`). `URL_CHANGED` has to keep flowing or the first step after a resume is stamped with the pre-pause URL, which Guide Me then replays to; injection has to keep running or a tab opened mid-pause is deaf to the resume broadcast
 - **Blur mode pauses via that state**, and a top frame booting into `PAUSED`/`'blur'` re-opens the overlay, so a navigation mid-blur still has a Done button. `exitBlurMode` and the panel's Resume both broadcast `DISMISS_BLUR` before resuming, which closes the overlay but keeps the masks the user just picked; only the end of a recording sends `CLEAR_BLUR` to remove them
-- **Smart blur cannot reach** iframes, shadow DOM, canvas/image text, `::before`/`::after`, `<select>`/`<option>`, or attribute-only values like `title`/`alt`; it runs in the top frame only, and a matching input blurs as a whole field. SVG `<text>` *is* blurred. These limits are documented in all five READMEs and *partly* pinned by `core/blur/__tests__/scanner.test.ts` — shadow DOM, `select`/`option`, attribute-only values and whole-field input blur have assertions; canvas/image text, `::before`/`::after` and top-frame-only do not (the last lives in `content.ts`, not the scanner). Move the READMEs with any scanner change
+- **Smart blur cannot reach** iframes, shadow DOM, canvas/image text, `::before`/`::after`, `<select>`/`<option>`, or attribute-only values like `title`/`alt`; it runs in the top frame only, and a matching input blurs as a whole field. SVG `<text>` *is* blurred. These limits are documented in all five READMEs and *partly* pinned by `core/blur/__tests__/redactor.test.ts` — shadow DOM, `select`/`option`, attribute-only values and whole-field input blur have assertions; canvas/image text, `::before`/`::after` and top-frame-only do not (the last lives in `content.ts`, not the scanner). Move the READMEs with any scanner change
+- **What Smart blur matches is pinned by recorded output, not by the patterns.** `core/blur/__tests__/blur-baseline.test.ts` runs hand-written samples, 4000 random strings, 8000 strings built from near-matches and a set of whole pages through `patternsFor`, `sensitiveSpans` and `PageRedactor`, and compares the result with JSON files under `__snapshots__` that were recorded before the module was rewritten. Any change to a pattern, the merging or the page walk that blurs one character more or less fails it. Re-record (`vitest -u`) only for a deliberate change in what is blurred. `naming-baseline.test.ts` pins step titles the same way over 6000 generated controls
 - **Paused-ness is read from the state value, never from `pauseReason`.** A snapshot persisted before `PAUSED` existed has no `pauseReason` key, so it restores as `undefined` — and `undefined !== null` read as paused, which left the panel offering Resume while the machine was still `RECORDING`. `getStateUpdate` normalises the reason to `null`; the reason only picks the wording. The same applies to any context key added later: a restored snapshot will not have it
 - **`BlurManager.start()` re-checks `active` after awaiting the presets.** A stop landing inside that await tore down a panel that did not exist yet, and the pending `start()` then mounted it with `active` already `false`, so nothing could ever close it. Any new `await` before the panel mounts needs the same guard
 - **xstate snapshot** persisted to sessionStorage so the state machine survives service worker restarts
