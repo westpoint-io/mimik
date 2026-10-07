@@ -1,6 +1,5 @@
-const POPUP_CLASSES: &[&str] = &["#32768", "#32770", "Auto-Suggest Dropdown", "tooltips_class32"];
-const POPUP_FRAGMENTS: &[&str] = &["Popup", "DropDown", "ComboLBox"];
-const MOST_OF_THE_SCREEN: f64 = 0.8;
+const SYSTEM_POPUP_CLASSES: &[&str] = &["#32768", "#32770", "ComboLBox", "tooltips_class32"];
+const EDGE_SLACK: i32 = 4;
 
 pub struct Traits<'a> {
   pub class: &'a str,
@@ -10,24 +9,29 @@ pub struct Traits<'a> {
   pub captionless_popup: bool,
 }
 
-pub fn is_popup(traits: &Traits) -> bool {
-  POPUP_CLASSES.contains(&traits.class)
-    || POPUP_FRAGMENTS
-      .iter()
-      .any(|fragment| traits.class.contains(fragment))
-    || traits.owned
-    || traits.no_activate
-    || traits.tool_window
-    || traits.captionless_popup
+#[derive(Clone, Copy)]
+pub struct Edges {
+  pub left: i32,
+  pub top: i32,
+  pub right: i32,
+  pub bottom: i32,
 }
 
-pub fn covers_most_of_the_screen(window: f64, largest_monitor: f64, desktop: f64) -> bool {
-  window > largest_monitor * MOST_OF_THE_SCREEN || window > desktop * MOST_OF_THE_SCREEN
+pub fn is_popup(traits: &Traits) -> bool {
+  let styled = traits.owned || traits.no_activate || traits.tool_window || traits.captionless_popup;
+  styled || SYSTEM_POPUP_CLASSES.contains(&traits.class)
+}
+
+pub fn fills(window: Edges, work_area: Edges) -> bool {
+  window.left <= work_area.left + EDGE_SLACK
+    && window.top <= work_area.top + EDGE_SLACK
+    && window.right >= work_area.right - EDGE_SLACK
+    && window.bottom >= work_area.bottom - EDGE_SLACK
 }
 
 #[cfg(test)]
 mod tests {
-  use super::{covers_most_of_the_screen, is_popup, Traits};
+  use super::{fills, is_popup, Edges, Traits};
 
   fn plain(class: &str) -> Traits<'_> {
     Traits {
@@ -39,52 +43,69 @@ mod tests {
     }
   }
 
+  fn edges(left: i32, top: i32, right: i32, bottom: i32) -> Edges {
+    Edges {
+      left,
+      top,
+      right,
+      bottom,
+    }
+  }
+
   #[test]
-  fn menus_dropdowns_and_dialogs_are_popups() {
-    for class in [
-      "#32768",
-      "#32770",
-      "Auto-Suggest Dropdown",
-      "tooltips_class32",
-      "Net UI Popup",
-      "ComboLBox",
-    ] {
+  fn system_menus_dialogs_lists_and_tooltips_are_popups() {
+    for class in ["#32768", "#32770", "ComboLBox", "tooltips_class32"] {
       assert!(is_popup(&plain(class)), "{class}");
     }
   }
 
   #[test]
-  fn an_ordinary_top_level_window_is_not_a_popup() {
-    assert!(!is_popup(&plain("Chrome_WidgetWin_1")));
-    assert!(!is_popup(&plain("CabinetWClass")));
+  fn a_class_name_alone_never_makes_an_unstyled_window_a_popup() {
+    for class in [
+      "Chrome_WidgetWin_1",
+      "CabinetWClass",
+      "Net UI Popup",
+      "SomeDropDownHost",
+    ] {
+      assert!(!is_popup(&plain(class)), "{class}");
+    }
   }
 
   #[test]
-  fn owned_tool_and_captionless_windows_are_popups() {
+  fn owned_tool_no_activate_and_captionless_windows_are_popups() {
+    let base = || plain("Chrome_WidgetWin_1");
     assert!(is_popup(&Traits {
       owned: true,
-      ..plain("Chrome_WidgetWin_1")
+      ..base()
     }));
     assert!(is_popup(&Traits {
       tool_window: true,
-      ..plain("Chrome_WidgetWin_1")
+      ..base()
     }));
     assert!(is_popup(&Traits {
       no_activate: true,
-      ..plain("Chrome_WidgetWin_1")
+      ..base()
     }));
     assert!(is_popup(&Traits {
       captionless_popup: true,
-      ..plain("Chrome_WidgetWin_1")
+      ..base()
     }));
   }
 
   #[test]
-  fn most_of_the_screen_is_measured_by_area() {
-    let monitor = 1920.0 * 1080.0;
-    assert!(covers_most_of_the_screen(1900.0 * 1000.0, monitor, monitor));
-    assert!(!covers_most_of_the_screen(400.0 * 300.0, monitor, monitor));
-    assert!(covers_most_of_the_screen(1800.0 * 1000.0, monitor, monitor * 2.0));
-    assert!(covers_most_of_the_screen(10.0, 0.0, 0.0));
+  fn a_window_fills_its_monitor_only_when_it_reaches_every_edge_of_the_work_area() {
+    let work = edges(0, 0, 1920, 1040);
+    assert!(fills(edges(0, 0, 1920, 1040), work));
+    assert!(fills(edges(-8, -8, 1928, 1048), work));
+    assert!(fills(edges(2, 1, 1918, 1038), work));
+    assert!(!fills(edges(0, 0, 1700, 1040), work));
+    assert!(!fills(edges(400, 300, 800, 600), work));
+  }
+
+  #[test]
+  fn filling_is_judged_against_the_monitor_the_window_is_on() {
+    let second = edges(1920, 0, 3840, 1040);
+    assert!(fills(edges(1920, 0, 3840, 1040), second));
+    assert!(!fills(edges(0, 0, 1920, 1040), second));
   }
 }
