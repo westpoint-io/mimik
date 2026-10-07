@@ -30,7 +30,7 @@ export function rgbToHex(r: number, g: number, b: number): string {
 export function hexToHsv(hex: string): Hsv {
   const rgb = hexToRgb(hex);
   if (!rgb) return { h: 0, s: 0, v: 0 };
-  const [r, g, b] = rgb.map((c) => c / 255);
+  const [r, g, b] = rgb.map((c) => c / 255) as [number, number, number];
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   const d = max - min;
@@ -56,7 +56,7 @@ export function hsvToHex({ h, s, v }: Hsv): string {
     [x, 0, f],
     [f, 0, x],
   ];
-  const [r, g, b] = table[Math.floor(c) % 6];
+  const [r, g, b] = table[Math.floor(c) % 6]!;
   return rgbToHex((r + m) * 255, (g + m) * 255, (b + m) * 255);
 }
 

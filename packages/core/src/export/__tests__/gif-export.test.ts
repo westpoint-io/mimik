@@ -167,7 +167,7 @@ describe('exportGuideAsGif', () => {
   it('loops forever', async () => {
     const steps = [makeStep(0)];
     await exportGuideAsGif(guide, steps, shotsFor(steps), opts());
-    expect(rec.written[0].options).toMatchObject({ repeat: 0 });
+    expect(rec.written[0]!.options).toMatchObject({ repeat: 0 });
   });
 
   it('adds the cover and end cards when asked', async () => {

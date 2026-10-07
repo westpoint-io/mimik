@@ -61,7 +61,7 @@ export function VersionHistoryPanel({
   }, [snapshots]);
 
   const currentSummary = useMemo(
-    () => (snapshots.length > 0 ? changeSummary(diffSnapshots(snapshots[0], live)) : ''),
+    () => (snapshots.length > 0 ? changeSummary(diffSnapshots(snapshots[0]!, live)) : ''),
     [snapshots, live],
   );
 
@@ -264,22 +264,22 @@ export function VersionHistoryPanel({
                 row.kind === 'entry' ? (
                   entry(row.snapshot)
                 ) : (
-                  <div key={row.snapshots[0].id}>
+                  <div key={row.snapshots[0]!.id}>
                     <button
                       type="button"
-                      aria-expanded={expanded.has(row.snapshots[0].id)}
-                      onClick={() => toggle(row.snapshots[0].id)}
+                      aria-expanded={expanded.has(row.snapshots[0]!.id)}
+                      onClick={() => toggle(row.snapshots[0]!.id)}
                       className="flex items-center gap-1 py-2 text-[11px] text-muted-foreground hover:text-foreground"
                     >
                       <ChevronRight
                         size={11}
                         className={
-                          expanded.has(row.snapshots[0].id) ? 'rotate-90 transition-transform' : 'transition-transform'
+                          expanded.has(row.snapshots[0]!.id) ? 'rotate-90 transition-transform' : 'transition-transform'
                         }
                       />
                       {i18n.t('history.unchangedVersions', [String(row.snapshots.length)])}
                     </button>
-                    {expanded.has(row.snapshots[0].id) && row.snapshots.map(entry)}
+                    {expanded.has(row.snapshots[0]!.id) && row.snapshots.map(entry)}
                   </div>
                 ),
               )

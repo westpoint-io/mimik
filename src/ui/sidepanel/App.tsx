@@ -146,10 +146,10 @@ export function App() {
         setView(res.inserted && res.guideId ? { name: 'editor', guideId: res.guideId } : { name: 'library' });
         if (res.guideId) {
           const url = getExtensionURL(`/fullview.html?guideId=${res.guideId}`);
-          const tabs = await queryTabs({ url: getExtensionURL('/fullview.html') });
-          if (tabs.length > 0 && tabs[0].id) {
-            await updateTab(tabs[0].id, { active: true, url });
-            if (tabs[0].windowId) await focusWindow(tabs[0].windowId);
+          const [tab] = await queryTabs({ url: getExtensionURL('/fullview.html') });
+          if (tab?.id) {
+            await updateTab(tab.id, { active: true, url });
+            if (tab.windowId) await focusWindow(tab.windowId);
           } else {
             await createTab({ url });
           }

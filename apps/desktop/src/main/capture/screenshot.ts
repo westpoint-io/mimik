@@ -19,7 +19,7 @@ function monitorAt(x: number, y: number): Monitor {
   if (found) return found;
   const all = Monitor.all();
   if (all.length === 0) throw new Error('no monitors available');
-  return all[0];
+  return all[0]!;
 }
 
 export type Frame = (area: Rect) => Promise<Capture>;

@@ -170,7 +170,7 @@ describe('tint', () => {
     const before = hexToRgb(source)!;
     const after = hexToRgb(result)!;
     for (let i = 0; i < 3; i++) {
-      expect(after[i]).toBeGreaterThan(before[i]);
+      expect(after[i]).toBeGreaterThan(before[i]!);
       expect(after[i]).toBeLessThanOrEqual(255);
     }
   });
@@ -185,7 +185,7 @@ describe('tint', () => {
     const light = hexToRgb(tint('#4F46E5', 0.1))!;
     const dark = hexToRgb(tint('#4F46E5', 0.5))!;
 
-    for (let i = 0; i < 3; i++) expect(light[i]).toBeGreaterThan(dark[i]);
+    for (let i = 0; i < 3; i++) expect(light[i]).toBeGreaterThan(dark[i]!);
   });
 
   it('returns white for an unparseable colour', () => {

@@ -21,7 +21,7 @@ function toMono(buffer: AudioBuffer): AudioBuffer {
   const mixed = mono.getChannelData(0);
   for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
     const data = buffer.getChannelData(channel);
-    for (let sample = 0; sample < data.length; sample++) mixed[sample] += data[sample] / buffer.numberOfChannels;
+    for (let sample = 0; sample < data.length; sample++) mixed[sample]! += data[sample]! / buffer.numberOfChannels;
   }
   return mono;
 }

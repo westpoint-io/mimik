@@ -66,7 +66,7 @@ export function RecordingView({
     );
 
     if (allSteps.length > 0 && !siteUrl) {
-      setSiteUrl(allSteps[0].url || '');
+      setSiteUrl(allSteps[0]!.url || '');
     }
   }, [guideId, siteUrl]);
 

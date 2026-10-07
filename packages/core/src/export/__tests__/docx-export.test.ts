@@ -52,7 +52,7 @@ async function unzipDocx(blob: Blob) {
 
 async function readDocumentXml(blob: Blob): Promise<string> {
   const files = await unzipDocx(blob);
-  return strFromU8(files['word/document.xml']);
+  return strFromU8(files['word/document.xml']!);
 }
 
 describe('exportGuideAsDOCX', () => {
@@ -119,11 +119,11 @@ describe('exportGuideAsDOCX', () => {
 
     const blob = await exportGuideAsDOCX(makeGuide(), [step], new Map([[step.id, screenshot]]));
     const files = await unzipDocx(blob);
-    const media = Object.keys(files).filter((name) => name.startsWith('word/media/') && files[name].length > 0);
+    const media = Object.keys(files).filter((name) => name.startsWith('word/media/') && files[name]!.length > 0);
 
     expect(rendered).toHaveBeenCalledWith(screenshot, expect.objectContaining({ format: 'image/png' }));
     expect(media).toHaveLength(1);
-    expect(strFromU8(files[media[0]])).toBe('rendered');
+    expect(strFromU8(files[media[0]!]!)).toBe('rendered');
   });
 
   it('sizes the image from the cropped viewport, not the original bitmap', async () => {

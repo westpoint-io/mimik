@@ -17,7 +17,7 @@ const WRAPPED_IN_QUOTES = /^["“'](.*)["”']$/s;
 export function cleanRewrite(raw: string): string {
   const trimmed = raw.trim();
   const unwrapped = trimmed.match(WRAPPED_IN_QUOTES);
-  return (unwrapped ? unwrapped[1] : trimmed).trim();
+  return (unwrapped ? unwrapped[1]! : trimmed).trim();
 }
 
 export function buildRewritePrompt(text: string, instruction: string, locale: string): string {

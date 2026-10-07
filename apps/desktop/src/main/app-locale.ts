@@ -6,6 +6,6 @@ export function appLocale(chosen: string | null | undefined, system: string): Ap
   const known = (code: string | null | undefined) => APP_LOCALES.find((locale) => locale === code);
   const base = system.split('-')[0]?.toLowerCase();
   return (
-    known(chosen) ?? known(system) ?? APP_LOCALES.find((locale) => locale.split('-')[0].toLowerCase() === base) ?? 'en'
+    known(chosen) ?? known(system) ?? APP_LOCALES.find((locale) => locale.split('-')[0]!.toLowerCase() === base) ?? 'en'
   );
 }

@@ -58,7 +58,7 @@ describe('buildStepWindows', () => {
       EPOCH,
       9,
     );
-    expect(windows[1].to).toBe(9);
+    expect(windows[1]!.to).toBe(9);
   });
 
   it('never shrinks the last window when the duration is shorter than the last step', () => {
@@ -119,6 +119,6 @@ describe('buildStepWindows', () => {
       EPOCH,
       10,
     );
-    for (let i = 1; i < windows.length; i += 1) expect(windows[i].from).toBe(windows[i - 1].to);
+    for (let i = 1; i < windows.length; i += 1) expect(windows[i]!.from).toBe(windows[i - 1]!.to);
   });
 });

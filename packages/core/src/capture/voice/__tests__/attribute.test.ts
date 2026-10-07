@@ -8,8 +8,8 @@ const steps: StepWindow[] = [
 ];
 
 const batch = (ranges: [number, number][]): Batch => ({
-  start: absoluteSeconds(ranges[0][0]),
-  end: absoluteSeconds(ranges[ranges.length - 1][1]),
+  start: absoluteSeconds(ranges[0]![0]),
+  end: absoluteSeconds(ranges[ranges.length - 1]![1]),
   segments: ranges.map(([start, end]) => ({
     start: absoluteSeconds(start),
     end: absoluteSeconds(end),

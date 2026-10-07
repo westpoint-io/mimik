@@ -210,7 +210,7 @@ export async function exportGuideAsPDF(
     doc.setFontSize(8);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...INK);
-    writeLines(doc, [splitFor(doc, guide.title, CONTENT_W * 0.7, 8, true)[0]], MARGIN, MARGIN + 3, 8, true, INK, 3);
+    writeLines(doc, [splitFor(doc, guide.title, CONTENT_W * 0.7, 8, true)[0]!], MARGIN, MARGIN + 3, 8, true, INK, 3);
     if (brand.logo && headLogo) {
       try {
         doc.addImage(
@@ -275,7 +275,7 @@ export async function exportGuideAsPDF(
     if (sy + blockH > CONTENT_BOTTOM_MM && sy > STEP_TOP) {
       sy = startStepPage();
     }
-    pageSteps[pageSteps.length - 1].push(numbers.get(step.id) ?? 0);
+    pageSteps[pageSteps.length - 1]!.push(numbers.get(step.id) ?? 0);
 
     doc.setFontSize(30);
     doc.setFont('helvetica', 'bold');
@@ -288,7 +288,7 @@ export async function exportGuideAsPDF(
 
     writeLines(doc, descLines, TEXT_X, sy + 6, 11, true, INK, TEXT_LINE_H);
 
-    let ux = TEXT_X + widthOf(doc, descLines[descLines.length - 1], 11, true);
+    let ux = TEXT_X + widthOf(doc, descLines[descLines.length - 1]!, 11, true);
     let uy = sy + 6 + (descLines.length - 1) * 5;
 
     const stepCtx = opts.stepUrls ? stepContext(step, 64) : null;

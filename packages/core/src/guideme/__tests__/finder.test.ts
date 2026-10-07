@@ -39,17 +39,17 @@ function makeHidden(el: HTMLElement): HTMLElement {
 describe('WEIGHTS', () => {
   it('has textContent as the highest weight', () => {
     const sorted = Object.entries(WEIGHTS).sort(([, a], [, b]) => b - a);
-    expect(sorted[0][0]).toBe('textContent');
+    expect(sorted[0]![0]).toBe('textContent');
   });
 
   it('ranks cssSelector second', () => {
     const sorted = Object.entries(WEIGHTS).sort(([, a], [, b]) => b - a);
-    expect(sorted[1][0]).toBe('cssSelector');
+    expect(sorted[1]![0]).toBe('cssSelector');
   });
 
   it('ranks ariaLabel third', () => {
     const sorted = Object.entries(WEIGHTS).sort(([, a], [, b]) => b - a);
-    expect(sorted[2][0]).toBe('ariaLabel');
+    expect(sorted[2]![0]).toBe('ariaLabel');
   });
 
   it('has correct weight values', () => {
@@ -337,11 +337,11 @@ describe('scoreCandidate', () => {
 
     const { score, matchDetails } = scoreCandidate(meta, btn);
 
-    const totalWeight = WEIGHTS.textContent + WEIGHTS.ariaLabel + WEIGHTS.cssSelector;
+    const totalWeight = WEIGHTS.textContent! + WEIGHTS.ariaLabel! + WEIGHTS.cssSelector!;
     const expected =
-      (matchDetails.textContent * WEIGHTS.textContent +
-        matchDetails.ariaLabel * WEIGHTS.ariaLabel +
-        matchDetails.cssSelector * WEIGHTS.cssSelector) /
+      (matchDetails.textContent! * WEIGHTS.textContent! +
+        matchDetails.ariaLabel! * WEIGHTS.ariaLabel! +
+        matchDetails.cssSelector! * WEIGHTS.cssSelector!) /
       totalWeight;
 
     expect(score).toBeCloseTo(expected, 10);

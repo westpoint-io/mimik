@@ -175,7 +175,7 @@ export function thirdPartyNotices(): Plugin {
     apply: 'build',
     generateBundle() {
       for (const id of this.getModuleIds()) {
-        const dir = PACKAGE_DIR.exec(id.replace(/^\0/, '').split('?')[0])?.[1];
+        const dir = PACKAGE_DIR.exec(id.replace(/^\0/, '').split('?')[0]!)?.[1];
         if (dir && existsSync(join(dir, 'package.json'))) bundled.add(realpathSync(dir));
       }
     },

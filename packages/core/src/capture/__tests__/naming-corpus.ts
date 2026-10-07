@@ -70,7 +70,7 @@ export interface NamingCase {
 
 export function namingCases(count: number, seed: number): NamingCase[] {
   const next = seeded(seed);
-  const pick = <T>(items: readonly T[]): T => items[Math.floor(next() * items.length)];
+  const pick = <T>(items: readonly T[]): T => items[Math.floor(next() * items.length)]!;
   const maybe = <T>(value: T, odds = 0.5): T | null => (next() < odds ? value : null);
   const nodes = (max: number): ElementNode[] =>
     Array.from({ length: Math.floor(next() * (max + 1)) }, () => ({ role: pick(ROLES), name: pick(NAMES) }));

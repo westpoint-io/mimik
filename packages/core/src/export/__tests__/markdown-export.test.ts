@@ -128,7 +128,7 @@ describe('exportGuideAsMarkdown', () => {
     const md = await exportGuideAsMarkdown(guide, steps, screenshots);
     const lines = md.split('\n');
     expect(lines[1]).toBe('');
-    expect(lines[2].startsWith('*')).toBe(true);
+    expect(lines[2]!.startsWith('*')).toBe(true);
     expect(md).not.toContain('undefined');
   });
 

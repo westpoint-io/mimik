@@ -37,7 +37,7 @@ export function trimUrl(url: string, mode: BundleUrlMode): string {
   if (parsed.origin === 'null') {
     if (parsed.protocol === 'data:') return 'data:';
     if (mode === 'origin' && parsed.protocol === 'file:') return 'file://';
-    return url.split(/[?#]/)[0];
+    return url.split(/[?#]/)[0]!;
   }
   return mode === 'origin' ? parsed.origin : `${parsed.origin}${parsed.pathname}`;
 }

@@ -279,24 +279,24 @@ describe('sensitiveSpans', () => {
     const text = 'Email: user@example.com here';
     const results = sensitiveSpans(text, [PRESET_REGEXES.email]);
     expect(results).toHaveLength(1);
-    expect(results[0].start).toBe(7);
-    expect(results[0].end).toBe(23);
-    expect(text.slice(results[0].start, results[0].end)).toBe('user@example.com');
+    expect(results[0]!.start).toBe(7);
+    expect(results[0]!.end).toBe(23);
+    expect(text.slice(results[0]!.start, results[0]!.end)).toBe('user@example.com');
   });
 
   it('returns multiple non-overlapping matches', () => {
     const text = 'Email user@a.com and admin@b.org please';
     const results = sensitiveSpans(text, [PRESET_REGEXES.email]);
     expect(results).toHaveLength(2);
-    expect(text.slice(results[0].start, results[0].end)).toBe('user@a.com');
-    expect(text.slice(results[1].start, results[1].end)).toBe('admin@b.org');
+    expect(text.slice(results[0]!.start, results[0]!.end)).toBe('user@a.com');
+    expect(text.slice(results[1]!.start, results[1]!.end)).toBe('admin@b.org');
   });
 
   it('merges overlapping ranges from different patterns', () => {
     const text = '123-45-6789';
     const results = sensitiveSpans(text, [PRESET_REGEXES.ssn, PRESET_REGEXES.phone]);
     for (let i = 1; i < results.length; i++) {
-      expect(results[i].start).toBeGreaterThanOrEqual(results[i - 1].end);
+      expect(results[i]!.start).toBeGreaterThanOrEqual(results[i - 1]!.end);
     }
   });
 
@@ -319,7 +319,7 @@ describe('sensitiveSpans', () => {
     const text = 'IP: 10.0.0.1 Email: z@a.com SSN: 123-45-6789';
     const results = sensitiveSpans(text, [PRESET_REGEXES.ssn, PRESET_REGEXES.email, PRESET_REGEXES.ipAddress]);
     for (let i = 1; i < results.length; i++) {
-      expect(results[i].start).toBeGreaterThanOrEqual(results[i - 1].start);
+      expect(results[i]!.start).toBeGreaterThanOrEqual(results[i - 1]!.start);
     }
   });
 
@@ -338,20 +338,20 @@ describe('sensitiveSpans', () => {
     const text = 'Contact: 123-45-6789 or 123-456-7890';
     const results = sensitiveSpans(text, [PRESET_REGEXES.ssn, PRESET_REGEXES.phone]);
     for (let i = 1; i < results.length; i++) {
-      expect(results[i].start).toBeGreaterThanOrEqual(results[i - 1].end);
+      expect(results[i]!.start).toBeGreaterThanOrEqual(results[i - 1]!.end);
     }
   });
 
   it('handles match at the very start of the string', () => {
     const text = 'user@test.com is an email';
     const results = sensitiveSpans(text, [PRESET_REGEXES.email]);
-    expect(results[0].start).toBe(0);
+    expect(results[0]!.start).toBe(0);
   });
 
   it('handles match at the very end of the string', () => {
     const text = 'Send to user@test.com';
     const results = sensitiveSpans(text, [PRESET_REGEXES.email]);
-    expect(results[results.length - 1].end).toBe(text.length);
+    expect(results[results.length - 1]!.end).toBe(text.length);
   });
 });
 
@@ -378,12 +378,12 @@ describe('patternsFor', () => {
 
   it('hands out fresh regexes so a stale lastIndex cannot drop a match', () => {
     const [first] = patternsFor(['email']);
-    first.exec('contact me at a@b.co please');
-    expect(first.lastIndex).toBeGreaterThan(0);
+    first!.exec('contact me at a@b.co please');
+    expect(first!.lastIndex).toBeGreaterThan(0);
 
     const [second] = patternsFor(['email']);
     expect(second).not.toBe(first);
-    expect(second.lastIndex).toBe(0);
+    expect(second!.lastIndex).toBe(0);
     expect(sensitiveSpans('a@b.co', patternsFor(['email']))).toHaveLength(1);
   });
 });

@@ -160,9 +160,9 @@ export function annotationBounds(a: Annotation): ScreenshotBounds {
 
 export function hitTest(annotations: Annotation[], x: number, y: number): Annotation | null {
   for (let i = annotations.length - 1; i >= 0; i--) {
-    const b = annotationBounds(annotations[i]);
+    const b = annotationBounds(annotations[i]!);
     if (x >= b.x - HIT_PAD && x <= b.x + b.width + HIT_PAD && y >= b.y - HIT_PAD && y <= b.y + b.height + HIT_PAD) {
-      return annotations[i];
+      return annotations[i]!;
     }
   }
   return null;

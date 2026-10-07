@@ -156,7 +156,7 @@ export function AnnotationEditor({ screenshot, tool, onDone, onCancel }: Annotat
   });
   const [viewport, setViewport] = useState<ScreenshotBounds | undefined>(screenshot.edits?.viewport);
   const [selectedId, setSelectedId] = useState<string | null>(tool === 'target' ? TARGET_ID : null);
-  const [color, setColor] = useState<string>(COLORS[0]);
+  const [color, setColor] = useState<string>(COLORS[0]!);
   const gesture = usePointerGesture();
   const [textEditor, setTextEditor] = useState<TextEditorState | null>(null);
   const [textValue, setTextValue] = useState('');

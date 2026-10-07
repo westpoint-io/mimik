@@ -31,10 +31,10 @@ export function withLiveSteps(lines: readonly TimelineLine[], steps: readonly St
 
 export function nearestStepId(lines: readonly TimelineLine[], index: number): string | null {
   for (let i = index + 1; i < lines.length; i++) {
-    if (lines[i].stepId) return lines[i].stepId;
+    if (lines[i]!.stepId) return lines[i]!.stepId;
   }
   for (let i = index - 1; i >= 0; i--) {
-    if (lines[i].stepId) return lines[i].stepId;
+    if (lines[i]!.stepId) return lines[i]!.stepId;
   }
   return null;
 }

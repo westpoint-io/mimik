@@ -65,7 +65,7 @@ describe('startCapture against a sink that is not the extension', () => {
 
     expect(captured).toHaveLength(1);
     expect(captured[0]).toMatchObject({ guideId: 'guide-1', action: 'click' });
-    expect(captured[0].elementMeta.source).toBe('dom');
+    expect(captured[0]!.elementMeta.source).toBe('dom');
   });
 
   it('never reaches for extension messaging to do it', async () => {

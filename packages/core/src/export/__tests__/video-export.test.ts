@@ -350,42 +350,42 @@ describe('videoChapters', () => {
   });
 
   it('starts the first step at zero when there is no cover', () => {
-    expect(videoChapters(steps(3), false)[0].start).toBe(0);
+    expect(videoChapters(steps(3), false)[0]!.start).toBe(0);
   });
 
   it('pushes every step past the cover when there is one', () => {
     const marks = videoChapters(steps(3), true);
-    expect(marks[0].start).toBe(3);
-    expect(marks[1].start).toBeCloseTo(3 + stride, 6);
+    expect(marks[0]!.start).toBe(3);
+    expect(marks[1]!.start).toBeCloseTo(3 + stride, 6);
   });
 
   it('spaces steps by one stride, not one full step', () => {
     const marks = videoChapters(steps(4), false);
     for (let i = 1; i < marks.length; i++) {
-      expect(marks[i].start - marks[i - 1].start).toBeCloseTo(stride, 6);
+      expect(marks[i]!.start - marks[i - 1]!.start).toBeCloseTo(stride, 6);
     }
   });
 
   it('runs the last chapter to the true end of the footage', () => {
     const marks = videoChapters(steps(6), true);
-    expect(marks[5].end).toBeCloseTo(3 + totalStepFrames(6) / FPS, 6);
-    expect(marks[5].end).toBeGreaterThan(marks[5].start);
+    expect(marks[5]!.end).toBeCloseTo(3 + totalStepFrames(6) / FPS, 6);
+    expect(marks[5]!.end).toBeGreaterThan(marks[5]!.start);
   });
 
   it('leaves no gap or overlap between consecutive chapters', () => {
     const marks = videoChapters(steps(5), true);
     for (let i = 1; i < marks.length; i++) {
-      expect(marks[i].start).toBeCloseTo(marks[i - 1].end, 6);
+      expect(marks[i]!.start).toBeCloseTo(marks[i - 1]!.end, 6);
     }
   });
 
   it('carries the step description as the chapter title', () => {
-    expect(videoChapters(steps(2), false)[1].title).toBe('Do thing 1');
+    expect(videoChapters(steps(2), false)[1]!.title).toBe('Do thing 1');
   });
 
   it('falls back to a numbered label when a step has no description', () => {
     const bare = [{ id: 'a', description: '   ', action: 'click' }] as never[];
-    expect(videoChapters(bare, false)[0].title).toBe('export.stepLabel[1]');
+    expect(videoChapters(bare, false)[0]!.title).toBe('export.stepLabel[1]');
   });
 
   it('carries the action kind through to each chapter', () => {
@@ -596,7 +596,7 @@ describe('wrapLines', () => {
   it('truncates with an ellipsis at the line cap', () => {
     const lines = wrapLines('aaa bbb ccc ddd eee fff', 30, measure, 2);
     expect(lines).toHaveLength(2);
-    expect(lines[1].endsWith('…')).toBe(true);
+    expect(lines[1]!.endsWith('…')).toBe(true);
   });
 
   it('does not ellipsize when everything fits inside the cap', () => {
@@ -684,13 +684,13 @@ describe('narrated step spans', () => {
   it('pushes later steps back by exactly what a long narration added', () => {
     const spans = stepSpans(voiceTimeline(3, new Map([[0, 8]])), 3);
     expect(spans[0]).toBe(toFrames(0.35 + 8 + 0.6));
-    expect(stepStarts(spans)).toEqual([0, spans[0] - 10, spans[0] - 10 + 147]);
-    expect(spannedFrames(spans)).toBe(spans[0] + 157 * 2 - 10 * 2);
+    expect(stepStarts(spans)).toEqual([0, spans[0]! - 10, spans[0]! - 10 + 147]);
+    expect(spannedFrames(spans)).toBe(spans[0]! + 157 * 2 - 10 * 2);
   });
 
   it('holds the last step for its full span', () => {
     const spans = stepSpans(voiceTimeline(2, new Map([[1, 9]])), 2);
-    expect(spannedFrames(spans)).toBe(157 - 10 + spans[1]);
+    expect(spannedFrames(spans)).toBe(157 - 10 + spans[1]!);
   });
 });
 
@@ -700,13 +700,13 @@ describe('videoChapters on a narrated timeline', () => {
 
   it('opens the first chapter after the stretched cover card', () => {
     const timeline = voiceTimeline(2, new Map([[-1, 6]]));
-    expect(videoChapters(steps(2), true, FPS, timeline)[0].start).toBeCloseTo(timeline.coverSeconds, 6);
+    expect(videoChapters(steps(2), true, FPS, timeline)[0]!.start).toBeCloseTo(timeline.coverSeconds, 6);
   });
 
   it('gives a narrated step the longer chapter', () => {
     const marks = videoChapters(steps(3), false, FPS, voiceTimeline(3, new Map([[1, 8]])));
-    expect(marks[1].end - marks[1].start).toBeGreaterThan(marks[0].end - marks[0].start);
-    expect(marks[2].start).toBeCloseTo(marks[1].end, 6);
+    expect(marks[1]!.end - marks[1]!.start).toBeGreaterThan(marks[0]!.end - marks[0]!.start);
+    expect(marks[2]!.start).toBeCloseTo(marks[1]!.end, 6);
   });
 
   it('is unchanged for a guide with no narration', () => {

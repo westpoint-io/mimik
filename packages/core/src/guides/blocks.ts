@@ -52,6 +52,6 @@ export function calloutAccent(step: Step): string {
 export function tint(hex: string, ratio = 0.12): string {
   const rgb = hexToRgb(hex);
   if (!rgb) return '#FFFFFF';
-  const [r, g, b] = rgb.map((channel) => 255 + (channel - 255) * ratio);
+  const [r, g, b] = rgb.map((channel) => 255 + (channel - 255) * ratio) as [number, number, number];
   return rgbToHex(r, g, b);
 }

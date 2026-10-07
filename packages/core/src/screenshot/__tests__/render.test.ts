@@ -92,16 +92,16 @@ describe('renderScreenshot', () => {
   it('sizes the canvas to the full image when there is no crop', async () => {
     await renderScreenshot(makeScreenshot());
 
-    expect(canvases[0].width).toBe(1200);
-    expect(canvases[0].height).toBe(900);
+    expect(canvases[0]!.width).toBe(1200);
+    expect(canvases[0]!.height).toBe(900);
   });
 
   it('rounds a fractional viewport to whole pixels', async () => {
     const s = makeScreenshot({ edits: { viewport: { x: 10, y: 20, width: 640.6, height: 480.2 } } });
     await renderScreenshot(s);
 
-    expect(canvases[0].width).toBe(641);
-    expect(canvases[0].height).toBe(480);
+    expect(canvases[0]!.width).toBe(641);
+    expect(canvases[0]!.height).toBe(480);
   });
 
   it('maps the viewport rectangle onto the whole canvas', async () => {
@@ -150,7 +150,7 @@ describe('renderScreenshot click target', () => {
     await renderScreenshot(bounded());
 
     expect(drawAnnotation).toHaveBeenCalledTimes(1);
-    expect(drawAnnotation.mock.calls[0][1]).toEqual({
+    expect(drawAnnotation.mock.calls[0]![1]).toEqual({
       id: 'target',
       type: 'target',
       x: 60,
@@ -181,7 +181,7 @@ describe('renderScreenshot click target', () => {
     });
     await renderScreenshot(s);
 
-    expect(drawAnnotation.mock.calls[0][1]).toMatchObject({ x: 5, y: 6, w: 7, h: 8, border: 'solid' });
+    expect(drawAnnotation.mock.calls[0]![1]).toMatchObject({ x: 5, y: 6, w: 7, h: 8, border: 'solid' });
   });
 
   it('honours an edited target that was cleared', async () => {
@@ -246,7 +246,7 @@ describe('renderScreenshot annotations', () => {
     });
 
     it('draws nothing when the screenshot has no redactions to bake', async () => {
-      const box = annotations[0];
+      const box = annotations[0]!;
       await renderScreenshot(makeScreenshot({ edits: { annotations: [box] } }), {
         annotations: 'redactions',
         target: false,

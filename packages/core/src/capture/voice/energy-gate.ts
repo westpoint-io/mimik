@@ -14,7 +14,7 @@ function frameRms(pcm: Int16Array, from: number, to: number): number {
   if (to <= from) return 0;
   let sum = 0;
   for (let i = from; i < to; i += 1) {
-    const sample = pcm[i] / INT16_SCALE;
+    const sample = pcm[i]! / INT16_SCALE;
     sum += sample * sample;
   }
   return Math.sqrt(sum / (to - from));
@@ -48,7 +48,7 @@ export async function detectSpeechByEnergy(pcm: Int16Array, sampleRate: number):
   let voicedFrom = -1;
   for (let frame = 0; frame < rms.length; frame += 1) {
     const frameStart = frame * frameSize;
-    const voiced = rms[frame] > SPEECH_RMS_THRESHOLD;
+    const voiced = rms[frame]! > SPEECH_RMS_THRESHOLD;
     if (voiced && voicedFrom < 0) voicedFrom = frameStart;
     if (!voiced && voicedFrom >= 0) {
       push(voicedFrom, frameStart);
@@ -63,8 +63,8 @@ export async function detectSpeechByEnergy(pcm: Int16Array, sampleRate: number):
     let cut = limit;
     let quietest = Number.POSITIVE_INFINITY;
     for (let frame = firstFrame; frame <= lastFrame; frame += 1) {
-      if (rms[frame] >= quietest) continue;
-      quietest = rms[frame];
+      if (rms[frame]! >= quietest) continue;
+      quietest = rms[frame]!;
       cut = frame * frameSeconds;
     }
     return cut > start ? cut : limit;

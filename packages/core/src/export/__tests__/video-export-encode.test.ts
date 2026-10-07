@@ -308,7 +308,7 @@ describe('exportGuideAsVideo output', () => {
 
     expect(rec.added.length).toBeGreaterThan(FPS);
     expect(rec.added.every((s) => s.dur === 1 / FPS)).toBe(true);
-    expect(rec.added[0].at).toBe(0);
+    expect(rec.added[0]!.at).toBe(0);
   });
 
   it('falls back to 720p when the requested resolution cannot be encoded', async () => {
@@ -326,7 +326,7 @@ describe('exportGuideAsVideo cover cards', () => {
 
     const holds = rec.added.filter((s) => s.dur === 3);
     expect(holds.length).toBe(2);
-    expect(holds[0].at).toBe(0);
+    expect(holds[0]!.at).toBe(0);
   });
 
   it('offsets the step frames past the opening card', async () => {
@@ -334,7 +334,7 @@ describe('exportGuideAsVideo cover cards', () => {
     await exportGuideAsVideo(guide, steps, shotsFor(steps), opts({ cover: true }));
 
     const stepSegments = rec.added.filter((s) => s.dur === 1 / FPS);
-    expect(stepSegments[0].at).toBe(3);
+    expect(stepSegments[0]!.at).toBe(3);
   });
 
   it('adds no cards when the cover is off', async () => {
@@ -362,7 +362,7 @@ describe('exportGuideAsVideo progress and abort', () => {
     });
 
     expect(seen.length).toBeGreaterThan(0);
-    const [done, total] = seen[seen.length - 1];
+    const [done, total] = seen[seen.length - 1]!;
     expect(done).toBe(total);
   });
 
@@ -372,14 +372,14 @@ describe('exportGuideAsVideo progress and abort', () => {
     await exportGuideAsVideo(guide, steps, shotsFor(steps), opts({ cover: true }), {
       onProgress: (done, total) => seen.push([done, total]),
     });
-    const withCover = seen[0][1];
+    const withCover = seen[0]![1];
 
     seen.length = 0;
     await exportGuideAsVideo(guide, steps, shotsFor(steps), opts({ cover: false }), {
       onProgress: (done, total) => seen.push([done, total]),
     });
 
-    expect(withCover - seen[0][1]).toBe(2);
+    expect(withCover - seen[0]![1]).toBe(2);
   });
 
   it('aborts before any encoding when the signal is already set', async () => {
@@ -433,7 +433,7 @@ describe('exportGuideAsVideo layers', () => {
     const steps = [makeStep(0)];
     await exportGuideAsVideo(guide, steps, shotsFor(steps), opts({ cover: false }));
 
-    expect(vi.mocked(renderScreenshot).mock.calls[0][1]).toMatchObject({ target: false });
+    expect(vi.mocked(renderScreenshot).mock.calls[0]![1]).toMatchObject({ target: false });
   });
 
   it('drops step descriptions when the option is off', async () => {
@@ -672,7 +672,7 @@ describe('exportGuideAsVideo voiceover', () => {
       opts({ cover: false, voiceover: true }),
     );
 
-    expect(chapters[1].start).toBeCloseTo((toFrames(VOICE_LEAD_SEC + 9 + VOICE_TAIL_SEC) - 10) / FPS, 6);
-    expect(chapters[0].end).toBeCloseTo(chapters[1].start, 6);
+    expect(chapters[1]!.start).toBeCloseTo((toFrames(VOICE_LEAD_SEC + 9 + VOICE_TAIL_SEC) - 10) / FPS, 6);
+    expect(chapters[0]!.end).toBeCloseTo(chapters[1]!.start, 6);
   });
 });

@@ -13,6 +13,6 @@ export function getDomainInitial(domain: string): { letter: string; gradient: re
   for (let i = 0; i < domain.length; i++) {
     hash = (hash * 31 + domain.charCodeAt(i)) | 0;
   }
-  const gradient = INITIAL_GRADIENTS[Math.abs(hash) % INITIAL_GRADIENTS.length];
+  const gradient = INITIAL_GRADIENTS[Math.abs(hash) % INITIAL_GRADIENTS.length]!;
   return { letter, gradient };
 }

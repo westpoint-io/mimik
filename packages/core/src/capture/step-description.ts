@@ -83,7 +83,7 @@ export function buildFallbackDescription(action: string, meta: ElementMeta, type
   const target = name || meta.role || meta.tag || '';
 
   if (action.startsWith('keydown:')) {
-    const key = action.split(':')[1];
+    const key = action.split(':')[1]!;
     return i18n.t('steps.pressKey', [key, target]);
   }
 

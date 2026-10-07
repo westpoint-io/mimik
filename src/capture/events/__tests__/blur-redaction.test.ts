@@ -73,7 +73,7 @@ describe('InputSession.update on a blurred field', () => {
 
     session.update(el);
 
-    const [payload] = updateInputStep.mock.calls[0];
+    const [payload] = updateInputStep.mock.calls[0]!;
     expect(payload).not.toHaveProperty('inputValue');
     expect(JSON.stringify(payload)).not.toContain('sk-live-abcdef');
   });
@@ -90,7 +90,7 @@ describe('InputSession.update on a blurred field', () => {
 
     session.update(el);
 
-    const [payload] = updateInputStep.mock.calls[0];
+    const [payload] = updateInputStep.mock.calls[0]!;
     expect(payload).toMatchObject({ inputValue: 'ada' });
   });
 });

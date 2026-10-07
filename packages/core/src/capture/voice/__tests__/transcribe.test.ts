@@ -17,8 +17,8 @@ const respondWith = (body: unknown, status = 200) => {
   fetchMock.mockImplementation(async () => new Response(payload, { status }));
 };
 
-const sentTo = (call = 0) => fetchMock.mock.calls[call][0] as string;
-const sentInit = (call = 0) => fetchMock.mock.calls[call][1] as RequestInit;
+const sentTo = (call = 0) => fetchMock.mock.calls[call]![0] as string;
+const sentInit = (call = 0) => fetchMock.mock.calls[call]![1] as RequestInit;
 const sentForm = (call = 0) => sentInit(call).body as FormData;
 
 const run = (config: TranscribeConfig) => createTranscriber(config)(wav);

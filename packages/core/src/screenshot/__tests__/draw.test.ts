@@ -112,10 +112,10 @@ describe('drawAnnotation redact', () => {
     drawAnnotation(r.ctx, { id: 'r2', type: 'redact', style: 'blur', x: 40, y: 50, w: 120, h: 30 }, 0, 0);
 
     const [down, up] = r.all('drawImage') as number[][];
-    expect(down.slice(1)).toEqual([40, 50, 120, 30, 40, 50, 15, 4]);
-    expect(up.slice(1)).toEqual([40, 50, 15, 4, 40, 50, 120, 30]);
+    expect(down!.slice(1)).toEqual([40, 50, 120, 30, 40, 50, 15, 4]);
+    expect(up!.slice(1)).toEqual([40, 50, 15, 4, 40, 50, 120, 30]);
     const draws = r.names().flatMap((name, index) => (name === 'drawImage' ? [index] : []));
-    expect(r.names().indexOf('set:filter')).toBeGreaterThan(draws[1]);
+    expect(r.names().indexOf('set:filter')).toBeGreaterThan(draws[1]!);
   });
 
   it('blurs the pixels around the box too, so its edges do not fade to the original', () => {
@@ -134,9 +134,9 @@ describe('drawAnnotation redact', () => {
     drawAnnotation(r.ctx, { id: 'r7', type: 'redact', style: 'blur', x: 90, y: 130, w: 120, h: 20 }, 100, 100);
 
     const [down, up] = r.all('drawImage') as number[][];
-    expect(down.slice(1, 5)).toEqual([0, 30, 110, 20]);
-    expect(down.slice(5, 7)).toEqual([100, 130]);
-    expect(up.slice(5)).toEqual([100, 130, 110, 20]);
+    expect(down!.slice(1, 5)).toEqual([0, 30, 110, 20]);
+    expect(down!.slice(5, 7)).toEqual([100, 130]);
+    expect(up!.slice(5)).toEqual([100, 130, 110, 20]);
   });
 
   it('draws nothing for a box entirely outside the canvas', () => {
@@ -152,8 +152,8 @@ describe('drawAnnotation redact', () => {
 
     const [, sx, sy, sw, sh] = r.all('drawImage').at(-1) as number[];
     expect([sx, sy]).toEqual([0, 580 - BLUR_MARGIN]);
-    expect(sx + sw).toBe(55 + BLUR_MARGIN);
-    expect(sy + sh).toBe(600);
+    expect(sx! + sw!).toBe(55 + BLUR_MARGIN);
+    expect(sy! + sh!).toBe(600);
   });
 
   it('offsets the blur source by the viewport origin so a cropped export blurs the same pixels', () => {
@@ -163,10 +163,10 @@ describe('drawAnnotation redact', () => {
     expect(r.first('rect')).toEqual([300, 220, 80, 40]);
     expect(r.names().indexOf('set:imageSmoothingEnabled')).toBeLessThan(r.names().indexOf('drawImage'));
     const [down, up] = r.all('drawImage') as number[][];
-    expect(down.slice(1, 5)).toEqual([200, 160, 80, 40]);
-    expect(down.slice(5, 7)).toEqual([300, 220]);
-    expect(up.slice(1, 5)).toEqual([200, 160, 10, 5]);
-    expect(up.slice(5)).toEqual([300, 220, 80, 40]);
+    expect(down!.slice(1, 5)).toEqual([200, 160, 80, 40]);
+    expect(down!.slice(5, 7)).toEqual([300, 220]);
+    expect(up!.slice(1, 5)).toEqual([200, 160, 10, 5]);
+    expect(up!.slice(5)).toEqual([300, 220, 80, 40]);
     const [, sx, sy, , , dx, dy] = r.all('drawImage').at(-1) as number[];
     expect([sx, sy]).toEqual([200 - BLUR_MARGIN, 160 - BLUR_MARGIN]);
     expect([dx, dy]).toEqual([300 - BLUR_MARGIN, 220 - BLUR_MARGIN]);

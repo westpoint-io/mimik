@@ -102,7 +102,7 @@ describe('importGuide', () => {
 
     expect(first).not.toBe(second);
     const [a, b] = await Promise.all([getGuide(first), getGuide(second)]);
-    expect(a?.steps[0].id).not.toBe(b?.steps[0].id);
+    expect(a!.steps[0]!.id).not.toBe(b!.steps[0]!.id);
     expect(await db.steps.count()).toBe(4);
   });
 
@@ -110,12 +110,12 @@ describe('importGuide', () => {
     const guideId = await importGuide(makeBundle());
     const loaded = await getGuide(guideId);
     const [first, second] = loaded?.steps as Step[];
-    const screenshot = loaded?.screenshots.get(first.id);
+    const screenshot = loaded?.screenshots.get(first!.id);
 
-    expect(screenshot?.id).toBe(first.screenshotId);
+    expect(screenshot?.id).toBe(first!.screenshotId);
     expect(screenshot?.id).not.toBe('ss-1');
-    expect(screenshot?.stepId).toBe(first.id);
-    expect(second.screenshotId).toBeUndefined();
+    expect(screenshot?.stepId).toBe(first!.id);
+    expect(second!.screenshotId).toBeUndefined();
   });
 
   it('clears aiPending so the editor does not wait on a job that will never run', async () => {
@@ -140,13 +140,13 @@ describe('importGuide', () => {
 
     const loaded = await getGuide(await importGuide(bundle));
     expect(loaded?.screenshots.size).toBe(0);
-    expect(loaded?.steps[0].screenshotId).toBeUndefined();
+    expect(loaded!.steps[0]!.screenshotId).toBeUndefined();
     expect(await db.screenshots.count()).toBe(0);
   });
 
   it('does not leave the zip entry path on the stored screenshot', async () => {
     const loaded = await getGuide(await importGuide(makeBundle()));
-    const screenshot = loaded?.screenshots.get(loaded.steps[0].id) as unknown as Record<string, unknown>;
+    const screenshot = loaded?.screenshots.get(loaded.steps[0]!.id) as unknown as Record<string, unknown>;
     expect(screenshot.file).toBeUndefined();
   });
 });

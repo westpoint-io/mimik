@@ -129,7 +129,7 @@ export function stepStarts(spans: number[], fps = FPS): number[] {
 export function spannedFrames(spans: number[], fps = FPS): number {
   if (spans.length === 0) return 0;
   const starts = stepStarts(spans, fps);
-  return starts[spans.length - 1] + spans[spans.length - 1];
+  return starts[spans.length - 1]! + spans[spans.length - 1]!;
 }
 
 export function zoomProgress(frame: number, fps = FPS): number {
@@ -736,8 +736,8 @@ export function videoChapters(frames: Step[], cover: boolean, fps = FPS, timelin
     stepId: step.id,
     title: step.description?.trim() || i18n.t('export.stepLabel', [String(index + 1)]),
     kind: stepKind(step),
-    start: offset + starts[index] / fps,
-    end: index === frames.length - 1 ? last : offset + starts[index + 1] / fps,
+    start: offset + starts[index]! / fps,
+    end: index === frames.length - 1 ? last : offset + starts[index + 1]! / fps,
     spoken: stepNarration(step).length > 0,
   }));
 }
@@ -768,21 +768,21 @@ export async function composeGuideFrames(
 
   const backdropFor = (index: number) => {
     for (let i = index - 1; i >= 0; i--) {
-      const behind = screenshots.get(frames[i].id);
+      const behind = screenshots.get(frames[i]!.id);
       if (behind) return behind;
     }
     return undefined;
   };
 
   const targetAt = (index: number) => {
-    const behind = screenshots.get(frames[index].id);
+    const behind = screenshots.get(frames[index]!.id);
     return behind ? normalizedTargetCenter(behind) : null;
   };
 
   const layerAt = async (index: number) => {
     const cached = loaded.get(index);
     if (cached) return cached;
-    const step = frames[index];
+    const step = frames[index]!;
     const layer = isBlock(step)
       ? await loadBlockLayer(step, backdropFor(index))
       : await loadScreenshotLayer(step, screenshots.get(step.id) as Screenshot, cursorOriginFor(index, targetAt));
@@ -821,8 +821,8 @@ export async function composeGuideFrames(
     for (let frame = 0; frame < stepTotal; frame++) {
       abortIfRequested();
 
-      while (index + 1 < starts.length && frame >= starts[index + 1]) index += 1;
-      const local = frame - starts[index];
+      while (index + 1 < starts.length && frame >= starts[index + 1]!) index += 1;
+      const local = frame - starts[index]!;
       const outgoing = index > 0 && local < overlap ? index - 1 : -1;
 
       const current = await layerAt(index);
@@ -834,7 +834,7 @@ export async function composeGuideFrames(
       ctx.fillRect(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
 
       if (previous) {
-        drawStepFrame(ctx, previous, frame - starts[outgoing], device, fps);
+        drawStepFrame(ctx, previous, frame - starts[outgoing]!, device, fps);
         ctx.globalAlpha = (local + 1) / overlap;
         drawStepFrame(ctx, current, local, device, fps);
         ctx.globalAlpha = 1;
@@ -947,7 +947,7 @@ function voiceoverPlacement(
   fps = FPS,
 ): { startSec: number; buffer: AudioBuffer }[] {
   return Array.from(clips, ([index, buffer]) => ({
-    startSec: (index === COVER_SEGMENT ? 0 : offsetSec + starts[index] / fps) + VOICE_LEAD_SEC,
+    startSec: (index === COVER_SEGMENT ? 0 : offsetSec + starts[index]! / fps) + VOICE_LEAD_SEC,
     buffer,
   }));
 }

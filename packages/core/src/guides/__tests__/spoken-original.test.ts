@@ -161,7 +161,7 @@ describe('adding a transcript line to a step', () => {
 
   async function seedRow(): Promise<string> {
     await saveTranscript('g1', unused);
-    return (await getTranscripts('g1'))[0].id;
+    return (await getTranscripts('g1'))[0]!.id;
   }
 
   it('adds the line to what the step already says', async () => {
@@ -197,10 +197,10 @@ describe('adding a transcript line to a step', () => {
       epochMs: 1_700_000_000_000,
       lines: [{ start: 1, end: 3, text: 'Open billing', stepId: 'deleted-step', rejectReason: null }],
     });
-    const row = (await getTranscripts('g1'))[0];
+    const row = (await getTranscripts('g1'))[0]!;
 
     expect(await addTranscriptLineToStep(row.id, 0, 's1', 'Open billing')).toContain('Open billing');
-    expect((await getTranscripts('g1'))[0].lines[0]).toMatchObject({ stepId: 's1', addedByHand: true });
+    expect((await getTranscripts('g1'))[0]!.lines[0]).toMatchObject({ stepId: 's1', addedByHand: true });
   });
 
   it('refuses a line index that is not in the row', async () => {
@@ -224,7 +224,7 @@ describe('stored transcripts', () => {
 
     const rows = await getTranscripts('g1');
     expect(rows).toHaveLength(1);
-    expect(rows[0].lines).toHaveLength(2);
+    expect(rows[0]!.lines).toHaveLength(2);
     expect(await hasTranscript('g1')).toBe(true);
   });
 
@@ -294,7 +294,7 @@ describe('a transcript whose guide is no longer there', () => {
     await saveTranscript('g1', transcript);
 
     expect(await hasTranscript('target')).toBe(true);
-    expect((await getTranscripts('target'))[0].guideId).toBe('target');
+    expect((await getTranscripts('target'))[0]!.guideId).toBe('target');
   });
 
   it('still finds the merged guide when nothing in the slice was attributed', async () => {
@@ -366,16 +366,16 @@ describe('a line pushed onto a step by hand', () => {
   it('goes back to unused when the step is restored to what narration said', async () => {
     await applyNarrationToSteps([{ stepId: 's1', description: SPOKEN }]);
     await saveTranscript('g1', transcript);
-    const row = (await getTranscripts('g1'))[0];
+    const row = (await getTranscripts('g1'))[0]!;
 
     await addTranscriptLineToStep(row.id, 1, 's1', 'and then confirm it');
-    expect((await getTranscripts('g1'))[0].lines[1]).toMatchObject({ stepId: 's1', addedByHand: true });
+    expect((await getTranscripts('g1'))[0]!.lines[1]).toMatchObject({ stepId: 's1', addedByHand: true });
 
     await restoreNarratedDescription('s1');
 
-    const after = (await getTranscripts('g1'))[0].lines[1];
-    expect(after.stepId).toBeNull();
-    expect(after.addedByHand).toBeUndefined();
+    const after = (await getTranscripts('g1'))[0]!.lines[1];
+    expect(after!.stepId).toBeNull();
+    expect(after!.addedByHand).toBeUndefined();
   });
 
   it('leaves a line narration itself attributed alone', async () => {
@@ -385,7 +385,7 @@ describe('a line pushed onto a step by hand', () => {
 
     await restoreNarratedDescription('s1');
 
-    expect((await getTranscripts('g1'))[0].lines[0].stepId).toBe('s1');
+    expect((await getTranscripts('g1'))[0]!.lines[0]!.stepId).toBe('s1');
   });
 });
 
@@ -454,7 +454,7 @@ describe('deleting a transcript and the description narration wrote', () => {
       epochMs: 1_700_000_000_000,
       lines: [{ start: 4, end: 6, text: secret, stepId: null, rejectReason: null }],
     });
-    const row = (await getTranscripts('g1'))[0];
+    const row = (await getTranscripts('g1'))[0]!;
     await addTranscriptLineToStep(row.id, 0, 's1', secret);
     expect((await db.steps.get('s1'))?.description).toContain('hunter2');
 
@@ -500,7 +500,7 @@ describe('deleting a transcript and the description narration wrote', () => {
         { start: 4, end: 6, text: secret, stepId: null, rejectReason: null },
       ],
     });
-    const row = (await getTranscripts('g1'))[0];
+    const row = (await getTranscripts('g1'))[0]!;
     await addTranscriptLineToStep(row.id, 1, 's1', secret);
     expect((await db.steps.get('s1'))?.descriptionSource).toBe('manual');
 
@@ -522,7 +522,7 @@ describe('deleting a transcript and the description narration wrote', () => {
         { start: 4, end: 6, text: secret, stepId: null, rejectReason: null },
       ],
     });
-    const row = (await getTranscripts('g1'))[0];
+    const row = (await getTranscripts('g1'))[0]!;
     await addTranscriptLineToStep(row.id, 1, 's1', secret);
     await createSnapshot('g1');
     await restoreNarratedDescription('s1');
@@ -627,21 +627,21 @@ describe('pushing a line onto a step', () => {
 
   it('writes the description and marks the line in one go', async () => {
     await saveTranscript('g1', transcript);
-    const row = (await getTranscripts('g1'))[0];
+    const row = (await getTranscripts('g1'))[0]!;
 
     const written = await addTranscriptLineToStep(row.id, 1, 's1', 'and then confirm it');
 
     expect(written).toBe('Clicked Billing and then confirm it');
-    expect((await getTranscripts('g1'))[0].lines[1]).toMatchObject({ stepId: 's1', addedByHand: true });
+    expect((await getTranscripts('g1'))[0]!.lines[1]).toMatchObject({ stepId: 's1', addedByHand: true });
   });
 
   it('cannot append the words while leaving the line reading unused', async () => {
     await saveTranscript('g1', transcript);
-    const row = (await getTranscripts('g1'))[0];
+    const row = (await getTranscripts('g1'))[0]!;
 
     expect(await addTranscriptLineToStep(row.id, 1, 'missing', 'and then confirm it')).toBeNull();
 
     expect((await db.steps.get('s1'))?.description).toBe('Clicked Billing');
-    expect((await getTranscripts('g1'))[0].lines[1].stepId).toBeNull();
+    expect((await getTranscripts('g1'))[0]!.lines[1]!.stepId).toBeNull();
   });
 });

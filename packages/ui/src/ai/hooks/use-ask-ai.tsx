@@ -34,7 +34,7 @@ function readSpan(value: string, start: number, end: number): Span | null {
   const raw = value.slice(start, end);
   const core = raw.trim();
   if (!core) return null;
-  const lead = raw.slice(0, raw.indexOf(core[0]));
+  const lead = raw.slice(0, raw.indexOf(core[0]!));
   return { start, end, lead, core, trail: raw.slice(lead.length + core.length) };
 }
 

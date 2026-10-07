@@ -83,7 +83,7 @@ function renderModal(stepCount: number) {
   return steps;
 }
 
-const stepIdsPassedToVideo = () => (exportGuideAsVideo.mock.calls[0][1] as Step[]).map((s) => s.id);
+const stepIdsPassedToVideo = () => (exportGuideAsVideo.mock.calls[0]![1] as Step[]).map((s) => s.id);
 
 describe('ExportPreviewModal video preview', () => {
   beforeEach(() => {
@@ -137,7 +137,7 @@ describe('ExportPreviewModal document preview', () => {
     const steps = renderModal(40);
 
     await waitFor(() => expect(exportGuideAsHTML).toHaveBeenCalled());
-    const passed = exportGuideAsHTML.mock.calls[0][1] as Step[];
+    const passed = exportGuideAsHTML.mock.calls[0]![1] as Step[];
     expect(passed.map((s) => s.id)).toEqual(steps.map((s) => s.id));
   });
 });

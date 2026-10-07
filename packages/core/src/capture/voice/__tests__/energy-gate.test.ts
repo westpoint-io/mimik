@@ -46,21 +46,21 @@ describe('detectSpeechByEnergy', () => {
   it('covers a loud region with one segment', async () => {
     const segments = await detectSpeechByEnergy(loud(silence(5), 2, 3), SAMPLE_RATE);
     expect(segments).toHaveLength(1);
-    expect(segments[0].start).toBeLessThanOrEqual(2);
-    expect(segments[0].end).toBeGreaterThanOrEqual(3);
+    expect(segments[0]!.start).toBeLessThanOrEqual(2);
+    expect(segments[0]!.end).toBeGreaterThanOrEqual(3);
   });
 
   it('pads the segment on both sides', async () => {
     const [segment] = await detectSpeechByEnergy(loud(silence(5), 2, 3), SAMPLE_RATE);
-    expect(segment.start).toBeCloseTo(2 - PAD_S, 1);
-    expect(segment.end).toBeCloseTo(3 + PAD_S, 1);
+    expect(segment!.start).toBeCloseTo(2 - PAD_S, 1);
+    expect(segment!.end).toBeCloseTo(3 + PAD_S, 1);
   });
 
   it('keeps two regions separated by a long gap apart', async () => {
     const pcm = loud(loud(silence(8), 0.5, 1.5), 5, 6);
     const segments = await detectSpeechByEnergy(pcm, SAMPLE_RATE);
     expect(segments).toHaveLength(2);
-    expect(segments[1].start).toBeGreaterThan(segments[0].end);
+    expect(segments[1]!.start).toBeGreaterThan(segments[0]!.end);
   });
 
   it('merges two regions whose padding overlaps', async () => {
@@ -70,12 +70,12 @@ describe('detectSpeechByEnergy', () => {
 
   it('never pads before the start of the recording', async () => {
     const [segment] = await detectSpeechByEnergy(loud(silence(3), 0, 0.5), SAMPLE_RATE);
-    expect(segment.start).toBe(0);
+    expect(segment!.start).toBe(0);
   });
 
   it('never pads past the end of the recording', async () => {
     const [segment] = await detectSpeechByEnergy(loud(silence(3), 2.5, 3), SAMPLE_RATE);
-    expect(segment.end).toBe(3);
+    expect(segment!.end).toBe(3);
   });
 
   it('keeps every segment inside the recording bounds', async () => {
@@ -94,14 +94,14 @@ describe('detectSpeechByEnergy', () => {
       pcm[i] = Math.round(Math.sin((2 * Math.PI * 220 * i) / rate) * 0.4 * 32767);
     const segments = await detectSpeechByEnergy(pcm, rate);
     expect(segments).toHaveLength(1);
-    expect(segments[0].start).toBeCloseTo(1 - PAD_S, 1);
-    expect(segments[0].end).toBeCloseTo(2 + PAD_S, 1);
+    expect(segments[0]!.start).toBeCloseTo(1 - PAD_S, 1);
+    expect(segments[0]!.end).toBeCloseTo(2 + PAD_S, 1);
   });
 
   it('resolves boundaries no coarser than one frame', async () => {
     const [segment] = await detectSpeechByEnergy(loud(silence(4), 1, 2), SAMPLE_RATE);
-    expect(Math.abs(segment.start - (1 - PAD_S))).toBeLessThanOrEqual(FRAME_MS / 1000);
-    expect(Math.abs(segment.end - (2 + PAD_S))).toBeLessThanOrEqual(FRAME_MS / 1000);
+    expect(Math.abs(segment!.start - (1 - PAD_S))).toBeLessThanOrEqual(FRAME_MS / 1000);
+    expect(Math.abs(segment!.end - (2 + PAD_S))).toBeLessThanOrEqual(FRAME_MS / 1000);
   });
 });
 
@@ -115,16 +115,16 @@ describe('detectSpeechByEnergy segment cap', () => {
   it('leaves a run under the cap as a single segment', async () => {
     const segments = await detectSpeechByEnergy(loud(silence(30), 1, 21), SAMPLE_RATE);
     expect(segments).toHaveLength(1);
-    expect(segments[0].end - segments[0].start).toBeCloseTo(20 + 2 * PAD_S, 1);
+    expect(segments[0]!.end - segments[0]!.start).toBeCloseTo(20 + 2 * PAD_S, 1);
   });
 
   it('cuts at the quietest frame inside the tail of the allowed window', async () => {
     const dip = MAX_SEGMENT_S - SPLIT_SEARCH_S + 1;
     const pcm = loud(loud(silence(40), 0, 40), dip, dip + 0.4, 0.02);
     const [first] = await detectSpeechByEnergy(pcm, SAMPLE_RATE);
-    expect(first.end).toBeGreaterThanOrEqual(dip - FRAME_MS / 1000);
-    expect(first.end).toBeLessThanOrEqual(dip + 0.4);
-    expect(MAX_SEGMENT_S - first.end).toBeGreaterThan(1);
+    expect(first!.end).toBeGreaterThanOrEqual(dip - FRAME_MS / 1000);
+    expect(first!.end).toBeLessThanOrEqual(dip + 0.4);
+    expect(MAX_SEGMENT_S - first!.end).toBeGreaterThan(1);
   });
 
   it('keeps split segments ordered, contiguous and inside the recording', async () => {
@@ -135,7 +135,7 @@ describe('detectSpeechByEnergy segment cap', () => {
       expect(segment.end).toBeGreaterThan(segment.start);
     }
     for (let i = 1; i < segments.length; i += 1) {
-      expect(segments[i].start).toBeGreaterThanOrEqual(segments[i - 1].end);
+      expect(segments[i]!.start).toBeGreaterThanOrEqual(segments[i - 1]!.end);
     }
   });
 

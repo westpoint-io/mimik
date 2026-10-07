@@ -109,5 +109,5 @@ export function currentZoom(screenshots: Iterable<StoredScreenshot>): number | '
     if (shot.edits?.zoomLevel === undefined) continue;
     levels.add(isAutoZoom(shot) ? 'auto' : shot.edits.zoomLevel);
   }
-  return levels.size === 1 ? [...levels][0] : null;
+  return levels.size === 1 ? [...levels][0]! : null;
 }

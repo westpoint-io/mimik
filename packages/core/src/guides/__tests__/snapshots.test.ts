@@ -194,7 +194,7 @@ describe('renameSnapshot', () => {
     await renameSnapshot(snapshot!.id, 'before rewrite');
 
     expect((await db.snapshots.get(snapshot!.id))?.name).toBe('before rewrite');
-    expect((await getSnapshots('g1'))[0].name).toBe('before rewrite');
+    expect((await getSnapshots('g1'))[0]!.name).toBe('before rewrite');
   });
 
   it('trims surrounding whitespace', async () => {
@@ -333,8 +333,8 @@ describe('revertToSnapshot', () => {
 
     const list = await getSnapshots('g1');
     expect(list).toHaveLength(2);
-    expect(list[0].title).toBe('Changed');
-    expect(undo?.id).toBe(list[0].id);
+    expect(list[0]!.title).toBe('Changed');
+    expect(undo?.id).toBe(list[0]!.id);
     expect(undo?.title).toBe('Changed');
 
     await revertToSnapshot(undo!.id);

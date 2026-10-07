@@ -95,7 +95,7 @@ export function fuzzSamples(count: number, seed: number): string[] {
 
 export function shapedSamples(count: number, seed: number): string[] {
   const next = seeded(seed);
-  const pick = <T>(items: readonly T[]) => items[Math.floor(next() * items.length)];
+  const pick = <T>(items: readonly T[]) => items[Math.floor(next() * items.length)]!;
   const digits = (n: number) => Array.from({ length: n }, () => pick('0123456789'.split(''))).join('');
   const hex = (n: number) => Array.from({ length: n }, () => pick('0123456789abcdefABCDEFgG'.split(''))).join('');
   const word = (n: number) => Array.from({ length: n }, () => pick('abcxyzABC_.%+-0123'.split(''))).join('');

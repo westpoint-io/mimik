@@ -65,7 +65,7 @@ describe('exportGuideAsHTML screenshot embedding', () => {
 
   it('reuses the rendered image when the same screenshot is exported again', async () => {
     const steps = [makeStep(0)];
-    const screenshots = new Map([[steps[0].id, makeScreenshot(steps[0].id)]]);
+    const screenshots = new Map([[steps[0]!.id, makeScreenshot(steps[0]!.id)]]);
 
     await render(steps, screenshots);
     await render(steps, screenshots);
@@ -75,8 +75,8 @@ describe('exportGuideAsHTML screenshot embedding', () => {
 
   it('re-renders when the screenshot edits change', async () => {
     const steps = [makeStep(0)];
-    const shot = makeScreenshot(steps[0].id, { annotations: [] } as unknown as Screenshot['edits']);
-    const screenshots = new Map([[steps[0].id, shot]]);
+    const shot = makeScreenshot(steps[0]!.id, { annotations: [] } as unknown as Screenshot['edits']);
+    const screenshots = new Map([[steps[0]!.id, shot]]);
 
     await render(steps, screenshots);
     shot.edits = { annotations: [{ id: 'a' }] } as unknown as Screenshot['edits'];
@@ -87,7 +87,7 @@ describe('exportGuideAsHTML screenshot embedding', () => {
 
   it('does not cache a failed render', async () => {
     const steps = [makeStep(0)];
-    const screenshots = new Map([[steps[0].id, makeScreenshot(steps[0].id)]]);
+    const screenshots = new Map([[steps[0]!.id, makeScreenshot(steps[0]!.id)]]);
 
     rendered.mockRejectedValueOnce(new Error('decode failed'));
     await expect(render(steps, screenshots)).rejects.toThrow('decode failed');

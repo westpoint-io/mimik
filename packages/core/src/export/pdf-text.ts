@@ -181,6 +181,6 @@ export function rasterize(
   ctx.font = font;
   ctx.fillStyle = color;
   ctx.textBaseline = 'alphabetic';
-  for (const [i, line] of lines.entries()) ctx.fillText(line, 0, frame.baselines[i]);
+  for (const [i, line] of lines.entries()) ctx.fillText(line, 0, frame.baselines[i]!);
   return { dataUrl: canvas.toDataURL('image/png'), width: frame.width, height: frame.height, ascent: frame.ascent };
 }

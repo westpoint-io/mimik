@@ -40,7 +40,7 @@ async function stepPrompt(aiLanguage: string): Promise<string> {
   generateTextMock.mockReset();
   generateTextMock.mockResolvedValue({ text: 'ok' });
   await getAIDescription(serializeDOMContext(CONTEXT), 'openai', 'gpt-4o-mini', 'key');
-  return generateTextMock.mock.calls[0][0].prompt as string;
+  return generateTextMock.mock.calls[0]![0].prompt as string;
 }
 
 async function metaPrompt(aiLanguage: string): Promise<string> {
@@ -48,7 +48,7 @@ async function metaPrompt(aiLanguage: string): Promise<string> {
   generateObjectMock.mockReset();
   generateObjectMock.mockResolvedValue({ object: { title: 'T', description: 'D' } });
   await generateGuideMeta(STEPS, 'openai', 'gpt-4o-mini', 'key');
-  return generateObjectMock.mock.calls[0][0].prompt as string;
+  return generateObjectMock.mock.calls[0]![0].prompt as string;
 }
 
 const CODES = AI_LANGUAGES.map((l) => l.code) as readonly AILanguageCode[];

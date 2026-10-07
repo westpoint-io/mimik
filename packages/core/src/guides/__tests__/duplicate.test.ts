@@ -121,7 +121,7 @@ describe('duplicateGuide', () => {
     const source = await getGuide('g1');
     expect(source?.guide.title).toBe('Original');
     expect(source?.guide.stepIds).toEqual(['s1']);
-    expect(source?.steps[0].screenshotId).toBe('sc1');
+    expect(source!.steps[0]!.screenshotId).toBe('sc1');
   });
 
   it('gives the copy screenshot rows of its own so edits do not leak between guides', async () => {
@@ -131,7 +131,7 @@ describe('duplicateGuide', () => {
 
     const copyId = await duplicateGuide('g1');
     const copy = await getGuide(copyId!);
-    const copiedRow = copy!.screenshots.get(copy!.steps[0].id)!;
+    const copiedRow = copy!.screenshots.get(copy!.steps[0]!.id)!;
 
     await db.screenshots.update(copiedRow.id, { edits: { alt: 'edited in the copy only' } });
 
@@ -160,7 +160,7 @@ describe('duplicateGuide', () => {
     const copyId = await duplicateGuide('g1');
     const copy = await getGuide(copyId!);
 
-    expect(await db.screenshots.where('stepId').equals(copy!.steps[0].id).count()).toBe(1);
+    expect(await db.screenshots.where('stepId').equals(copy!.steps[0]!.id).count()).toBe(1);
   });
 
   it('does not inherit starred, trashed or staging state', async () => {
@@ -181,7 +181,7 @@ describe('duplicateGuide', () => {
     const copyId = await duplicateGuide('g1');
     const copy = await getGuide(copyId!);
 
-    expect(copy?.steps[0].aiPending).toBeUndefined();
+    expect(copy!.steps[0]!.aiPending).toBeUndefined();
     expect((await db.steps.get('s1'))?.aiPending).toBe(true);
   });
 
@@ -194,7 +194,7 @@ describe('duplicateGuide', () => {
     const copy = await getGuide(copyId!);
 
     expect(copy?.steps).toHaveLength(1);
-    expect(copy?.steps[0].screenshotId).toBeUndefined();
+    expect(copy!.steps[0]!.screenshotId).toBeUndefined();
     expect(copy?.screenshots.size).toBe(0);
     expect(await db.screenshots.count()).toBe(1);
   });
@@ -228,17 +228,17 @@ describe('duplicateGuide', () => {
     });
 
     const copyId = (await duplicateGuide('g1'))!;
-    const copyStepId = (await getGuide(copyId))!.steps[0].id;
+    const copyStepId = (await getGuide(copyId))!.steps[0]!.id;
     const [copied] = await getTranscripts(copyId);
-    expect(copied.id).not.toBe('t1');
-    expect(copied.lines[0].stepId).toBe(copyStepId);
-    expect(copied.lines[1]).toMatchObject({ stepId: null });
-    expect(copied.lines[1].addedByHand).toBeUndefined();
+    expect(copied!.id).not.toBe('t1');
+    expect(copied!.lines[0]!.stepId).toBe(copyStepId);
+    expect(copied!.lines[1]).toMatchObject({ stepId: null });
+    expect(copied!.lines[1]!.addedByHand).toBeUndefined();
 
     await deleteTranscripts(copyId);
     const copyStep = (await getGuide(copyId))!.steps[0];
-    expect(copyStep.narratedDescription).toBeUndefined();
-    expect(copyStep.description).not.toBe('Open billing');
+    expect(copyStep!.narratedDescription).toBeUndefined();
+    expect(copyStep!.description).not.toBe('Open billing');
     expect(await getTranscripts('g1')).toHaveLength(1);
   });
 
