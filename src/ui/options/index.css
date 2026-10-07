@@ -1,16 +1,8 @@
 @import "../../../packages/ui/src/global.css";
 
-html, body, #root {
+html, body {
   margin: 0;
   padding: 0;
-  height: 100%;
-  width: 100%;
-}
-
-#root {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(ellipse at center, #fafafc 0%, #f0f2fa 60%, #e5e8f4 100%);
-  min-height: 100vh;
+  min-height: 100%;
+  background: var(--color-secondary);
 }

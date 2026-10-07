@@ -3,8 +3,8 @@ import { i18n } from '@mimik/core/env';
 import { useEffect } from 'react';
 import { useKeyCheck } from '../hooks/use-key-check';
 import type { ValidateKey } from '../types';
-import { KeyStatusIcon } from './KeyStatusIcon';
 import { KeyStatusNote } from './KeyStatusNote';
+import { KeyStatusPill } from './KeyStatusPill';
 import { KeyWarningNote } from './KeyWarningNote';
 import { ProviderLogo } from './ProviderLogo';
 import { SecretInput } from './SecretInput';
@@ -33,7 +33,7 @@ export function ProviderKeyRow({ provider, value, onChange, validate, bare = fal
             <span className="w-7 h-7 rounded-lg bg-secondary text-foreground flex items-center justify-center shrink-0">
               <ProviderLogo provider={provider} />
             </span>
-            <span className="w-24 shrink-0 text-[13px] font-semibold text-foreground">
+            <span className="w-28 shrink-0 text-[13px] font-semibold text-foreground">
               {KEY_PROVIDER_LABELS[provider]}
             </span>
           </>
@@ -48,20 +48,14 @@ export function ProviderKeyRow({ provider, value, onChange, validate, bare = fal
             if (value.trim()) void check(provider, value.trim());
           }}
           placeholder={KEY_PLACEHOLDERS[provider]}
+          status={<KeyStatusPill status={keyCheck.status} />}
           aria-label={bare ? i18n.t('settings.apiKey') : undefined}
           className={bare ? 'h-11 rounded-xl pl-4 text-sm border-border' : 'h-8 text-[13px] rounded-lg border-border'}
         />
-        {!bare && (
-          <span className="w-4 shrink-0 flex justify-center">
-            <KeyStatusIcon status={keyCheck.status} />
-          </span>
-        )}
       </div>
-      {(bare || (keyCheck.status !== 'valid' && keyCheck.status !== 'checking')) && (
-        <div className={bare ? '' : 'pl-10'}>
-          <KeyStatusNote status={keyCheck.status} />
-        </div>
-      )}
+      <div className={bare ? '' : 'pl-10'}>
+        <KeyStatusNote status={keyCheck.status} />
+      </div>
       <div className={bare ? '' : 'pl-10'}>
         <KeyWarningNote warning={keyCheck.warning} />
       </div>

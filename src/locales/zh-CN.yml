@@ -91,7 +91,8 @@ recording:
 
 settings:
   title: 设置
-  aiDescriptions: AI 描述
+  aiDescriptions: "步骤描述"
+  aiDescriptionsHint: "Mimik 使用你的 AI 服务商撰写每个步骤的文字并为指南命名。"
   provider: 提供商
   model: 模型
   modelCustom: 自定义模型
@@ -108,18 +109,16 @@ settings:
   ownServer: "自己的服务器"
   optional: "可选"
   serverSpeaks: "兼容"
-  protocolOpenai: "OpenAI API"
-  protocolAnthropic: "Anthropic API"
+  protocolOpenai: "OpenAI"
+  protocolAnthropic: "Anthropic"
   noServer: "尚未填写服务器地址。"
   noKeyFor: "尚未添加 $1 密钥。"
   addOneInKeys: "请在 API 密钥中添加。"
   addKey: "添加密钥"
   noKey: "无密钥"
   voiceover: "视频配音"
-  textToSpeech: "文字 → 语音"
   voiceoverHint: "Mimik 会在导出的视频中朗读每个步骤的文本。"
   voice: "语音"
-  speechToText: "语音 → 文字"
   voiceNarrationHint: "边录边讲，Mimik 会根据你说的内容写出每个步骤。"
   voiceNarration: 语音讲解
   aiNoKey: "没有 API 密钥时，步骤使用基于规则的简单描述。"
@@ -139,8 +138,10 @@ settings:
   microphoneTestStop: 停止测试
   microphoneTestFailed: "无法打开该麦克风，请换一个试试。"
   targetColor: "品牌颜色"
-  targetColorHint: "用于点击高亮和导出内容的强调色"
+  targetColorHint: "用于点击高亮和导出内容中的强调色。"
   branding: "导出品牌设置"
+  logoAndFooter: "徽标和页脚"
+  logoAndFooterHint: "显示在你导出的每份指南上。"
   brandLogo: "Logo"
   uploadLogo: "上传 Logo"
   replaceLogo: "替换"
@@ -154,6 +155,11 @@ settings:
   saved: 已保存
   validatingKey: "正在检查密钥…"
   keyValid: API 密钥已验证。
+  keyChecking: "正在检查…"
+  keyVerified: "已验证"
+  keyRejected: "已拒绝"
+  keyOffline: "无法连接"
+  keyCheckModel: "检查模型"
   keyInvalid: "提供商拒绝了该密钥。请检查后重试。"
   keyModelInvalid: "所选模型在此提供商上不可用。"
   keyModelRequired: "请先选择模型，再检查此密钥。"
@@ -183,6 +189,7 @@ desktop:
   finish: "完成"
   screenshotDelay: "截图延迟"
   keepClicksBeyondArea: "捕获区域外的点击"
+  keepClicksBeyondAreaHint: "在区域模式下，区域外的点击也会成为步骤，并以该区域取景。"
   guideInApp: "$1 中的指南"
   capturingSection: "捕获"
   milliseconds: ms
@@ -191,23 +198,33 @@ desktop:
   modeScreen: 屏幕
   modeRegion: 区域
   startSheetTitle: 开始捕获
+  permissionsTitle: "需要权限"
+  permissionsIntro: "Mimik 需要几项权限才能录制。"
+  permissionAccessibility: "辅助功能"
+  permissionAccessibilityHint: "用于记录你的点击和按键。"
+  permissionScreen: "屏幕录制"
+  permissionScreenHint: "用于为你的指南截取屏幕截图。"
+  permissionScreenRestart: "重启 Mimik 以完成开启。"
+  permissionGrant: "授予权限"
+  permissionGranted: "已授予"
+  permissionRestart: "重启 Mimik"
   moreStepsAfter: "新步骤会插入到第 $1 步之后。"
   moreStepsFirst: "新步骤会插入到第 1 步之前。"
   startButton: 开始
   shortcutsSection: "快捷键"
   generalSection: "通用"
   appLanguage: "应用语言"
-  appLanguageHint: "Mimik 界面的语言。AI 描述有单独的设置。"
+  appLanguageHint: "Mimik 界面的语言。步骤描述有单独的语言设置。"
   languageSystem: "跟随系统"
   cardLanguage: "语言"
   cardStartup: "启动"
   cardUpdates: "更新"
   startAtLogin: "登录时启动"
   startAtLoginHint: "Mimik 在托盘中打开，不显示窗口。"
+  startAtLoginHintMac: "登录时打开 Mimik。"
   version: "版本 $1"
   versionHint: "Mimik 每次启动时都会检查更新。"
   checkUpdates: "检查更新"
-  traySetArea: "设置捕获区域"
   trayQuit: "退出 Mimik"
   trayRecording: "Mimik 正在录制。点击即可完成。"
   cannotRecord: "Mimik 无法录制"
@@ -216,6 +233,7 @@ desktop:
   restartNow: "立即重启"
   later: "稍后"
   updateFailed: "检查更新失败"
+  updateFailedMessage: "Mimik 无法连接更新服务器，请稍后再试。"
   upToDate: "已是最新版本"
   upToDateMessage: "Mimik $1 已是最新版本。"
   cardScreenshots: "屏幕截图"
@@ -228,9 +246,11 @@ desktop:
   zoomGuide: "缩放"
   recordKeys: "记录快捷键和命名按键"
   recordTyping: "记录输入内容"
+  recordTypingHint: "在一个输入框中输入的内容会成为一个步骤。"
   typingDebounce: "输入步骤结束延迟"
-  cardScreenshotsHint: "每一步截取的内容"
-  cardKeyboardHint: "键盘为指南添加的内容"
+  typingDebounceHint: "停顿这么久会结束输入步骤。"
+  cardScreenshotsHint: "每个步骤的截图所显示的内容。"
+  cardKeyboardHint: "键盘为指南添加的内容。"
   captureModeHint: "窗口模式跟随你点击的应用。"
   screenshotDelayHint: "截图前等待，适用于带动画的菜单。"
   recordKeysHint: "Ctrl+S、Enter 等会成为步骤。"
@@ -266,14 +286,12 @@ sort:
   listView: 列表视图
 
 search:
-  startTyping: 开始输入以查找指南
-  noMatchingGuides: 没有匹配的指南
+  recent: "最近"
+  results: "$1 个指南"
+  resultsOne: "1 个指南"
+  noMatch: "没有与“$1”匹配的指南"
+  noMatchHint: "试试指南标题中的某个词。"
   noGuidesYet: 暂无指南
-
-keyboard:
-  navigate: 导航
-  open: 打开
-  close: 关闭
 
 confirmDelete:
   title: "删除指南？"

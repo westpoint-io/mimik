@@ -20,15 +20,24 @@ extraFiles:
 extraResources:
   - from: resources
     to: .
+fileAssociations:
+  - ext: mimik
+    name: Mimik guide
+    description: Mimik guide
+    role: Editor
+    mimeType: application/x-mimik
 publish:
   provider: github
   owner: westpoint-io
   repo: mimik
 mac:
   category: public.app-category.productivity
+  artifactName: ${productName}-${version}-${arch}.${ext}
   target:
     - dmg
     - zip
+  extendInfo:
+    NSMicrophoneUsageDescription: Mimik listens while you narrate a recording, when you turn narration on.
 win:
   target:
     - nsis

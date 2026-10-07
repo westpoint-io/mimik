@@ -29,6 +29,7 @@ export interface UiEnv {
     requestHostPermissions(): Promise<boolean>;
   };
   send<T = any>(name: string, payload?: unknown): Promise<T>;
+  appIconUrl?(id: string): string | null;
 }
 
 let current: UiEnv | null = null;
@@ -56,6 +57,10 @@ export const tabs: UiEnv['tabs'] = {
 export const panel: UiEnv['panel'] = {
   open: () => env().panel.open(),
   requestHostPermissions: () => env().panel.requestHostPermissions(),
+};
+
+export const appIcons = {
+  url: (id: string): string | null => current?.appIconUrl?.(id) ?? null,
 };
 
 export const messages: Pick<UiEnv, 'send'> = {

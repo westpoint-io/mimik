@@ -23,16 +23,7 @@ export function VoiceoverSettings({ keys, listVoices, onOpenKeys, onChange }: Vo
   const voiceover = useVoiceoverSettings(keys, listVoices, onChange);
 
   return (
-    <SettingsCard
-      icon={AudioLines}
-      title={i18n.t('settings.voiceover')}
-      hint={i18n.t('settings.voiceoverHint')}
-      action={
-        <span className="shrink-0 rounded-md bg-secondary px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-muted-foreground">
-          {i18n.t('settings.textToSpeech')}
-        </span>
-      }
-    >
+    <SettingsCard icon={AudioLines} title={i18n.t('settings.voiceover')} hint={i18n.t('settings.voiceoverHint')}>
       <div>
         <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.provider')}</label>
         <ProviderSelect

@@ -672,8 +672,8 @@ app.whenReady().then(async () => {
   });
 
   results.push({
-    name: 'stopping names the guide',
-    ok: titled.length > 0 && titled !== 'Untitled Guide' && !titled.includes('untitledGuide'),
+    name: 'an empty recording keeps its untitled guide',
+    ok: titled.toLowerCase() === 'untitled guide',
     detail: titled,
   });
 

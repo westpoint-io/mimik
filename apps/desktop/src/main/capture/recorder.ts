@@ -126,9 +126,10 @@ export function isRepeatKey(previous: { keycode: number; at: number } | null, ke
 
 export function comboLabel(action: KeyAction, key: string): string {
   const held: string[] = [];
-  if (action.meta) held.push('Meta');
+  const mac = process.platform === 'darwin';
+  if (action.meta) held.push(mac ? 'Cmd' : 'Meta');
   if (action.ctrl) held.push('Ctrl');
-  if (action.alt) held.push('Alt');
+  if (action.alt) held.push(mac ? 'Option' : 'Alt');
   if (action.shift) held.push('Shift');
   return [...held, key].join('+');
 }
@@ -170,7 +171,7 @@ export function isBoundShortcut(accelerator: string | null, action: KeyAction, k
 
 export function isTextKey(action: KeyAction): boolean {
   if (MODIFIER_KEYS.has(action.keycode)) return false;
-  if (action.ctrl || action.alt || action.meta) return false;
+  if (action.ctrl || action.meta || (action.alt && process.platform !== 'darwin')) return false;
   return !COMMIT_KEYS.has(action.keycode);
 }
 

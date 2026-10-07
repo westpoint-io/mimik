@@ -9,6 +9,7 @@ interface AppFrameProps {
   onStartCapture?: () => void;
   onSettings?: () => void;
   settingsExternal?: boolean;
+  version?: string;
   guideActions?: ReactNode;
   children: ReactNode;
 }
@@ -18,6 +19,7 @@ export function AppFrame({
   onStartCapture,
   onSettings,
   settingsExternal,
+  version,
   guideActions,
   children,
 }: AppFrameProps) {
@@ -31,6 +33,7 @@ export function AppFrame({
         onStartCapture={onStartCapture}
         onSettings={onSettings}
         settingsExternal={settingsExternal}
+        version={version}
       />
       <div className="flex-1 min-w-0 flex flex-col">
         <TopBar route={route} guideActions={guideActions} />

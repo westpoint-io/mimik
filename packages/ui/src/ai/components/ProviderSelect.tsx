@@ -29,11 +29,19 @@ export function ProviderSelect<T extends string>({
   triggerClassName,
 }: ProviderSelectProps<T>) {
   const [open, setOpen] = useState(false);
+  const missingKey = options.find((option) => option.value === value)?.available === false;
 
   return (
     <Select open={open} onOpenChange={setOpen} value={value} onValueChange={(next) => onChange(next as T)}>
       <SelectTrigger className={triggerClassName ?? 'h-8'}>
-        <SelectValue />
+        <span className="flex min-w-0 flex-1 items-center gap-2">
+          <SelectValue />
+          {missingKey && (
+            <span className="ml-auto inline-flex h-[22px] shrink-0 items-center rounded-full bg-[#FEF3F2] px-2.5 text-[11px] font-semibold text-[#B42318]">
+              {i18n.t('settings.noKey')}
+            </span>
+          )}
+        </span>
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (
@@ -64,11 +72,13 @@ export function ProviderSelect<T extends string>({
               ) : (
                 <span className="ml-auto text-[11px]">{i18n.t('settings.noKey')}</span>
               ))}
-            <span className="absolute right-2 flex items-center">
-              <SelectPrimitive.ItemIndicator>
-                <Check size={13} className="text-accent" />
-              </SelectPrimitive.ItemIndicator>
-            </span>
+            {option.available && (
+              <span className="absolute right-2 flex items-center">
+                <SelectPrimitive.ItemIndicator>
+                  <Check size={13} className="text-accent" />
+                </SelectPrimitive.ItemIndicator>
+              </span>
+            )}
           </SelectPrimitive.Item>
         ))}
       </SelectContent>

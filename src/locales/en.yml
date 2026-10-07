@@ -91,7 +91,8 @@ recording:
 
 settings:
   title: Settings
-  aiDescriptions: "AI descriptions"
+  aiDescriptions: "Step descriptions"
+  aiDescriptionsHint: "Mimik writes each step's text and names your guide with your AI provider."
   provider: Provider
   model: Model
   modelCustom: Custom model
@@ -108,18 +109,16 @@ settings:
   ownServer: "Your own server"
   optional: "Optional"
   serverSpeaks: "Compatible with"
-  protocolOpenai: "OpenAI API"
-  protocolAnthropic: "Anthropic API"
+  protocolOpenai: "OpenAI"
+  protocolAnthropic: "Anthropic"
   noServer: "No server address yet."
   noKeyFor: "No $1 key yet."
   addOneInKeys: "Add one in API keys."
   addKey: "Add key"
   noKey: "No key"
   voiceover: "Video voice-over"
-  textToSpeech: "text → speech"
   voiceoverHint: "Mimik speaks each step's text over the exported video."
   voice: "Voice"
-  speechToText: "speech → text"
   voiceNarrationHint: "Talk through the workflow and Mimik writes each step from what you said."
   voiceNarration: "Voice narration"
   aiNoKey: "Without an API key, steps get basic rule-based descriptions."
@@ -139,8 +138,10 @@ settings:
   microphoneTestStop: Stop test
   microphoneTestFailed: "Couldn't open that microphone. Try another one."
   targetColor: "Brand color"
-  targetColorHint: "Click highlights and export accents"
+  targetColorHint: "Colors the click highlight and the accents in exports."
   branding: "Export branding"
+  logoAndFooter: "Logo and footer"
+  logoAndFooterHint: "Shown on every guide you export."
   brandLogo: "Logo"
   uploadLogo: "Upload logo"
   replaceLogo: "Replace"
@@ -154,6 +155,11 @@ settings:
   saved: Saved
   validatingKey: "Checking key\u2026"
   keyValid: API key verified.
+  keyChecking: "Checking…"
+  keyVerified: "Verified"
+  keyRejected: "Rejected"
+  keyOffline: "Unreachable"
+  keyCheckModel: "Check model"
   keyInvalid: "The provider rejected this key. Check it and try again."
   keyModelRequired: Choose a model before checking this key.
   keyModelInvalid: The selected model isn't available from this provider.
@@ -183,6 +189,7 @@ desktop:
   finish: Finish
   screenshotDelay: Screenshot delay
   keepClicksBeyondArea: Capture clicks outside the area
+  keepClicksBeyondAreaHint: "In Area mode, clicks outside the area still become steps, framed by the area."
   guideInApp: "Guide in $1"
   capturingSection: Capturing
   milliseconds: ms
@@ -191,23 +198,33 @@ desktop:
   modeScreen: Screen
   modeRegion: Area
   startSheetTitle: Start a capture
+  permissionsTitle: "Permissions required"
+  permissionsIntro: "Mimik needs a couple of permissions to record."
+  permissionAccessibility: "Accessibility"
+  permissionAccessibilityHint: "Required to record your clicks and keystrokes."
+  permissionScreen: "Screen Recording"
+  permissionScreenHint: "Required to capture screenshots for your guides."
+  permissionScreenRestart: "Restart Mimik to finish turning this on."
+  permissionGrant: "Grant permission"
+  permissionGranted: "Granted"
+  permissionRestart: "Restart Mimik"
   moreStepsAfter: "New steps are inserted after step $1."
   moreStepsFirst: "New steps are inserted before step 1."
   startButton: Start
   shortcutsSection: "Shortcuts"
   generalSection: "General"
   appLanguage: "App language"
-  appLanguageHint: "The language of Mimik's own screens. AI descriptions have their own setting."
+  appLanguageHint: "The language of Mimik's own screens. Step descriptions have their own language setting."
   languageSystem: "Same as the system"
   cardLanguage: "Language"
   cardStartup: "Startup"
   cardUpdates: "Updates"
   startAtLogin: "Start at login"
   startAtLoginHint: "Mimik opens in the tray, without a window."
+  startAtLoginHintMac: "Mimik opens when you log in."
   version: "Version $1"
   versionHint: "Mimik looks for updates each time it starts."
   checkUpdates: "Check for updates"
-  traySetArea: "Set capture area"
   trayQuit: "Quit Mimik"
   trayRecording: "Mimik is recording. Click to finish."
   cannotRecord: "Mimik cannot record"
@@ -216,6 +233,7 @@ desktop:
   restartNow: "Restart now"
   later: "Later"
   updateFailed: "Update check failed"
+  updateFailedMessage: "Mimik couldn't reach the update server. Try again later."
   upToDate: "Up to date"
   upToDateMessage: "Mimik $1 is current."
   cardScreenshots: "Screenshots"
@@ -228,9 +246,11 @@ desktop:
   zoomGuide: "Zoom"
   recordKeys: "Record shortcuts and named keys"
   recordTyping: "Record what you type"
+  recordTypingHint: "Everything you type into one field becomes one step."
   typingDebounce: "Close a typing step after"
-  cardScreenshotsHint: "What each step captures"
-  cardKeyboardHint: "What the keyboard adds to a guide"
+  typingDebounceHint: "A pause this long ends the typing step."
+  cardScreenshotsHint: "What each step's screenshot shows."
+  cardKeyboardHint: "What your keyboard adds to a guide."
   captureModeHint: "Window follows the app you click."
   screenshotDelayHint: "Wait before taking the screenshot, for menus that animate."
   recordKeysHint: "Ctrl+S, Enter and the like become steps."
@@ -266,14 +286,12 @@ sort:
   listView: List view
 
 search:
-  startTyping: Start typing to find a guide
-  noMatchingGuides: No matching guides
+  recent: "Recent"
+  results: "$1 guides"
+  resultsOne: "1 guide"
+  noMatch: "No guides match “$1”"
+  noMatchHint: "Try a word from the guide's title."
   noGuidesYet: No guides yet
-
-keyboard:
-  navigate: navigate
-  open: open
-  close: close
 
 confirmDelete:
   title: "Delete guide?"

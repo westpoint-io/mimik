@@ -70,7 +70,7 @@ export function editor(origin: { x: number; y: number }): void {
     region.style.top = `${local.top}px`;
     region.style.width = `${rect.width}px`;
     region.style.height = `${rect.height}px`;
-    size.textContent = `${rect.width} × ${rect.height}`;
+    size.textContent = `${Math.round(rect.width)} × ${Math.round(rect.height)}`;
   }
 
   function commit(next: Region): void {
@@ -84,14 +84,14 @@ export function editor(origin: { x: number; y: number }): void {
     if (bar.contains(target)) return;
     const handle = target.dataset.handle as Handle | undefined;
     const moving = !handle && region.contains(target) && rect !== null;
-    const start = { x: event.clientX + origin.x, y: event.clientY + origin.y };
+    const start = { x: Math.round(event.clientX + origin.x), y: Math.round(event.clientY + origin.y) };
     const from = rect ? { ...rect } : null;
 
     document.body.setPointerCapture(event.pointerId);
     event.preventDefault();
 
     const move = (e: PointerEvent) => {
-      const point = { x: e.clientX + origin.x, y: e.clientY + origin.y };
+      const point = { x: Math.round(e.clientX + origin.x), y: Math.round(e.clientY + origin.y) };
       if (handle && from) {
         const left = handle.includes('w') ? point.x : from.x;
         const top = handle.includes('n') ? point.y : from.y;

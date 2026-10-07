@@ -28,6 +28,11 @@ interface CrateNode {
 
 const APP = resolve(__dirname, '..');
 const ADDON = resolve(APP, '../../packages/capture-native');
+const ADDON_TARGETS: Record<string, string> = {
+  'capture-native.win32-x64-msvc.node': 'x86_64-pc-windows-msvc',
+  'capture-native.darwin-arm64.node': 'aarch64-apple-darwin',
+  'capture-native.darwin-x64.node': 'x86_64-apple-darwin',
+};
 const OUT = join(APP, 'out/THIRD_PARTY_NOTICES.txt');
 const LICENCE_FILE = /^(licen[cs]e|copying|notice|copyright)([.\-_].*)?$/i;
 const PACKAGE_DIR = /^(.*[\\/]node_modules[\\/](?:@[^\\/]+[\\/])?[^\\/]+)[\\/]/;
@@ -106,8 +111,9 @@ function shippedPackages(): string[] {
 }
 
 function crateNotices(): Notice[] {
-  if (!existsSync(join(ADDON, 'capture-native.win32-x64-msvc.node'))) return [];
-  const args = ['metadata', '--format-version', '1', '--offline', '--filter-platform', 'x86_64-pc-windows-msvc'];
+  const target = Object.entries(ADDON_TARGETS).find(([binary]) => existsSync(join(ADDON, binary)))?.[1];
+  if (!target) return [];
+  const args = ['metadata', '--format-version', '1', '--offline', '--filter-platform', target];
   const meta: { packages: Crate[]; resolve: { root: string; nodes: CrateNode[] } } = JSON.parse(
     execFileSync('cargo', [...args, '--manifest-path', join(ADDON, 'Cargo.toml')], {
       encoding: 'utf8',

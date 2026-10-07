@@ -5,9 +5,11 @@ import { mainI18n } from './i18n';
 const { autoUpdater } = electronUpdater;
 
 let wired = false;
+let manual = false;
 
 export function checkForUpdates(opts: { notifyWhenUpToDate: boolean }): void {
   if (!app.isPackaged) return;
+  manual = opts.notifyWhenUpToDate;
 
   if (!wired) {
     wired = true;
@@ -24,11 +26,13 @@ export function checkForUpdates(opts: { notifyWhenUpToDate: boolean }): void {
       if (response === 0) autoUpdater.quitAndInstall();
     });
     autoUpdater.on('error', (err) => {
-      if (opts.notifyWhenUpToDate) {
+      if (manual) {
+        console.error('update check failed', err);
         dialog.showMessageBox({
           type: 'error',
           title: mainI18n.t('desktop.updateFailed'),
-          message: String(err?.message ?? err),
+          message: mainI18n.t('desktop.updateFailed'),
+          detail: mainI18n.t('desktop.updateFailedMessage'),
         });
       }
     });
@@ -37,7 +41,7 @@ export function checkForUpdates(opts: { notifyWhenUpToDate: boolean }): void {
   autoUpdater
     .checkForUpdates()
     .then((result) => {
-      if (opts.notifyWhenUpToDate && !result?.updateInfo) {
+      if (opts.notifyWhenUpToDate && result?.isUpdateAvailable === false) {
         dialog.showMessageBox({
           type: 'info',
           title: mainI18n.t('desktop.upToDate'),

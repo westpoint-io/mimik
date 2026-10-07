@@ -1,6 +1,6 @@
 import { i18n } from '@mimik/core/env';
 import { Eye, EyeOff, X } from 'lucide-react';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Input } from '../../components/ui/input';
 
 export function SecretInput({
@@ -10,6 +10,7 @@ export function SecretInput({
   placeholder,
   className,
   buttonClassName,
+  status,
 }: {
   value: string;
   onChange: (next: string) => void;
@@ -17,6 +18,7 @@ export function SecretInput({
   placeholder?: string;
   className?: string;
   buttonClassName?: string;
+  status?: ReactNode;
 }) {
   const [revealed, setRevealed] = useState(false);
   const Icon = revealed ? EyeOff : Eye;
@@ -29,8 +31,15 @@ export function SecretInput({
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
         placeholder={placeholder}
-        className={`${value ? 'pr-14' : 'pr-8'} ${className ?? ''}`}
+        className={`${status ? 'pr-40' : value ? 'pr-14' : 'pr-8'} ${className ?? ''}`}
       />
+      {status && (
+        <span
+          className={`pointer-events-none absolute top-1/2 flex -translate-y-1/2 ${value ? 'right-14' : 'right-8'}`}
+        >
+          {status}
+        </span>
+      )}
       {value && (
         <button
           type="button"

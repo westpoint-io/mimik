@@ -31,7 +31,7 @@ src/                     the Chrome extension (WXT)
 packages/
 ├── core/src/            logic both surfaces share: capture, guides, export, screenshot, blur, guideme, i18n, env
 ├── ui/src/              React both surfaces share, grouped by feature
-└── capture-native/      the Windows UIAutomation addon, in Rust
+└── capture-native/      the accessibility addon, UIAutomation on Windows and AX on macOS, in Rust
 apps/desktop/src/
 ├── main/                Electron main: window, tray, capture pipeline, overlay windows, shortcuts
 ├── preload/             the contextBridge API
@@ -308,11 +308,14 @@ that the lint allows; it is plain data, so it cannot drag the package in with it
 exists — that launch must not put anything on screen. `splash.html` draws the mascot with the
 overlay's `mascot()` builder, so the drawing still comes from the one set of shapes.
 
-The window also hides the moment a capture begins — Start in the sheet, the tray's area editor, or the
+The window also hides the moment a capture begins — Start in the sheet or the
 start shortcut — so Mimik never records itself, and it comes back when the guide is finished, or on
 Cancel when it was open beforehand. Its renderer keeps full speed while hidden, because it is the
 one writing every step. The tray icon carries a red dot for as long as a recording runs, and clicking
-it then finishes the recording rather than opening the window.
+it then finishes the recording rather than opening the window. Its menu is All guides, Start capture and
+Settings, each opening the window on that place in the words the app already uses for it, then the
+version, greyed out, and Quit Mimik. Start at login and Check for updates live in Settings, and
+drawing the area in the capture sheet, so the menu repeats neither.
 
 The YAML loader in `electron.vite.config.ts` writes the word "import" inside locale strings as
 `\u0069mport`. electron-vite's CommonJS shim is inserted after whatever its pattern takes for the last
@@ -360,8 +363,8 @@ Electron, three are prebuilt npm packages, and only the last is a crate we maint
 |---|---|---|
 | Displays, DPI, cursor | Electron `screen` | no |
 | Screenshot of a display | `node-screenshots` | prebuilt |
-| Focused foreign window | `@mimik/capture-native` on Windows, `get-windows` elsewhere | ours / prebuilt |
-| Global clicks and keys | `uiohook-napi` | prebuilt |
+| Focused foreign window | `@mimik/capture-native` on Windows and macOS, `get-windows` elsewhere | ours / prebuilt |
+| Global clicks and keys | `uiohook-napi`; the addon's event tap on macOS | prebuilt / ours |
 | Control under a point | `@mimik/capture-native` | ours |
 
 Screenshots do not go through Electron's `desktopCapturer`. That route asks the xdg desktop portal
@@ -419,9 +422,41 @@ name is the executable's `FileDescription`, falling back to its file name, which
 `get-windows` reported, so guide names do not change between the two paths. `window.rs` holds the
 popup and screen-coverage rules without COM or user32, so they are tested on Linux beside `hit.rs`.
 
-Windows only. `is_supported()` answers false everywhere else and `elementAtPoint` resolves to null,
+Windows and macOS. `is_supported()` answers false on Linux and `elementAtPoint` resolves to null,
 so the app, the checks and the recording pipeline all behave the same as when the binary is simply
-missing. macOS is the same shape of work against `AXUIElementCopyAttributeValue` and is not done.
+missing.
+
+On macOS, `mac.rs` is the same six calls against the accessibility API, bound by hand to
+CoreFoundation, ApplicationServices, CoreGraphics and Carbon rather than through binding crates,
+since the calls are few and each crate would pin its own copy of the CoreFoundation types. The hit
+test is `AXUIElementCopyElementAtPosition` on the system-wide element with a one-second messaging
+timeout. It answers the other way round from UIAutomation: with the deepest element, so a click on
+a button's label returns the label's static text. A text or image hit is therefore promoted to the
+nearest control within three parents — button, link, menu item, tab, row, cell and the toggles —
+and anything else is left as it is. Chromium and Electron build their accessibility tree only when
+something asks, so the first hit in an application sets `AXManualAccessibility` on it, once per
+process, and repeats the hit test; other applications refuse the attribute and nothing changes. A
+hit that lands on Mimik's own overlay answers null rather than naming the card. The accessible name
+is `AXTitle`, then `AXDescription`, then the value of `AXTitleUIElement`, which is how a text field
+names its label; the placeholder rides in the help text, and a password is `AXSecureTextField`,
+whose value is never read. `macmap.rs` holds the role table and the key tables with no FFI in them,
+so they are tested on Linux beside `hit.rs`.
+
+Windows on macOS come from `CGWindowListCopyWindowInfo`, front to back, keeping layer 0 only: menus,
+popovers and the menu bar sit on higher layers, so a click in a dropdown frames the window under it
+without any popup rule, which Windows needs because its menus are top-level windows. The
+frontmost window is the first one owned by `AXFocusedApplication`. The app name is the window's
+owner name and the path is the `.app` bundle around `proc_pidpath`. Points are Quartz points with
+the origin at the top left of the main display, which is exactly Electron's DIP, so none of the
+Windows conversions run. Titles need Screen Recording, and without it they come back empty.
+
+The hook's keycodes are libuiohook's PC scancodes on every platform, so `mac_keycode` maps them to
+macOS virtual keys before `UCKeyTranslate` reads the current layout. `keyLabel` tries the key bare
+and then shifted, because the AZERTY number row only gives a digit with Shift. `resolveKey` keeps
+the dead-key state in an atomic between calls, and `clearDeadKey` zeroes it. The layout calls stay
+synchronous because Text Input Sources must be read on the main thread, which is where Electron's
+main process runs JavaScript. On a Mac, Option is how people type accented letters and symbols, so
+`isTextKey` counts an Option key as typing there, and `comboLabel` names the modifiers Cmd and Option.
 
 The implementation is `IUIAutomation::ElementFromPoint` and six property reads, plus a walk of the
 control view when the element has no name. Named elements skip the walk, because every step of it is
@@ -710,11 +745,10 @@ dash over it, because the area sits over whatever is on screen and a single colo
 against half of it — white on a light app, purple on a dark one. Its Cancel and Done live in the
 standard action bar at the top, with Esc and Enter doing the same.
 
-Where editing returns depends on where it began. From the Ready state or the tray it arms as before.
+Where editing returns depends on where it began. From the Ready state it arms as before.
 From a recording, Done carries on recording: picking Area on the paused card and pressing Enter
 resumes straight away, because drawing the area is the last thing between the person and the next
-step. Cancel goes back to the pause after restoring the mode that was active before Area was picked,
-and the tray's editor during a recording returns to that recording either way. Picking Area mid-recording used to only save the setting, so the next steps were
+step. Cancel goes back to the pause after restoring the mode that was active before Area was picked. Picking Area mid-recording used to only save the setting, so the next steps were
 cropped to whatever area was stored last with no way to draw one, and the editor's Esc sent `cancel`,
 which ends a recording.
 
@@ -1054,10 +1088,22 @@ The renderer answers those requests from `capture-host.ts`, imported for its sid
 `main.tsx`. Nothing else registers the sink, so dropping that import silently costs every capture a
 fifteen second timeout and no visible error.
 
-Stopping a recording names the guide before the window is told, so the view opens on a titled guide
-rather than the placeholder the extension fills in with AI. Desktop has no AI title, so the name
-comes from the recorded application, or a generic one where no application was identified. Without
-it the guide screen waits forever on a title that is never written.
+Finish opens the guide at once, the way the extension's Stop opens its dashboard, and the naming
+runs behind it: main sends `mimik:capture:finishGuide` without awaiting it and shows the window on the
+guide straight away, where it used to wait up to 45 s for descriptions and a title before showing
+anything. A recording with no steps opens its empty guide too, rather than dropping back to the
+library with the guide unseen. The guide view shows the extension's own placeholders meanwhile —
+"Untitled guide" over a shimmering "Writing a description…", and "Writing step description…" on each
+step still waiting — and fills in as each write lands.
+
+That only works because the desktop hears its own writes. Guide changes travel on the
+`mimik-guides` BroadcastChannel, which never delivers a message to the context that sent it; the
+extension writes from its worker and reads in its pages, so the channel was always enough there, but
+the desktop writes and reads in one window, and a guide opened before its descriptions were written
+never updated, and the library never showed a guide recorded while it was on screen. On the desktop
+`notifyGuidesChanged` therefore also dispatches on a same-window `EventTarget` that `onGuidesChanged`
+listens to. Every listener only reloads, so a view hearing its own edit costs a re-read and nothing
+else.
 
 **Every AI request goes through the main process.** A renderer is an ordinary web origin, so a
 `fetch` to `api.anthropic.com` is blocked by CORS and throws — which reads as a rejected key when it
@@ -1124,7 +1170,7 @@ time, 45 s each at most. The desktop fired every description on its own, with no
 waiting for them at Finish, so a hung request left a step on "Writing…" for good and a guide could be
 named before its last descriptions landed. Finish now runs the extension's Stop sequence through
 `settleDescriptions` — wait up to 20 s for the queue, then clear any flag still set — before the name
-is written, and main waits 45 s for that rather than 15.
+is written, with the guide already open on screen while it does.
 
 A failure also says why, in the extension's words. `describeStep` classifies the error with core's
 `describeAiFailure` and sends the reason and provider with `mimik:capture:described`; main keeps it
@@ -1134,9 +1180,11 @@ buttons, where the side panel shows it above Finish, until the next recording st
 `catch { return null }`, so a rejected key and no network both looked exactly like having no key.
 `aiFailureKey` and `aiActionKey` moved from the side panel into `capture/ai/errors.ts` for it.
 
-Stopping a recording names the guide twice. The application name lands first so the view never opens
-on a placeholder, and `generateGuideMeta` replaces it if a key is configured. Ordering it that way
-means the guide is always named, and the AI title is an improvement rather than a prerequisite.
+Naming follows the extension. With no key the fallback — the recorded application, or a generic name
+where none was identified — is written at once. With one, the guide stays "Untitled guide" under
+the shimmer until the descriptions settle and `generateGuideMeta` answers, and the fallback is written
+only if it returns no title, so the guide always ends up named and never shows an application name
+that is about to be replaced.
 
 Step descriptions are only as good as the element lookup. `buildFallbackDescription` picks the verb
 from the role — a text field is entered, a combo box, radio button or menu item is selected, anything
@@ -1223,7 +1271,8 @@ The frame around the dashboard is the exception that proves it. `AppFrame` is th
 dashboard frame, in `packages/ui` and mounted by both surfaces, because it is navigation rather than
 capture and there was nothing about it worth diverging on. It is a sidebar and a top bar. The sidebar
 holds the mascot, Start Capture, All Guides, Starred and Trash with their counts, and Settings at the
-foot. The top bar holds search on the left and the page's own actions on the right — sort and the
+foot. On the desktop the Settings row also reads "Version 1.1.1" at its right end, in the grey of the
+counts, through AppFrame's `version`, which the extension does not pass. The top bar holds search on the left and the page's own actions on the right — sort and the
 list or grid switch on the library, and Zoom, Edit, Version history and Export on a guide. Neither
 repeats a title: the highlighted sidebar item says where you are, and a guide's title is the heading
 over its steps. A breadcrumb and a heading saying "All Guides" were both tried and both only said the
@@ -1249,12 +1298,22 @@ module.
 The guide page's top bar also holds Duplicate, and Transcript when the guide has a narration
 transcript, which only an extension recording produces. The library's controls hold Import, beside
 sort and view, and dropping a `.mimik` file anywhere on the library opens the same dialog, because
-the file lives in the store where both reach it. Duplicate is also an item in the card menu, which
+the file lives in the store where both reach it. On the desktop a `.mimik` file also opens from
+Finder or Explorer: `fileAssociations` in `electron-builder.yml` registers the type, and main takes the
+path from macOS's `open-file`, from its own arguments at launch, or from a second launch's arguments.
+Main only keeps the path and nudges the window; the renderer asks for the file through
+`takeOpenedFile` both when it mounts and when nudged, so a file that arrives before the window has
+loaded is not lost, and puts it in the same store slot the Import button fills, on the library.
+`check:pipeline` exports a guide as `.mimik`, imports it back and compares the steps and screenshots. Duplicate is also an item in the card menu, which
 the list and grid share.
 
 `SearchModal` listens for Ctrl or ⌘ with K itself. The listener used to live in the extension's
 `FullViewApp`, so the desktop mounted the same dialog and the shortcut did nothing there. The search
-box shows ⌘K on a Mac and Ctrl K everywhere else.
+box shows ⌘K on a Mac and Ctrl K everywhere else. The dialog sits near the top of the window rather than its middle. Before
+anything is typed it lists the five most recent guides; typing narrows every guide by title, eight at
+most, with the match marked. Each row is the library's list row shrunk: the first screenshot, the
+title, where it happened, the step count and the date. The selected row takes the lavender wash, not
+the navy fill. There is no key legend: arrows, Enter and Esc work without one.
 
 A page of the library never scrolls. `usePageFit` fits as many columns as the width allows, none
 narrower than 300 px and at most six, and as many rows of cards or list rows as fit between the top
@@ -1265,9 +1324,14 @@ that spans a wide window is mostly empty line. Each card is the first step's scr
 cropped the way the guide shows it — zoomed toward the click on the desktop, around the element in
 the extension — then where the guide happened, its title on up to two lines, and its step count and
 date, with a star on the picture when it is starred. Where it happened is the most common site among
-its steps, with its favicon, or the application the first step names, with a letter tile; the tile
-never asks for a favicon, because that request would send the application's name to a favicon
-service. `loadCardData` reads both for the page being shown. The list view is the same card laid
+its steps, with its favicon, or the application the first step names, with the application's own icon; that icon
+never comes from a favicon service, because the request would send the application's name to it. The
+desktop serves it from the operating system instead: a step's `app.id` is the path of the `.app` bundle
+or `.exe`, `appIconUrl` in the UI env turns it into a `mimik-app-icon:` URL, and main answers with
+`app.getFileIcon`. The extension has no such URL, and neither does an older step whose id is not a
+path, so those keep the letter tile. The desktop's page policy allows the favicon service in
+`img-src`; without it every site showed its letter tile there too. A card with no place at all reads
+"—" on that line. `loadCardData` reads both for the page being shown. The list view is the same card laid
 flat: a 16:9 thumbnail, the title, one line of description, and where it happened with the step
 count and date, with the star and the card's menu always visible. A guide with nothing to show has
 the mascot's eyes on navy in place of a picture, and every card keeps the line for where it
@@ -1381,10 +1445,11 @@ settings were on disk when it finishes.
 Six sections behind one left nav: General, Capturing, AI, Export Branding, Shortcuts and API keys, and
 the dialog opens on General, the first, as desktop settings conventionally do. General holds three cards named
 for what they hold — Language, Startup and Updates — rather than one card named after the section,
-which put "General" in the list and again as the pane's only heading. Startup and Updates are the
-tray menu's own "Start at login" and "Check for updates", in the tray's words and through the same
-`setOpenAtLogin` and `checkForUpdates`, so the tray and the settings cannot disagree; the update check
-does nothing in an unpackaged build, where the updater never runs. The split is the
+which put "General" in the list and again as the pane's only heading. Startup and Updates go
+through `setOpenAtLogin` and `checkForUpdates`, which the tray menu used to offer too; the update check
+does nothing in an unpackaged build, where the updater never runs. On a Mac, Start at login's hint says only that Mimik opens at
+login: macOS 13 and later offer no way to open an app hidden or to tell a login launch apart, so the
+window shows there, where Windows keeps it in the tray. The split is the
 same one that decides where a file lives. Capturing and Shortcuts describe things the extension has
 no concept of, so they are written in `apps/desktop` against `capture-settings.json`. AI descriptions,
 video voice-over, the API keys and Branding are identical on both surfaces, so `AiSettings`,
@@ -1401,8 +1466,11 @@ feature reads the key of the provider it uses through `readApiKeys`. Until that 
 `readApiKeys` assembles it from the three old settings, the descriptions key winning where two
 features held different OpenAI keys; once it exists, even empty, the old settings are ignored, so a
 key cleared in the new section cannot come back from an old one. The API keys section is a field per
-provider with its logo, checked when the field loses focus and on opening, with a tick, a spinner or
-the reason it failed beside it. The feature cards hold no key field at all: each picks its provider
+provider with its logo, checked when the field loses focus and on opening. The result is a pill inside
+the field's right end, `KeyStatusPill` — Checking… with a spinner, Verified in green, Rejected in red —
+with the reason under the field when it failed. A key that passed is remembered for the session in
+`useKeyCheck`, keyed by provider, key, address and model, so reopening the settings shows Verified
+at once rather than asking every provider again; a changed key is a new fingerprint and is checked. The feature cards hold no key field at all: each picks its provider
 through `ProviderSelect`, which lists every provider the feature supports with its logo and greys out
 the ones without a key — your own server without an address — each with an Add key link to the
 keys. The link is a button inside a disabled Radix item, so it takes `pointer-events-auto` back from
@@ -1450,7 +1518,7 @@ Capturing is two cards: Screenshots, and Typing and keys.
 
 Each kind of value has one control, and it shows the value rather than hiding it behind a click. A
 choice among a few is `Segmented`, a row of buttons with the chosen one filled, in `packages/ui` since
-the API keys section uses it for the server's API; that is the capture mode and the zoom, which offers Automatic, 1×, 1.5×, 2×, 3×, 4× and 5× and adds the stored level as one more
+the API keys section uses it for the server's API, where each button is the provider's logo and names itself in a tooltip on hover; that is the capture mode and the zoom, which offers Automatic, 1×, 1.5×, 2×, 3×, 4× and 5× and adds the stored level as one more
 button when an older build saved one in between. An on/off is `Switch`, shared with the extension's
 cards from `packages/ui` so the two cannot drift. A duration is `Slider`, a
 native range input tinted with `accent-accent` beside a chip reading the value in ms or seconds,
@@ -1492,6 +1560,26 @@ written the value. It holds `useApiKeys` itself and hands the state to every car
 extension shows them on one page and a key pasted at the top has to clear the note under the
 narration provider at once; the desktop's `SettingsPanel` holds it for the same reason across
 sections.
+
+The options page, which the dashboard's Settings opens, renders the same view with `layout="sections"`:
+the section list on the left and one section at a time, named in the URL hash (`#api-keys`), so "Add
+one in API keys" switches to that section rather than scrolling. It holds the settings and nothing else: the
+privacy note, the bug link and the star card stay in the side panel, which keeps the single column.
+The options page used to centre its card vertically in a box the height of the window, and
+once the settings outgrew the window the header and the API keys card sat above it, out of reach.
+
+The key rows line up the same way on every surface: the field runs to the card's edge with its status
+inside it, and your own server's labels share the width of the name column, so its fields start where
+the key fields do. Every field is Poppins, the server's address included, which used to be monospace.
+
+A feature whose chosen provider has lost its key keeps the choice and says so: the select shows a red
+No key pill at its right end, in the Verified pill's place and shape, and the list ticks only
+providers that can be used, since a tick beside "Add key" read as both at once.
+
+Card titles name what the card holds, not the section they sit in, and every card and row hint is a
+sentence. The AI section's first card is Step descriptions, with a hint saying what it writes, where
+it said "AI descriptions" under a section called AI; the branding card is Logo and footer, where it
+repeated the section's name, Export branding.
 
 The shortcut recorder reads a keystroke and writes an Electron accelerator. It refuses a bare key,
 because a global accelerator with no modifier takes that key from every application on the machine,
@@ -1557,9 +1645,11 @@ job is to start recording should not need a second press. The stored region is u
 which is what makes that possible in `region` mode.
 
 Starting, from the card or the shortcut, plays the extension's start animation first, and the
-recording begins when it ends. The overlay opens a click-through, content-protected window over what
-is about to be framed — the region, the focused window or the display, the same `frameFor` decision a
-capture makes — and that window calls core's `showStartNotification`, so both surfaces run one
+recording begins when it ends. The overlay opens a click-through, content-protected window over the drawn
+area in Area mode and over the whole display under the pointer otherwise — Window mode included,
+because the window in front when Start is pressed is usually Mimik's own or one about to be left, and
+an animation boxed into it read as the recording being limited to it — and that window calls core's
+`showStartNotification`, so both surfaces run one
 animation from one module. The host hears `start` only after the animation's `animationend`, which
 is the ordering the extension uses too: nothing clicked during it is recorded, so the animation never
 lands in a step, including on Linux where content protection does nothing. Closing the card during it
@@ -1575,7 +1665,51 @@ before `captureKey` writes anything, and it compares by parts rather than by str
 `Shift+Alt+P` and `Alt+Shift+P` are the same shortcut. `CommandOrControl` resolves to Control
 everywhere but macOS.
 
+## macOS Permissions
+
+A Mac records nothing without two permissions: Accessibility, which the click and key hook and the
+accessibility lookup ride on, and Screen Recording, without which every grab comes back as the
+wallpaper. Neither can be granted from inside the app, so every way a capture starts — the sheet's
+Start, the "+" between steps and the start shortcut — goes through
+`whenPermitted` in main, which reads both through `readPermissions` and, when one is missing, holds
+the start as `pendingStart`, shows the window and opens `PermissionsDialog` instead. Nothing is
+checked at launch, because a person who never records should never be asked. Everywhere but macOS
+`readPermissions` answers yes to both and the dialog never opens.
+
+The dialog is the two cards under the mascot, which holds a clipboard with a box for each; a box ticks as its permission is granted, and the mascot smiles once both are. Nothing else is in it. The first Grant permission for each asks macOS,
+which shows its own prompt and is what puts Mimik in the list at all —
+`isTrustedAccessibilityClient(true)` for Accessibility, a one-pixel `desktopCapturer.getSources` for
+Screen Recording — and the prompt's Open System Settings takes the person on. Only that: opening the
+pane as well stacked two windows over the dialog. macOS shows each prompt once, so every later click
+opens that pane of System Settings instead, which is how a permission denied once can still be
+granted; `permission-prompts.json` in userData remembers which prompts have been shown. `useCapturePermissions` re-reads both every two
+seconds while it is open, and once both are on the dialog closes and the held start runs. macOS
+applies Screen Recording to a running app only after it relaunches, so when the window regains
+focus after that button with the permission still off, the card offers Restart Mimik instead:
+`app.relaunch` with `--open-capture`, which leaves a pending start that opens the capture sheet, so
+the person lands where they were. Closing the dialog drops the held start.
+
+Screen Recording is not the last prompt. macOS Sequoia asks again, in its own words — Mimik "is
+requesting to bypass the system private window picker" — the first time an app grabs the screen
+without the system's share picker, and again about monthly, which no app can switch off; a screenshot
+per click cannot go through a picker. It used to land on the first step, mid-recording, so the first
+capture start of each launch on a Mac takes one throwaway grab of the display under the cursor
+(`warmScreenCapture`) and the prompt shows while the card says Ready instead.
+
 ## Desktop Input Hook and CI
+
+On macOS clicks and keys do not come from `uiohook-napi` at all but from the addon's own event tap,
+`machook.rs`: `CGEventTapCreate` on a thread of its own with its own run loop, delivering to
+JavaScript through a threadsafe function, keycodes translated back into libuiohook's codes by
+`hook_keycode` so the recorder reads one vocabulary on every platform. uiohook-napi's `hook_enable`
+waits on a condition variable with no predicate, and when that wait returns early it takes the lock
+that marks the hook as running, concludes the start failed and joins the hook thread — which is
+itself waiting for that lock to report the hook enabled. Both threads then wait forever, the app
+hangs with the card on "Starting…", and on macOS it happened on every start. The tap is
+started once and kept, `InputHook.stop()` only drops the listener, and a tap macOS refuses — no
+Accessibility — rejects at once instead of hanging. The tap is active rather than listen-only,
+because a listen-only tap needs Input Monitoring on top of the Accessibility the dialog asks for, and
+it re-enables itself when macOS disables it for a slow callback.
 
 `uiohook-napi` needs no compiler on Windows: the package ships `prebuilds/win32-x64/uiohook-napi.node`,
 an N-API build that loads in any Electron, and pnpm never runs its `node-gyp-build` install script
@@ -1589,6 +1723,15 @@ and an unsigned NSIS installer uploaded as the run's artifact. `npmRebuild` is o
 tried to compile `get-windows` with node-gyp, which needs Visual Studio the runner does not have. On
 the Ubuntu runner the job lifts AppArmor's limit on unprivileged user namespaces first, or Electron
 falls back to a SUID sandbox helper that is not set up and aborts.
+
+`.github/workflows/desktop-macos.yml` builds the Mac app on GitHub's Apple silicon and Intel
+runners: the addon, the storage and pipeline checks, and an unsigned `.dmg` per architecture as the
+run's artifacts. It runs only when started by hand from the Actions tab, because a macOS minute
+counts as ten against the organisation's included minutes and two runners on every push would
+spend them in a few days. The `.dmg` is named with its architecture, since both builds share a
+version. The Info.plist carries `NSMicrophoneUsageDescription`, because macOS ends an app that asks
+for the microphone without one, and the narration step asks; Accessibility and Screen Recording
+need no usage string.
 
 ## Export Formats
 

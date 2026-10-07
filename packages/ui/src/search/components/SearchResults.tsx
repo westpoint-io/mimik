@@ -1,91 +1,78 @@
 import { i18n } from '@mimik/core/env';
-import type { Guide } from '@mimik/core/guides/types';
+import type { Guide, Screenshot } from '@mimik/core/guides/types';
+import { CornerDownLeft } from 'lucide-react';
 import { FaviconImg } from '../../common/components/FaviconImg';
 import { formatDateShort } from '../../common/lib/format-date-short';
-
-interface GuideResult {
-  guide: Guide;
-  domain: string;
-}
+import { ScreenshotView } from '../../guide/components/ScreenshotView';
+import { MimikEyes } from '../../library/components/MimikEyes';
+import type { GuidePlace } from '../../library/types';
+import { MatchText } from './MatchText';
 
 interface SearchResultsProps {
-  results: GuideResult[];
+  guides: Guide[];
+  thumbnails: Map<string, Screenshot>;
+  places: Map<string, GuidePlace>;
   query: string;
   selected: number;
   onSelect: (guideId: string) => void;
   onHover: (index: number) => void;
 }
 
-export function SearchResults({ results, query, selected, onSelect, onHover }: SearchResultsProps) {
-  if (results.length === 0) {
-    return (
-      <div className="py-8 text-center">
-        <p className="text-sm text-purple">
-          {query ? i18n.t('search_noMatchingGuides') : i18n.t('search_noGuidesYet')}
-        </p>
-      </div>
-    );
-  }
-
+export function SearchResults({ guides, thumbnails, places, query, selected, onSelect, onHover }: SearchResultsProps) {
   return (
     <>
-      {results.map((r, i) => (
-        <div
-          key={r.guide.id}
-          className="flex items-center gap-3 cursor-pointer transition-colors"
-          style={
-            i === selected
-              ? { background: 'var(--color-primary)', borderRadius: '8px', margin: '0 6px', padding: '10px 12px' }
-              : { padding: '10px 16px' }
-          }
-          onClick={() => onSelect(r.guide.id)}
-          onMouseEnter={() => onHover(i)}
-        >
-          <div
-            className="w-5 h-5 rounded flex items-center justify-center text-[8px] font-bold shrink-0 overflow-hidden"
-            style={
-              i === selected
-                ? {
-                    background: 'rgba(199,210,254,0.15)',
-                    border: '1px solid rgba(199,210,254,0.2)',
-                    color: 'var(--color-lavender)',
-                  }
-                : {
-                    background: 'var(--color-secondary)',
-                    border: '1px solid var(--color-border)',
-                    color: 'var(--color-muted-foreground)',
-                  }
-            }
+      {guides.map((guide, i) => {
+        const thumb = thumbnails.get(guide.id);
+        const place = places.get(guide.id);
+        const active = i === selected;
+        const steps = guide.stepIds.length;
+        return (
+          <button
+            key={guide.id}
+            type="button"
+            onClick={() => onSelect(guide.id)}
+            onMouseEnter={() => onHover(i)}
+            className={`flex w-full items-center gap-3 rounded-[10px] px-2.5 py-2 text-left ${active ? 'bg-secondary' : ''}`}
           >
-            <FaviconImg domain={r.domain} size={14} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p
-              className="text-[13px] font-medium truncate"
-              style={{ color: i === selected ? 'var(--color-lavender)' : 'var(--color-foreground)' }}
-            >
-              {r.guide.title}
-            </p>
-            {r.guide.description && (
-              <p
-                className="text-[11px] mt-0.5 line-clamp-1"
-                style={{ color: i === selected ? 'rgba(199,210,254,0.6)' : 'var(--color-muted-foreground)' }}
-              >
-                {r.guide.description}
+            <div className="relative aspect-video w-16 shrink-0 overflow-hidden rounded-md border border-border [&_svg]:h-auto [&_svg]:w-9">
+              {thumb ? (
+                <ScreenshotView
+                  screenshot={thumb}
+                  alt=""
+                  crop
+                  cache
+                  frameRatio={16 / 9}
+                  className="!rounded-none !border-0"
+                  readOnly
+                />
+              ) : (
+                <MimikEyes />
+              )}
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <p className="truncate text-[13.5px] font-semibold text-foreground">
+                <MatchText text={guide.title || i18n.t('fullview_untitledGuide')} query={query} />
               </p>
-            )}
-            <p
-              className="text-[10px] mt-0.5"
-              style={{ color: i === selected ? 'rgba(199,210,254,0.6)' : 'var(--color-muted-foreground)' }}
-            >
-              {r.guide.stepIds.length !== 1
-                ? i18n.t('fullview_stepCountPlural', [String(r.guide.stepIds.length)])
-                : i18n.t('fullview_stepCount', [String(r.guide.stepIds.length)])}{' '}
-              · {formatDateShort(r.guide.updatedAt)}
-            </p>
-          </div>
-        </div>
-      ))}
+              <p className="flex min-w-0 items-center gap-1.5 text-[11.5px] text-muted-foreground">
+                {place && (
+                  <>
+                    <FaviconImg domain={place.name} size={14} letterOnly={place.kind === 'app'} appId={place.id} />
+                    <span className="truncate">{place.name}</span>
+                    <span>&middot;</span>
+                  </>
+                )}
+                <span className="shrink-0">
+                  {steps === 1
+                    ? i18n.t('fullview_stepCount', ['1'])
+                    : i18n.t('fullview_stepCountPlural', [String(steps)])}{' '}
+                  &middot; {formatDateShort(guide.updatedAt)}
+                </span>
+              </p>
+            </div>
+            {active && <CornerDownLeft size={15} className="shrink-0 text-foreground" />}
+          </button>
+        );
+      })}
     </>
   );
 }

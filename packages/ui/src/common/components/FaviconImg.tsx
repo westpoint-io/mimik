@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { appIcons } from '../../env';
 import { getDomainInitial } from '../lib/domain-initial';
 import { getFaviconUrl } from '../lib/favicon-url';
 
@@ -7,11 +8,16 @@ interface FaviconImgProps {
   size?: number;
   className?: string;
   letterOnly?: boolean;
+  appId?: string;
 }
 
-export function FaviconImg({ domain, size = 20, className = '', letterOnly = false }: FaviconImgProps) {
+export function FaviconImg({ domain, size = 20, className = '', letterOnly = false, appId }: FaviconImgProps) {
   const [failed, setFailed] = useState(false);
-  const src = domain && !letterOnly ? getFaviconUrl(domain, size > 32 ? 64 : 32) : '';
+  const src = letterOnly
+    ? (appId && appIcons.url(appId)) || ''
+    : domain
+      ? getFaviconUrl(domain, size > 32 ? 64 : 32)
+      : '';
 
   if (!src || failed) {
     const { letter, gradient } = getDomainInitial(domain || '?');

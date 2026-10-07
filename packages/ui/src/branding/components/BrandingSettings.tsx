@@ -52,7 +52,11 @@ export function BrandingSettings({ onChange }: { onChange?: (patch: Record<strin
         }
       />
 
-      <SettingsCard icon={ImageIcon} title={i18n.t('settings.branding')}>
+      <SettingsCard
+        icon={ImageIcon}
+        title={i18n.t('settings.logoAndFooter')}
+        hint={i18n.t('settings.logoAndFooterHint')}
+      >
         <div>
           <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.brandLogo')}</label>
           <input

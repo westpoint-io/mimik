@@ -31,4 +31,5 @@ configureUi({
     requestHostPermissions: async () => false,
   },
   send: (name, payload) => (HANDLERS[name] ?? unsupported)(payload as never) as never,
+  appIconUrl: (id) => (/^([/\\]|[A-Za-z]:)/.test(id) ? `mimik-app-icon://icon/?path=${encodeURIComponent(id)}` : null),
 });

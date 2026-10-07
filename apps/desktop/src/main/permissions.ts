@@ -1,0 +1,45 @@
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { app, desktopCapturer, shell, systemPreferences } from 'electron';
+
+export interface CapturePermissions {
+  accessibility: boolean;
+  screen: boolean;
+}
+
+export type PermissionKind = keyof CapturePermissions;
+
+const SETTINGS_PANE: Record<PermissionKind, string> = {
+  accessibility: 'x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility',
+  screen: 'x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture',
+};
+
+const PROMPTED_FILE = 'permission-prompts.json';
+
+export function readPermissions(): CapturePermissions {
+  if (process.platform !== 'darwin') return { accessibility: true, screen: true };
+  return {
+    accessibility: systemPreferences.isTrustedAccessibilityClient(false),
+    screen: systemPreferences.getMediaAccessStatus('screen') === 'granted',
+  };
+}
+
+function prompted(): PermissionKind[] {
+  try {
+    return JSON.parse(readFileSync(join(app.getPath('userData'), PROMPTED_FILE), 'utf8'));
+  } catch {
+    return [];
+  }
+}
+
+export async function requestPermission(kind: PermissionKind): Promise<void> {
+  if (process.platform !== 'darwin') return;
+  const asked = prompted();
+  if (asked.includes(kind)) {
+    await shell.openExternal(SETTINGS_PANE[kind]);
+    return;
+  }
+  writeFileSync(join(app.getPath('userData'), PROMPTED_FILE), JSON.stringify([...asked, kind]));
+  if (kind === 'accessibility') systemPreferences.isTrustedAccessibilityClient(true);
+  else await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: 1, height: 1 } }).catch(() => []);
+}

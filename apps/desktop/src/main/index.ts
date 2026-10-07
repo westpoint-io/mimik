@@ -1,14 +1,17 @@
-import { join } from 'node:path';
+import { readFile } from 'node:fs/promises';
+import { basename, join } from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, protocol, screen, shell, Tray } from 'electron';
 import { registerAiFetch } from './ai-fetch';
+import { APP_ICON_SCHEME, registerAppIconProtocol } from './app-icon';
 import { ask } from './ask';
-import { focusedWindow } from './capture/focused-window';
 import type { CaptureInsert } from './capture/insert';
 import { DesktopRecorder, frameFor } from './capture/recorder';
+import { grabDisplay } from './capture/screenshot';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from './capture/screenshot-store';
 import { type CaptureMode, type CaptureSettings, loadSettings, saveSettings } from './capture/settings';
 import { mainI18n } from './i18n';
 import { CaptureOverlay, type OverlayAiFailure, type OverlayCommand, type OverlayStep } from './overlay';
+import { type PermissionKind, readPermissions, requestPermission } from './permissions';
 import { bindShortcuts, type ShortcutName, shortcutMap, unbindShortcuts } from './shortcuts';
 import { checkForUpdates } from './updater';
 
@@ -21,6 +24,47 @@ let insert: CaptureInsert | null = null;
 let describing = true;
 let captureSettings: CaptureSettings | null = null;
 let steps: OverlayStep[] = [];
+
+const OPEN_CAPTURE_FLAG = '--open-capture';
+let pendingStart: (() => void) | null = process.argv.includes(OPEN_CAPTURE_FLAG)
+  ? () => mainWindow?.webContents.send('mimik:capture:openSheet')
+  : null;
+
+const BUNDLE_SUFFIX = '.mimik';
+
+function bundleArg(argv: string[]): string | null {
+  return argv.find((arg) => arg.toLowerCase().endsWith(BUNDLE_SUFFIX)) ?? null;
+}
+
+let openedFile = bundleArg(process.argv);
+
+function openBundle(path: string | null): void {
+  if (!path) return;
+  openedFile = path;
+  if (!app.isReady()) return;
+  showWindow();
+  mainWindow?.webContents.send('mimik:app:fileOpened');
+}
+
+let screenWarmed = false;
+
+function warmScreenCapture(): void {
+  if (process.platform !== 'darwin' || screenWarmed) return;
+  screenWarmed = true;
+  void grabDisplay(screen.getCursorScreenPoint()).catch(() => undefined);
+}
+
+function whenPermitted(start: () => void): void {
+  const granted = readPermissions();
+  if (granted.accessibility && granted.screen) {
+    warmScreenCapture();
+    start();
+    return;
+  }
+  pendingStart = start;
+  showWindow();
+  mainWindow?.webContents.send('mimik:permissions:show');
+}
 
 function resource(file: string): string {
   return app.isPackaged ? join(process.resourcesPath, file) : join(__dirname, '../../resources', file);
@@ -171,29 +215,20 @@ function createWindow(): void {
   }
 }
 
+function openInWindow(target: 'library' | 'capture' | 'settings'): void {
+  showWindow();
+  mainWindow?.webContents.send('mimik:app:open', target);
+}
+
 function refreshTrayMenu(): void {
   if (!tray) return;
   tray.setContextMenu(
     Menu.buildFromTemplate([
-      { label: mainI18n.t('onboarding.openMimik'), click: () => showWindow() },
-      {
-        label: mainI18n.t('desktop.traySetArea'),
-        click: () => {
-          if (!isCapturing()) {
-            insert = null;
-            enterCapture();
-          }
-          overlay?.edit();
-        },
-      },
+      { label: mainI18n.t('fullview.allGuides'), click: () => openInWindow('library') },
+      { label: mainI18n.t('capture.startCapture'), click: () => openInWindow('capture') },
+      { label: mainI18n.t('settings.title'), click: () => openInWindow('settings') },
       { type: 'separator' },
-      {
-        label: mainI18n.t('desktop.startAtLogin'),
-        type: 'checkbox',
-        checked: opensAtLogin(),
-        click: (item) => setOpenAtLogin(item.checked),
-      },
-      { label: mainI18n.t('desktop.checkUpdates'), click: () => checkForUpdates({ notifyWhenUpToDate: true }) },
+      { label: mainI18n.t('desktop.version', [app.getVersion()]), enabled: false },
       { type: 'separator' },
       { label: mainI18n.t('desktop.trayQuit'), click: () => quit() },
     ]),
@@ -226,10 +261,14 @@ function onShortcut(name: ShortcutName): void {
   if (!overlay) return;
   if (name === 'startStop') {
     if (overlay.state === 'hidden') {
-      insert = null;
-      enterCapture();
+      whenPermitted(() => {
+        insert = null;
+        enterCapture();
+        overlay?.run('start');
+      });
+      return;
     }
-    overlay.run(overlay.state === 'hidden' || overlay.state === 'armed' ? 'start' : 'stop');
+    overlay.run(overlay.state === 'armed' ? 'start' : 'stop');
     return;
   }
   if (name === 'pauseResume') {
@@ -292,11 +331,9 @@ async function onOverlayCommand(command: OverlayCommand): Promise<void> {
       ).catch(() => undefined);
       if (command === 'stop' && steps.length > 0) finished = target.guideId;
     } else {
-      if (command === 'stop' && steps.length > 0) finished = guideId;
+      if (command === 'stop') finished = guideId;
       if (finished) {
-        await ask(mainWindow?.webContents ?? null, 'mimik:capture:finishGuide', finished, 45_000).catch(
-          () => undefined,
-        );
+        void ask(mainWindow?.webContents ?? null, 'mimik:capture:finishGuide', finished, 45_000).catch(() => undefined);
       }
     }
     guideId = null;
@@ -316,17 +353,27 @@ function quit(): void {
 
 protocol.registerSchemesAsPrivileged([
   { scheme: SCREENSHOT_SCHEME, privileges: { standard: true, secure: true, supportFetchAPI: true } },
+  { scheme: APP_ICON_SCHEME, privileges: { standard: true, secure: true } },
 ]);
+
+app.on('open-file', (event, path) => {
+  event.preventDefault();
+  openBundle(path);
+});
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
-  app.on('second-instance', () => showWindow());
+  app.on('second-instance', (_event, argv) => {
+    showWindow();
+    openBundle(bundleArg(argv));
+  });
 
   app.whenReady().then(() => {
     mainI18n.setLocale(app.getLocale());
     if (!app.getLoginItemSettings().wasOpenedAsHidden) openSplash();
     registerScreenshotProtocol();
+    registerAppIconProtocol();
     registerAiFetch();
     ipcMain.handle('mimik:openAtLogin:get', () => opensAtLogin());
     ipcMain.handle('mimik:openAtLogin:set', (_event, enabled: boolean) => {
@@ -334,6 +381,16 @@ if (!app.requestSingleInstanceLock()) {
       return opensAtLogin();
     });
     ipcMain.handle('mimik:version', () => app.getVersion());
+    ipcMain.handle('mimik:app:takeOpenedFile', async () => {
+      const path = openedFile;
+      openedFile = null;
+      if (!path) return null;
+      try {
+        return { name: basename(path), bytes: await readFile(path) };
+      } catch {
+        return null;
+      }
+    });
     ipcMain.handle('mimik:updates:check', () => checkForUpdates({ notifyWhenUpToDate: true }));
     ipcMain.handle('mimik:screenshots:sweep', (_event, keep: string[]) => sweepScreenshots(keep));
     ipcMain.on('mimik:app:relocalise', () => {
@@ -353,15 +410,9 @@ if (!app.requestSingleInstanceLock()) {
       () => (captureSettings ?? loadSettings()).captureMode,
       {
         introFrame: async () => {
-          const settings = captureSettings ?? loadSettings();
-          const focused = settings.captureMode === 'window' ? await focusedWindow() : null;
+          const { captureMode } = captureSettings ?? loadSettings();
           const region = overlay?.region ?? { x: 0, y: 0, width: 0, height: 0 };
-          return frameFor(
-            settings.captureMode,
-            screen.getCursorScreenPoint(),
-            region,
-            focused?.ok ? focused.window.bounds : null,
-          );
+          return frameFor(captureMode === 'region' ? 'region' : 'screen', screen.getCursorScreenPoint(), region, null);
         },
         shortcuts: () => {
           const { shortcuts } = captureSettings ?? loadSettings();
@@ -434,14 +485,34 @@ if (!app.requestSingleInstanceLock()) {
     );
     ipcMain.handle('mimik:capture:region', () => overlay?.region);
     ipcMain.handle('mimik:capture:edit', (_event, target?: CaptureInsert) => {
-      insert = target ?? null;
-      enterCapture();
-      overlay?.edit();
+      whenPermitted(() => {
+        insert = target ?? null;
+        enterCapture();
+        overlay?.edit();
+      });
     });
     ipcMain.handle('mimik:capture:arm', (_event, target?: CaptureInsert) => {
-      insert = target ?? null;
-      enterCapture();
-      overlay?.arm();
+      whenPermitted(() => {
+        insert = target ?? null;
+        enterCapture();
+        overlay?.arm();
+      });
+    });
+    ipcMain.handle('mimik:permissions:get', () => ({ ...readPermissions(), pending: pendingStart !== null }));
+    ipcMain.handle('mimik:permissions:request', (_event, kind: PermissionKind) => requestPermission(kind));
+    ipcMain.on('mimik:permissions:continue', () => {
+      const start = pendingStart;
+      pendingStart = null;
+      warmScreenCapture();
+      start?.();
+    });
+    ipcMain.on('mimik:permissions:cancel', () => {
+      pendingStart = null;
+    });
+    ipcMain.on('mimik:permissions:restart', () => {
+      const args = process.argv.slice(1).filter((arg) => arg !== OPEN_CAPTURE_FLAG);
+      app.relaunch({ args: [...args, OPEN_CAPTURE_FLAG] });
+      quit();
     });
 
     applyShortcuts();
