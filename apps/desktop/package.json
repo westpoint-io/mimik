@@ -23,7 +23,7 @@
     "dexie": "^4.4.6",
     "electron-updater": "^6.6.2",
     "get-windows": "^9.3.0",
-    "lucide-react": "^0.577.0",
+    "lucide-react": "^1.52.0",
     "node-screenshots": "^0.2.8",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

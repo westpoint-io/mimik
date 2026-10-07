@@ -21,7 +21,7 @@
     "@mimik/core": "workspace:*",
     "@mimik/ui": "workspace:*",
     "@webext-core/messaging": "^2.3.0",
-    "lucide-react": "^0.577.0",
+    "lucide-react": "^1.52.0",
     "p-queue": "^9.3.3",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
