@@ -286,7 +286,7 @@ export function AnnotationEditor({ screenshot, tool, onDone, onCancel }: Annotat
     }
     const b = annotationBounds(sel);
     gesture.setAnchor({ x: b.x + b.width / 2, y: b.y + b.height });
-  }, [selectedId]);
+  }, [selectedId, gesture.setAnchor]);
 
   useEffect(() => {
     localStorage.get(['targetColor']).then((result) => {
