@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
+import { keyCombo } from '@mimik/core/capture/key-combo';
 import type { CaptureImage } from '@mimik/core/capture/sink';
 import type { StepAction } from '@mimik/core/capture/step-action';
 import type { ElementMeta } from '@mimik/core/guides/types';
 import type { Rect } from '@mimik/core/rect';
 import { clipboard, screen } from 'electron';
-import { shortcutLabel } from '../../renderer/lib/shortcut-label';
 import { cursorPoint } from './displays';
 import {
   clearDeadKey,
@@ -144,15 +144,6 @@ export function frameFor(mode: CaptureMode, point: Point, region: Rect, window: 
 
 export function isRepeatKey(previous: { keycode: number; at: number } | null, keycode: number, at: number): boolean {
   return previous !== null && previous.keycode === keycode && at - previous.at <= REPEAT_CLICK_MS;
-}
-
-export function comboLabel(action: KeyAction, key: string, mac = process.platform === 'darwin'): string {
-  const held: string[] = [];
-  if (action.meta) held.push(mac ? 'Command' : 'Meta');
-  if (action.ctrl) held.push('Ctrl');
-  if (action.alt) held.push('Alt');
-  if (action.shift) held.push('Shift');
-  return mac ? shortcutLabel([...held, key].join('+'), true) : [...held, key].join('+');
 }
 
 export function clickAction(button: number): StepAction {
@@ -429,7 +420,12 @@ export class DesktopRecorder {
     if (Object.values(shortcuts).some((accelerator) => isBoundShortcut(accelerator, action, key))) return;
     const field = await this.focused();
     const where = centreOf(field) ?? cursorPoint();
-    await this.write(`keydown:${comboLabel(action, key)}`, where, Promise.resolve(field), this.shoot(where));
+    await this.write(
+      `keydown:${keyCombo(action, key, process.platform === 'darwin')}`,
+      where,
+      Promise.resolve(field),
+      this.shoot(where),
+    );
   }
 
   private finalizeInput(readNow = false): void {

@@ -1,8 +1,8 @@
+import { shortcutLabel } from '@mimik/core/capture/shortcut-label';
 import { i18n } from '@mimik/core/env';
 import { Button } from '@mimik/ui';
 import { X } from 'lucide-react';
 import { useState } from 'react';
-import { shortcutLabel } from '../lib/shortcut-label';
 import { accelerator } from './lib/accelerator';
 
 const MAC = navigator.userAgent.includes('Mac');

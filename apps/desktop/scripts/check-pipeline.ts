@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { keyCombo } from '@mimik/core/capture/key-combo';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { CaptureState } from '@mimik/core/capture/machine';
@@ -9,7 +10,6 @@ import type { KeyAction } from '../src/main/capture/input-hook';
 import {
   type CaptureRequest,
   typedTextFor,
-  comboLabel,
   DesktopRecorder,
   isRepeatKey,
   isBoundShortcut,
@@ -356,8 +356,8 @@ app.whenReady().then(async () => {
     name: 'a shortcut is its own step',
     ok:
       shortcut?.action === (MAC ? 'keydown:⌃S' : 'keydown:Ctrl+S') &&
-      comboLabel(pressed(31, { ctrl: true, shift: true }), 'S', false) === 'Ctrl+Shift+S' &&
-      comboLabel(pressed(31, { meta: true, shift: true, alt: true }), 'S', true) === '⌥⇧⌘S' &&
+      keyCombo(pressed(31, { ctrl: true, shift: true }), 'S', false) === 'Ctrl+Shift+S' &&
+      keyCombo(pressed(31, { meta: true, shift: true, alt: true }), 'S', true) === '⌥⇧⌘S' &&
       unnamed === null &&
       isRepeatKey({ keycode: 28, at: 1_000 }, 28, 1_400) &&
       !isRepeatKey({ keycode: 28, at: 1_000 }, 28, 1_600) &&

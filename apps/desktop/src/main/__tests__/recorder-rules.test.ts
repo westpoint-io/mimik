@@ -1,3 +1,4 @@
+import { keyCombo } from '@mimik/core/capture/key-combo';
 import { describe, expect, it, vi } from 'vitest';
 
 const DISPLAY = { x: 0, y: 0, width: 1920, height: 1080 };
@@ -19,7 +20,6 @@ import type { ScreenElement } from '../capture/element';
 import type { KeyAction } from '../capture/input-hook';
 import {
   clickAction,
-  comboLabel,
   frameFor,
   isBoundShortcut,
   isRepeatClick,
@@ -143,8 +143,8 @@ describe('keys', () => {
   });
 
   it('names a shortcut the way each platform writes it, and collapses auto-repeat', () => {
-    expect(comboLabel(key(31, { ctrl: true, shift: true }), 'S', false)).toBe('Ctrl+Shift+S');
-    expect(comboLabel(key(31, { meta: true, shift: true, alt: true }), 'S', true)).toBe('⌥⇧⌘S');
+    expect(keyCombo(key(31, { ctrl: true, shift: true }), 'S', false)).toBe('Ctrl+Shift+S');
+    expect(keyCombo(key(31, { meta: true, shift: true, alt: true }), 'S', true)).toBe('⌥⇧⌘S');
     expect(isRepeatKey({ keycode: 28, at: 1_000 }, 28, 1_400)).toBe(true);
     expect(isRepeatKey({ keycode: 28, at: 1_000 }, 28, 1_600)).toBe(false);
     expect(isRepeatKey({ keycode: 28, at: 1_000 }, 15, 1_100)).toBe(false);

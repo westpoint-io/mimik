@@ -14,6 +14,7 @@ import {
 } from '@/core/capture/dom/element-utils';
 import { locateFrame, placeInTab } from '@/core/capture/dom/frame-placement';
 import { isReplayedClick, replayClick, replayInit, shouldInterceptClick } from '@/core/capture/events/click-intercept';
+import { keyCombo } from '@/core/capture/key-combo';
 import type { CaptureSink } from '@/core/capture/sink';
 import type { StepAction } from '@/core/capture/step-action';
 import { DEFAULT_TARGET_COLOR } from '@/core/screenshot/types';
@@ -23,6 +24,7 @@ import { InputSession } from './input-session';
 import { isRecordableKey } from './is-recordable-key';
 
 const REPEAT_CLICK_MS = 300;
+const MAC = /Mac/i.test(navigator.platform);
 const DRAG_MIN_PX = 30;
 const INTERCEPT_DELAY_MS = 100;
 const PAINT_FRAMES = 3;
@@ -247,7 +249,8 @@ class CaptureController {
 
     if (isSensitiveField(target) || isTextField(target)) return;
     if (!this.recordKeys || !isRecordableKey(ke)) return;
-    this.enqueue(this.capture(`keydown:${ke.key}`, target));
+    const held = { ctrl: ke.ctrlKey, alt: ke.altKey, shift: ke.shiftKey, meta: ke.metaKey };
+    this.enqueue(this.capture(`keydown:${keyCombo(held, ke.key, MAC)}`, target));
   }
 
   private onInput(e: Event) {
