@@ -50,8 +50,8 @@ export function GuideListView({
                   alt={guide.title}
                   crop
                   cache
-                  frameRatio={16 / 9}
-                  className="!rounded-none !border-0"
+                  cover
+                  className="!rounded-none !border-0 w-full"
                   readOnly
                 />
               ) : (

@@ -22,14 +22,18 @@ function libraryIn(width: number, height: number) {
 }
 
 describe('usePageFit', () => {
-  it('fills a page with as many columns and rows as fit above the pager', () => {
-    const grid = renderHook(() => usePageFit(libraryIn(1600, 1000), 'grid'));
-    expect(grid.result.current).toEqual({ columns: 5, pageSize: 10 });
+  it('fills the height above the pager by flexing the thumbnail between 2.8:1 and 16:9', () => {
+    const room = 1000 - 96 - 32 - 64;
+    const grid = renderHook(() => usePageFit(libraryIn(1600, 1000), 'grid')).result.current;
+    const rows = grid.pageSize / grid.columns;
+    const cardWidth = (1600 - 18 * (grid.columns - 1)) / grid.columns;
+    const used = rows * ((grid.thumbHeight ?? 0) + 113) + 18 * (rows - 1);
+    expect(grid).toEqual({ columns: 6, pageSize: 18, thumbHeight: 141 });
+    expect(room - used).toBeLessThanOrEqual(room * 0.04);
+    expect(grid.thumbHeight).toBeGreaterThanOrEqual(Math.floor(cardWidth * 0.36));
+    expect(grid.thumbHeight).toBeLessThanOrEqual(cardWidth * (9 / 16));
 
     const list = renderHook(() => usePageFit(libraryIn(1100, 1000), 'list'));
-    expect(list.result.current).toEqual({ columns: 1, pageSize: 7 });
-
-    const small = renderHook(() => usePageFit(libraryIn(952, 800), 'grid'));
-    expect(small.result.current).toEqual({ columns: 3, pageSize: 6 });
+    expect(list.result.current).toEqual({ columns: 1, pageSize: 7, thumbHeight: null });
   });
 });

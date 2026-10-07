@@ -10,6 +10,7 @@ import { MimikEyes } from './MimikEyes';
 
 interface GuideGridViewProps {
   columns: number;
+  thumbHeight: number | null;
   category: 'all' | 'starred' | 'trash';
   onStar: (e: React.MouseEvent, id: string) => void;
   onTrash: (e: React.MouseEvent, id: string) => void;
@@ -20,6 +21,7 @@ interface GuideGridViewProps {
 
 export function GuideGridView({
   columns,
+  thumbHeight,
   category,
   onStar,
   onTrash,
@@ -44,15 +46,18 @@ export function GuideGridView({
             onClick={() => navigate({ page: 'guide', guideId: guide.id })}
             className="group rounded-xl bg-card cursor-pointer hover:shadow-md transition-shadow border border-border relative"
           >
-            <div className="relative aspect-video overflow-hidden rounded-t-xl border-b border-secondary">
+            <div
+              className={`relative overflow-hidden rounded-t-xl border-b border-secondary flex items-center ${thumbHeight === null ? 'aspect-video' : ''}`}
+              style={thumbHeight === null ? undefined : { height: thumbHeight }}
+            >
               {thumb ? (
                 <ScreenshotView
                   screenshot={thumb}
                   alt={guide.title}
                   crop
                   cache
-                  frameRatio={16 / 9}
-                  className="!rounded-none !border-0"
+                  cover
+                  className="!rounded-none !border-0 w-full"
                   readOnly
                 />
               ) : (

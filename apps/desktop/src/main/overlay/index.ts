@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import type { AiFailureReason } from '@mimik/core/capture/ai/errors';
-import { BrowserWindow, ipcMain, screen } from 'electron';
+import { app, BrowserWindow, ipcMain, screen } from 'electron';
 import { clampToDisplays, loadRegion, type Region, saveRegion } from '../capture/region';
 import type { CaptureMode } from '../capture/settings';
 
@@ -23,6 +23,7 @@ export interface OverlayStep {
   id: string;
   index: number;
   title: string;
+  action: string;
   src: string;
   source: 'heuristic' | 'ai';
   pending: boolean;
@@ -115,7 +116,9 @@ function overlayWindow(
   });
 
   win.setAlwaysOnTop(true, 'screen-saver');
+  app.dock?.hide();
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  void app.dock?.show();
   if (!interactive) win.setIgnoreMouseEvents(true);
   const load = process.env.ELECTRON_RENDERER_URL
     ? win.loadURL(`${process.env.ELECTRON_RENDERER_URL}/overlay.html#${hash}`)
@@ -130,6 +133,7 @@ export class CaptureOverlay {
   private editors: BrowserWindow[] = [];
   private boundary: BrowserWindow | null = null;
   private controls: BrowserWindow | null = null;
+  private anchor: { right: number; bottom: number } | null = null;
   private intro: BrowserWindow | null = null;
   private introDone: ((finished: boolean) => void) | null = null;
   private current: OverlayState = 'hidden';
@@ -265,11 +269,15 @@ export class CaptureOverlay {
 
   private positionControls(): void {
     if (!this.controls || this.controls.isDestroyed()) return;
-    const { workArea } = screen.getDisplayMatching(this.rect);
     const { width, height } = this.size;
+    const { workArea } = this.anchor
+      ? screen.getDisplayNearestPoint({ x: this.anchor.right - 1, y: this.anchor.bottom - 1 })
+      : screen.getDisplayMatching(this.rect);
+    const right = this.anchor?.right ?? workArea.x + workArea.width - CONTROLS.margin;
+    const bottom = this.anchor?.bottom ?? workArea.y + workArea.height - CONTROLS.margin;
     this.controls.setBounds({
-      x: Math.round(Math.max(workArea.x + workArea.width - width - CONTROLS.margin, workArea.x)),
-      y: Math.round(Math.max(workArea.y + workArea.height - height - CONTROLS.margin, workArea.y)),
+      x: Math.round(Math.max(Math.min(right - width, workArea.x + workArea.width - width), workArea.x)),
+      y: Math.round(Math.max(Math.min(bottom - height, workArea.y + workArea.height - height), workArea.y)),
       width,
       height,
     });
@@ -298,6 +306,17 @@ export class CaptureOverlay {
     if (!this.controls) {
       this.controls = overlayWindow({ x: 0, y: 0, ...this.size }, 'controls', true, false);
       this.controls.setIgnoreMouseEvents(false);
+      this.controls.setMovable(true);
+      const card = this.controls;
+      let dragged = false;
+      card.on('will-move', () => {
+        dragged = true;
+      });
+      card.on('move', () => {
+        if (!dragged) return;
+        const moved = card.getBounds();
+        this.anchor = { right: moved.x + moved.width, bottom: moved.y + moved.height };
+      });
     }
     this.positionControls();
   }
@@ -442,6 +461,7 @@ export class CaptureOverlay {
       this.hide();
     }
     this.onCommand(command);
+    if (command === 'pause' && this.mode() === 'region') this.edit();
   }
 
   async withHidden<T>(fn: () => Promise<T>): Promise<T> {

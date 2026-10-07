@@ -242,6 +242,49 @@ app.whenReady().then(async () => {
     detail: `${windowShot?.width ?? 0} px wide for a ${clickedWindow.width} px window`,
   });
 
+  const findField = { x: clickedWindow.x + 20, y: clickedWindow.y + 10, width: 200, height: 22 };
+  const typedInto = new DesktopRecorder(
+    () => region,
+    (fn) => fn(),
+    (request) => {
+      framedBy = request;
+      return Promise.resolve(null);
+    },
+    {
+      grab: async () => syntheticDisplay,
+      settings: () => ({ ...DEFAULT_CAPTURE_SETTINGS, captureMode: 'window' }),
+      focused: () =>
+        Promise.resolve({
+          role: 'textbox',
+          name: null,
+          textContent: 'ttys002',
+          ariaLabel: 'Find',
+          altText: null,
+          password: false,
+          ancestors: [],
+          children: [],
+          rect: findField,
+        }),
+      windowAt: (point) =>
+        Promise.resolve(
+          point.x >= clickedWindow.x &&
+            point.x < clickedWindow.x + clickedWindow.width &&
+            point.y >= clickedWindow.y &&
+            point.y < clickedWindow.y + clickedWindow.height
+            ? { ok: true, window: { title: 'Terminal', app: { name: 'Terminal' }, bounds: clickedWindow } }
+            : { ok: false, reason: 'unknown', detail: 'no window there' },
+        ),
+    },
+  );
+  framedBy = null;
+  await typedInto.writeTyping('ttys002');
+  const typedShot = (framedBy as CaptureRequest | null)?.image;
+  results.push({
+    name: 'a typing step frames the window its field is in',
+    ok: typedShot?.width === Math.round(clickedWindow.width * display.scaleFactor),
+    detail: `${typedShot?.width ?? 0} px wide for a ${clickedWindow.width} px window`,
+  });
+
   const control: ScreenElement = {
     role: 'button',
     name: 'SaveButton',
@@ -414,7 +457,8 @@ app.whenReady().then(async () => {
     name: 'a shortcut is its own step',
     ok:
       shortcut?.action === 'keydown:Ctrl+S' &&
-      comboLabel(pressed(31, { ctrl: true, shift: true }), 'S') === 'Ctrl+Shift+S' &&
+      comboLabel(pressed(31, { ctrl: true, shift: true }), 'S', false) === 'Ctrl+Shift+S' &&
+      comboLabel(pressed(31, { meta: true, shift: true, alt: true }), 'S', true) === '⌥⇧⌘S' &&
       unnamed === null &&
       isRepeatKey({ keycode: 28, at: 1_000 }, 28, 1_400) &&
       !isRepeatKey({ keycode: 28, at: 1_000 }, 28, 1_600) &&
@@ -447,8 +491,11 @@ app.whenReady().then(async () => {
       typedTextFor(editor('a short note'), 'a sho') === 'a short note' &&
       typedTextFor(editor(null), 'typed') === 'typed' &&
       typedTextFor({ ...editor('\uFEFFhi\u200B'), role: 'textbox' }, '') === 'hi' &&
-      typedTextFor(control, 'typed') === null,
-    detail: 'a document far longer than the buffer yields the buffer, a short one yields the field, markers are stripped, a button yields nothing',
+      typedTextFor(control, 'typed') === null &&
+      typedTextFor(editor('x'.repeat(81)), 'ab') === 'ab' &&
+      typedTextFor(editor('y'.repeat(100)), 'z'.repeat(60)) === 'y'.repeat(100),
+    detail:
+      'a field longer than twice the buffer and 80 characters yields the buffer, a shorter one yields the field, markers are stripped, a button yields nothing',
   });
 
   const typedThenClicked = async (keysAfterSnapshot: number) => {

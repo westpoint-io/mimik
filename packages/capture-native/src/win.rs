@@ -141,6 +141,7 @@ fn describe(found: &IUIAutomationElement) -> UiElement {
     is_password: unsafe { found.CurrentIsPassword() }
       .map(|flag| flag.as_bool())
       .unwrap_or(false),
+    value_length: None,
     rect: rect_of(found),
     ancestors: Vec::new(),
     children: Vec::new(),
@@ -581,5 +582,6 @@ fn framed(front: HWND) -> Option<ActiveWindow> {
     y: f64::from(rect.top),
     width: f64::from(rect.right - rect.left),
     height: f64::from(rect.bottom - rect.top),
+    on_menu: false,
   })
 }

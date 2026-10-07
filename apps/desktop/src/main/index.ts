@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, protocol, screen, shell, Tray } from 'electron';
+import { shortcutLabel } from '../renderer/lib/shortcut-label';
 import { registerAiFetch } from './ai-fetch';
 import { APP_ICON_SCHEME, registerAppIconProtocol } from './app-icon';
 import { ask } from './ask';
@@ -11,7 +12,7 @@ import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from 
 import { type CaptureMode, type CaptureSettings, loadSettings, saveSettings } from './capture/settings';
 import { mainI18n } from './i18n';
 import { CaptureOverlay, type OverlayAiFailure, type OverlayCommand, type OverlayStep } from './overlay';
-import { type PermissionKind, readPermissions, requestPermission } from './permissions';
+import { captureWasHeld, holdCapture, type PermissionKind, readPermissions, requestPermission } from './permissions';
 import { bindShortcuts, type ShortcutName, shortcutMap, unbindShortcuts } from './shortcuts';
 import { checkForUpdates } from './updater';
 
@@ -25,8 +26,7 @@ let describing = true;
 let captureSettings: CaptureSettings | null = null;
 let steps: OverlayStep[] = [];
 
-const OPEN_CAPTURE_FLAG = '--open-capture';
-let pendingStart: (() => void) | null = process.argv.includes(OPEN_CAPTURE_FLAG)
+let pendingStart: (() => void) | null = captureWasHeld()
   ? () => mainWindow?.webContents.send('mimik:capture:openSheet')
   : null;
 
@@ -62,6 +62,7 @@ function whenPermitted(start: () => void): void {
     return;
   }
   pendingStart = start;
+  holdCapture(true);
   showWindow();
   mainWindow?.webContents.send('mimik:permissions:show');
 }
@@ -403,8 +404,8 @@ if (!app.requestSingleInstanceLock()) {
     });
 
     captureSettings = loadSettings();
-    const shortcutLabel = (accelerator: string | null) =>
-      accelerator?.replace(/CommandOrControl|CmdOrCtrl/g, process.platform === 'darwin' ? 'Cmd' : 'Ctrl') || null;
+    const labelOf = (accelerator: string | null) =>
+      accelerator ? shortcutLabel(accelerator, process.platform === 'darwin') : null;
     overlay = new CaptureOverlay(
       (command) => void onOverlayCommand(command),
       () => (captureSettings ?? loadSettings()).captureMode,
@@ -416,7 +417,7 @@ if (!app.requestSingleInstanceLock()) {
         },
         shortcuts: () => {
           const { shortcuts } = captureSettings ?? loadSettings();
-          return { startStop: shortcutLabel(shortcuts.startStop), capture: shortcutLabel(shortcuts.capture) };
+          return { startStop: labelOf(shortcuts.startStop), capture: labelOf(shortcuts.capture) };
         },
       },
     );
@@ -437,6 +438,7 @@ if (!app.requestSingleInstanceLock()) {
             id: reply.stepId,
             index: steps.length + 1 + (insert?.afterStep ?? 0),
             title: reply.title,
+            action: request.action,
             src: request.image?.src ?? '',
             source: 'heuristic',
             pending: reply.pending === true,
@@ -498,20 +500,24 @@ if (!app.requestSingleInstanceLock()) {
         overlay?.arm();
       });
     });
-    ipcMain.handle('mimik:permissions:get', () => ({ ...readPermissions(), pending: pendingStart !== null }));
+    ipcMain.handle('mimik:permissions:get', () => {
+      if (pendingStart) holdCapture(true);
+      return { ...readPermissions(), pending: pendingStart !== null };
+    });
     ipcMain.handle('mimik:permissions:request', (_event, kind: PermissionKind) => requestPermission(kind));
     ipcMain.on('mimik:permissions:continue', () => {
       const start = pendingStart;
       pendingStart = null;
+      holdCapture(false);
       warmScreenCapture();
       start?.();
     });
     ipcMain.on('mimik:permissions:cancel', () => {
       pendingStart = null;
+      holdCapture(false);
     });
     ipcMain.on('mimik:permissions:restart', () => {
-      const args = process.argv.slice(1).filter((arg) => arg !== OPEN_CAPTURE_FLAG);
-      app.relaunch({ args: [...args, OPEN_CAPTURE_FLAG] });
+      app.relaunch();
       quit();
     });
 

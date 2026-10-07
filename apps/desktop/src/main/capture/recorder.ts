@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import type { CaptureImage } from '@mimik/core/capture/sink';
 import type { ElementMeta } from '@mimik/core/guides/types';
-import { screen } from 'electron';
+import { clipboard, screen } from 'electron';
+import { shortcutLabel } from '../../renderer/lib/shortcut-label';
 import { cursorPoint } from './displays';
 import {
   clearDeadKey,
@@ -9,6 +10,7 @@ import {
   focusedField,
   isTextField,
   keyLabel,
+  releaseWebContent,
   resolveKey,
   type ScreenElement,
 } from './element';
@@ -24,8 +26,7 @@ const SETTLE_MS = 60;
 const SNAPSHOT_MS = 400;
 const REPEAT_CLICK_MS = 500;
 const MARKER_CODE_POINTS = new Set([0x200b, 0xfeff, 0xfff9, 0xfffa, 0xfffb, 0xfffc, 0xfffd]);
-const FIELD_SLACK: Record<string, number> = { document: 24 };
-const DEFAULT_FIELD_SLACK = 120;
+const FIELD_FLOOR = 80;
 
 const KEY = {
   escape: 1,
@@ -42,6 +43,8 @@ const KEY = {
   altRight: 3640,
   meta: 3675,
   metaRight: 3676,
+  a: 30,
+  v: 47,
 } as const;
 
 const MODIFIER_KEYS: ReadonlySet<number> = new Set([
@@ -81,6 +84,7 @@ export interface RecorderHooks {
   label?: (keycode: number) => Promise<string | null>;
   resolve?: (keycode: number, shift: boolean, ctrl: boolean, alt: boolean) => Promise<string | null>;
   reset?: () => Promise<void>;
+  release?: () => Promise<void>;
   drained?: () => void;
   progress?: (fraction: number, ms: number) => void;
   aimed?: (aim: { x: number; y: number; aspect: number }) => void;
@@ -90,6 +94,22 @@ export interface RecorderHooks {
 export type RecorderStart = { ok: true } | { ok: false; reason: string; detail: string };
 
 const CAPTURE_ESTIMATE_MS = 450;
+const SECURE_INPUT_HIDES_KEYS = process.platform === 'darwin';
+const FOCUS_SETTLE_MS = 200;
+const PASSWORD_POLL_MS = 400;
+
+interface PasswordWatch {
+  field: ScreenElement;
+  start: number;
+  last: number;
+  shot: Promise<Frame> | null;
+  timer: NodeJS.Timeout;
+  idle: NodeJS.Timeout | null;
+}
+
+function sameRect(a: ScreenElement['rect'], b: ScreenElement['rect']): boolean {
+  return a?.x === b?.x && a?.y === b?.y && a?.width === b?.width && a?.height === b?.height;
+}
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -124,14 +144,13 @@ export function isRepeatKey(previous: { keycode: number; at: number } | null, ke
   return previous !== null && previous.keycode === keycode && at - previous.at <= REPEAT_CLICK_MS;
 }
 
-export function comboLabel(action: KeyAction, key: string): string {
+export function comboLabel(action: KeyAction, key: string, mac = process.platform === 'darwin'): string {
   const held: string[] = [];
-  const mac = process.platform === 'darwin';
-  if (action.meta) held.push(mac ? 'Cmd' : 'Meta');
+  if (action.meta) held.push(mac ? 'Command' : 'Meta');
   if (action.ctrl) held.push('Ctrl');
-  if (action.alt) held.push(mac ? 'Option' : 'Alt');
+  if (action.alt) held.push('Alt');
   if (action.shift) held.push('Shift');
-  return [...held, key].join('+');
+  return mac ? shortcutLabel([...held, key].join('+'), true) : [...held, key].join('+');
 }
 
 export function clickAction(button: number): string {
@@ -144,8 +163,7 @@ export function typedTextFor(field: ScreenElement | null, buffer: string, readFi
   const shown = [...(field.textContent ?? '')].filter((char) => !MARKER_CODE_POINTS.has(char.codePointAt(0) ?? 0));
   if (!shown.join('').trim()) return buffer || null;
   const typed = [...buffer].length;
-  const slack = FIELD_SLACK[field.role ?? ''] ?? DEFAULT_FIELD_SLACK;
-  return typed > 0 && shown.length > typed + slack ? buffer : shown.join('');
+  return typed > 0 && shown.length > Math.max(2 * typed, FIELD_FLOOR) ? buffer : shown.join('');
 }
 
 export function isBoundShortcut(accelerator: string | null, action: KeyAction, key: string): boolean {
@@ -212,6 +230,7 @@ export class DesktopRecorder {
   private snapshotTimer: NodeJS.Timeout | null = null;
   private appending: Promise<unknown> = Promise.resolve();
   private idle: NodeJS.Timeout | null = null;
+  private passwordWatch: PasswordWatch | null = null;
   private readonly grab: (point: Point) => Promise<Frame>;
   private readonly settings: () => CaptureSettings;
   private readonly ignores: (point: Point) => boolean;
@@ -221,6 +240,7 @@ export class DesktopRecorder {
   private readonly label: (keycode: number) => Promise<string | null>;
   private readonly resolve: (keycode: number, shift: boolean, ctrl: boolean, alt: boolean) => Promise<string | null>;
   private readonly reset: () => Promise<void>;
+  private readonly release: () => Promise<void>;
   private readonly drained: () => void;
   private readonly progress: (fraction: number, ms: number) => void;
   private readonly aimed: (aim: { x: number; y: number; aspect: number }) => void;
@@ -242,6 +262,7 @@ export class DesktopRecorder {
     this.label = hooks.label ?? keyLabel;
     this.resolve = hooks.resolve ?? resolveKey;
     this.reset = hooks.reset ?? clearDeadKey;
+    this.release = hooks.release ?? releaseWebContent;
     this.drained = hooks.drained ?? (() => {});
     this.progress = hooks.progress ?? (() => {});
     this.aimed = hooks.aimed ?? (() => {});
@@ -272,6 +293,7 @@ export class DesktopRecorder {
   stop(): void {
     this.commitTyping();
     this.hook.stop();
+    void this.release().catch(() => undefined);
     this.running = false;
     this.paused = false;
   }
@@ -298,10 +320,77 @@ export class DesktopRecorder {
 
   private clickAt(action: string, point: Point): void {
     this.commitTyping();
+    this.watchPassword();
     const element = this.lookup(point);
     const frame = this.shoot(point);
     const place = this.windowAt(point).catch(() => focusedWindow());
     this.enqueue(() => this.write(action, point, element, frame, undefined, place));
+  }
+
+  private watchPassword(): void {
+    if (!SECURE_INPUT_HIDES_KEYS || !this.settings().recordTyping) return;
+    const settle = setTimeout(async () => {
+      const field = await this.focused().catch(() => null);
+      if (!field?.password || this.passwordWatch || !this.isRecording) return;
+      const length = field.length ?? 0;
+      const watch: PasswordWatch = {
+        field,
+        start: length,
+        last: length,
+        shot: null,
+        timer: setInterval(() => void this.pollPassword(watch), PASSWORD_POLL_MS),
+        idle: null,
+      };
+      watch.timer.unref?.();
+      this.passwordWatch = watch;
+    }, FOCUS_SETTLE_MS);
+    settle.unref?.();
+  }
+
+  private async pollPassword(watch: PasswordWatch): Promise<void> {
+    const now = await this.focused().catch(() => null);
+    if (this.passwordWatch !== watch || !now) return;
+    if (!now.password || !sameRect(now.rect, watch.field.rect)) {
+      this.closePassword();
+      return;
+    }
+    const length = now.length ?? watch.last;
+    if (length === watch.last) return;
+    watch.last = length;
+    watch.shot = this.grab(centreOf(watch.field) ?? cursorPoint());
+    watch.shot.catch(() => undefined);
+    if (watch.idle) clearTimeout(watch.idle);
+    watch.idle = setTimeout(() => {
+      if (this.passwordWatch === watch) this.writePassword(watch, Promise.resolve(watch.last));
+    }, this.settings().typingDebounceMs);
+    watch.idle.unref?.();
+  }
+
+  private writePassword(watch: PasswordWatch, final: Promise<number>): void {
+    if (watch.idle) clearTimeout(watch.idle);
+    watch.idle = null;
+    const { start, field } = watch;
+    const centre = centreOf(field) ?? cursorPoint();
+    const shot = watch.shot ?? this.grab(centre);
+    shot.catch(() => undefined);
+    watch.shot = null;
+    watch.start = watch.last;
+    this.enqueue(async () => {
+      if ((await final) === start) return;
+      const place = this.windowAt(centre).catch(() => focusedWindow());
+      await this.write('input', centre, Promise.resolve(field), shot, undefined, place);
+    });
+  }
+
+  private closePassword(): void {
+    const watch = this.passwordWatch;
+    if (!watch) return;
+    this.passwordWatch = null;
+    clearInterval(watch.timer);
+    const final = this.focused()
+      .catch(() => null)
+      .then((now) => (now?.password && sameRect(now.rect, watch.field.rect) ? (now.length ?? watch.last) : watch.last));
+    this.writePassword(watch, final);
   }
 
   private onKey(action: KeyAction): void {
@@ -309,22 +398,32 @@ export class DesktopRecorder {
     const settings = this.settings();
     if (isTextKey(action)) {
       if (!settings.recordTyping) return;
-      this.typing = true;
-      this.keys += 1;
       this.buffered(action);
-      if (this.idle) clearTimeout(this.idle);
-      this.idle = setTimeout(() => this.commitTyping(true), settings.typingDebounceMs);
-      this.idle.unref?.();
-      if (this.snapshotTimer) clearTimeout(this.snapshotTimer);
-      this.snapshotTimer = setTimeout(() => {
-        this.snapshot = { field: this.focused().catch(() => null), keys: this.keys };
-      }, SNAPSHOT_MS);
-      this.snapshotTimer.unref?.();
+      this.extendTyping(settings);
       return;
+    }
+
+    const primary = process.platform === 'darwin' ? action.meta : action.ctrl;
+    if (primary && !action.alt && settings.recordTyping) {
+      const pasted = action.keycode === KEY.v ? clipboard.readText() : '';
+      if (pasted) {
+        this.appending = this.appending.then(() => {
+          this.buffer += pasted;
+        });
+        this.extendTyping(settings);
+        return;
+      }
+      if (action.keycode === KEY.a && this.typing) {
+        this.appending = this.appending.then(() => {
+          this.buffer = '';
+        });
+        return;
+      }
     }
 
     const submitted = this.typing;
     this.commitTyping(true);
+    if (action.keycode === KEY.tab) this.watchPassword();
 
     const at = Date.now();
     const repeat = isRepeatKey(this.lastKey, action.keycode, at);
@@ -333,6 +432,19 @@ export class DesktopRecorder {
     if (submitted && !action.ctrl && !action.alt && !action.meta) return;
     if (!settings.recordKeys) return;
     this.enqueue(() => this.captureKey(action));
+  }
+
+  private extendTyping(settings: CaptureSettings): void {
+    this.typing = true;
+    this.keys += 1;
+    if (this.idle) clearTimeout(this.idle);
+    this.idle = setTimeout(() => this.commitTyping(true), settings.typingDebounceMs);
+    this.idle.unref?.();
+    if (this.snapshotTimer) clearTimeout(this.snapshotTimer);
+    this.snapshotTimer = setTimeout(() => {
+      this.snapshot = { field: this.focused().catch(() => null), keys: this.keys };
+    }, SNAPSHOT_MS);
+    this.snapshotTimer.unref?.();
   }
 
   async captureKey(action: KeyAction): Promise<void> {
@@ -357,6 +469,7 @@ export class DesktopRecorder {
   }
 
   private commitTyping(live = false): void {
+    this.closePassword();
     if (this.idle) clearTimeout(this.idle);
     if (this.snapshotTimer) clearTimeout(this.snapshotTimer);
     this.idle = null;
@@ -439,15 +552,18 @@ export class DesktopRecorder {
     frame?: Promise<Frame>,
   ): Promise<void> {
     const field = seen ? seen.field : await this.focused();
-    const where = centreOf(field) ?? cursorPoint();
+    const centre = centreOf(field);
+    const where = centre ?? cursorPoint();
     const shot = frame ?? this.shoot(where);
+    const place = centre ? this.windowAt(centre).catch(() => focusedWindow()) : undefined;
     if (field?.password) {
-      await this.write('input', where, Promise.resolve(field), shot);
+      if (SECURE_INPUT_HIDES_KEYS) return;
+      await this.write('input', where, Promise.resolve(field), shot, undefined, place);
       return;
     }
     const typed = typedTextFor(field, buffer, seen?.fresh ?? true);
     if (!typed) return;
-    await this.write('input', where, Promise.resolve(field), shot, typed);
+    await this.write('input', where, Promise.resolve(field), shot, typed, place);
   }
 
   private async write(

@@ -6,7 +6,10 @@ use std::sync::Mutex;
 
 use napi::Result;
 
-use crate::macmap::{is_control, is_label, mac_keycode, named_key, printable, role, PROMOTE_DEPTH};
+use crate::macmap::{
+  is_control, is_label, mac_keycode, named_key, printable, role, window_for_click, LayeredWindow,
+  PROMOTE_DEPTH,
+};
 use crate::{ActiveWindow, ElementNode, ElementRect, UiElement};
 
 type CFTypeRef = *const c_void;
@@ -54,6 +57,7 @@ extern "C" {
   fn CFRelease(value: CFTypeRef);
   fn CFGetTypeID(value: CFTypeRef) -> usize;
   fn CFStringGetTypeID() -> usize;
+  fn CFNumberGetTypeID() -> usize;
   fn CFArrayGetTypeID() -> usize;
   fn CFStringCreateWithBytes(
     allocator: *const c_void,
@@ -71,6 +75,7 @@ extern "C" {
   fn CFNumberGetValue(number: CFTypeRef, kind: isize, value: *mut c_void) -> Boolean;
   fn CFDataGetBytePtr(data: CFTypeRef) -> *const u8;
   static kCFBooleanTrue: CFTypeRef;
+  static kCFBooleanFalse: CFTypeRef;
 }
 
 #[link(name = "ApplicationServices", kind = "framework")]
@@ -216,6 +221,17 @@ fn secure(element: AXUIElementRef) -> bool {
   text(element, "AXSubrole").as_deref() == Some("AXSecureTextField")
 }
 
+fn secure_length(element: AXUIElementRef) -> Option<u32> {
+  let counted = attribute(element, "AXNumberOfCharacters")
+    .filter(|found| unsafe { CFGetTypeID(found.0) == CFNumberGetTypeID() })
+    .and_then(|found| {
+      let mut out = 0i32;
+      (unsafe { CFNumberGetValue(found.0, NUMBER_INT32, (&mut out as *mut i32).cast()) } != 0)
+        .then_some(out.max(0) as u32)
+    });
+  counted.or_else(|| text(element, "AXValue").map(|value| value.chars().count() as u32))
+}
+
 fn label_of(element: AXUIElementRef) -> Option<String> {
   text(element, "AXTitle")
     .or_else(|| text(element, "AXDescription"))
@@ -238,6 +254,7 @@ fn describe(element: AXUIElementRef) -> UiElement {
     },
     help_text: text(element, "AXHelp").or_else(|| text(element, "AXPlaceholderValue")),
     is_password,
+    value_length: if is_password { secure_length(element) } else { None },
     rect: rect_of(element),
     ancestors: Vec::new(),
     children: Vec::new(),
@@ -297,6 +314,8 @@ fn promoted(hit: Owned) -> Owned {
 }
 
 static OPENED: Mutex<Option<HashSet<i32>>> = Mutex::new(None);
+static ENHANCED: Mutex<Vec<i32>> = Mutex::new(Vec::new());
+const ENHANCED_UI: &str = "AXEnhancedUserInterface";
 
 fn pid_of(element: AXUIElementRef) -> Option<i32> {
   let mut pid = 0;
@@ -318,8 +337,32 @@ fn open_web_content(element: AXUIElementRef) -> bool {
   let Some(app) = Owned::new(unsafe { AXUIElementCreateApplication(pid) }) else {
     return false;
   };
-  let key = cf_string("AXManualAccessibility");
-  unsafe { AXUIElementSetAttributeValue(app.0, key.0, kCFBooleanTrue) == 0 }
+  let manual = cf_string("AXManualAccessibility");
+  let opened = unsafe { AXUIElementSetAttributeValue(app.0, manual.0, kCFBooleanTrue) == 0 };
+  let already = attribute(app.0, ENHANCED_UI).is_some_and(|value| value.0 == unsafe { kCFBooleanTrue });
+  let enhanced = cf_string(ENHANCED_UI);
+  if !already && unsafe { AXUIElementSetAttributeValue(app.0, enhanced.0, kCFBooleanTrue) == 0 } {
+    ENHANCED
+      .lock()
+      .unwrap_or_else(|poisoned| poisoned.into_inner())
+      .push(pid);
+    return true;
+  }
+  opened
+}
+
+pub fn release_web_content() {
+  OPENED
+    .lock()
+    .unwrap_or_else(|poisoned| poisoned.into_inner())
+    .take();
+  let pids = std::mem::take(&mut *ENHANCED.lock().unwrap_or_else(|poisoned| poisoned.into_inner()));
+  let key = cf_string(ENHANCED_UI);
+  for pid in pids {
+    if let Some(app) = Owned::new(unsafe { AXUIElementCreateApplication(pid) }) {
+      unsafe { AXUIElementSetAttributeValue(app.0, key.0, kCFBooleanFalse) };
+    }
+  }
 }
 
 fn system() -> Option<Owned> {
@@ -447,6 +490,7 @@ pub fn clear_dead_key() {
 
 struct WindowInfo {
   pid: i32,
+  layer: f64,
   owner: Option<String>,
   title: Option<String>,
   bounds: CGRect,
@@ -466,7 +510,7 @@ fn number(dictionary: CFDictionaryRef, key: CFStringRef, kind: isize) -> Option<
   }
 }
 
-fn windows() -> Vec<WindowInfo> {
+fn windows(any_layer: bool) -> Vec<WindowInfo> {
   let Some(list) = Owned::new(unsafe { CGWindowListCopyWindowInfo(ON_SCREEN_ONLY | EXCLUDE_DESKTOP, 0) })
   else {
     return Vec::new();
@@ -478,7 +522,7 @@ fn windows() -> Vec<WindowInfo> {
       let layer = number(entry, unsafe { kCGWindowLayer }, NUMBER_INT32)?;
       let alpha = number(entry, unsafe { kCGWindowAlpha }, NUMBER_FLOAT64).unwrap_or(1.0);
       let pid = number(entry, unsafe { kCGWindowOwnerPID }, NUMBER_INT32)? as i32;
-      if layer != 0.0 || alpha <= 0.0 || pid == own {
+      if (!any_layer && layer != 0.0) || alpha <= 0.0 || pid == own {
         return None;
       }
       let mut bounds = CGRect::default();
@@ -488,6 +532,7 @@ fn windows() -> Vec<WindowInfo> {
       }
       (bounds.size.width > 1.0 && bounds.size.height > 1.0).then(|| WindowInfo {
         pid,
+        layer,
         owner: string_of(unsafe { CFDictionaryGetValue(entry, kCGWindowOwnerName) }),
         title: string_of(unsafe { CFDictionaryGetValue(entry, kCGWindowName) }),
         bounds,
@@ -512,7 +557,7 @@ fn app_bundle(path: &str) -> String {
     .map_or_else(|| path.to_string(), |found| found.to_string_lossy().into_owned())
 }
 
-fn framed(found: &WindowInfo) -> ActiveWindow {
+fn framed(found: &WindowInfo, on_menu: bool) -> ActiveWindow {
   let path = process_path(found.pid).map(|path| app_bundle(&path));
   let app_name = found
     .owner
@@ -532,6 +577,7 @@ fn framed(found: &WindowInfo) -> ActiveWindow {
     y: found.bounds.origin.y,
     width: found.bounds.size.width,
     height: found.bounds.size.height,
+    on_menu,
   }
 }
 
@@ -542,25 +588,31 @@ fn frontmost_pid() -> Option<i32> {
 }
 
 pub fn active_window() -> Option<ActiveWindow> {
-  let all = windows();
+  let all = windows(false);
   let front = frontmost_pid();
   all
     .iter()
     .find(|found| Some(found.pid) == front)
     .or_else(|| all.first())
-    .map(framed)
+    .map(|found| framed(found, false))
 }
 
 pub fn window_at(x: i32, y: i32) -> Option<ActiveWindow> {
   let (x, y) = (f64::from(x), f64::from(y));
-  windows()
+  let all = windows(true);
+  let layered: Vec<LayeredWindow> = all
     .iter()
-    .find(|found| {
+    .map(|found| {
       let bounds = found.bounds;
-      x >= bounds.origin.x
-        && y >= bounds.origin.y
-        && x < bounds.origin.x + bounds.size.width
-        && y < bounds.origin.y + bounds.size.height
+      LayeredWindow {
+        pid: found.pid,
+        layer: found.layer,
+        under_point: x >= bounds.origin.x
+          && y >= bounds.origin.y
+          && x < bounds.origin.x + bounds.size.width
+          && y < bounds.origin.y + bounds.size.height,
+      }
     })
-    .map(framed)
+    .collect();
+  window_for_click(&layered, frontmost_pid()).map(|(index, on_menu)| framed(&all[index], on_menu))
 }

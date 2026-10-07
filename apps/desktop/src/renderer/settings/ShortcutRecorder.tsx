@@ -2,7 +2,11 @@ import { i18n } from '@mimik/core/env';
 import { Button } from '@mimik/ui';
 import { X } from 'lucide-react';
 import { useState } from 'react';
+import { shortcutLabel } from '../lib/shortcut-label';
 import { accelerator } from './lib/accelerator';
+
+const MAC = navigator.userAgent.includes('Mac');
+
 import { Row } from './Row';
 
 interface ShortcutRecorderProps {
@@ -35,7 +39,7 @@ export function ShortcutRecorder({ label, value, onChange }: ShortcutRecorderPro
               : 'border-border bg-card text-foreground hover:border-violet'
           }`}
         >
-          {listening ? i18n.t('desktop_shortcutPress') : (value ?? '—')}
+          {listening ? i18n.t('desktop_shortcutPress') : value ? shortcutLabel(value, MAC) : '—'}
         </button>
         <Button
           type="button"

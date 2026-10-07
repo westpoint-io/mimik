@@ -77,7 +77,7 @@ export function LibraryContent({ category }: LibraryContentProps) {
 
   const allGuidesRef = useRef<Guide[]>([]);
   const rootRef = useRef<HTMLDivElement>(null);
-  const { columns, pageSize } = usePageFit(rootRef, display);
+  const { columns, pageSize, thumbHeight } = usePageFit(rootRef, display);
   const key = `${category}:${sort}`;
   const shownRef = useRef({ page, pageKey });
   shownRef.current = { page, pageKey };
@@ -243,6 +243,7 @@ export function LibraryContent({ category }: LibraryContentProps) {
       ) : (
         <GuideGridView
           columns={columns}
+          thumbHeight={thumbHeight}
           category={category}
           onStar={handleStar}
           onTrash={handleTrash}

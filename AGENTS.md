@@ -312,7 +312,12 @@ The window also hides the moment a capture begins — Start in the sheet or the
 start shortcut — so Mimik never records itself, and it comes back when the guide is finished, or on
 Cancel when it was open beforehand. Its renderer keeps full speed while hidden, because it is the
 one writing every step. The tray icon carries a red dot for as long as a recording runs, and clicking
-it then finishes the recording rather than opening the window. Its menu is All guides, Start capture and
+it then finishes the recording rather than opening the window. On a Mac every overlay calls `setVisibleOnAllWorkspaces` with `visibleOnFullScreen`, so the card
+floats over another app's full-screen space, and Electron does that by turning the whole app into an
+accessory app, which has no Dock icon and no ⌘-Tab entry. Nothing turned it back, so after the first
+recording Mimik was reachable only from the menu bar. `overlayWindow` therefore hides the Dock icon
+itself just before that call and shows it again straight after: the window keeps the flag, and the
+app is a regular one again, Dock icon and ⌘-Tab included, for the rest of the recording. Its menu is All guides, Start capture and
 Settings, each opening the window on that place in the words the app already uses for it, then the
 version, greyed out, and Quit Mimik. Start at login and Check for updates live in Settings, and
 drawing the area in the capture sheet, so the menu repeats neither.
@@ -435,16 +440,31 @@ a button's label returns the label's static text. A text or image hit is therefo
 nearest control within three parents — button, link, menu item, tab, row, cell and the toggles —
 and anything else is left as it is. Chromium and Electron build their accessibility tree only when
 something asks, so the first hit in an application sets `AXManualAccessibility` on it, once per
-process, and repeats the hit test; other applications refuse the attribute and nothing changes. A
+process, and repeats the hit test; other applications refuse the attribute and nothing changes.
+Electron honours that attribute but Chrome does not: a web page stayed one unnamed pane, so no field
+in it was a text field and typing there wrote no step. The first hit therefore also sets
+`AXEnhancedUserInterface`, the attribute VoiceOver sets, which Chrome does honour. It slows window
+animations in that application and upsets window managers such as Rectangle, so `releaseWebContent`
+clears it again when the recording stops, on every process Mimik turned it on for and on none that
+already had it, so a running VoiceOver keeps its own. A
 hit that lands on Mimik's own overlay answers null rather than naming the card. The accessible name
 is `AXTitle`, then `AXDescription`, then the value of `AXTitleUIElement`, which is how a text field
 names its label; the placeholder rides in the help text, and a password is `AXSecureTextField`,
 whose value is never read. `macmap.rs` holds the role table and the key tables with no FFI in them,
 so they are tested on Linux beside `hit.rs`.
 
-Windows on macOS come from `CGWindowListCopyWindowInfo`, front to back, keeping layer 0 only: menus,
-popovers and the menu bar sit on higher layers, so a click in a dropdown frames the window under it
-without any popup rule, which Windows needs because its menus are top-level windows. The
+Windows on macOS come from `CGWindowListCopyWindowInfo`, front to back. Only layer 0 is ever framed,
+but the click is matched against every layer first, because menus, popovers and the menu bar sit
+above it: a dropdown from the menu bar hangs over whatever app is behind it, and matching layer 0
+alone framed and named that app, so a Terminal menu became a Safari step. `window_for_click` in
+`macmap.rs` decides: a layer-0 window under the point is the one, and a menu or popup of the front
+app, or the menu bar itself, stands for the front app's window and comes back with `onMenu` set, and
+`windowAt` then drops its bounds so `frameFor` takes the whole display. A menu belongs to the menu
+bar, not to any window, and the display is the only frame that always shows it; cropping to the
+window under it only worked when that window happened to be big enough. The step is still named
+after the front app. Anything else above layer 0, the Dock or another
+process's menu-bar icon, frames the display with no app. Windows needs its own popup rule because its
+menus are top-level windows. The
 frontmost window is the first one owned by `AXFocusedApplication`. The app name is the window's
 owner name and the path is the `.app` bundle around `proc_pidpath`. Points are Quartz points with
 the origin at the top left of the main display, which is exactly Electron's DIP, so none of the
@@ -456,7 +476,16 @@ and then shifted, because the AZERTY number row only gives a digit with Shift. `
 the dead-key state in an atomic between calls, and `clearDeadKey` zeroes it. The layout calls stay
 synchronous because Text Input Sources must be read on the main thread, which is where Electron's
 main process runs JavaScript. On a Mac, Option is how people type accented letters and symbols, so
-`isTextKey` counts an Option key as typing there, and `comboLabel` names the modifiers Cmd and Option.
+`isTextKey` counts an Option key as typing there. On a Mac every shortcut Mimik shows is written
+with the system's symbols, in its order, `⌃⌥⇧⌘`, and no separator: the key steps `comboLabel`
+writes, the tips on the recording card and the shortcuts in Settings, all through `shortcutLabel` in
+`renderer/lib`, which main imports as well. Control stays `⌃`, its own key, and only Command,
+Super, Meta and `CommandOrControl` become `⌘`. Elsewhere the names stay as words joined by `+`.
+A key step's title draws its shortcut in the same chip the card's tip uses, on the recording card,
+in the guide and in the HTML export: `splitAtShortcut` in core finds the step's `keydown:` key in
+its title and splits around it, so an AI or hand-written title that still names the key keeps the
+chip, and one that does not is plain text. The editor's text field, PDF, Markdown and DOCX stay
+plain text.
 
 The implementation is `IUIAutomation::ElementFromPoint` and six property reads, plus a walk of the
 control view when the element has no name. Named elements skip the walk, because every step of it is
@@ -724,6 +753,13 @@ editor, absolutely positioned and dark, and it silently captured the card's hint
 used the name. `check:overlay` asserts the card's hint computes to `position: static`, which is the
 cheapest way to catch the next collision.
 
+The card can be dragged anywhere: the window is created unmovable like every overlay and then made
+movable, and the whole card is a drag region except its buttons. Once it has been dragged, its
+bottom-right corner is where it stays for the rest of the session, so growing, shrinking and
+collapsing keep it in place rather than snapping it back to the corner of the work area. Only
+`will-move` marks a drag, since it fires for a manual move alone: the card's own repositioning
+also fires `move`, and on X11 with stale coordinates, which pinned it to the top-left.
+
 The card sizes itself. The renderer reports `scrollHeight` after every render and main moves the
 window to match, so a long step title or a collapse does not need a table of per-state pixel heights.
 That only works because `body.controls` overrides the shared `height: 100%`: a body pinned to the
@@ -746,7 +782,10 @@ against half of it — white on a light app, purple on a dark one. Its Cancel an
 standard action bar at the top, with Esc and Enter doing the same.
 
 Where editing returns depends on where it began. From the Ready state it arms as before.
-From a recording, Done carries on recording: picking Area on the paused card and pressing Enter
+Pausing in Area mode, from the card or the shortcut, opens the editor at once on the area in use,
+because redrawing it mid-recording used to need Pause and then a click on the Area button that was
+already selected, which nobody found. Cancel or Esc leaves the recording paused with the area as it
+was; Done or Enter keeps the new area and resumes. From a recording, Done carries on recording: picking Area on the paused card and pressing Enter
 resumes straight away, because drawing the area is the last thing between the person and the next
 step. Cancel goes back to the pause after restoring the mode that was active before Area was picked. Picking Area mid-recording used to only save the setting, so the next steps were
 cropped to whatever area was stored last with no way to draw one, and the editor's Esc sent `cancel`,
@@ -893,9 +932,13 @@ window in front. The foreground moves only once the clicked application has hand
 foreground read soon after it still names the application clicked before — with two windows side by
 side, every switch between them read the other one, whose rectangle does not hold the click, and the
 step fell back to the whole screen. The window under the pointer is the one being clicked by
-definition. Typing and key steps have no pointer to go by, so they still read the focused window,
-after the grab and at least the settle delay after the key, which runs beside the grab and costs the
-screenshot nothing.
+definition. A typing step has a point too, the centre of the field it was typed into, and frames the
+window under that; it used to read the focused window when the session closed, and a session closed
+by a click elsewhere, such as the cancel button of Terminal's find bar, came back with a different
+window, so the step fell back to the whole screen. `check:pipeline` asserts a typing step crops to
+the window its field is in. Key steps have neither pointer nor field, so they still read the focused
+window, after the grab and at least the settle delay after the key, which runs beside the grab and
+costs the screenshot nothing.
 
 The card itself is not focusable, so clicking Pause or Finish never makes the app frontmost and never
 changes what active-window mode will frame next. The region editors stay focusable because they read
@@ -1027,7 +1070,20 @@ moved to the document, and the step named the new tab page and photographed its 
 Closing a session does not guarantee a step. The focused element is read first, and nothing is
 written unless it is a text field with something to show for it. A password field is the exception
 in the other direction: it reports no value by design, and the step is written anyway with no
-`inputValue`, worded "Type password" rather than naming any contents.
+`inputValue`, worded "Type password" rather than naming any contents. On macOS the keys never
+arrive at all: a focused password field turns on Secure Event Input, and macOS then delivers no
+keystrokes to any event tap, so no typing session ever opens there. What still shows is how long the
+field is: the addon reports `valueLength` for a password field, from `AXNumberOfCharacters` or the
+length of its masked value, and never the value itself. After every click and every Tab the focused
+element is read 200 ms later, and when it is a password field its length is read every 400 ms while
+it keeps focus, with a screenshot taken each time it changes. Chrome answers the focus read with
+nothing every few seconds while the field still has focus, so an empty read is no answer, and only
+another element holding focus counts as leaving the field. It closes like any typing session: once the
+length has held still for the typing pause, or when the field loses focus or a click, key, pause or
+stop ends it, a length that differs from the one it started with writes the "Type password" step
+with the last of those screenshots. The field stays watched after a pause, so typing in it again is
+a new step, as it is anywhere else; a field clicked and left alone writes nothing. A typing session that does reach a password field writes nothing, so a field whose keys
+leak through is not recorded twice.
 
 Keys that are not typing get their own step, unless `recordKeys` is off. A shortcut always does; `Enter`, `Tab` and `Escape` do
 only when no typing session was open, because the `Enter` that submits a field is part of that
@@ -1046,13 +1102,20 @@ by default, because it is what is actually on screen and it survives caret movem
 autocomplete. It is always read — a switch to use only the keystroke buffer was taken out, because it
 existed for edge cases nobody would set on purpose. The
 keystroke buffer wins in three cases: the focused element reports no value, the value is empty, or
-the field holds more than was typed by a margin that depends on its type — 24 characters for a
-document, 120 for anything else. That last rule is what makes rich text work — in a word processor
-the "field" is the whole document, so its value is the entire text rather than the sentence just
-typed, and the buffer is the only thing that knows which part is new. A document gets the small
-margin because holding text beyond this session is what a document normally does, while a single
-field holding far more than was typed is the exception. A non-text role yields nothing at all, so a keypress in a file manager is not a
+the field holds more than both twice what was typed and 80 characters. That last rule is what
+makes rich text and terminals work: in a word processor the "field" is the whole document, and in a
+terminal it is the whole screen, so its value is everything shown rather than what was just typed,
+and the buffer is the only thing that knows which part is new. It used to be a margin of 120
+characters beyond what was typed, 24 for a document, and a terminal screen holding only its login
+line and a prompt stayed under it, so the first command typed into a fresh terminal read as the
+whole screen. A screen shorter than 80 characters still does. A non-text role yields nothing at all, so a keypress in a file manager is not a
 step.
+
+Two shortcuts feed the buffer rather than becoming steps. A paste, Cmd+V on a Mac and Ctrl+V
+elsewhere, appends the clipboard's text and opens or extends the typing session, so a command pasted
+into a terminal is a typing step with that command; select all, Cmd+A or Ctrl+A, empties the buffer
+while a session is open, since what is typed next replaces the field. Both match the key's position,
+the QWERTY V and A, not the letter the layout puts there.
 
 Building that buffer is the only place a keystroke becomes a character. `resolveKey` runs
 `ToUnicodeEx` against the foreground layout with the modifier state the hook reported and the real
@@ -1180,7 +1243,7 @@ buttons, where the side panel shows it above Finish, until the next recording st
 `catch { return null }`, so a rejected key and no network both looked exactly like having no key.
 `aiFailureKey` and `aiActionKey` moved from the side panel into `capture/ai/errors.ts` for it.
 
-Naming follows the extension. With no key the fallback — the recorded application, or a generic name
+Naming follows the extension. With no key the fallback — the application most steps happened in, or a generic name
 where none was identified — is written at once. With one, the guide stays "Untitled guide" under
 the shimmer until the descriptions settle and `generateGuideMeta` answers, and the fallback is written
 only if it returns no title, so the guide always ends up named and never shows an application name
@@ -1278,6 +1341,14 @@ repeats a title: the highlighted sidebar item says where you are, and a guide's 
 over its steps. A breadcrumb and a heading saying "All Guides" were both tried and both only said the
 same thing twice.
 
+The top bar fits whatever width it is given, down to the 720 px minimum window. A guide's bar holds
+search and up to six actions, about 950 px, and used to push the whole page sideways in a narrow
+window. `TopBar` measures itself with `useElementWidth`: under 960 px the search box shrinks to its
+icon and ⌘K, and the Zoom control, through a container query since it is the desktop's own element,
+drops the word Zoom and keeps its level; under 740 px Edit, Version history, Transcript and
+Duplicate become icon buttons, each `BarButton` naming itself in a tooltip. Export always keeps its
+label.
+
 The sidebar collapses to icons on its own when Version history is open or the window is under
 1100 px, because a 232 px sidebar, the guide column and the history panel do not fit side by side in
 a 1280 px window, and the extension's tab loses 400 px whenever the browser's side panel is open.
@@ -1315,20 +1386,30 @@ most, with the match marked. Each row is the library's list row shrunk: the firs
 title, where it happened, the step count and the date. The selected row takes the lavender wash, not
 the navy fill. There is no key legend: arrows, Enter and Esc work without one.
 
-A page of the library never scrolls. `usePageFit` fits as many columns as the width allows, none
-narrower than 300 px and at most six, and as many rows of cards or list rows as fit between the top
-of the library and the pager pinned to the bottom of the window, and that is the page size. A fixed
-three columns in a capped width left most of a wide window empty, and a fixed nine per page pushed
-the taller cards and rows past the bottom of it. The list view is capped at `max-w-6xl`, since a row
-that spans a wide window is mostly empty line. Each card is the first step's screenshot at 16:9,
+A page of the library never scrolls, and it never leaves a hole above the pager either. The cards'
+text block is a fixed 113 px and their 16:9 thumbnail grew with the width, so whole rows of them fit
+the height only by chance, and up to a whole row was left empty. `usePageFit` therefore lets the
+thumbnail's height flex between a 2.8:1 strip and the full 16:9: for every column count that keeps
+cards at least 240 px wide, at most six, it fits as many rows as the short thumbnail allows, grows
+the thumbnails until those rows fill the height above the pager, and keeps the count that shows the
+most guides with under 4% of the height left over. Every library thumbnail, grid, list and search row alike, draws
+the screenshot with `ScreenshotView`'s `cover`: the zoomed crop is scaled to fill the box and the
+overflow trimmed equally on both sides, centred on the zoom around the click. It used to be fitted
+whole inside a 16:9 frame, which put lavender bars beside every capture not shaped like the frame, a
+window or a narrow page, and the shorter thumbnails made them wider. The list view is unchanged,
+as many rows as fit. The list view is capped at `max-w-6xl`, since a row
+that spans a wide window is mostly empty line. Each card is the first step's screenshot,
 cropped the way the guide shows it — zoomed toward the click on the desktop, around the element in
 the extension — then where the guide happened, its title on up to two lines, and its step count and
 date, with a star on the picture when it is starred. Where it happened is the most common site among
-its steps, with its favicon, or the application the first step names, with the application's own icon; that icon
+its steps, with its favicon, or the application most of its steps happened in, counted the same way with ties going to the
+earliest (`getMostCommonApp`), with the application's own icon; that icon
 never comes from a favicon service, because the request would send the application's name to it. The
 desktop serves it from the operating system instead: a step's `app.id` is the path of the `.app` bundle
 or `.exe`, `appIconUrl` in the UI env turns it into a `mimik-app-icon:` URL, and main answers with
-`app.getFileIcon`. The extension has no such URL, and neither does an older step whose id is not a
+the icon: a 64 px Quick Look thumbnail of the bundle on macOS, `app.getFileIcon` elsewhere. On macOS
+`getFileIcon` picks the icon by extension rather than by file, so every `.app` came back as the same
+blurry 32 px generic application icon. The extension has no such URL, and neither does an older step whose id is not a
 path, so those keep the letter tile. The desktop's page policy allows the favicon service in
 `img-src`; without it every site showed its letter tile there too. A card with no place at all reads
 "—" on that line. `loadCardData` reads both for the page being shown. The list view is the same card laid
@@ -1686,8 +1767,15 @@ granted; `permission-prompts.json` in userData remembers which prompts have been
 seconds while it is open, and once both are on the dialog closes and the held start runs. macOS
 applies Screen Recording to a running app only after it relaunches, so when the window regains
 focus after that button with the permission still off, the card offers Restart Mimik instead:
-`app.relaunch` with `--open-capture`, which leaves a pending start that opens the capture sheet, so
-the person lands where they were. Closing the dialog drops the held start.
+`app.relaunch`. The held start survives the relaunch because it is written to `held-capture.json`
+in userData, not passed on the command line, and the next launch within ten minutes of the dialog's last
+look at the permissions turns it back into a pending start that opens the capture sheet, so the person lands where they were. It used to
+ride on a `--open-capture` argument, which only our own relaunch carried: macOS shows its own Quit &
+Reopen the moment Screen Recording is switched on, and that relaunch, like reopening by hand, landed
+on the library. The dialog re-reads the permissions every two seconds, and each read rewrites the file's time, so a
+person can take as long as they like in System Settings; counted from the moment the start was held,
+the window had closed before a slow grant ever reached Quit & Reopen. Closing the dialog, or the
+start running, deletes the file.
 
 Screen Recording is not the last prompt. macOS Sequoia asks again, in its own words — Mimik "is
 requesting to bypass the system private window picker" — the first time an app grabs the screen
