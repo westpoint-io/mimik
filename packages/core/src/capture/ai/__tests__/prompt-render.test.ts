@@ -91,7 +91,7 @@ describe.each(CODES)('rendered prompts for %s', (code) => {
     expect(step).toContain('Submit');
     expect(step).toContain('Settings');
     const meta = await metaPrompt(code);
-    expect(meta).toContain('claude-code');
+    expect(meta).toContain('web-app');
     expect(meta).toContain('Workday');
   });
 
