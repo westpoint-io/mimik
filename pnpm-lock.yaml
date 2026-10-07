@@ -62,6 +62,9 @@ importers:
 
   apps/desktop:
     dependencies:
+      '@fontsource/poppins':
+        specifier: ^5.2.7
+        version: 5.2.7
       '@mimik/capture-native':
         specifier: workspace:*
         version: link:../../packages/capture-native

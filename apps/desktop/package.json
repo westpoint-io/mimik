@@ -16,6 +16,7 @@
     "check:pipeline": "electron-vite build && electron out/main/check-pipeline.js"
   },
   "dependencies": {
+    "@fontsource/poppins": "^5.2.7",
     "@mimik/capture-native": "workspace:*",
     "@mimik/core": "workspace:*",
     "@mimik/ui": "workspace:*",
