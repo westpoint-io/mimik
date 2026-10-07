@@ -120,8 +120,8 @@ export function SearchModal() {
                   <rect x="8" y="15" width="40" height="1.5" fill="#C7D2FE" />
                   <path d="M17 27 Q20.5 23 24 27" stroke="#C7D2FE" strokeWidth="2" fill="none" strokeLinecap="round" />
                   <path d="M22 36 Q28 40 34 36" stroke="#C7D2FE" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-                  <circle cx="38" cy="24" r="8" stroke="#4F46E5" strokeWidth="2" fill="none" />
-                  <line x1="44" y1="30" x2="50" y2="36" stroke="#4F46E5" strokeWidth="2.5" strokeLinecap="round" />
+                  <circle cx="38" cy="24" r="8" stroke="#1E1B4B" strokeWidth="2" fill="none" />
+                  <line x1="44" y1="30" x2="50" y2="36" stroke="#1E1B4B" strokeWidth="2.5" strokeLinecap="round" />
                   <circle cx="38" cy="24" r="3" fill="#C7D2FE" />
                   <circle cx="39" cy="23.5" r="1" fill="#1E1B4B" />
                 </svg>

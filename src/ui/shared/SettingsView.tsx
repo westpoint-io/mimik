@@ -4,47 +4,27 @@ import { type AIProviderKey, providerOrDefault } from '@mimik/core/capture/ai/mo
 import { resolveVoiceApiKey } from '@mimik/core/capture/voice/api-key';
 import type { VoiceProvider } from '@mimik/core/capture/voice/transcribe';
 import { i18n } from '@mimik/core/env';
-import { type BrandLogo, defaultFooterLine, makeBrandLogo } from '@mimik/core/export/branding';
-import { DEFAULT_TARGET_COLOR, TARGET_COLORS } from '@mimik/core/screenshot/types';
 import {
   AiSettings,
+  BrandingSettings,
   Button,
-  ColorPicker,
-  Input,
   KeyStatusNote,
   ModelList,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
   SecretInput,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SettingsCard,
+  Switch,
 } from '@mimik/ui';
-import {
-  ArrowLeft,
-  Bug,
-  Check,
-  ChevronDown,
-  ChevronRight,
-  EyeOff,
-  ImageIcon,
-  Mic,
-  Shield,
-  Sparkles,
-  Star,
-  Target,
-  Trash2,
-  TriangleAlert,
-} from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { ArrowLeft, Bug, Check, ChevronRight, EyeOff, Mic, Shield, Sparkles, Star, TriangleAlert } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import { useKeyCheck } from '@/ui/shared/hooks/use-key-check';
 import { useSettingsAutosave } from '@/ui/shared/hooks/use-settings-autosave';
 import { MicrophonePicker } from '@/ui/shared/MicrophonePicker';
-import { footerPresets } from './lib/footer-presets';
 
 interface SettingsViewProps {
   onBack?: () => void;
@@ -59,11 +39,6 @@ export function SettingsView({ onBack }: SettingsViewProps) {
   const [voiceProvider, setVoiceProvider] = useState<VoiceProvider>('openai');
   const [voiceApiKey, setVoiceApiKey] = useState('');
   const [voiceMicrophoneId, setVoiceMicrophoneId] = useState('');
-  const [targetColor, setTargetColor] = useState<string>(DEFAULT_TARGET_COLOR);
-  const [brandLogo, setBrandLogo] = useState<BrandLogo | null>(null);
-  const [brandFooter, setBrandFooter] = useState('');
-  const [brandAttribution, setBrandAttribution] = useState(true);
-  const logoInputRef = useRef<HTMLInputElement>(null);
   const [blurPresets, setBlurPresets] = useState<Record<PresetKey, boolean>>({
     email: true,
     phone: true,
@@ -86,10 +61,6 @@ export function SettingsView({ onBack }: SettingsViewProps) {
         'voiceProvider',
         'voiceApiKey',
         'voiceMicrophoneId',
-        'targetColor',
-        'brandLogo',
-        'brandFooter',
-        'brandAttribution',
       ])
       .then((result) => {
         const p = providerOrDefault(result.aiProvider);
@@ -99,10 +70,6 @@ export function SettingsView({ onBack }: SettingsViewProps) {
         setVoiceProvider((result.voiceProvider as VoiceProvider) || 'openai');
         if (result.voiceApiKey) setVoiceApiKey(result.voiceApiKey as string);
         if (result.voiceMicrophoneId) setVoiceMicrophoneId(result.voiceMicrophoneId as string);
-        if (result.targetColor) setTargetColor(result.targetColor as string);
-        if (result.brandLogo) setBrandLogo(result.brandLogo as BrandLogo);
-        setBrandFooter(typeof result.brandFooter === 'string' ? result.brandFooter : defaultFooterLine());
-        if (result.brandAttribution === false) setBrandAttribution(false);
         setLoaded(true);
       });
   }, []);
@@ -112,18 +79,9 @@ export function SettingsView({ onBack }: SettingsViewProps) {
     voiceProvider,
     voiceApiKey,
     voiceMicrophoneId,
-    targetColor,
-    brandLogo,
-    brandFooter,
-    brandAttribution,
   };
 
-  const { saved } = useSettingsAutosave(stored, loaded);
-
-  const handleLogoPick = async (file: File | undefined) => {
-    if (!file) return;
-    setBrandLogo(await makeBrandLogo(file));
-  };
+  const { saved, queue } = useSettingsAutosave(stored, loaded);
 
   const voiceKey = resolveVoiceApiKey({ voiceProvider, voiceApiKey, aiProvider: provider, aiApiKey: apiKey });
 
@@ -169,135 +127,9 @@ export function SettingsView({ onBack }: SettingsViewProps) {
           }}
         />
 
-        <div className="border border-border rounded-[10px] p-3.5 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center shrink-0">
-              <Target size={14} className="text-accent" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-foreground">{i18n.t('settings.targetColor')}</div>
-              <div className="text-[11px] text-muted-foreground">{i18n.t('settings.targetColorHint')}</div>
-            </div>
-          </div>
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                type="button"
-                className="flex items-center gap-2 shrink-0 border border-border rounded-lg px-2 py-1.5 text-[11px] text-foreground hover:border-accent"
-              >
-                <span
-                  className="w-[22px] h-[22px] rounded-full border border-foreground/15"
-                  style={{ backgroundColor: targetColor }}
-                />
-                <code className="tabular-nums">{targetColor.toUpperCase()}</code>
-                <ChevronDown size={12} className="opacity-60" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-56 p-2.5">
-              <ColorPicker value={targetColor} presets={TARGET_COLORS} onChange={setTargetColor} />
-            </PopoverContent>
-          </Popover>
-        </div>
+        <BrandingSettings onChange={queue} />
 
-        <div className="border border-border rounded-[10px] p-3.5 space-y-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center">
-              <ImageIcon size={14} className="text-accent" />
-            </div>
-            <span className="text-xs font-bold text-foreground">{i18n.t('settings.branding')}</span>
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">
-              {i18n.t('settings.brandLogo')}
-            </label>
-            <input
-              ref={logoInputRef}
-              type="file"
-              accept="image/png,image/jpeg,image/svg+xml,image/webp"
-              className="hidden"
-              onChange={(e) => handleLogoPick(e.target.files?.[0])}
-            />
-            <div className="flex items-center gap-2.5">
-              {brandLogo && (
-                <img
-                  src={brandLogo.dataUrl}
-                  alt=""
-                  className="h-9 max-w-[92px] object-contain rounded border border-border bg-secondary p-1"
-                />
-              )}
-              <button
-                type="button"
-                onClick={() => logoInputRef.current?.click()}
-                className="border border-border rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-foreground hover:border-accent transition-colors"
-              >
-                {brandLogo ? i18n.t('settings.replaceLogo') : i18n.t('settings.uploadLogo')}
-              </button>
-              {brandLogo && (
-                <button
-                  onClick={() => setBrandLogo(null)}
-                  aria-label={i18n.t('settings.removeLogo')}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                >
-                  <Trash2 size={14} />
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">
-              {i18n.t('settings.footerLine')}
-            </label>
-            <Input
-              value={brandFooter}
-              onChange={(e) => setBrandFooter(e.target.value)}
-              placeholder={i18n.t('settings.footerLinePlaceholder')}
-              className="h-8 text-[13px] rounded-lg border-border"
-            />
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {footerPresets().map((preset) => (
-                <button
-                  key={preset}
-                  type="button"
-                  onClick={() => setBrandFooter(preset)}
-                  className={`px-2 py-1 rounded-md border text-[10px] transition-colors ${
-                    brandFooter === preset
-                      ? 'border-accent text-accent'
-                      : 'border-border text-muted-foreground hover:border-accent hover:text-foreground'
-                  }`}
-                >
-                  {preset}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between gap-3 pt-1">
-            <div className="text-[11px] font-semibold text-foreground">{i18n.t('settings.attribution')}</div>
-            <button
-              onClick={() => setBrandAttribution((prev) => !prev)}
-              className={`w-9 h-5 rounded-full transition-colors relative shrink-0 ${
-                brandAttribution ? 'bg-accent' : 'bg-border'
-              }`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
-                  brandAttribution ? 'translate-x-4' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-        </div>
-
-        <div className="border border-border rounded-[10px] p-3.5 space-y-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center">
-              <Mic size={14} className="text-accent" />
-            </div>
-            <span className="text-xs font-bold text-foreground">{i18n.t('settings.voiceNarration')}</span>
-          </div>
-
+        <SettingsCard icon={Mic} title={i18n.t('settings.voiceNarration')}>
           <div>
             <label className="block text-[11px] font-semibold text-foreground mb-1">
               {i18n.t('settings.provider')}
@@ -360,43 +192,29 @@ export function SettingsView({ onBack }: SettingsViewProps) {
           {import.meta.env.BROWSER !== 'firefox' && (
             <MicrophonePicker value={voiceMicrophoneId} onChange={setVoiceMicrophoneId} triggerClassName="h-8" />
           )}
-        </div>
+        </SettingsCard>
 
-        <div className="border border-border rounded-[10px] p-3.5 space-y-1">
-          <div className="flex items-center gap-2.5 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center">
-              <EyeOff size={14} className="text-accent" />
-            </div>
-            <span className="text-xs font-bold text-foreground">{i18n.t('settings.smartBlur')}</span>
-          </div>
-
+        <SettingsCard icon={EyeOff} title={i18n.t('settings.smartBlur')} className="space-y-1 [&>*:first-child]:mb-2">
           {(Object.keys(PRESET_LABELS) as PresetKey[]).map((key, i, arr) => (
             <div
               key={key}
               className={`flex items-center justify-between py-2 ${i < arr.length - 1 ? 'border-b border-secondary' : ''}`}
             >
               <span className="text-[11px] font-semibold text-foreground">{i18n.t(BLUR_PRESET_I18N[key])}</span>
-              <button
-                onClick={() =>
+              <Switch
+                checked={blurPresets[key]}
+                label={i18n.t(BLUR_PRESET_I18N[key])}
+                onChange={(on) =>
                   setBlurPresets((prev) => {
-                    const next = { ...prev, [key]: !prev[key] };
+                    const next = { ...prev, [key]: on };
                     localStorage.set({ blurPresets: next });
                     return next;
                   })
                 }
-                className={`w-9 h-5 rounded-full transition-colors relative ${
-                  blurPresets[key] ? 'bg-accent' : 'bg-border'
-                }`}
-              >
-                <span
-                  className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
-                    blurPresets[key] ? 'translate-x-4' : 'translate-x-0'
-                  }`}
-                />
-              </button>
+              />
             </div>
           ))}
-        </div>
+        </SettingsCard>
 
         <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-secondary text-[10px] text-muted-foreground leading-relaxed">
           <Shield size={12} className="shrink-0 mt-0.5 text-accent" />

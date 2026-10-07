@@ -1,5 +1,4 @@
 import type { Screenshot, ScreenshotBounds } from '@/core/guides/types';
-import { drawCursor } from './cursor';
 import { drawAnnotation } from './draw';
 import { resolveTarget, resolveViewport } from './geometry';
 
@@ -49,9 +48,6 @@ export async function renderScreenshot(screenshot: Screenshot, opts: RenderOptio
   }
 
   for (const a of screenshot.edits?.annotations ?? []) drawAnnotation(ctx, a, viewport.x, viewport.y);
-
-  const cursor = screenshot.edits?.cursor;
-  if (cursor) drawCursor(ctx, cursor);
 
   return canvas.convertToBlob({ type: format, quality });
 }

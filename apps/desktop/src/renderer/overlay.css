@@ -4,7 +4,9 @@
 @import '@fontsource/poppins/700.css';
 
 :root {
-  --accent: #4f46e5;
+  --accent: #1e1b4b;
+  --mark: #4f46e5;
+  --mascot: #4f46e5;
   --deep: #1e1b4b;
   --lavender: #c7d2fe;
   --violet-mid: #3730a3;
@@ -43,7 +45,7 @@ body.editor {
   content: '';
   position: absolute;
   inset: -2px;
-  border: 2px dashed var(--accent);
+  border: 2px dashed var(--mark);
   pointer-events: none;
 }
 
@@ -103,7 +105,7 @@ body.editor {
 .handle[data-handle='sw'] {
   width: 26px;
   height: 26px;
-  border: 0 solid var(--accent);
+  border: 0 solid var(--mark);
   filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
 }
 .handle[data-handle='nw'] {
@@ -211,7 +213,7 @@ body.editor {
 body.boundary #frame {
   position: absolute;
   inset: 0;
-  border: 3px solid var(--accent);
+  border: 3px solid var(--mark);
   border-radius: 2px;
 }
 
@@ -482,6 +484,31 @@ body.controls #skeleton .meta span {
   to {
     background-position: -100% 0;
   }
+}
+
+body.controls #aiNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 10px 14px 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+body.controls #aiNotice svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #dc2626;
+}
+
+body.controls #aiNotice p {
+  margin: 0;
+}
+
+body.controls #aiNotice strong {
+  font-weight: 600;
+  color: var(--deep);
 }
 
 body.controls #stepMeta,

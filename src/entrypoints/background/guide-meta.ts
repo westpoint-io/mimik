@@ -1,9 +1,7 @@
 import { logger } from '@mimik/core/logger';
 import { i18n } from '#imports';
-import { resolveAiKey } from '@/core/capture/ai/keys';
-import { generateGuideMeta } from '@/core/capture/ai/meta';
-import { AI_PROVIDERS } from '@/core/capture/ai/models';
-import { actionSteps } from '@/core/guides/blocks';
+import { AI_CREDENTIAL_SETTINGS, resolveAiCredentials } from '@/core/capture/ai/keys';
+import { generateGuideMeta, guideMetaSteps } from '@/core/capture/ai/meta';
 import {
   clearStepAiPending,
   getGuideDomain,
@@ -30,22 +28,13 @@ type GuideMetaInputs =
   | { ok: false; reason: ResolveFailure };
 
 async function resolveGuideMetaInputs(guideId: string): Promise<GuideMetaInputs> {
-  const settings = await localStorage.get(['aiApiKeys', 'aiApiKey', 'aiProvider', 'aiModel', 'aiBaseUrl']);
-  const { provider, apiKey } = resolveAiKey(settings);
-  if (!apiKey) return { ok: false, reason: 'no-api-key' };
+  const keys = resolveAiCredentials(await localStorage.get([...AI_CREDENTIAL_SETTINGS]));
+  if (!keys) return { ok: false, reason: 'no-api-key' };
 
-  const steps = actionSteps(await getStepsForGuide(guideId));
-  const described = steps.filter((s) => s.description).map((s) => ({ description: s.description, url: s.url }));
-  if (described.length === 0) return { ok: false, reason: 'no-steps' };
+  const steps = guideMetaSteps(await getStepsForGuide(guideId));
+  if (steps.length === 0) return { ok: false, reason: 'no-steps' };
 
-  return {
-    ok: true,
-    steps: described.length > 15 ? [...described.slice(0, 10), ...described.slice(-5)] : described,
-    provider,
-    model: (settings.aiModel as string) || AI_PROVIDERS[provider].defaultModel,
-    apiKey,
-    baseUrl: settings.aiBaseUrl as string | undefined,
-  };
+  return { ok: true, steps, ...keys };
 }
 
 async function applyFallbackTitle(guideId: string) {

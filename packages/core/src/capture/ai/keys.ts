@@ -1,4 +1,4 @@
-import { type AIProviderKey, isProviderKey, providerOrDefault } from './models';
+import { AI_PROVIDERS, type AIProviderKey, isProviderKey, providerOrDefault } from './models';
 
 export type AIApiKeys = Partial<Record<AIProviderKey, string>>;
 
@@ -41,4 +41,30 @@ export function resolveAiKey(stored: { aiApiKeys?: unknown; aiApiKey?: unknown; 
 } {
   const provider = providerOrDefault(stored.aiProvider);
   return { provider, apiKey: keyFor(migrateApiKeys(stored), provider) };
+}
+
+export const AI_CREDENTIAL_SETTINGS = [...AI_KEY_SETTINGS, 'aiModel', 'aiBaseUrl'] as const;
+
+export interface AiCredentials {
+  provider: AIProviderKey;
+  model: string;
+  apiKey: string;
+  baseUrl?: string;
+}
+
+export function resolveAiCredentials(stored: {
+  aiApiKeys?: unknown;
+  aiApiKey?: unknown;
+  aiProvider?: unknown;
+  aiModel?: unknown;
+  aiBaseUrl?: unknown;
+}): AiCredentials | null {
+  const { provider, apiKey } = resolveAiKey(stored);
+  if (!apiKey) return null;
+  return {
+    provider,
+    apiKey,
+    model: (typeof stored.aiModel === 'string' && stored.aiModel) || AI_PROVIDERS[provider].defaultModel,
+    baseUrl: typeof stored.aiBaseUrl === 'string' ? stored.aiBaseUrl : undefined,
+  };
 }

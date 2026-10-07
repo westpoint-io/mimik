@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { CaptureImage } from '@mimik/core/capture/sink';
 import type { ElementMeta } from '@mimik/core/guides/types';
-import type { CursorMark } from '@mimik/core/screenshot/types';
 import { screen } from 'electron';
 import { cursorPoint } from './displays';
 import {
@@ -69,7 +68,6 @@ export interface CaptureRequest {
   elementMeta: ElementMeta;
   image: CaptureImage;
   inputValue?: string;
-  cursor?: CursorMark;
   zoomLevel?: number;
 }
 
@@ -415,7 +413,7 @@ export class DesktopRecorder {
       await this.write('input', where, Promise.resolve(field), shot);
       return;
     }
-    const typed = typedTextFor(field, buffer, this.settings().readFieldText && (seen?.fresh ?? true));
+    const typed = typedTextFor(field, buffer, seen?.fresh ?? true);
     if (!typed) return;
     await this.write('input', where, Promise.resolve(field), shot, typed);
   }
@@ -466,9 +464,6 @@ export class DesktopRecorder {
         height: shot.height,
       },
       ...(inputValue === undefined ? {} : { inputValue }),
-      ...(settings.showCursor && action === 'click'
-        ? { cursor: { x: local.x, y: local.y, style: 'arrow', scale } }
-        : {}),
       ...(settings.zoomLevel === null ? {} : { zoomLevel: settings.zoomLevel }),
     });
   }

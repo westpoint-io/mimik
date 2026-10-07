@@ -2,11 +2,12 @@ import { GuideContent, LibraryContent, navigate, SearchModal, TooltipProvider, T
 import { useEffect, useState } from 'react';
 import { CaptureSheet } from './CaptureSheet';
 import { GuideZoom } from './GuideZoom';
+import { REOPEN_SETTINGS } from './settings/lib/reopen-settings';
 import { SettingsDialog } from './settings/SettingsDialog';
 
 export function App() {
   const route = useRoute();
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(() => sessionStorage.getItem(REOPEN_SETTINGS) !== null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {

@@ -153,33 +153,34 @@ blurPresets:
   macAddress: Adresse MAC
 
 desktop:
-  record: Record
-  captureArea: Capture area
-  capturing: Capturing
-  paused: Paused
-  ready: Ready
-  lastStep: Last step
-  noStepsYet: No steps captured yet
-  pause: Pause
-  resume: Resume
-  finish: Finish
-  showCursor: Show the cursor in screenshots
-  screenshotDelay: Screenshot delay
-  keepClicksBeyondArea: Capture clicks outside the capture area
-  guideInApp: "Guide in $1"
-  newGuide: New Guide
-  capturingSection: Capturing
+  ready: "Prêt"
+  pause: "Pause"
+  resume: "Reprendre"
+  finish: "Terminer"
+  screenshotDelay: "Délai de capture"
+  keepClicksBeyondArea: "Capturer les clics hors de la zone"
+  guideInApp: "Guide dans $1"
+  capturingSection: "Capture"
   milliseconds: ms
   captureMode: Quoi capturer
   modeWindow: Fenêtre
   modeScreen: Écran
   modeRegion: Zone
-  readyToRecord: Prêt à enregistrer
   startSheetTitle: Démarrer une capture
   startButton: Démarrer
-  guideCount: $1 guide
-  guideCountPlural: $1 guides
   shortcutsSection: "Raccourcis"
+  generalSection: "Général"
+  appLanguage: "Langue de l’application"
+  appLanguageHint: "La langue des écrans de Mimik. Les descriptions IA ont leur propre réglage."
+  languageSystem: "Comme le système"
+  cardLanguage: "Langue"
+  cardStartup: "Démarrage"
+  cardUpdates: "Mises à jour"
+  startAtLogin: "Lancer à l’ouverture de session"
+  startAtLoginHint: "Mimik s’ouvre dans la zone de notification, sans fenêtre."
+  version: "Version $1"
+  versionHint: "Mimik recherche les mises à jour à chaque démarrage."
+  checkUpdates: "Rechercher des mises à jour"
   cardScreenshots: "Captures d’écran"
   cardKeyboard: "Saisie et touches"
   cardGlobalKeys: "Touches globales"
@@ -191,18 +192,10 @@ desktop:
   recordKeys: "Enregistrer les raccourcis et touches nommées"
   recordTyping: "Enregistrer ce que vous tapez"
   typingDebounce: "Clôturer l'étape de saisie après"
-  readFieldText: "Lire le texte du champ lorsque c’est possible"
-  readFieldTextHint: "Sinon, le guide enregistre vos frappes"
   cardScreenshotsHint: "Ce que capture chaque étape"
-  cardClickMarks: "Marques de clic"
-  cardClickMarksHint: "Comment un clic apparaît dans le guide"
   cardKeyboardHint: "Ce que le clavier ajoute au guide"
   captureModeHint: "Fenêtre suit l’application sur laquelle vous cliquez."
-  showCursorHint: "Dessine un pointeur là où vous avez cliqué."
-  markerColour: "Couleur du repère"
-  markerColourHint: "Le contour de l’élément cliqué, et l’accent des exports."
   screenshotDelayHint: "Attente avant la capture, pour les menus animés."
-  keepClicksBeyondAreaHint: "Mode Zone uniquement. Ces étapes montrent toujours la zone."
   typingDebounceHint: "Une pause de cette durée termine l’étape."
   recordKeysHint: "Ctrl+S, Entrée et autres deviennent des étapes."
   seconds: "s"
@@ -211,7 +204,6 @@ desktop:
   shortcutCapture: "Capturer une étape maintenant"
   shortcutPress: "Appuyez sur les touches…"
   shortcutClear: "Effacer"
-  shortcutTaken: "Une autre application utilise déjà cette touche"
 
 fullview:
   allGuides: Tous les guides

@@ -39,7 +39,7 @@ export function MascotIcon({ size = 22, pose = 'happy', tone = 'brand' }: Mascot
       </defs>
       <rect {...MASCOT_BODY} className={body} />
       <path d={MASCOT_CROWN} className={crown} />
-      {!muted && <path d={MASCOT_CROWN} className="fill-accent" clipPath="url(#mascot-crown-split)" />}
+      {!muted && <path d={MASCOT_CROWN} className="fill-mascot" clipPath="url(#mascot-crown-split)" />}
       <rect {...MASCOT_SEAM} className={seam} />
 
       {'pupils' in face

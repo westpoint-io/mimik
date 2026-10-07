@@ -20,26 +20,22 @@ export interface CaptureShortcuts {
 
 export interface CaptureSettings {
   captureMode: CaptureMode;
-  showCursor: boolean;
   screenshotDelayMs: number;
   keepClicksBeyondArea: boolean;
   recordKeys: boolean;
   recordTyping: boolean;
   typingDebounceMs: number;
-  readFieldText: boolean;
   zoomLevel: number | null;
   shortcuts: CaptureShortcuts;
 }
 
 export const DEFAULT_CAPTURE_SETTINGS: CaptureSettings = {
   captureMode: 'window',
-  showCursor: true,
   screenshotDelayMs: 0,
   keepClicksBeyondArea: false,
-  recordKeys: true,
+  recordKeys: false,
   recordTyping: true,
-  typingDebounceMs: 1200,
-  readFieldText: true,
+  typingDebounceMs: 1000,
   zoomLevel: null,
   shortcuts: {
     startStop: 'Alt+Shift+R',
@@ -77,9 +73,7 @@ function snapZoom(zoom: number): number {
   return Math.min(Math.max(Math.round(zoom / ZOOM_STEP) * ZOOM_STEP, MIN_ZOOM), MAX_ZOOM);
 }
 
-type LegacySettings = Partial<
-  Record<'captureOutsideClicks' | 'captureKeys' | 'captureTyping' | 'typingSmartDetection', unknown>
->;
+type LegacySettings = Partial<Record<'captureOutsideClicks' | 'captureKeys' | 'captureTyping', unknown>>;
 
 export function normaliseSettings(input: Partial<CaptureSettings> & LegacySettings): CaptureSettings {
   const delay = Number(input.screenshotDelayMs);
@@ -88,7 +82,6 @@ export function normaliseSettings(input: Partial<CaptureSettings> & LegacySettin
     captureMode: CAPTURE_MODES.includes(input.captureMode as CaptureMode)
       ? (input.captureMode as CaptureMode)
       : DEFAULT_CAPTURE_SETTINGS.captureMode,
-    showCursor: typeof input.showCursor === 'boolean' ? input.showCursor : DEFAULT_CAPTURE_SETTINGS.showCursor,
     screenshotDelayMs: Number.isFinite(delay) ? Math.min(Math.max(Math.round(delay), 0), MAX_SCREENSHOT_DELAY_MS) : 0,
     keepClicksBeyondArea: flag(
       input.keepClicksBeyondArea ?? input.captureOutsideClicks,
@@ -99,7 +92,6 @@ export function normaliseSettings(input: Partial<CaptureSettings> & LegacySettin
     typingDebounceMs: Number.isFinite(debounce)
       ? Math.min(Math.max(Math.round(debounce), MIN_TYPING_DEBOUNCE_MS), MAX_TYPING_DEBOUNCE_MS)
       : DEFAULT_CAPTURE_SETTINGS.typingDebounceMs,
-    readFieldText: flag(input.readFieldText ?? input.typingSmartDetection, DEFAULT_CAPTURE_SETTINGS.readFieldText),
     zoomLevel: Number.isFinite(Number(input.zoomLevel)) ? snapZoom(Number(input.zoomLevel)) : null,
     shortcuts: shortcuts(input.shortcuts),
   };

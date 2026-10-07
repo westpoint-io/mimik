@@ -153,33 +153,34 @@ blurPresets:
   macAddress: Endereço MAC
 
 desktop:
-  record: Record
-  captureArea: Capture area
-  capturing: Capturing
-  paused: Paused
-  ready: Ready
-  lastStep: Last step
-  noStepsYet: No steps captured yet
-  pause: Pause
-  resume: Resume
-  finish: Finish
-  showCursor: Show the cursor in screenshots
-  screenshotDelay: Screenshot delay
-  keepClicksBeyondArea: Capture clicks outside the capture area
-  guideInApp: "Guide in $1"
-  newGuide: New Guide
-  capturingSection: Capturing
+  ready: "Pronto"
+  pause: "Pausar"
+  resume: "Retomar"
+  finish: "Concluir"
+  screenshotDelay: "Atraso da captura"
+  keepClicksBeyondArea: "Capturar cliques fora da área"
+  guideInApp: "Guia no $1"
+  capturingSection: "Captura"
   milliseconds: ms
   captureMode: O que capturar
   modeWindow: Janela
   modeScreen: Tela
   modeRegion: Área
-  readyToRecord: Pronto para gravar
   startSheetTitle: Iniciar uma captura
   startButton: Iniciar
-  guideCount: $1 guia
-  guideCountPlural: $1 guias
   shortcutsSection: "Atalhos"
+  generalSection: "Geral"
+  appLanguage: "Idioma do app"
+  appLanguageHint: "O idioma das telas do Mimik. As descrições por IA têm uma configuração própria."
+  languageSystem: "Igual ao sistema"
+  cardLanguage: "Idioma"
+  cardStartup: "Inicialização"
+  cardUpdates: "Atualizações"
+  startAtLogin: "Abrir ao iniciar a sessão"
+  startAtLoginHint: "O Mimik abre na bandeja, sem janela."
+  version: "Versão $1"
+  versionHint: "O Mimik procura atualizações sempre que é iniciado."
+  checkUpdates: "Procurar atualizações"
   cardScreenshots: "Capturas de tela"
   cardKeyboard: "Digitação e teclas"
   cardGlobalKeys: "Teclas globais"
@@ -191,18 +192,10 @@ desktop:
   recordKeys: "Registrar atalhos e teclas nomeadas"
   recordTyping: "Registrar o que você digita"
   typingDebounce: "Encerrar a etapa de digitação após"
-  readFieldText: "Ler o texto do próprio campo quando possível"
-  readFieldTextHint: "Se desligado, o guia registra suas teclas"
   cardScreenshotsHint: "O que cada passo captura"
-  cardClickMarks: "Marcas de clique"
-  cardClickMarksHint: "Como um clique aparece no guia"
   cardKeyboardHint: "O que o teclado adiciona ao guia"
   captureModeHint: "Janela acompanha o app em que você clica."
-  showCursorHint: "Desenha um ponteiro onde você clicou."
-  markerColour: "Cor do marcador"
-  markerColourHint: "O contorno do que você clicou e a cor de destaque nas exportações."
   screenshotDelayHint: "Espera antes da captura, para menus com animação."
-  keepClicksBeyondAreaHint: "Só no modo Área. Esses passos ainda mostram a área."
   typingDebounceHint: "Uma pausa desse tamanho encerra o passo."
   recordKeysHint: "Ctrl+S, Enter e afins viram passos."
   seconds: "s"
@@ -211,7 +204,6 @@ desktop:
   shortcutCapture: "Capturar uma etapa agora"
   shortcutPress: "Pressione as teclas…"
   shortcutClear: "Limpar"
-  shortcutTaken: "Outro aplicativo já usa esta tecla"
 
 fullview:
   allGuides: Todos os guias

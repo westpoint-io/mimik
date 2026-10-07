@@ -20,21 +20,22 @@
   --color-secondary-foreground: #1E1B4B;
   --color-muted: #EEF2FF;
   --color-muted-foreground: #6B7280;
-  --color-accent: #4F46E5;
+  --color-accent: #1E1B4B;
   --color-accent-foreground: #EEF2FF;
   --color-destructive: #DC2626;
   --color-destructive-foreground: #fff;
   --color-border: #C7D2FE;
   --color-input: #C7D2FE;
-  --color-ring: #4F46E5;
+  --color-ring: #1E1B4B;
   --radius: 0.5rem;
 
   --color-violet: #818CF8;
   --color-violet-light: #A78BFA;
   --color-violet-dark: #3730A3;
   --color-violet-mid: #3730A3;
+  --color-mascot: #4F46E5;
   --color-lavender: #C7D2FE;
-  --color-purple: #4F46E5;
+  --color-purple: #1E1B4B;
   --color-deep: #1E1B4B;
   --color-success: #059669;
 }

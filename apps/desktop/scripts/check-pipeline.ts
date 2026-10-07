@@ -76,8 +76,8 @@ app.whenReady().then(async () => {
     return Promise.resolve({ png: image.toPNG(), width, height, scaleFactor: scale, displayId: display.id });
   }
 
-  const REGION_MODE = { ...DEFAULT_CAPTURE_SETTINGS, captureMode: 'region' as const };
-  let settings = { ...REGION_MODE, showCursor: false };
+  const REGION_MODE = { ...DEFAULT_CAPTURE_SETTINGS, captureMode: 'region' as const, recordKeys: true };
+  let settings = { ...REGION_MODE };
   let activeGuide = '';
   const recorder = new DesktopRecorder(
     () => region,
@@ -116,7 +116,6 @@ app.whenReady().then(async () => {
     captureOutsideClicks: true,
     captureKeys: false,
     captureTyping: false,
-    typingSmartDetection: false,
   });
   results.push({
     name: 'settings saved under the old names carry over',
@@ -124,7 +123,6 @@ app.whenReady().then(async () => {
       legacy.keepClicksBeyondArea &&
       !legacy.recordKeys &&
       !legacy.recordTyping &&
-      !legacy.readFieldText &&
       normaliseSettings({ recordTyping: true, captureTyping: false }).recordTyping,
     detail: 'each old key maps onto its new name, and the new name wins when both are present',
   });
@@ -200,7 +198,7 @@ app.whenReady().then(async () => {
     },
     {
       grab: async () => syntheticDisplay,
-      settings: () => ({ ...DEFAULT_CAPTURE_SETTINGS, captureMode: 'window', showCursor: false }),
+      settings: () => ({ ...DEFAULT_CAPTURE_SETTINGS, captureMode: 'window' }),
       lookup: () => Promise.resolve(null),
       windowAt: () =>
         Promise.resolve({ ok: true, window: { title: 'Left pane', app: { name: 'Explorer' }, bounds: clickedWindow } }),
@@ -248,7 +246,6 @@ app.whenReady().then(async () => {
       grab: async () => syntheticDisplay,
       settings: () => ({
         ...REGION_MODE,
-        showCursor: true,
         shortcuts: { ...REGION_MODE.shortcuts, capture: 'Alt+Shift+S' },
       }),
       lookup: () => Promise.resolve(control),
@@ -316,8 +313,6 @@ app.whenReady().then(async () => {
       typed?.action === 'input' &&
       typed.inputValue === 'hello world' &&
       typed.elementMeta.ariaLabel === 'Search' &&
-      typed.cursor === undefined &&
-      clicked?.cursor !== undefined &&
       onAButton === null &&
       empty === null,
     detail: `wrote ${typed?.action ?? 'nothing'} carrying "${typed?.inputValue ?? ''}"; a button and an empty field wrote nothing`,
@@ -559,7 +554,7 @@ app.whenReady().then(async () => {
 
   activeGuide = await ask<string>(win.webContents, 'mimik:capture:startGuide');
 
-  settings = { ...REGION_MODE, screenshotDelayMs: 400, showCursor: false };
+  settings = { ...REGION_MODE, screenshotDelayMs: 400 };
   const before = Date.now();
   await recorder.capture({ x: region.x + 10, y: region.y + 10 });
   const elapsed = Date.now() - before;
@@ -569,18 +564,13 @@ app.whenReady().then(async () => {
     detail: `${elapsed} ms for a 400 ms delay`,
   });
 
-  settings = { ...REGION_MODE, showCursor: true, screenshotDelayMs: 0 };
-  await recorder.capture({ x: region.x + 200, y: region.y + 150 });
-  const cursorSizes = await ask<number[]>(win.webContents, 'mimik:check:renderedSizes', activeGuide, 30_000);
-  const bare = cursorSizes[cursorSizes.length - 2] ?? 0;
-  const drawn = cursorSizes[cursorSizes.length - 1] ?? 0;
-  results.push({
-    name: 'cursor is drawn when rendered',
-    ok: bare > 0 && drawn > 0 && bare !== drawn,
-    detail: `${bare} bytes rendered without a cursor, ${drawn} bytes with one`,
-  });
-
   const probeSrc = await ask<string | null>(win.webContents, 'mimik:check:screenshotSrc', activeGuide, 20_000);
+  const defaultLogo = await ask<boolean>(win.webContents, 'mimik:check:defaultLogo', undefined, 10_000);
+  results.push({
+    name: 'exports can load the default logo',
+    ok: defaultLogo === true,
+    detail: defaultLogo ? 'mimik-mark.png served beside the page' : 'mimik-mark.png did not load',
+  });
 
   await ask(win.webContents, 'mimik:check:cleanup', [guideId, activeGuide], 30_000);
 

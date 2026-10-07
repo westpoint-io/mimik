@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import type { CaptureSettings } from '../main/capture/settings';
+import type { OverlayAiFailure } from '../main/overlay';
 
 interface Region {
   x: number;
@@ -14,8 +15,8 @@ const api = {
     region: (): Promise<Region> => ipcRenderer.invoke('mimik:capture:region'),
     edit: (): Promise<void> => ipcRenderer.invoke('mimik:capture:edit'),
     arm: (): Promise<void> => ipcRenderer.invoke('mimik:capture:arm'),
-    described: (stepId: string, description: string | null): void =>
-      ipcRenderer.send('mimik:capture:described', stepId, description),
+    described: (stepId: string, description: string | null, failure: OverlayAiFailure | null): void =>
+      ipcRenderer.send('mimik:capture:described', stepId, description, failure),
     settings: {
       get: (): Promise<CaptureSettings> => ipcRenderer.invoke('mimik:capture:settings:get'),
       set: (patch: Partial<CaptureSettings>): Promise<CaptureSettings> =>
@@ -40,6 +41,10 @@ const api = {
         ipcRenderer.send(replyChannel, { error: error instanceof Error ? error.message : String(error) });
       }
     });
+  },
+  relocalise: (): void => ipcRenderer.send('mimik:app:relocalise'),
+  updates: {
+    check: (): Promise<void> => ipcRenderer.invoke('mimik:updates:check'),
   },
   screenshots: {
     sweep: (keep: string[]): Promise<number> => ipcRenderer.invoke('mimik:screenshots:sweep', keep),

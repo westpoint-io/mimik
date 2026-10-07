@@ -13,9 +13,9 @@ import { STEP_SECONDS } from '@mimik/core/export/video-support';
 import type { Guide, Screenshot, Step } from '@mimik/core/guides/types';
 import { FileCode, FileDown, FileImage, FileText, Loader2, Video } from 'lucide-react';
 import { lazy, Suspense, useEffect, useState } from 'react';
+import { Switch } from '../../common/components/Switch';
 import { Button } from '../../components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
-
 import { type ExportFormat, useGuideExport } from '../hooks/use-guide-export';
 import { useVideoPreview } from '../hooks/use-video-preview';
 
@@ -92,21 +92,13 @@ export function ExportPreviewModal({ open, onOpenChange, guide, steps, screensho
                     <div className="text-[12px] font-semibold text-foreground">{label}</div>
                     <div className="text-[10px] text-muted-foreground leading-snug">{hint}</div>
                   </div>
-                  <button
-                    type="button"
-                    aria-label={label}
-                    aria-pressed={Boolean(options[key])}
-                    onClick={() => update({ [key]: !options[key] } as Partial<ExportOptions>)}
-                    className={`w-9 h-5 rounded-full transition-colors relative shrink-0 mt-0.5 ${
-                      options[key] ? 'bg-accent' : 'bg-border'
-                    }`}
-                  >
-                    <span
-                      className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
-                        options[key] ? 'translate-x-4' : 'translate-x-0'
-                      }`}
+                  <div className="mt-0.5 flex shrink-0">
+                    <Switch
+                      checked={Boolean(options[key])}
+                      label={label}
+                      onChange={(next) => update({ [key]: next } as Partial<ExportOptions>)}
                     />
-                  </button>
+                  </div>
                 </div>
               ))}
             </div>

@@ -1,22 +1,35 @@
 import { validateApiKey } from '@mimik/core/capture/ai/validate';
 import { i18n } from '@mimik/core/env';
-import { AiSettings, Switch, useKeyCheck } from '@mimik/ui';
-import { AppWindow, Command, Crop, Keyboard, Monitor, MonitorPlay, MousePointerClick, Sparkles } from 'lucide-react';
+import { AiSettings, BrandingSettings, Switch, useKeyCheck } from '@mimik/ui';
+import {
+  AppWindow,
+  Command,
+  Crop,
+  ImageIcon,
+  Keyboard,
+  Monitor,
+  MonitorPlay,
+  SlidersHorizontal,
+  Sparkles,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { CaptureSettings, CaptureShortcuts } from '../../main/capture/settings';
 import { Card } from './Card';
+import { GeneralSettings } from './GeneralSettings';
+import { REOPEN_SETTINGS } from './lib/reopen-settings';
 import { zoomLevels } from './lib/zoom-levels';
-import { MarkerColour } from './MarkerColour';
 import { Row } from './Row';
 import { Segmented } from './Segmented';
 import { ShortcutRecorder } from './ShortcutRecorder';
 import { Slider } from './Slider';
 
-type Section = 'capture' | 'ai' | 'shortcuts';
+type Section = 'general' | 'capture' | 'ai' | 'branding' | 'shortcuts';
 
 const SECTIONS: { id: Section; labelKey: string; Icon: typeof AppWindow }[] = [
+  { id: 'general', labelKey: 'desktop_generalSection', Icon: SlidersHorizontal },
   { id: 'capture', labelKey: 'desktop_capturingSection', Icon: MonitorPlay },
   { id: 'ai', labelKey: 'settings_aiDescriptions', Icon: Sparkles },
+  { id: 'branding', labelKey: 'settings_branding', Icon: ImageIcon },
   { id: 'shortcuts', labelKey: 'desktop_shortcutsSection', Icon: Command },
 ];
 
@@ -32,7 +45,11 @@ const KEYS: { id: keyof CaptureShortcuts; labelKey: string }[] = [
 ];
 
 export function SettingsPanel() {
-  const [section, setSection] = useState<Section>('capture');
+  const [section, setSection] = useState<Section>(() => {
+    const reopened = sessionStorage.getItem(REOPEN_SETTINGS) as Section | null;
+    sessionStorage.removeItem(REOPEN_SETTINGS);
+    return reopened ?? 'general';
+  });
   const keyCheck = useKeyCheck(validateApiKey);
   const [settings, setSettings] = useState<CaptureSettings | null>(null);
 
@@ -53,13 +70,16 @@ export function SettingsPanel() {
             key={item.id}
             type="button"
             onClick={() => setSection(item.id)}
-            className={`mb-0.5 flex h-9 w-full items-center gap-2.5 rounded-[9px] px-3 text-left text-sm transition-colors ${
+            className={`mb-0.5 flex min-h-9 w-full items-start gap-2.5 rounded-[9px] px-3 py-2 text-left text-sm leading-5 transition-colors ${
               section === item.id
                 ? 'bg-secondary font-semibold text-foreground'
                 : 'text-foreground hover:bg-secondary/60'
             }`}
           >
-            <item.Icon size={15} className={section === item.id ? 'text-accent' : 'text-muted-foreground'} />
+            <item.Icon
+              size={15}
+              className={`mt-0.5 shrink-0 ${section === item.id ? 'text-accent' : 'text-muted-foreground'}`}
+            />
             {i18n.t(item.labelKey)}
           </button>
         ))}
@@ -68,6 +88,8 @@ export function SettingsPanel() {
       <div className="min-w-0 flex-1 overflow-y-auto px-6 py-5">
         <div className="flex flex-col gap-3.5">
           {section === 'ai' && <AiSettings keyCheck={keyCheck} />}
+
+          {section === 'branding' && <BrandingSettings />}
 
           {section === 'capture' && settings && (
             <>
@@ -109,7 +131,7 @@ export function SettingsPanel() {
                   />
                 </Row>
 
-                <Row label={i18n.t('desktop_keepClicksBeyondArea')} hint={i18n.t('desktop_keepClicksBeyondAreaHint')}>
+                <Row label={i18n.t('desktop_keepClicksBeyondArea')}>
                   <Switch
                     checked={settings.keepClicksBeyondArea}
                     label={i18n.t('desktop_keepClicksBeyondArea')}
@@ -119,37 +141,12 @@ export function SettingsPanel() {
                 </Row>
               </Card>
 
-              <Card
-                icon={MousePointerClick}
-                title={i18n.t('desktop_cardClickMarks')}
-                hint={i18n.t('desktop_cardClickMarksHint')}
-              >
-                <Row label={i18n.t('desktop_showCursor')} hint={i18n.t('desktop_showCursorHint')}>
-                  <Switch
-                    checked={settings.showCursor}
-                    label={i18n.t('desktop_showCursor')}
-                    onChange={(showCursor) => save({ showCursor })}
-                  />
-                </Row>
-                <Row label={i18n.t('desktop_markerColour')} hint={i18n.t('desktop_markerColourHint')}>
-                  <MarkerColour />
-                </Row>
-              </Card>
-
               <Card icon={Keyboard} title={i18n.t('desktop_cardKeyboard')} hint={i18n.t('desktop_cardKeyboardHint')}>
                 <Row label={i18n.t('desktop_recordTyping')}>
                   <Switch
                     checked={settings.recordTyping}
                     label={i18n.t('desktop_recordTyping')}
                     onChange={(recordTyping) => save({ recordTyping })}
-                  />
-                </Row>
-                <Row label={i18n.t('desktop_readFieldText')} hint={i18n.t('desktop_readFieldTextHint')}>
-                  <Switch
-                    checked={settings.readFieldText}
-                    label={i18n.t('desktop_readFieldText')}
-                    disabled={!settings.recordTyping}
-                    onChange={(readFieldText) => save({ readFieldText })}
                   />
                 </Row>
                 <Row label={i18n.t('desktop_typingDebounce')} hint={i18n.t('desktop_typingDebounceHint')}>
@@ -174,6 +171,8 @@ export function SettingsPanel() {
               </Card>
             </>
           )}
+
+          {section === 'general' && <GeneralSettings />}
 
           {section === 'shortcuts' && settings && (
             <Card icon={Command} title={i18n.t('desktop_cardGlobalKeys')} hint={i18n.t('desktop_cardGlobalKeysHint')}>

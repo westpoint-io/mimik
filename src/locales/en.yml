@@ -153,33 +153,34 @@ blurPresets:
   macAddress: MAC Address
 
 desktop:
-  record: Record
-  captureArea: Capture area
-  capturing: Capturing
-  paused: Paused
   ready: Ready
-  lastStep: Last step
-  noStepsYet: No steps captured yet
   pause: Pause
   resume: Resume
   finish: Finish
-  showCursor: Show the cursor
   screenshotDelay: Screenshot delay
   keepClicksBeyondArea: Capture clicks outside the area
   guideInApp: "Guide in $1"
-  newGuide: New Guide
   capturingSection: Capturing
   milliseconds: ms
   captureMode: What to capture
   modeWindow: Window
   modeScreen: Screen
   modeRegion: Area
-  readyToRecord: Ready to record
   startSheetTitle: Start a capture
   startButton: Start
-  guideCount: $1 guide
-  guideCountPlural: $1 guides
   shortcutsSection: "Shortcuts"
+  generalSection: "General"
+  appLanguage: "App language"
+  appLanguageHint: "The language of Mimik's own screens. AI descriptions have their own setting."
+  languageSystem: "Same as the system"
+  cardLanguage: "Language"
+  cardStartup: "Startup"
+  cardUpdates: "Updates"
+  startAtLogin: "Start at login"
+  startAtLoginHint: "Mimik opens in the tray, without a window."
+  version: "Version $1"
+  versionHint: "Mimik looks for updates each time it starts."
+  checkUpdates: "Check for updates"
   cardScreenshots: "Screenshots"
   cardKeyboard: "Typing and keys"
   cardGlobalKeys: "Global keys"
@@ -191,18 +192,10 @@ desktop:
   recordKeys: "Record shortcuts and named keys"
   recordTyping: "Record what you type"
   typingDebounce: "Close a typing step after"
-  readFieldText: "Read the field's own text when it can"
-  readFieldTextHint: "Off means the guide records your keystrokes instead"
   cardScreenshotsHint: "What each step captures"
-  cardClickMarks: "Click marks"
-  cardClickMarksHint: "How a click shows in the guide"
   cardKeyboardHint: "What the keyboard adds to a guide"
   captureModeHint: "Window follows the app you click."
-  showCursorHint: "Draws a pointer where you clicked."
-  markerColour: "Marker colour"
-  markerColourHint: "The outline around what you clicked, and the accent in exports."
   screenshotDelayHint: "Wait before taking the screenshot, for menus that animate."
-  keepClicksBeyondAreaHint: "Area mode only. Those steps still show the area."
   typingDebounceHint: "A pause this long ends the step."
   recordKeysHint: "Ctrl+S, Enter and the like become steps."
   seconds: "s"
@@ -211,7 +204,6 @@ desktop:
   shortcutCapture: "Capture a step now"
   shortcutPress: "Press keys…"
   shortcutClear: "Clear"
-  shortcutTaken: "Another application already owns this key"
 
 fullview:
   allGuides: All Guides

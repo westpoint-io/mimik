@@ -1,3 +1,4 @@
+import { i18n } from '@mimik/core/env';
 import { icon } from '../icons';
 import { el } from './el';
 import type { Region } from './types';
@@ -28,12 +29,17 @@ export function editor(origin: { x: number; y: number }): void {
     region.append(node);
   }
 
-  const cancel = el('button', { type: 'button', className: 'secondary' }, 'Cancel', el('kbd', {}, 'Esc'));
+  const cancel = el(
+    'button',
+    { type: 'button', className: 'secondary' },
+    i18n.t('common_cancel'),
+    el('kbd', {}, 'Esc'),
+  );
   const done = el(
     'button',
     { type: 'button', className: 'primary' },
     icon('check', 15),
-    'Done',
+    i18n.t('annotationEditor_done'),
     el('kbd', {}, 'Enter'),
   );
   cancel.addEventListener('click', () => window.mimikOverlay.command('cancel'));

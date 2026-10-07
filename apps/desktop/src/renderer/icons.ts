@@ -11,6 +11,7 @@ import {
   Pause,
   Play,
   Trash2,
+  TriangleAlert,
   Video,
 } from 'lucide';
 
@@ -27,6 +28,7 @@ const ICONS = {
   monitor: Monitor,
   area: Crop,
   keyboard: Keyboard,
+  alert: TriangleAlert,
 };
 
 export type IconName = keyof typeof ICONS;

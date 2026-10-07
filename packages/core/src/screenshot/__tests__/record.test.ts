@@ -43,11 +43,6 @@ describe('screenshotForElement', () => {
     expect(screenshotForElement({ ...bytes, targetColor: '#F43F5E' }, meta).edits?.target?.color).toBe('#F43F5E');
   });
 
-  it('only writes a cursor when one is supplied', () => {
-    expect(screenshotForElement(bytes, meta).edits).not.toHaveProperty('cursor');
-    expect(screenshotForElement({ ...bytes, cursor: null }, meta).edits?.cursor).toBeNull();
-  });
-
   it('zooms to the click instead of the element, keeping the target itself', () => {
     const shot = screenshotForElement({ ...bytes, zoom: 'click' }, meta);
     expect(shot.bounds).toBeUndefined();

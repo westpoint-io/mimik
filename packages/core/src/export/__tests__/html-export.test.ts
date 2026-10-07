@@ -97,6 +97,19 @@ describe('exportGuideAsHTML screenshot embedding', () => {
   });
 });
 
+describe('exportGuideAsHTML font', () => {
+  it('carries its own Poppins and asks no one else for a font', async () => {
+    const html = await render([makeStep(0)], new Map());
+    expect(html).not.toContain('fonts.googleapis.com');
+    expect(html).not.toContain('fonts.gstatic.com');
+    for (const weight of [400, 600, 700]) {
+      expect(html).toMatch(
+        new RegExp(`font-weight: ${weight}; font-display: swap; src: url\\(data:font/woff2;base64,`),
+      );
+    }
+  });
+});
+
 describe('exportGuideAsHTML mixed browser and desktop steps', () => {
   beforeEach(() => {
     rendered.mockReset();

@@ -31,7 +31,7 @@ export function cameraMascot(size: number): SVGSVGElement {
     svg('circle', { ...camera.glint, fill: 'var(--lavender)', opacity: 0.4 }),
     svg('rect', { ...camera.flashUnit, fill: 'var(--lavender)', opacity: 0.7 }),
     svg('circle', { ...camera.flash, fill: 'var(--lavender)', class: 'flash' }),
-    svg('circle', { ...camera.light, fill: 'var(--accent)' }),
+    svg('circle', { ...camera.light, fill: 'var(--mascot)' }),
     ...camera.hands.map((hand) => svg('ellipse', { ...hand, fill: 'var(--deep)' })),
   );
   return root;

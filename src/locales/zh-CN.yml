@@ -153,33 +153,34 @@ blurPresets:
   macAddress: MAC 地址
 
 desktop:
-  record: Record
-  captureArea: Capture area
-  capturing: Capturing
-  paused: Paused
-  ready: Ready
-  lastStep: Last step
-  noStepsYet: No steps captured yet
-  pause: Pause
-  resume: Resume
-  finish: Finish
-  showCursor: Show the cursor in screenshots
-  screenshotDelay: Screenshot delay
-  keepClicksBeyondArea: Capture clicks outside the capture area
-  guideInApp: "Guide in $1"
-  newGuide: New Guide
-  capturingSection: Capturing
+  ready: "就绪"
+  pause: "暂停"
+  resume: "继续"
+  finish: "完成"
+  screenshotDelay: "截图延迟"
+  keepClicksBeyondArea: "捕获区域外的点击"
+  guideInApp: "$1 中的指南"
+  capturingSection: "捕获"
   milliseconds: ms
   captureMode: 捕获范围
   modeWindow: 窗口
   modeScreen: 屏幕
   modeRegion: 区域
-  readyToRecord: 可以开始录制
   startSheetTitle: 开始捕获
   startButton: 开始
-  guideCount: $1 个指南
-  guideCountPlural: $1 个指南
   shortcutsSection: "快捷键"
+  generalSection: "通用"
+  appLanguage: "应用语言"
+  appLanguageHint: "Mimik 界面的语言。AI 描述有单独的设置。"
+  languageSystem: "跟随系统"
+  cardLanguage: "语言"
+  cardStartup: "启动"
+  cardUpdates: "更新"
+  startAtLogin: "登录时启动"
+  startAtLoginHint: "Mimik 在托盘中打开，不显示窗口。"
+  version: "版本 $1"
+  versionHint: "Mimik 每次启动时都会检查更新。"
+  checkUpdates: "检查更新"
   cardScreenshots: "屏幕截图"
   cardKeyboard: "输入与按键"
   cardGlobalKeys: "全局快捷键"
@@ -191,18 +192,10 @@ desktop:
   recordKeys: "记录快捷键和命名按键"
   recordTyping: "记录输入内容"
   typingDebounce: "输入步骤结束延迟"
-  readFieldText: "尽可能读取输入框自身的文本"
-  readFieldTextHint: "关闭时改为记录按键"
   cardScreenshotsHint: "每一步截取的内容"
-  cardClickMarks: "点击标记"
-  cardClickMarksHint: "点击在指南中的显示方式"
   cardKeyboardHint: "键盘为指南添加的内容"
   captureModeHint: "窗口模式跟随你点击的应用。"
-  showCursorHint: "在点击位置绘制指针。"
-  markerColour: "标记颜色"
-  markerColourHint: "点击目标周围的轮廓，以及导出文件的强调色。"
   screenshotDelayHint: "截图前等待，适用于带动画的菜单。"
-  keepClicksBeyondAreaHint: "仅限区域模式。这些步骤仍显示该区域。"
   typingDebounceHint: "停顿这么久即结束该步骤。"
   recordKeysHint: "Ctrl+S、Enter 等会成为步骤。"
   seconds: "秒"
@@ -211,7 +204,6 @@ desktop:
   shortcutCapture: "立即捕获一步"
   shortcutPress: "请按下按键…"
   shortcutClear: "清除"
-  shortcutTaken: "其他应用已占用该按键"
 
 fullview:
   allGuides: 全部指南

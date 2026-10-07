@@ -1,5 +1,6 @@
 import './core-env';
 import type { CaptureStepData } from '@mimik/core/capture/sink';
+import { assetUrl } from '@mimik/core/env';
 import { exportGuideAsDOCX } from '@mimik/core/export/docx-export';
 import { exportGuideAsHTML } from '@mimik/core/export/html-export';
 import { exportGuideAsMarkdown } from '@mimik/core/export/markdown-export';
@@ -7,7 +8,6 @@ import { exportGuideAsPDF } from '@mimik/core/export/pdf-export';
 import { allScreenshotIds, getGuide, permanentlyDeleteGuide } from '@mimik/core/guides/service';
 import { elementSource } from '@mimik/core/guides/types';
 import { resolveViewport } from '@mimik/core/screenshot/geometry';
-import { renderScreenshot } from '@mimik/core/screenshot/render';
 import { DesktopCaptureSink } from './capture-sink';
 
 interface CheckResult {
@@ -21,20 +21,6 @@ const sink = new DesktopCaptureSink();
 window.mimik.onRequest('mimik:capture:startGuide', () => sink.startGuide());
 window.mimik.onRequest('mimik:capture:step', (payload) => sink.captureStep(payload as CaptureStepData));
 
-window.mimik.onRequest('mimik:check:renderedSizes', async (payload) => {
-  const found = await getGuide(payload as string);
-  if (!found) return [];
-  const sizes: number[] = [];
-  for (const step of found.steps) {
-    const shot = found.screenshots.get(step.id);
-    if (!shot) continue;
-    const bare = await renderScreenshot({ ...shot, edits: { ...shot.edits, cursor: null } });
-    const drawn = await renderScreenshot(shot);
-    sizes.push(bare.size, drawn.size);
-  }
-  return sizes;
-});
-
 window.mimik.onRequest('mimik:check:screenshotSrc', async (payload) => {
   const found = await getGuide(payload as string);
   const first = found ? [...found.screenshots.values()][0] : undefined;
@@ -42,6 +28,12 @@ window.mimik.onRequest('mimik:check:screenshotSrc', async (payload) => {
 });
 
 window.mimik.onRequest('mimik:check:screenshotIds', () => allScreenshotIds());
+
+window.mimik.onRequest('mimik:check:defaultLogo', () =>
+  fetch(assetUrl('/mimik-mark.png'))
+    .then((response) => response.ok)
+    .catch(() => false),
+);
 
 window.mimik.onRequest('mimik:check:cleanup', async (payload) => {
   for (const id of payload as string[]) await permanentlyDeleteGuide(id);

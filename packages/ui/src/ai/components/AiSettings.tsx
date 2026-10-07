@@ -2,6 +2,7 @@ import { AI_PROVIDERS, type AIProviderKey, CUSTOM_MODEL_VALUE } from '@mimik/cor
 import { AI_LANGUAGES, type AILanguageCode } from '@mimik/core/capture/ai/prompts';
 import { i18n } from '@mimik/core/env';
 import { Globe, Sparkles, TriangleAlert } from 'lucide-react';
+import { SettingsCard } from '../../common/components/SettingsCard';
 import { Switch } from '../../common/components/Switch';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -50,14 +51,7 @@ export function AiSettings({ keyCheck: aiKeyCheck, onChange }: AiSettingsProps) 
   });
 
   return (
-    <div className="border border-border rounded-[10px] p-3.5 space-y-3">
-      <div className="flex items-center gap-2.5">
-        <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center">
-          <Sparkles size={14} className="text-accent" />
-        </div>
-        <span className="text-xs font-bold text-foreground">{i18n.t('settings.aiDescriptions')}</span>
-      </div>
-
+    <SettingsCard icon={Sparkles} title={i18n.t('settings.aiDescriptions')}>
       <div>
         <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.provider')}</label>
         <Select value={provider} onValueChange={(v) => handleProviderChange(v as AIProviderKey)}>
@@ -178,6 +172,6 @@ export function AiSettings({ keyCheck: aiKeyCheck, onChange }: AiSettingsProps) 
           </SelectContent>
         </Select>
       </div>
-    </div>
+    </SettingsCard>
   );
 }
