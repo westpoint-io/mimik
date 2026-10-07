@@ -4,7 +4,7 @@ export const SETTINGS_SECTIONS = [
   { id: 'ai', label: 'settings.aiSection', Icon: Sparkles },
   { id: 'branding', label: 'settings.branding', Icon: ImageIcon },
   { id: 'smart-blur', label: 'settings.smartBlur', Icon: EyeOff },
-  { id: 'keys', label: 'settings.cardKeyboard', Icon: Keyboard },
+  { id: 'keyboard', label: 'settings.cardKeyboard', Icon: Keyboard },
   { id: 'api-keys', label: 'settings.apiKeys', Icon: KeyRound },
 ] as const;
 

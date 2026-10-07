@@ -93,6 +93,8 @@ settings:
   cardKeyboardHint: Что клавиатура добавляет в гайд.
   recordKeys: Записывать сочетания и именованные клавиши
   recordKeysHint: "Ctrl+S, Enter и подобные становятся шагами."
+  recordTyping: Записывать ввод текста
+  recordTypingHint: "Всё, что вы вводите в одно поле, становится одним шагом."
   microphoneAccess: Доступ к микрофону
   microphoneAccessAsk: "Браузер один раз спросит разрешение, прежде чем Mimik сможет вас слышать."
   microphoneAccessAllow: Разрешить
@@ -207,7 +209,6 @@ desktop:
   hintCapture: "нажмите $1, чтобы записать шаг без клика."
   micAccessAsk: "macOS один раз спросит разрешение, прежде чем Mimik сможет вас слышать."
   micAccessRefused: Доступ запрещён. Включите Mimik в разделе «Конфиденциальность и безопасность».
-  micAccessOpen: Открыть настройки
   armed: Готово
   screenshotDelay: Задержка скриншота
   keepClicksBeyondArea: Записывать клики вне области
@@ -227,8 +228,6 @@ desktop:
   permissionScreen: Запись экрана
   permissionScreenHint: Позволяет Mimik делать скриншот для каждого шага.
   permissionScreenRestart: "Перезапустите Mimik, чтобы закончить включение."
-  permissionGrant: Разрешить
-  permissionGranted: Разрешён
   permissionRestart: Перезапустить Mimik
   moreStepsAfter: Новые шаги будут вставлены после шага $1.
   moreStepsFirst: Новые шаги будут вставлены перед шагом 1.
@@ -247,6 +246,10 @@ desktop:
   version: Версия $1
   versionHint: Mimik проверяет обновления при каждом запуске.
   checkUpdates: Проверить обновления
+  cardGithub: "Mimik на GitHub"
+  bugTitle: "Нашли ошибку?"
+  bugHint: "Расскажите, что произошло, и мы разберёмся."
+  reportBug: "Сообщить об ошибке"
   trayQuit: Выйти из Mimik
   trayRecording: "Mimik записывает. Нажмите, чтобы закончить."
   cannotRecord: Mimik не может записывать
@@ -265,8 +268,6 @@ desktop:
   zoomLevelHint: С этого начинаются новые записи. «Авто» сохраняет одинаковый размер всех шагов.
   zoomAuto: Авто
   zoomGuide: Масштаб
-  recordTyping: Записывать ввод текста
-  recordTypingHint: "Всё, что вы вводите в одно поле, становится одним шагом."
   typingDebounce: Закрывать шаг ввода через
   typingDebounceHint: Пауза такой длины завершает шаг ввода.
   cardScreenshotsHint: Что показывает скриншот каждого шага.

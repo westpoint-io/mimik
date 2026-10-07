@@ -16,7 +16,7 @@ interface NarrationSettingsProps {
   onChange?: (patch: Record<string, unknown>) => void;
   onRequestAccess?: () => Promise<void>;
   access?: ReactNode;
-  microphoneDisabled?: boolean;
+  microphoneLocked?: boolean;
   liveMeter?: boolean;
 }
 
@@ -26,7 +26,7 @@ export function NarrationSettings({
   onChange,
   onRequestAccess,
   access,
-  microphoneDisabled = false,
+  microphoneLocked = false,
   liveMeter = false,
 }: NarrationSettingsProps) {
   const [provider, setProvider] = useState<VoiceProvider>('openai');
@@ -72,7 +72,7 @@ export function NarrationSettings({
       {onRequestAccess && (
         <MicrophonePicker
           live={liveMeter}
-          disabled={microphoneDisabled}
+          disabled={microphoneLocked}
           value={microphoneId}
           onChange={(next) => {
             setMicrophoneId(next);
