@@ -129,8 +129,19 @@ describe('a narration that has nothing left to transcribe', () => {
     await expect(whenNarrationSettled()).resolves.toBeUndefined();
   });
 
-  it('does not leave the panel transcribing when the host refuses the stop', async () => {
+  it('ends a take that heard nothing calmly, as nothing narrated, and still describes the steps', async () => {
     stopVoiceCapture.mockResolvedValue({ ok: false, reason: 'no-audio', error: 'No microphone audio was captured' });
+
+    await beginRecording();
+    await stopVoiceNarration('g1');
+
+    expect(getVoiceUpdate()).toMatchObject({ phase: 'idle', narrated: 0 });
+    expect(describeUnnarratedSteps).toHaveBeenCalledWith('g1', []);
+    await expect(whenNarrationSettled()).resolves.toBeUndefined();
+  });
+
+  it('still reports a stop the host refuses for another reason as an error', async () => {
+    stopVoiceCapture.mockResolvedValue({ ok: false, reason: 'unknown', error: 'host gone' });
 
     await beginRecording();
     await stopVoiceNarration('g1');

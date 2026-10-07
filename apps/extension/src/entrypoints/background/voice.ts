@@ -302,6 +302,13 @@ export async function stopVoiceNarration(guideId: string): Promise<void> {
       return;
     }
 
+    if (response.reason === 'no-audio') {
+      logger.info('voice: nothing was heard', response);
+      if (releaseTranscription(guideId)) finishWithNothingHeard(guideId);
+      await closeVoiceHostIfIdle();
+      return;
+    }
+
     logger.warn('voice: no narration to apply', response);
     if (releaseTranscription(guideId)) report({ phase: 'error', reason: response.reason, error: response.error });
     await closeVoiceHostIfIdle();
@@ -310,6 +317,12 @@ export async function stopVoiceNarration(guideId: string): Promise<void> {
     if (releaseTranscription(guideId)) report({ phase: 'error', reason: 'unknown', error: String(error) });
     await closeVoiceHostIfIdle();
   }
+}
+
+function finishWithNothingHeard(guideId: string): void {
+  const narratedSoFar = takeNarrated(guideId);
+  report({ phase: 'idle', narrated: narratedSoFar.length });
+  describeUnnarratedSteps(guideId, narratedSoFar);
 }
 
 export async function applyNarration(
