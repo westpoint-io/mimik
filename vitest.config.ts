@@ -3,7 +3,7 @@ import { configDefaults, defineConfig } from "vitest/config";
 import { WxtVitest } from "wxt/testing";
 
 export default defineConfig({
-  plugins: [WxtVitest() as any, react()],
+  plugins: [WxtVitest({ root: "apps/extension" }) as any, react()],
   test: {
     exclude: [...configDefaults.exclude, "**/.claude/**", "**/.worktrees/**", "tests/**"],
     environment: "node",

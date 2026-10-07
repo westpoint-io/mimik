@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import ts from 'typescript';
 
-const ROOTS = ['packages/ui/src', 'src/ui', 'src/lib', 'apps/desktop/src/renderer'];
+const ROOTS = ['packages/ui/src', 'apps/extension/src/ui', 'apps/extension/src/lib', 'apps/desktop/src/renderer'];
 const SKIP = /\/components\/ui\/|^packages\/ui\/src\/index\.ts$|__tests__|\.test\.tsx?$|\.d\.ts$/;
 const WRAPPERS = /^(React\.)?(forwardRef|memo)$/;
 

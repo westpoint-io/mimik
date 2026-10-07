@@ -74,4 +74,4 @@ jobs:
         run: pnpm build:firefox
 
       - name: Firefox add-on lint
-        run: pnpm dlx web-ext@8.10.0 lint --source-dir .output/firefox-mv3 --self-hosted=false
+        run: pnpm dlx web-ext@8.10.0 lint --source-dir apps/extension/.output/firefox-mv3 --self-hosted=false

@@ -5,11 +5,16 @@ export default defineConfig({
   modules: ["@wxt-dev/module-react", "@wxt-dev/i18n/module"],
   srcDir: "src",
   imports: false,
+  i18n: { localesDir: '../../packages/locales' },
   webExt: {
     chromiumArgs: ['--user-data-dir=/tmp/mimik-dev-profile', '--window-size=1280,800', '--window-position=0,0', '--force-device-scale-factor=1.25'],
   },
   zip: {
+    sourcesRoot: '../..',
     excludeSources: [
+      "apps/desktop/dist/**",
+      "apps/desktop/out/**",
+      "packages/capture-native/target/**",
       "mockups/**",
       "docs/**",
       ".claude/**",
@@ -21,13 +26,13 @@ export default defineConfig({
     ],
   },
   alias: {
-    '@mimik/core': 'packages/core/src',
-    '@mimik/ui': 'packages/ui/src',
-    '@/core': 'packages/core/src',
+    '@mimik/core': '../../packages/core/src',
+    '@mimik/ui': '../../packages/ui/src',
+    '@/core': '../../packages/core/src',
     '@': 'src',
-    canvg: 'packages/core/src/export/empty.ts',
-    html2canvas: 'packages/core/src/export/empty.ts',
-    dompurify: 'packages/core/src/export/empty.ts',
+    canvg: '../../packages/core/src/export/empty.ts',
+    html2canvas: '../../packages/core/src/export/empty.ts',
+    dompurify: '../../packages/core/src/export/empty.ts',
   },
   vite: () => ({
     plugins: [tailwindcss()],

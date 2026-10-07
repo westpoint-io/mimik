@@ -1,6 +1,6 @@
 <div align="center"><a name="readme-top"></a>
 
-<img src="../../public/mascot.svg" width="140" height="140" alt="Mascota de Mimik" />
+<img src="../../apps/extension/public/mascot.svg" width="140" height="140" alt="Mascota de Mimik" />
 
 # Mimik
 

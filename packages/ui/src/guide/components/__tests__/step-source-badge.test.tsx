@@ -30,7 +30,7 @@ describe('StepSourceBadge', () => {
 
   it('carries a label for every source, in every locale', () => {
     for (const locale of LOCALES) {
-      const text = readFileSync(join(process.cwd(), 'src/locales', `${locale}.yml`), 'utf8');
+      const text = readFileSync(join(process.cwd(), 'packages/locales', `${locale}.yml`), 'utf8');
       for (const key of ['ai', 'voice', 'basic', 'edited', 'hint']) {
         expect(text, `${locale} is missing stepSource.${key}`).toContain(`  ${key}:`);
       }

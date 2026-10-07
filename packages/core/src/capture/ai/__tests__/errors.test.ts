@@ -62,7 +62,7 @@ describe('describeAiFailure', () => {
 describe('failure copy', () => {
   it('gives every reason its own message, in every locale', () => {
     for (const locale of LOCALES) {
-      const text = readFileSync(join(process.cwd(), 'src/locales', `${locale}.yml`), 'utf8');
+      const text = readFileSync(join(process.cwd(), 'packages/locales', `${locale}.yml`), 'utf8');
       for (const reason of REASONS) {
         for (const key of [aiFailureKey(reason), aiActionKey(reason)]) {
           const name = key.replace('aiStatus.', '');
@@ -78,7 +78,7 @@ describe('failure copy', () => {
   });
 
   it('names the provider in every headline that can', () => {
-    const en = readFileSync(join(process.cwd(), 'src/locales/en.yml'), 'utf8');
+    const en = readFileSync(join(process.cwd(), 'packages/locales/en.yml'), 'utf8');
     for (const reason of ['rejected', 'no-credits', 'rate-limited', 'model-invalid', 'network', 'unknown'] as const) {
       const name = aiFailureKey(reason).replace('aiStatus.', '');
       const line = en.split('\n').find((l) => l.startsWith(`  ${name}:`));

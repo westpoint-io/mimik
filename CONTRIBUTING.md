@@ -36,8 +36,8 @@ WXT launches a fresh browser instance with the extension loaded.
 ### Build
 
 ```bash
-pnpm build                 # Chrome → .output/chrome-mv3/
-pnpm build:firefox         # Firefox → .output/firefox-mv3/
+pnpm build                 # Chrome → apps/extension/.output/chrome-mv3/
+pnpm build:firefox         # Firefox → apps/extension/.output/firefox-mv3/
 pnpm zip:all               # package both browsers
 ```
 
@@ -66,26 +66,13 @@ One rule Biome cannot check: do not write comments. Name things so the code expl
 ## Project Layout
 
 ```
-src/
-├── core/                    # Business logic (no UI dependencies)
-│   ├── capture/             # Recording pipeline (events, AI, voice, DOM context)
-│   ├── blur/                # Smart blur (regex presets, DOM scanner, panel)
-│   ├── export/              # HTML, PDF, DOCX, Markdown, video, GIF generators
-│   ├── transfer/            # .mimik bundles (export/import a guide between browsers)
-│   ├── guideme/             # Guide replay (finder, overlay, session)
-│   ├── screenshot/          # Rendering, annotations, geometry
-│   └── guides/              # Data layer (types, Dexie DB, CRUD)
-├── entrypoints/             # WXT extension entry points
-│   ├── background/          # Service worker: state machine + message handlers
-│   ├── content.ts           # Content script: event capture + capture session
-│   ├── sidepanel/           # Side panel React mount
-│   ├── fullview/            # Full-page dashboard mount
-│   ├── onboarding/          # First-install wizard
-│   └── options/             # Settings page mount
-├── locales/                 # YAML translation files (en, de, es, fr, pt-BR, zh-CN)
-├── lib/                     # Shared utilities (messaging, port, browser API)
-├── stores/                  # Zustand state stores
-└── ui/                      # React components
+apps/extension/           # The browser extension (WXT): entrypoints, capture, blur, guideme, lib, ui
+apps/desktop/             # The Electron desktop app: main, preload, renderer
+packages/core/            # Logic both apps share: capture, guides, export, screenshot, blur
+packages/ui/              # React components both apps share
+packages/locales/         # YAML translation files
+packages/capture-native/  # Rust addon for the desktop: accessibility lookup and input hook
+scripts/                  # Repository checks run by pnpm lint
 ```
 
 ## Tech Stack
@@ -148,8 +135,8 @@ Repeat submissions of unread AI output will get you blocked.
 
 To add a new language:
 
-1. Create `src/locales/{lang-code}.yml` (e.g., `src/locales/de.yml`)
-2. Copy the structure from `src/locales/en.yml`
+1. Create `packages/locales/{lang-code}.yml` (e.g., `packages/locales/de.yml`)
+2. Copy the structure from `packages/locales/en.yml`
 3. Translate all values, keeping the keys identical
 4. Keep substitution placeholders (`$1`, `$2`) in the same positions
 5. Build and test: `pnpm build:firefox` (WXT generates types for new locale keys automatically)

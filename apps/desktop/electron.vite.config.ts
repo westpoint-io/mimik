@@ -8,7 +8,7 @@ import tailwindcss from '@tailwindcss/vite';
 import { thirdPartyNotices } from './scripts/third-party-notices';
 
 const core = resolve(__dirname, '../../packages/core/src');
-const locales = resolve(__dirname, '../../src/locales');
+const locales = resolve(__dirname, '../../packages/locales');
 
 function yaml(): PluginOption {
   return {
@@ -54,7 +54,7 @@ export default defineConfig({
   },
   renderer: {
     root: resolve(__dirname, 'src/renderer'),
-    publicDir: resolve(__dirname, '../../public'),
+    publicDir: resolve(__dirname, '../extension/public'),
     plugins: [yaml(), react(), tailwindcss(), thirdPartyNotices()],
     resolve: {
       alias: {

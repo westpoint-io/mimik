@@ -1,4 +1,4 @@
-@import "../../../packages/ui/src/global.css";
+@import "@mimik/ui/global.css";
 
 html, body {
   margin: 0;

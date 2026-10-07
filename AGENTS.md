@@ -12,15 +12,16 @@ the user chose.
 ## Layout
 
 ```
-src/                      the extension (WXT): entrypoints, capture, blur, guideme, lib, ui, locales
+apps/extension/src/       the extension (WXT): entrypoints, capture, blur, guideme, lib, ui
+apps/desktop/src/         Electron: main, preload, renderer
 packages/core/src/        logic both surfaces share: capture, guides, export, screenshot, blur, i18n
 packages/ui/src/          React both surfaces share, grouped by feature
+packages/locales/         the translations both surfaces read
 packages/capture-native/  Rust napi addon: accessibility lookup and input hook, Windows and macOS
-apps/desktop/src/         Electron: main, preload, renderer
 scripts/                  repository checks run by pnpm lint
 ```
 
-`src/`, `packages/core`, `packages/capture-native` and `apps/desktop` each have their own `AGENTS.md`.
+`apps/extension`, `apps/desktop`, `packages/core` and `packages/capture-native` each have their own `AGENTS.md`.
 Read it before working there.
 
 ## Commands
@@ -69,7 +70,7 @@ capture code in core, also run the desktop checks (under `xvfb-run` on Linux).
   relative.
 - **No comments in source**, except pragmas and directives the toolchain reads.
 - **Every user-facing string goes through i18n** and gets a translation in every file under
-  `src/locales/`.
+  `packages/locales/`.
 - **Colours:** the interface is navy and lavender, with tokens in `packages/ui/src/global.css`. The
   indigo `#4F46E5` is only for marks drawn over other people's pixels and for the mascot.
 - **Baseline snapshots** (`blur-baseline`, `naming-baseline`) pin what Smart Blur hides and how

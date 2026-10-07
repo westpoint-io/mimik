@@ -7,8 +7,8 @@
   },
   "files": {
     "includes": [
-      "src/**/*.ts",
-      "src/**/*.tsx",
+      "apps/extension/src/**/*.ts",
+      "apps/extension/src/**/*.tsx",
       "packages/core/src/**/*.ts",
       "packages/core/src/**/*.tsx",
       "packages/ui/src/**/*.ts",
@@ -104,7 +104,7 @@
       }
     },
     {
-      "includes": ["src/**/*.ts", "src/**/*.tsx", "apps/**/*.ts", "apps/**/*.tsx"],
+      "includes": ["apps/extension/src/**/*.ts", "apps/extension/src/**/*.tsx", "apps/**/*.ts", "apps/**/*.tsx"],
       "linter": {
         "rules": {
           "style": {
@@ -132,8 +132,8 @@
       "includes": [
         "packages/ui/src/**/*.ts",
         "packages/ui/src/**/*.tsx",
-        "src/ui/**",
-        "src/lib/**",
+        "apps/extension/src/ui/**",
+        "apps/extension/src/lib/**",
         "apps/desktop/src/renderer/**",
         "!packages/ui/src/components/ui/**"
       ],
@@ -159,7 +159,12 @@
       }
     },
     {
-      "includes": ["packages/ui/src/**", "src/ui/**", "src/lib/**", "apps/desktop/src/renderer/**"],
+      "includes": [
+        "packages/ui/src/**",
+        "apps/extension/src/ui/**",
+        "apps/extension/src/lib/**",
+        "apps/desktop/src/renderer/**"
+      ],
       "linter": {
         "rules": {
           "style": {
