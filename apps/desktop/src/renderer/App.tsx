@@ -7,6 +7,7 @@ import {
   navigate,
   SearchModal,
   TooltipProvider,
+  UpdateNotice,
   useFullview,
   useRoute,
   VoiceNotice,
@@ -16,6 +17,7 @@ import { CaptureSheet } from './CaptureSheet';
 import { DesktopOnboarding } from './DesktopOnboarding';
 import { GuideZoom } from './GuideZoom';
 import { useNarrationUpdate } from './hooks/use-narration-update';
+import { useUpdateNotice } from './hooks/use-update-notice';
 import { PermissionsDialog } from './PermissionsDialog';
 import { REOPEN_SETTINGS } from './settings/lib/reopen-settings';
 import { SettingsDialog } from './settings/SettingsDialog';
@@ -24,6 +26,8 @@ export function App() {
   const route = useRoute();
   const narration = useNarrationUpdate();
   const [settingsOpen, setSettingsOpen] = useState(() => sessionStorage.getItem(REOPEN_SETTINGS) !== null);
+  const [settingsOnKeys, setSettingsOnKeys] = useState(false);
+  const updateNotice = useUpdateNotice();
   const [sheet, setSheet] = useState<{ insert?: CaptureInsert } | null>(null);
   const [guideKey, setGuideKey] = useState(0);
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
@@ -114,12 +118,23 @@ export function App() {
         )}
       </AppFrame>
       <SearchModal />
-      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <SettingsDialog
+        open={settingsOpen}
+        startOnKeys={settingsOnKeys}
+        onOpenChange={(open) => {
+          setSettingsOpen(open);
+          if (!open) setSettingsOnKeys(false);
+        }}
+      />
       <VoiceNotice
         update={narration.update}
         seenLive={narration.seenLive}
-        onOpenSettings={() => setSettingsOpen(true)}
+        onOpenSettings={() => {
+          setSettingsOnKeys(true);
+          setSettingsOpen(true);
+        }}
       />
+      <UpdateNotice {...updateNotice} className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50" />
       {sheet && <CaptureSheet insert={sheet.insert} onClose={() => setSheet(null)} />}
       <PermissionsDialog open={permissionsOpen} onClose={closePermissions} />
     </TooltipProvider>

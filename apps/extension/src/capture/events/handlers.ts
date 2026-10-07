@@ -1,5 +1,6 @@
 import { logger } from '@mimik/core/logger';
 import PQueue from 'p-queue';
+import { browser } from '#imports';
 import { extensionCaptureSink } from '@/capture/sink';
 import { extractDOMContext } from '@/core/capture/dom/context';
 import { extractElementMeta, freezeRect } from '@/core/capture/dom/element-meta';
@@ -14,6 +15,7 @@ import {
 } from '@/core/capture/dom/element-utils';
 import { locateFrame, placeInTab } from '@/core/capture/dom/frame-placement';
 import { isReplayedClick, replayClick, replayInit, shouldInterceptClick } from '@/core/capture/events/click-intercept';
+import { keyCombo } from '@/core/capture/key-combo';
 import type { CaptureSink } from '@/core/capture/sink';
 import type { StepAction } from '@/core/capture/step-action';
 import { DEFAULT_TARGET_COLOR } from '@/core/screenshot/types';
@@ -23,6 +25,7 @@ import { InputSession } from './input-session';
 import { isRecordableKey } from './is-recordable-key';
 
 const REPEAT_CLICK_MS = 300;
+const MAC = /Mac/i.test(navigator.platform);
 const DRAG_MIN_PX = 30;
 const INTERCEPT_DELAY_MS = 100;
 const PAINT_FRAMES = 3;
@@ -72,6 +75,12 @@ class CaptureController {
   private busy = false;
   private recordKeys = false;
   private recordTyping = true;
+  private readonly onSettingsChanged = (changes: Record<string, { newValue?: unknown }>) => {
+    if (changes.recordKeys) this.recordKeys = changes.recordKeys.newValue === true;
+    if (changes.recordTyping) this.recordTyping = changes.recordTyping.newValue !== false;
+    const color = changes.targetColor?.newValue;
+    if (typeof color === 'string' && color) this.ring.setColor(color);
+  };
 
   constructor(
     private guideId: string,
@@ -111,6 +120,7 @@ class CaptureController {
         this.recordTyping = recordTyping !== false;
       })
       .catch(() => {});
+    browser.storage.local.onChanged.addListener(this.onSettingsChanged);
     for (const [event, handler, opts] of this.listeners) {
       window.addEventListener(event, handler, opts);
     }
@@ -247,7 +257,8 @@ class CaptureController {
 
     if (isSensitiveField(target) || isTextField(target)) return;
     if (!this.recordKeys || !isRecordableKey(ke)) return;
-    this.enqueue(this.capture(`keydown:${ke.key}`, target));
+    const held = { ctrl: ke.ctrlKey, alt: ke.altKey, shift: ke.shiftKey, meta: ke.metaKey };
+    this.enqueue(this.capture(`keydown:${keyCombo(held, ke.key, MAC)}`, target));
   }
 
   private onInput(e: Event) {
@@ -331,6 +342,7 @@ class CaptureController {
   }
 
   stop(): Promise<void> {
+    browser.storage.local.onChanged.removeListener(this.onSettingsChanged);
     for (const [event, handler, opts] of this.listeners) {
       window.removeEventListener(event, handler, opts);
     }

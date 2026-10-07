@@ -1,3 +1,4 @@
+import { keyCombo } from '@mimik/core/capture/key-combo';
 import { describe, expect, it, vi } from 'vitest';
 
 const DISPLAY = { x: 0, y: 0, width: 1920, height: 1080 };
@@ -19,7 +20,6 @@ import type { ScreenElement } from '../capture/element';
 import type { KeyAction } from '../capture/input-hook';
 import {
   clickAction,
-  comboLabel,
   frameFor,
   isBoundShortcut,
   isRepeatClick,
@@ -105,11 +105,18 @@ describe('clicks', () => {
     expect(shouldCapture({ ...DEFAULT_CAPTURE_SETTINGS, keepClicksBeyondArea: false }, region, outside)).toBe(true);
   });
 
-  it('treats a second press within 500 ms as the same click', () => {
-    expect(isRepeatClick(1_000, 1_120)).toBe(true);
-    expect(isRepeatClick(1_000, 1_500)).toBe(true);
-    expect(isRepeatClick(1_000, 1_501)).toBe(false);
-    expect(isRepeatClick(null, 1_000)).toBe(false);
+  it('treats a second press on the same spot within 500 ms as the same click', () => {
+    const at = (time: number, x = 100, y = 100) => ({ at: time, point: { x, y } });
+    expect(isRepeatClick(at(1_000), at(1_120))).toBe(true);
+    expect(isRepeatClick(at(1_000), at(1_500, 103, 102))).toBe(true);
+    expect(isRepeatClick(at(1_000), at(1_501))).toBe(false);
+    expect(isRepeatClick(null, at(1_000))).toBe(false);
+  });
+
+  it('keeps a quick click on a different button as its own step', () => {
+    expect(isRepeatClick({ at: 1_000, point: { x: 100, y: 100 } }, { at: 1_150, point: { x: 180, y: 100 } })).toBe(
+      false,
+    );
   });
 
   it('frames the display, the window under the click, or the area', () => {
@@ -143,8 +150,8 @@ describe('keys', () => {
   });
 
   it('names a shortcut the way each platform writes it, and collapses auto-repeat', () => {
-    expect(comboLabel(key(31, { ctrl: true, shift: true }), 'S', false)).toBe('Ctrl+Shift+S');
-    expect(comboLabel(key(31, { meta: true, shift: true, alt: true }), 'S', true)).toBe('⌥⇧⌘S');
+    expect(keyCombo(key(31, { ctrl: true, shift: true }), 'S', false)).toBe('Ctrl+Shift+S');
+    expect(keyCombo(key(31, { meta: true, shift: true, alt: true }), 'S', true)).toBe('⌥⇧⌘S');
     expect(isRepeatKey({ keycode: 28, at: 1_000 }, 28, 1_400)).toBe(true);
     expect(isRepeatKey({ keycode: 28, at: 1_000 }, 28, 1_600)).toBe(false);
     expect(isRepeatKey({ keycode: 28, at: 1_000 }, 15, 1_100)).toBe(false);

@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
+import { keyCombo } from '@mimik/core/capture/key-combo';
 import type { CaptureImage } from '@mimik/core/capture/sink';
 import type { StepAction } from '@mimik/core/capture/step-action';
 import type { ElementMeta } from '@mimik/core/guides/types';
 import type { Rect } from '@mimik/core/rect';
 import { clipboard, screen } from 'electron';
-import { shortcutLabel } from '../../renderer/lib/shortcut-label';
 import { cursorPoint } from './displays';
 import {
   clearDeadKey,
@@ -26,6 +26,7 @@ import { type CaptureMode, type CaptureSettings, DEFAULT_CAPTURE_SETTINGS } from
 const TARGET_SIZE = 28;
 const SETTLE_MS = 60;
 const REPEAT_CLICK_MS = 500;
+const SAME_SPOT_PX = 4;
 const HIDDEN_CHARACTERS = /[\p{Cf}\uFFFC\uFFFD]/gu;
 const STEP_TEXT_LIMIT = 200;
 
@@ -126,8 +127,14 @@ function inside(region: Rect, point: Point): boolean {
   );
 }
 
-export function isRepeatClick(previousAt: number | null, at: number): boolean {
-  return previousAt !== null && at - previousAt <= REPEAT_CLICK_MS;
+export interface PressedAt {
+  at: number;
+  point: Point;
+}
+
+export function isRepeatClick(previous: PressedAt | null, next: PressedAt): boolean {
+  if (previous === null || next.at - previous.at > REPEAT_CLICK_MS) return false;
+  return Math.hypot(next.point.x - previous.point.x, next.point.y - previous.point.y) <= SAME_SPOT_PX;
 }
 
 export function shouldCapture(settings: CaptureSettings, region: Rect, point: Point): boolean {
@@ -144,15 +151,6 @@ export function frameFor(mode: CaptureMode, point: Point, region: Rect, window: 
 
 export function isRepeatKey(previous: { keycode: number; at: number } | null, keycode: number, at: number): boolean {
   return previous !== null && previous.keycode === keycode && at - previous.at <= REPEAT_CLICK_MS;
-}
-
-export function comboLabel(action: KeyAction, key: string, mac = process.platform === 'darwin'): string {
-  const held: string[] = [];
-  if (action.meta) held.push(mac ? 'Command' : 'Meta');
-  if (action.ctrl) held.push('Ctrl');
-  if (action.alt) held.push('Alt');
-  if (action.shift) held.push('Shift');
-  return mac ? shortcutLabel([...held, key].join('+'), true) : [...held, key].join('+');
 }
 
 export function clickAction(button: number): StepAction {
@@ -222,7 +220,7 @@ export class DesktopRecorder {
   private hook = new InputHook();
   private queue: Promise<unknown> = Promise.resolve();
   private running = false;
-  private lastClickAt: number | null = null;
+  private lastClick: PressedAt | null = null;
   private lastKey: { keycode: number; at: number } | null = null;
   private readonly input: InputSession;
   private passwordWatch: PasswordWatch | null = null;
@@ -274,7 +272,7 @@ export class DesktopRecorder {
     });
     if (!started.ok) return { ok: false, reason: started.reason, detail: started.detail };
     this.running = true;
-    this.lastClickAt = null;
+    this.lastClick = null;
     return { ok: true };
   }
 
@@ -302,9 +300,9 @@ export class DesktopRecorder {
     const point = { x: action.x, y: action.y };
     if (this.ignores(point)) return;
     if (!shouldCapture(this.settings(), this.region(), point)) return;
-    const at = Date.now();
-    const repeat = isRepeatClick(this.lastClickAt, at);
-    this.lastClickAt = at;
+    const pressed = { at: Date.now(), point };
+    const repeat = isRepeatClick(this.lastClick, pressed);
+    this.lastClick = pressed;
     if (repeat) return;
     this.clickAt(clickAction(action.button), point);
   }
@@ -429,7 +427,12 @@ export class DesktopRecorder {
     if (Object.values(shortcuts).some((accelerator) => isBoundShortcut(accelerator, action, key))) return;
     const field = await this.focused();
     const where = centreOf(field) ?? cursorPoint();
-    await this.write(`keydown:${comboLabel(action, key)}`, where, Promise.resolve(field), this.shoot(where));
+    await this.write(
+      `keydown:${keyCombo(action, key, process.platform === 'darwin')}`,
+      where,
+      Promise.resolve(field),
+      this.shoot(where),
+    );
   }
 
   private finalizeInput(readNow = false): void {

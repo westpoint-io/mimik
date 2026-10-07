@@ -1,6 +1,6 @@
 import { isLive } from '@mimik/core/capture/is-live';
 import { logger } from '@mimik/core/logger';
-import { Button, Input, TooltipProvider, VoiceNotice } from '@mimik/ui';
+import { Button, Input, TooltipProvider, UpdateNotice, VoiceNotice } from '@mimik/ui';
 import { Globe, Search, Settings, Video } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';
@@ -19,8 +19,8 @@ import { sendMessage } from '@/lib/messaging';
 import { getVoiceStatus } from '@/lib/offscreen/get-voice-status';
 import { connectToBackground } from '@/lib/port/connect-to-background';
 import type { PanelAiUpdate, PanelVoiceUpdate } from '@/lib/port/types';
+import { useUpdateNotice } from '@/ui/shared/hooks/use-update-notice';
 import { SettingsView } from '@/ui/shared/SettingsView';
-import { UpdateNotice } from '@/ui/shared/UpdateNotice';
 import { GuideEditor } from './GuideEditor';
 import { GuideMeCompletion } from './GuideMeCompletion';
 import { GuideMeView } from './GuideMeView';
@@ -38,6 +38,7 @@ type View =
 
 export function App() {
   const [isAlive, setIsAlive] = useState(false);
+  const updateNotice = useUpdateNotice();
   const [view, setView] = useState<View>({ name: 'library' });
   const [search, setSearch] = useState('');
   const [activeUrl, setActiveUrl] = useState<string>();
@@ -272,7 +273,7 @@ export function App() {
         </div>
 
         <div className="flex-1 px-5 pt-5">
-          <UpdateNotice className="mb-4" />
+          <UpdateNotice {...updateNotice} className="mb-4" />
 
           <div className="relative mb-5">
             <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-purple" />

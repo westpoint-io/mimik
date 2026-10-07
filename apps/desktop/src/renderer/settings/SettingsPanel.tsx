@@ -57,11 +57,11 @@ const KEYS: { id: keyof CaptureShortcuts; labelKey: string }[] = [
   { id: 'capture', labelKey: 'desktop.shortcutCapture' },
 ];
 
-export function SettingsPanel({ onSaved }: { onSaved: () => void }) {
+export function SettingsPanel({ onSaved, startOnKeys = false }: { onSaved: () => void; startOnKeys?: boolean }) {
   const [section, setSection] = useState<Section>(() => {
     const reopened = sessionStorage.getItem(REOPEN_SETTINGS) as Section | null;
     sessionStorage.removeItem(REOPEN_SETTINGS);
-    return reopened ?? 'general';
+    return reopened ?? (startOnKeys ? 'api-keys' : 'general');
   });
   const keys = useApiKeys({ onChange: onSaved });
   const microphone = useMicrophoneGate();
