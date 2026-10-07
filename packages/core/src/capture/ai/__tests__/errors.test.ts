@@ -4,7 +4,7 @@ import { APICallError, RetryError } from 'ai';
 import { describe, expect, it } from 'vitest';
 import { type AiFailureReason, aiActionKey, aiFailureKey, describeAiFailure } from '../errors';
 
-const LOCALES = ['en', 'de', 'es', 'fr', 'pt-BR', 'zh-CN'];
+const LOCALES = ['en', 'de', 'es', 'fr', 'pt-BR', 'zh-CN', 'ru'];
 const REASONS: AiFailureReason[] = [
   'rejected',
   'no-credits',

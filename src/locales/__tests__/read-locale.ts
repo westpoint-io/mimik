@@ -1,9 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-export const LOCALES = ['en', 'zh-CN', 'es', 'fr', 'de', 'pt-BR'] as const;
-
-export type Locale = (typeof LOCALES)[number];
+export const LOCALES = ['en', 'zh-CN', 'es', 'fr', 'de', 'pt-BR', 'ru'] as const;
 
 function lines(locale: string): string[] {
   return readFileSync(join(process.cwd(), `src/locales/${locale}.yml`), 'utf8')
@@ -36,7 +34,7 @@ export function localeKeys(locale: string): string[] {
   return keys.sort();
 }
 
-export function localeMessage(locale: string, path: string): string {
+function localeMessage(locale: string, path: string): string {
   const [wanted, key] = path.split('.');
   let section = '';
 

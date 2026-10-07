@@ -8,7 +8,7 @@ import { LEVEL_STALE_MS, MIC_ACTIVITIES, micActivity, SPEAKING_HOLD_MS } from '.
 import { micActivityKey } from '../lib/mic-activity-key';
 import { MIC_BAR_MIN_SCALE, MIC_BARS, micBarScale } from '../lib/mic-bar-scale';
 
-const LOCALES = ['en', 'es', 'fr', 'pt-BR', 'zh-CN'];
+const LOCALES = ['en', 'es', 'fr', 'pt-BR', 'zh-CN', 'ru'];
 
 function voiceKeysIn(locale: string): string[] {
   const lines = readFileSync(join(process.cwd(), 'src/locales', `${locale}.yml`), 'utf8')

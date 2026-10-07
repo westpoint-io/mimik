@@ -10,7 +10,7 @@ import { toMicrophoneOptions } from '../to-microphone-options';
 import { SYSTEM_DEFAULT_VALUE, toSelectValue } from '../to-select-value';
 import { toStoredMicrophoneId } from '../to-stored-microphone-id';
 
-const LOCALES = ['en', 'de', 'es', 'fr', 'pt-BR', 'zh-CN'];
+const LOCALES = ['en', 'de', 'es', 'fr', 'pt-BR', 'zh-CN', 'ru'];
 
 const MICROPHONE_KEYS = [
   'settings.microphone',
