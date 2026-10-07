@@ -30,7 +30,8 @@ pnpm build                   extension build
 pnpm dev:desktop             desktop app
 pnpm pack:desktop            unpacked desktop app in apps/desktop/dist
 pnpm test                    vitest, all packages
-pnpm lint                    biome, then the one-export-per-file check
+pnpm lint                    biome, the repository checks, jscpd and knip
+pnpm size                    extension bundle sizes, after pnpm build
 pnpm typecheck               root and desktop
 pnpm --filter @mimik/desktop check:pipeline   also check:storage, check:overlay, check:capture
 pnpm --filter @mimik/capture-native build
@@ -51,7 +52,7 @@ capture code in core, also run the desktop checks (under `xvfb-run` on Linux).
 - **Same names for the same thing on both surfaces:**
   - the capture states and events from core's machine;
   - `isLive`;
-  - message and IPC names (`captureStep`, `createGuide`, `deleteStep`, `getState`);
+  - message and IPC names (`captureStep`, `createGuide`, `deleteStep`, `discardRecording`, `getState`);
   - the insert fields (`insertTargetGuideId`, `insertAtIndex`);
   - the narration phases (`VoicePhase`).
   Different code is fine where the platforms differ; different words for the same concept are not.
