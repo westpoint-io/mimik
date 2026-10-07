@@ -201,7 +201,10 @@ describe('accessibility-tree sources', () => {
 
   it('names what was typed when the value is known', () => {
     const meta = axMeta({ role: 'textbox', ariaLabel: 'Search box' });
-    expect(buildFallbackDescription('input', meta, '  noticias\nde   hoy ')).toBe('steps.type[noticias de hoy]');
+    expect(buildFallbackDescription('input', meta, '  noticias\nde   hoy ')).toBe(
+      'steps.typeValueInto[noticias de hoy,Search box]',
+    );
+    expect(buildFallbackDescription('input', axMeta({ role: 'textbox' }), 'hoy')).toBe('steps.type[hoy]');
     expect(buildFallbackDescription('input', meta)).toBe('steps.typeInto[Search box]');
     expect(buildFallbackDescription('input', { ...meta, inputType: 'password' }, 'hunter2')).toBe('steps.typeSecret');
   });
