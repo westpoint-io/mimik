@@ -6,16 +6,24 @@
   "description": "Accessibility metadata for the element under a screen point",
   "main": "index.js",
   "types": "index.d.ts",
-  "files": ["index.js", "index.d.ts", "*.node"],
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "*.node"
+  ],
   "napi": {
     "binaryName": "capture-native",
-    "targets": ["x86_64-pc-windows-msvc", "x86_64-apple-darwin", "aarch64-apple-darwin"]
+    "targets": [
+      "x86_64-pc-windows-msvc",
+      "x86_64-apple-darwin",
+      "aarch64-apple-darwin"
+    ]
   },
   "scripts": {
     "build": "napi build --platform --release",
     "build:windows": "napi build --platform --release --target x86_64-pc-windows-msvc --cross-compile"
   },
   "devDependencies": {
-    "@napi-rs/cli": "^3.0.0"
+    "@napi-rs/cli": "^3.10.8"
   }
 }

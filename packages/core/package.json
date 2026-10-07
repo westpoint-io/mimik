@@ -10,16 +10,16 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.89",
     "@ai-sdk/openai": "^3.0.77",
-    "@fontsource/poppins": "^5.2.7",
+    "@fontsource/poppins": "^5.3.0",
     "ai": "^6.0.214",
-    "css-selector-generator": "^3.8.1",
-    "dexie": "^4.3.0",
-    "docx": "^9.6.1",
+    "css-selector-generator": "^3.9.4",
+    "dexie": "^4.4.6",
+    "docx": "^9.8.1",
     "fflate": "^0.8.3",
     "gifenc": "^1.0.3",
     "jspdf": "^4.2.1",
-    "mediabunny": "^1.52.3",
-    "p-queue": "^9.1.1",
-    "xstate": "^5.28.0"
+    "mediabunny": "^1.61.3",
+    "p-queue": "^9.3.3",
+    "xstate": "^5.33.2"
   }
 }
