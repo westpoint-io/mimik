@@ -228,7 +228,7 @@ desktop:
   modeArea: Bereich
   startSheetTitle: Aufnahme starten
   permissionsTitle: "Mimik das Aufnehmen erlauben"
-  permissionsIntro: "Mimik braucht ein paar Berechtigungen, um aufzunehmen."
+  permissionsIntro: "Mimik braucht zwei Berechtigungen, bevor es aufnehmen kann."
   permissionAccessibility: "Bedienungshilfen"
   permissionAccessibilityHint: "Damit Mimik sieht, was du anklickst und tippst."
   permissionScreen: "Bildschirmaufnahme"

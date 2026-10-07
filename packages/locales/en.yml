@@ -228,7 +228,7 @@ desktop:
   modeArea: Area
   startSheetTitle: Start a capture
   permissionsTitle: "Allow Mimik to record"
-  permissionsIntro: "Mimik needs a couple of permissions to record."
+  permissionsIntro: "Mimik needs two permissions before it can record."
   permissionAccessibility: "Accessibility"
   permissionAccessibilityHint: "Lets Mimik see what you click and type."
   permissionScreen: "Screen Recording"

@@ -228,7 +228,7 @@ desktop:
   modeArea: Zone
   startSheetTitle: Démarrer une capture
   permissionsTitle: "Autoriser Mimik à enregistrer"
-  permissionsIntro: "Mimik a besoin de quelques autorisations pour enregistrer."
+  permissionsIntro: "Mimik a besoin de deux autorisations avant de pouvoir enregistrer."
   permissionAccessibility: "Accessibilité"
   permissionAccessibilityHint: "Permet à Mimik de voir où vous cliquez et ce que vous tapez."
   permissionScreen: "Enregistrement de l’écran"

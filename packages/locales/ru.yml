@@ -228,7 +228,7 @@ desktop:
   modeArea: Область
   startSheetTitle: Начать запись
   permissionsTitle: Разрешите Mimik записывать
-  permissionsIntro: Для записи Mimik нужно несколько разрешений.
+  permissionsIntro: "Mimik нужны два разрешения, прежде чем начать запись."
   permissionAccessibility: Универсальный доступ
   permissionAccessibilityHint: "Позволяет Mimik видеть, что вы нажимаете и вводите."
   permissionScreen: Запись экрана

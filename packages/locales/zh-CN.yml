@@ -228,7 +228,7 @@ desktop:
   modeArea: 区域
   startSheetTitle: 开始捕获
   permissionsTitle: "允许 Mimik 录制"
-  permissionsIntro: "Mimik 需要几项权限才能录制。"
+  permissionsIntro: "Mimik 需要两项权限才能开始录制。"
   permissionAccessibility: "辅助功能"
   permissionAccessibilityHint: "让 Mimik 能看到你点击和输入的内容。"
   permissionScreen: "屏幕录制"
