@@ -1,10 +1,10 @@
 <div align="center"><a name="readme-top"></a>
 
-<img src="public/mascot.svg" width="140" height="140" alt="Mascota de Mimik" />
+<img src="../../public/mascot.svg" width="140" height="140" alt="Mascota de Mimik" />
 
 # Mimik
 
-[English](./README.md) · **Español** · [Português (BR)](./README.pt-BR.md) · [Français](./README.fr.md) · [简体中文](./README.zh-CN.md)
+[English](../../README.md) · **Español** · [Português (BR)](./README.pt-BR.md) · [Français](./README.fr.md) · [简体中文](./README.zh-CN.md)
 
 **Captura cualquier flujo del navegador y conviértelo en una guía paso a paso. Sin cuenta, sin nube, sin rastreo.**
 
@@ -237,7 +237,7 @@ Dos cosas sí salen del navegador, ambas documentadas en la [política de privac
 
 Se agradece todo tipo de contribución: reportes de bugs, ideas nuevas, PRs y traducciones.
 
-Mira [CONTRIBUTING.md](./CONTRIBUTING.md) para el setup de desarrollo, la estructura del proyecto, y las pautas para contribuidores.
+Mira [CONTRIBUTING.md](../../CONTRIBUTING.md) para el setup de desarrollo, la estructura del proyecto, y las pautas para contribuidores.
 
 <div align="right">
 
@@ -247,7 +247,7 @@ Mira [CONTRIBUTING.md](./CONTRIBUTING.md) para el setup de desarrollo, la estruc
 
 ## 📜 Licencia
 
-MIT © [Westpoint](https://github.com/westpoint-io). Mira [LICENSE](./LICENSE) para los detalles.
+MIT © [Westpoint](https://github.com/westpoint-io). Mira [LICENSE](../../LICENSE) para los detalles.
 
 <div align="right">
 

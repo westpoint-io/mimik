@@ -1,10 +1,10 @@
 <div align="center"><a name="readme-top"></a>
 
-<img src="public/mascot.svg" width="140" height="140" alt="Mimik 吉祥物" />
+<img src="../../public/mascot.svg" width="140" height="140" alt="Mimik 吉祥物" />
 
 # Mimik
 
-[English](./README.md) · [Español](./README.es.md) · [Português (BR)](./README.pt-BR.md) · [Français](./README.fr.md) · **简体中文**
+[English](../../README.md) · [Español](./README.es.md) · [Português (BR)](./README.pt-BR.md) · [Français](./README.fr.md) · **简体中文**
 
 **自动捕获任何浏览器工作流，并生成分步指南。无需账号，没有云端，也不做追踪。**
 
@@ -227,7 +227,7 @@ Mimik 可以在几秒内把任何重复性的浏览器任务变成一份可分�
 
 欢迎任何形式的贡献：bug 报告、功能建议、PR 和翻译。
 
-请查看 [CONTRIBUTING.md](./CONTRIBUTING.md)，了解开发环境、项目结构和贡献指南。
+请查看 [CONTRIBUTING.md](../../CONTRIBUTING.md)，了解开发环境、项目结构和贡献指南。
 
 <div align="right">
 
@@ -237,7 +237,7 @@ Mimik 可以在几秒内把任何重复性的浏览器任务变成一份可分�
 
 ## 📜 许可证
 
-MIT © [Westpoint](https://github.com/westpoint-io)。详情见 [LICENSE](./LICENSE)。
+MIT © [Westpoint](https://github.com/westpoint-io)。详情见 [LICENSE](../../LICENSE)。
 
 <div align="right">
 
