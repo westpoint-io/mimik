@@ -17,7 +17,7 @@ function classify(message: string): Exclude<FocusedWindowResult, { ok: true }>['
   return 'unknown';
 }
 
-function toDip(bounds: FocusedWindow['bounds']): FocusedWindow['bounds'] {
+export function toDip(bounds: FocusedWindow['bounds']): FocusedWindow['bounds'] {
   if (!bounds || bounds.width <= 0 || bounds.height <= 0) return null;
   if (process.platform !== 'win32' || typeof screen.screenToDipRect !== 'function') return bounds;
   try {

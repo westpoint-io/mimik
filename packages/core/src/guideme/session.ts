@@ -1,5 +1,5 @@
 import { localStorage } from '@/core/env';
-import type { Step } from '@/core/guides/types';
+import { type ElementMeta, elementSource, type Step } from '@/core/guides/types';
 
 export interface GuideMeSession {
   guideId: string;
@@ -62,3 +62,7 @@ export async function getSession(): Promise<GuideMeSession | null> {
 }
 
 export { BLOCKED_KEY, MANUAL_KEY, SESSION_KEY, STEP_KEY };
+
+export function isReplayable(step: { elementMeta?: ElementMeta }): boolean {
+  return step.elementMeta !== undefined && elementSource(step.elementMeta) === 'dom';
+}

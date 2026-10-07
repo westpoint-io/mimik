@@ -1,6 +1,9 @@
 import type { Settings, SettingsKey } from './guides/types';
 
+export type ClientType = 'extension' | 'desktop';
+
 export interface CoreEnv {
+  client: ClientType;
   t: (key: string, substitutions?: string[]) => string;
   assetUrl: (path: string) => string;
   storage: {
@@ -27,6 +30,8 @@ export const i18n = {
 };
 
 export const assetUrl = (path: string) => env().assetUrl(path);
+
+export const client = (): ClientType => env().client;
 
 export const localStorage = {
   get: <K extends SettingsKey>(keys: readonly K[]) => env().storage.get(keys),

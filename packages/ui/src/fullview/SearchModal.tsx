@@ -4,9 +4,9 @@ import { navigate } from '@mimik/ui/fullview/router';
 import { useFullview } from '@mimik/ui/stores/fullview';
 import { Search, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { i18n } from '#imports';
-import { getGuideDomain, getGuides } from '@/core/guides/service';
-import type { Guide } from '@/core/guides/types';
+import { i18n } from '@mimik/core/env';
+import { getGuideDomain, getGuides } from '@mimik/core/guides/service';
+import type { Guide } from '@mimik/core/guides/types';
 import KeyboardHints from './components/KeyboardHints';
 import SearchResults from './components/SearchResults';
 

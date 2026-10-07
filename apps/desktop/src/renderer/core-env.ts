@@ -4,6 +4,7 @@ import { type Messages, translate } from '@mimik/core/i18n/translate';
 import en from '@mimik/locales/en.yml';
 
 configureCore({
+  client: 'desktop',
   t: (key, substitutions) => translate(en as Messages, key, substitutions),
   assetUrl: (path) => new URL(path, document.baseURI).href,
   storage: {

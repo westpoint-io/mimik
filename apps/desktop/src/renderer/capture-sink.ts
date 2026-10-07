@@ -11,6 +11,7 @@ import { buildFallbackDescription } from '@mimik/core/capture/step-description';
 import { localStorage } from '@mimik/core/env';
 import {
   addStepToGuide,
+  clearStepAiPending,
   createGuide,
   createStep,
   getStepsForGuide,
@@ -20,8 +21,9 @@ import {
 import type { StoredScreenshot } from '@mimik/core/guides/types';
 import type { CursorMark } from '@mimik/core/screenshot/types';
 import { DEFAULT_TARGET_COLOR } from '@mimik/core/screenshot/types';
+import { describeStep } from './ai';
 
-export type DesktopCaptureStepData = CaptureStepData & { cursor?: CursorMark };
+export type DesktopCaptureStepData = CaptureStepData & { cursor?: CursorMark; inputValue?: string };
 
 export class DesktopCaptureSink implements CaptureSink {
   async startGuide(): Promise<string> {
@@ -79,8 +81,15 @@ export class DesktopCaptureSink implements CaptureSink {
       screenshotId,
       elementMeta: meta,
       descriptionSource: 'heuristic',
+      aiPending: true,
+      ...(data.inputValue === undefined ? {} : { inputValue: data.inputValue }),
     });
     await addStepToGuide(data.guideId, stepId);
+
+    void describeStep(data.action, meta).then(async (written) => {
+      if (written) await updateStepDescription(stepId, written);
+      await clearStepAiPending(stepId);
+    });
 
     return { stepId, title: description };
   }

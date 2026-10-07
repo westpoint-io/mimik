@@ -1,4 +1,14 @@
 export { cursorPoint, type DisplayInfo, displayAt, listDisplays } from './displays';
+export {
+  elementAt,
+  elementLookupAvailable,
+  focusedField,
+  isTextField,
+  keyLabel,
+  resetDeadKeyState,
+  resolveKey,
+  type ScreenElement,
+} from './element';
 export { type FocusedWindow, type FocusedWindowResult, focusedWindow } from './focused-window';
 export { type InputAction, InputHook, type InputHookStart, type KeyAction, type PointerAction } from './input-hook';
 export { type Capture, captureCursorDisplay, captureDisplay } from './screenshot';

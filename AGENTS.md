@@ -188,19 +188,35 @@ The identity fields are shared, and every source populates them:
 | Field | DOM | macOS AX | Windows UIAutomation |
 |---|---|---|---|
 | `role` | `role` attribute, else tag name | `AXRole` | `ControlType` |
-| `name` | `name` attribute | `AXTitle` | `Name` |
+| `name` | `name` attribute | `AXIdentifier` | `AutomationId` |
 | `textContent` | trimmed text | `AXValue` / `AXSelectedText` | `Value` |
-| `ariaLabel` | `aria-label` | `AXDescription` / `AXARIAValueText` | `HelpText` |
-| `placeholder` | `placeholder` | `AXPlaceholderValue` | `Placeholder` |
+| `ariaLabel` | `aria-label` | `AXTitle` / `AXDescription` | `Name` |
+| `placeholder` | `placeholder` | `AXPlaceholderValue` | — |
 | `altText` | `img.alt` | `AXHelp` | `HelpText` |
 | `rect` | `getBoundingClientRect()` | `AXPosition` + `AXSize` | `BoundingRectangle` |
+
+The mapping is chosen so the shared precedence in `buildFallbackDescription` — `ariaLabel`,
+`placeholder`, `textContent`, `altText`, `name`, `role` — picks the right string without anyone
+branching on `source`. That is why the accessible name lands in `ariaLabel` rather than `name`:
+`name` sits near the bottom of that list, and a control's accessible name should beat its value.
+`name` therefore holds the stable machine identifier instead, which is what a future desktop replay
+will want. UIAutomation has no placeholder property in the API surface we bind, so that field stays
+null there.
 
 A fourth source, `screen`, knows only where the click landed: it fills `rect` with a fixed box around
 the click point, `clickPoint`, `devicePixelRatio`, `app` and `window`, and leaves every identity field
 null.
 
-`tag`, `cssSelector`, `href`, `inputType` and `dataTestId` are DOM-only and absent elsewhere.
-`app` and `window` are the reverse — desktop only.
+`tag`, `cssSelector`, `href` and `dataTestId` are DOM-only and absent elsewhere. `app` and `window`
+are the reverse — desktop only. `inputType` is mostly DOM-only, but a desktop typing step sets it to
+`password` when the field says so, because that is the one input type a screen capture can learn.
+
+Guide Me is the one place a `source` check is correct, through `isReplayable`. It replays against a
+live DOM, so a step is replayable only when its source is `dom` — or absent, which means it predates
+the field and was therefore a DOM capture. The old test was "does the step have an `elementMeta` at
+all", which was true before desktop existed and is now true of every desktop step; it left a Guide
+Me button on guides that can never be replayed. The button is not rendered at all when nothing is
+replayable, rather than rendered disabled, because on desktop it could never become enabled.
 
 Consumers must not branch on `source`. Read the shared fields first and treat the DOM-only ones as
 refinements: `buildFallbackDescription` reaches the same wording through `role === 'checkbox'` that
@@ -233,8 +249,8 @@ app in `apps/desktop/dist`. `electron-builder.yml` targets dmg/zip, nsis and App
 
 ## Desktop Capture Primitives
 
-`apps/desktop/src/main/capture` holds the four things a desktop capture needs. Only one comes from
-Electron; the other three are prebuilt npm packages rather than a crate we maintain.
+`apps/desktop/src/main/capture` holds the five things a desktop capture needs. One comes from
+Electron, three are prebuilt npm packages, and only the last is a crate we maintain.
 
 | Primitive | Source | Native |
 |---|---|---|
@@ -242,6 +258,7 @@ Electron; the other three are prebuilt npm packages rather than a crate we maint
 | Screenshot of a display | `node-screenshots` | prebuilt |
 | Focused foreign window | `get-windows` | prebuilt |
 | Global clicks and keys | `uiohook-napi` | prebuilt |
+| Control under a point | `@mimik/capture-native` | ours |
 
 Screenshots do not go through Electron's `desktopCapturer`. That route asks the xdg desktop portal
 on Wayland and fails outright when the portal does not answer, and it was returning frames that
@@ -250,8 +267,8 @@ has a Wayland path and needs no portal. Monitor identifiers there have nothing t
 display ids, so the monitor is resolved from a point inside the display's bounds rather than matched
 by id.
 
-Anything richer than these four — the accessibility tree in particular — needs an addon we build and
-maintain ourselves, and that is a separate task.
+Anything richer than these four — the accessibility tree in particular — has no prebuilt package
+worth taking, so it is an addon of our own in `packages/capture-native`.
 
 **On Linux, input and window lookup are X11 only; screenshots are not.** `uiohook-napi` links
 `libX11`/`libXtst` and hooks through `XRecord`, with no Wayland path; on a Wayland session the hook
@@ -264,6 +281,61 @@ macOS and Windows are unaffected.
 `pnpm --filter @mimik/desktop check:capture` builds and exercises every primitive, printing `ok`,
 `n/a` for a platform limit, or `FAIL`. Only `FAIL` sets a non-zero exit, so the check is meaningful
 on a machine where half the primitives cannot work.
+
+## Desktop Accessibility Addon
+
+`packages/capture-native` is a napi-rs addon exposing one thing: `elementAtPoint(x, y)`, the
+accessibility metadata for whatever control sits under a screen point. Nothing else belongs in it.
+Displays, screenshots, window lookup and the input hook are all covered by prebuilt npm packages
+already, and the accessibility tree is the only primitive with no usable package behind it — the
+candidates on npm either ship no prebuilt binaries at all, bind the wrong API, or are unmaintained,
+and an addon compiled from source at install time would need a full C++ toolchain on every user's
+machine.
+
+Rust rather than C++ because `node-gyp` cannot cross-compile and `cargo` can. `pnpm --filter
+@mimik/capture-native build:windows` produces `capture-native.win32-x64-msvc.node` on a Linux
+machine through `cargo-xwin`, which downloads the Windows SDK headers and import libraries itself.
+
+Windows only. `is_supported()` answers false everywhere else and `elementAtPoint` resolves to null,
+so the app, the checks and the recording pipeline all behave the same as when the binary is simply
+missing. macOS is the same shape of work against `AXUIElementCopyAttributeValue` and is not done.
+
+The implementation is `IUIAutomation::ElementFromPoint` and six property reads. COM is initialised
+multi-threaded once per worker thread and the `IUIAutomation` instance is cached in a thread local,
+because the call runs on the libuv threadpool through `AsyncTask` rather than on the main thread —
+a cross-process UIAutomation call against a busy application blocks for as long as that application
+takes to answer, and blocking Electron's main thread there would freeze the overlay mid-recording.
+Rectangles come back in physical pixels, so the caller converts the point with `dipToScreenPoint` on
+the way in and the rectangle with `screenToDipRect` on the way out, the same convention
+`focusedWindow` follows.
+
+`ControlType` is translated to the ARIA-ish role vocabulary the rest of the app already speaks, so
+`role === 'checkbox'` means the same thing whether it came from a DOM attribute or from
+`UIA_CheckBoxControlTypeId`. An unmapped control type yields a null role rather than an invented
+name.
+
+`focusedElement()` is the second call. The remaining three — `keyLabel`, `resolveKey` and
+`resetDeadKeyState` — are the keyboard, and unlike the first two they are synchronous, because
+resolving a scancode against a keyboard layout is a local call with nothing to wait on. It reports `isPassword` alongside the usual fields, and the value is discarded at the
+addon boundary when that flag is set, so a password never reaches our data even though UIAutomation
+already withholds it.
+
+## Which Client Is Running
+
+`configureCore` carries a `client`, `extension` or `desktop`, and `client()` reads it back. Shared
+code that must genuinely behave differently asks at runtime rather than taking a prop for it, which
+is how the surfaces stay one codebase instead of two dressed as one.
+
+The distinction worth holding: a **prop** is right when the app supplies behaviour the shared code
+could not know — `onStartCapture` opens a capture sheet on one surface and a side panel on the
+other, and neither belongs in `packages/ui`. `client()` is right when shared code decides for
+itself, with nothing to pass down.
+
+The rule that keeps `packages/ui` from becoming a filing problem is simpler than a taxonomy:
+anything in it belongs to **both** surfaces. Asking which surface owns a file there means it is in
+the wrong place, and it should live in `apps/desktop` or in the extension's `src/ui`. That is why
+`CaptureSheet`, the capture settings and the overlay have never been shared — they are not shared
+components filed badly, they are the parts of the desktop that have no counterpart at all.
 
 ## Desktop Storage
 
@@ -368,7 +440,11 @@ coordinates — copying the paths into the overlay would have made it the fifth 
 the repository.
 
 The footer is always the same two slots: the transient action on the left, the one that moves the
-recording forward on the right, filled. Close then Start while armed, Pause then Finish while
+recording forward on the right, filled. That filled button is `--deep` in every state. A paused
+variant that filled it with `--accent` was tried and removed: the design system reserves the accent
+for icons, links, focus rings, toggles and meters and never for a button fill, and the header
+already says "Paused" beside a stopped dot, so the colour was carrying no information the card did
+not already show. Close then Start while armed, Pause then Finish while
 recording, Resume then Finish while paused. Finish keeps the right-hand slot for the whole recording
 so it never moves under the cursor.
 
@@ -444,19 +520,91 @@ Window bounds come back in the platform's own coordinates. Windows reports physi
 every rectangle elsewhere in the app is in DIP, so `focusedWindow` converts through `screenToDipRect`
 before returning — without it a high-DPI machine crops a rectangle scaled by its own DPI factor.
 
-`elementSource` is `'screen'` for these steps: the click point, the region-relative target rect, the
-display scale factor, and the foreground app and window title are all known, but nothing about the
-control under the cursor is. Reading that needs the accessibility tree and is a later task.
+`elementSource` is `'uia'` when the accessibility lookup answered and `'screen'` when it did not.
+A `screen` step still knows the click point, a fixed target box around it, the display scale factor
+and the foreground app and window title; it just knows nothing about the control. That is what every
+step degrades to where the addon has no build, where the lookup times out, and on every platform but
+Windows.
 
-`DesktopRecorder` takes the display grab as a constructor argument defaulting to `captureDisplay`, so
-`check:pipeline` feeds it a generated frame. The crop arithmetic, the sink, the step write and all
+The lookup starts the moment the click arrives and is awaited after the grab, so it overlaps the
+settle delay and the screenshot instead of adding to them. That it runs early is not only for speed:
+the control has to be read before the click takes effect, or a menu that has opened or a button that
+has vanished is what answers. It is the mirror of the focused-window read, which has to happen late
+for the same reason — the window the click moved to the front is the one being photographed, but the
+control the click landed on is the one that was there before. It is capped at 1500 ms and a miss is
+`null`, never an error — a slow or unresponsive foreign application costs a step its metadata, not
+the recording.
+
+`targetRect` decides what the dashed target in the screenshot encloses. The control's own rectangle
+wins when there is one, which is the whole point of reading the accessibility tree; it falls back to
+a 28 px box around the click when there is no element, when the rectangle covers more than half the
+frame, or when it does not fit inside the frame. Without those two guards an unsupported application
+returns its top-level window and the target outlines the entire screenshot.
+
+Typing is one step, and the text in it is read rather than reconstructed. The keyboard hook decides
+only *when* a typing session starts and ends; what was typed comes from the focused element's value
+in the accessibility tree at the moment the session closes. That is the whole reason there is no
+keycode table, no layout handling, no dead-key state and no IME composition tracking in this
+codebase — the machinery those need exists to answer a question we do not ask.
+
+A session opens on any key that is not a modifier, not `Enter`, `Tab` or `Escape`, and not held with
+`Ctrl`, `Alt` or `Meta`, and every such key also appends to a buffer of what was typed. It closes on any of those, on a click, on pause, on stop, or after 1200 ms
+with no keys. `Shift` plus a letter still counts as typing, which is why modifiers are tested
+individually rather than as a set.
+
+Closing a session does not guarantee a step. The focused element is read first, and nothing is
+written unless it is a text field with something to show for it. A password field is the exception
+in the other direction: it reports no value by design, and the step is written anyway with no
+`inputValue`, worded "Type password" rather than naming any contents.
+
+Keys that are not typing get their own step, unless `captureKeys` is off. A shortcut always does; `Enter`, `Tab` and `Escape` do
+only when no typing session was open, because the `Enter` that submits a field is part of that
+field's step rather than a step of its own. Auto-repeat is collapsed the way a double click is —
+`isRepeatKey` drops the same keycode within 500 ms, so holding a key down is one step.
+
+Naming the key is the only place a keyboard layout is consulted. `keyLabel` maps the hook's scancode
+through `MapVirtualKeyExW` against the **foreground window's** layout, so the same physical key reads
+as `Q` on QWERTY and `A` on AZERTY, which is what the application being recorded will have acted on.
+`ToUnicodeEx` is deliberately not used: it would name punctuation too, but it mutates the thread's
+dead-key state as a side effect, and a shortcut only needs the letter, digit or named key. A key that
+maps to none of those yields no label and therefore no step, rather than a step nobody can follow.
+
+Two sources compete for the text and `chooseTypedText` picks between them. The field's value wins
+by default, because it is what is actually on screen and it survives caret movement, selection and
+autocomplete; turning `typingSmartDetection` off skips that read entirely and always uses the
+buffer. The keystroke buffer wins in three cases: the focused element reports no value, the
+value is empty, or the value runs more than twice the buffer and past 80 characters. That last rule
+is what makes rich text work — in a word processor the "field" is the whole document, so its value
+is the entire text rather than the sentence just typed, and the buffer is the only thing that knows
+which part is new. A non-text role yields nothing at all, so a keypress in a file manager is not a
+step.
+
+Building that buffer is the only place a keystroke becomes a character. `resolveKey` runs
+`ToUnicodeEx` against the foreground layout with the modifier state the hook reported and the real
+caps-lock state, and appends what comes back; `Backspace` removes one. Dead keys fall out of this
+for free: `ToUnicodeEx` returns nothing for the accent itself and the composed character for the key
+after it, because it keeps that state per thread and every keystroke goes through the same one. The
+cost is that the state is real and can be left armed, so `resetDeadKeyState` flushes it whenever a
+session ends.
+
+Values are stripped of `\uFFF9`–`\uFFFD`, `\uFEFF` and `\u200B` before use. Accessibility
+implementations use those to mark annotations and inline objects, and they arrive as invisible
+garbage in the middle of otherwise ordinary text.
+
+`DesktopRecorder` takes its region, its overlay hiding and its sink positionally, and everything
+else — the display grab, the settings, the overlay hit test, the element lookup and the focused
+field — through one optional hooks object, so `check:pipeline` replaces exactly the ones it needs
+and names them at the call site. The grab defaults to `captureDisplay`, and `check:pipeline` feeds
+it a generated frame instead. The crop arithmetic, the sink, the step write and all
 four document exporters then run without a working screen-capture path, which matters because a real
 grab depends on the machine it runs on. Whether a real grab works is `check:capture`'s question, not
 this one's.
 
 `pnpm --filter @mimik/desktop check:pipeline` captures two clicks into a throwaway guide, then
 asserts the steps landed on the guide, the screenshot is cropped to the region, the description came
-from the shared heuristic, and HTML, Markdown, PDF and DOCX all export non-empty. It then loads the
+from the shared heuristic, and HTML, Markdown, PDF and DOCX all export non-empty. A stubbed element
+lookup covers the two things the addon feeds: the metadata reaching the written step, and
+`targetRect` preferring the control's rectangle while rejecting an oversized or overflowing one. It then loads the
 real `index.html` and asserts that window answers a capture request and navigates to the finished
 guide, because the checks otherwise run against their own renderer and never exercise the entry
 point the user actually gets.
@@ -470,9 +618,25 @@ rather than the placeholder the extension fills in with AI. Desktop has no AI ti
 comes from the recorded application, or a generic one where no application was identified. Without
 it the guide screen waits forever on a title that is never written.
 
-Step descriptions read as bare actions until the accessibility tree lands. A screen capture knows
-where the click was and which application owned it, so `buildFallbackDescription` has no control
-name to work with and every step reads the same.
+Descriptions and the guide's name are written by the user's own provider key when there is one, and
+by rule when there is not. `getAIDescription` takes a serialised context string rather than a
+`DOMContext`, because the desktop has no DOM to hand it: `serializeScreenContext` writes the same
+shape of thing from the application, the window title, the control's role and name, and the value,
+which is what UIAutomation knows. No screenshot is ever sent.
+
+A step is written with its heuristic description immediately and `aiPending` set, then rewritten
+when the model answers. The flag is cleared **whichever way that goes** — a miss, a failure and a
+missing key all clear it — because a pending flag that only clears on success is the same trap as a
+title placeholder that only resolves with AI: without a key it stays there forever.
+
+Stopping a recording names the guide twice. The application name lands first so the view never opens
+on a placeholder, and `generateGuideMeta` replaces it if a key is configured. Ordering it that way
+means the guide is always named, and the AI title is an improvement rather than a prerequisite.
+
+Step descriptions are only as good as the element lookup. With one, `buildFallbackDescription` gets
+a role and an accessible name and writes the same wording it writes for the extension. Without one
+it has nothing but the action, and every step in the guide reads the same — which is what a
+`screen`-sourced recording looks like.
 
 ## Desktop Home Screen
 
@@ -484,10 +648,33 @@ because the products differ: the extension records a tab, has no capture mode to
 wide and has to pick between three framings first. Forcing those two shells together makes both worse.
 Divergence inside the guide is a bug; divergence in how you reach it is not.
 
-The window opens on `HomeScreen`, not on the fullview dashboard. The extension's side panel already
-established the shape and the desktop follows it rather than inventing a second one: the mascot, the
-question, one primary control, then a search field and the library. `sidepanel_heroTitle` and its
-neighbours are reused verbatim, so the two surfaces stay worded the same.
+The header is the exception that proves it. `TopNav` is the extension's own dashboard header, moved
+into `packages/ui` and mounted by both surfaces, because a header is navigation rather than capture
+and there was nothing about it worth diverging on. The desktop had grown its own `TopBar` — a text
+wordmark, a gear, and a green "Ready to record" pill — and every part of that was worse: the mascot
+is the mark everywhere else, and a pill that only ever says the app is idle is chrome that is never
+news. It went, along with the second bar under it, which halved the chrome from 116 px to 64.
+
+`TopNav` takes only a `Route` and reads the rest from `useFullview`, which `GuideContent` already
+fills, so the guide title, the step count and the export data arrive with no desktop wiring at all.
+Its one desktop-only prop is `onSettings`: the extension has a browser options page and the desktop
+does not, so the gear exists here and only on the library route. Moving it brought `SearchModal`,
+`ExportPreviewModal`, `VideoStepPlayer` and two search components with it — each needed exactly two
+import rewrites, `#imports` to `@mimik/core/env` and `@/core/*` to `@mimik/core/*`, because nothing
+in them was ever extension-specific beyond how WXT resolves a module.
+
+Below the header both surfaces mount the same dashboard. The desktop briefly had its own
+`HomeScreen` — a hero, a question and a Start Capture button — and it existed for one reason: the
+extension's dashboard has no way to start a capture, only its side panel does, so there was nothing
+to inherit and the hero was copied from the side panel into a window five times its width. That one
+missing affordance was the whole of the apparent divergence between the two products.
+
+`LibraryContent` now takes an optional `onStartCapture` and renders the button itself, so the
+dashboard can begin a recording on either surface and `HomeScreen` is gone. What the button does is
+the app's to decide, because the two actions have nothing in common: the desktop opens
+`CaptureSheet`, and the extension opens the side panel, which is where its recording view lives.
+Filling that gap was an improvement to the extension in its own right — browsing the library in a
+tab and wanting to record used to mean going to find the side panel yourself.
 
 Pressing Start Capture opens `CaptureSheet` rather than arming immediately. The sheet is where the
 capture mode is chosen, because the mode decides what every screenshot in the guide will frame and
@@ -510,8 +697,11 @@ letter and tint from a hash without a second query. A desktop guide has no web a
 only identity available. Star and delete are always visible rather than revealed on hover, matching
 the side panel; the fullview list hides them until hover and that reads as inert in a window this wide.
 
-Starred and Trash have no route on desktop yet. `LibraryContent` supports both and the home screen
-does not reach them.
+Routing is `@mimik/ui/fullview/router`, not a hand-rolled `hashchange` listener. The desktop had one
+matching `#guide/<id>`, which is the same scheme the shared router already parses, so adopting it
+cost nothing and bought Starred and Trash the routes the header needs. `HomeScreen` serves the `all`
+category and `LibraryContent` serves the other two, because the hero and Start Capture belong on the
+screen you land on and nowhere else.
 
 ## Capture Settings
 
@@ -525,6 +715,11 @@ read by main rather than by core, because none of them mean anything to the exte
 | `cursorStyle` | `arrow`, `dot` on Linux | Which pointer shape gets drawn |
 | `screenshotDelayMs` | 0, capped at 2000 | Extra wait between the click and the grab |
 | `captureOutsideClicks` | off | Whether clicks beyond the capture area are recorded at all, in `region` mode only |
+| `captureKeys` | on | Whether a shortcut or a named key becomes a step |
+| `captureTyping` | on | Whether typing becomes a step |
+| `typingDebounceMs` | 1200, clamped to 200–5000 | Quiet time that closes a typing session |
+| `typingSmartDetection` | on | Off means the keystroke buffer is used and the field's value is never read |
+| `shortcuts` | three accelerators | Global keys for start/stop, pause/resume and capture now |
 
 `normaliseSettings` runs on every read and write, so an out-of-range delay clamps and an unknown
 cursor style falls back to the platform default rather than reaching the recorder.
@@ -535,6 +730,11 @@ target, not something baked into the stored bytes, so `renderScreenshot` draws i
 and the editor show it with no export-side work. Keeping it out of the file means the capture is
 never decoded and re-encoded on the way to disk, and the pointer can be moved or removed later
 without touching the original.
+
+The mouse button decides the action: the right button records as `auxclick` and everything else as
+`click`, so a right click reads as "Right-click …" rather than being indistinguishable from a left
+one. Middle clicks fall in with left, which is no worse than before and avoids claiming a wheel
+press was a context menu.
 
 A double click is one action, so it is one step. `isRepeatClick` drops a press that lands within
 500 ms of the one before it, and the clock is reset on every press rather than on every capture, so a
@@ -555,6 +755,69 @@ unknown mode falls back, the opt-in rule holds in four positions, a double click
 rectangle for all three modes including both window fallbacks, a 400 ms delay measurably slows the
 grab, and the same synthetic frame renders to a different size once a cursor is drawn over it. It restores whatever
 settings were on disk when it finishes.
+
+## Desktop Settings
+
+Three sections behind one left nav: Capture, AI descriptions, Shortcuts. The split is the same one
+that decides where a file lives. Capture and Shortcuts describe things the extension has no concept
+of, so they are written in `apps/desktop` against `capture-settings.json`. AI descriptions are
+identical on both surfaces, so `AiSettings` lives in `packages/ui` and each app hands it a
+`validate` function — the desktop passes core's `validateApiKey` directly, and the extension goes
+through its background messaging, which is the only part that differs.
+
+`SettingsView`, the extension's own 699-line settings screen, was deliberately **not** moved. It
+carries voice narration, smart blur, brand logos and a microphone picker, none of which mean
+anything on desktop, and it reaches for `@/lib/browser-api`. Moving it would have dragged all of
+that across for the sake of four fields; extracting the four was less code and leaves the extension
+untouched.
+
+The shortcut recorder reads a keystroke and writes an Electron accelerator. It refuses a bare key,
+because a global accelerator with no modifier takes that key from every application on the machine,
+and it ignores a modifier pressed alone, because `Shift` is not a shortcut. `accelerator()` is a
+pure function over the event so it is tested without a keyboard.
+
+## Capture Shortcuts
+
+Three global accelerators, stored in `capture-settings.json` beside everything else: start/stop,
+pause/resume, and capture now. They default to `Alt+Shift+R`, `Alt+Shift+P` and `Alt+Shift+C`,
+because a global accelerator is taken from **every** application on the machine for as long as it is
+registered: `Ctrl+Shift+R` would break reload everywhere, and `Ctrl+Alt+<letter>` is AltGr on most
+non-US layouts, so it would eat characters people actually type. `Alt+Shift` held with another key
+is rare in applications and does not trigger the Windows layout switch, which fires only on
+`Alt+Shift` pressed and released alone. Function keys were the first choice and are wrong: laptops
+increasingly do not have a usable row.
+
+That is also why only start/stop is bound all the time. Pause/resume and capture-now can do nothing
+outside a recording, so `shortcutMap` returns them as null until one is running and `applyShortcuts`
+rebinds on every state change. An empty accelerator string clears the binding rather than restoring
+the default, so a shortcut can be turned off; a missing one falls back.
+
+Registration is the part that cannot be trusted. `globalShortcut.register` returns false when
+another application already owns the key and throws on an accelerator Electron cannot parse, so
+`bindShortcuts` catches both and hands back the list it could not take rather than failing the
+launch over a key clash.
+
+**Rebinding must never happen inside a shortcut's own handler.** Unregistering the accelerator that
+is currently firing hangs the main process on Windows — the app goes to "not responding" with no
+error anywhere. Two things keep that from happening: `bindShortcuts` returns immediately when the
+wanted set matches what is already bound, which covers pause and resume since both count as
+recording, and `applyShortcuts` defers the work with `setImmediate` so it is never on the handler's
+stack whatever the set turns out to be. Pausing from the card worked throughout, because that path
+reaches the rebind through IPC rather than from inside a global shortcut.
+
+Start/stop goes straight from hidden to recording rather than arming first, because a shortcut whose
+job is to start recording should not need a second press. The stored region is used as it stands,
+which is what makes that possible in `region` mode.
+
+Capture-now writes an ordinary click step at the cursor. There is no separate action for it: the
+point of pressing it is that the cursor is already on the thing worth capturing.
+
+The keystroke that drives a shortcut must not also be recorded as one. Without that check, pausing a
+recording writes "Press Alt+Shift+P on Mimik" as a step, which is both wrong and confusing, and
+resuming writes another. `matchesShortcut` compares a keystroke against each configured accelerator
+before `captureKey` writes anything, and it compares by parts rather than by string so
+`Shift+Alt+P` and `Alt+Shift+P` are the same shortcut. `CommandOrControl` resolves to Control
+everywhere but macOS.
 
 ## Export Formats
 

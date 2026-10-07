@@ -1,4 +1,5 @@
 import { History, Loader2, Play, Sparkles } from 'lucide-react';
+import { isReplayable } from '@mimik/core/guideme/session';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { TypeAnimation } from 'react-type-animation';
 import { i18n } from '@mimik/core/env';
@@ -462,14 +463,13 @@ export default function GuideContent({ guideId, initialStepId, initialTool }: Gu
                 {domain}
               </span>
             )}
-            {!editing && !preview && viewSteps.length > 0 && (
+            {!editing && !preview && viewSteps.some(isReplayable) && (
               <button
                 onClick={() => {
                   panel.open();
                   void send('startGuideMe', { guideId });
                 }}
-                disabled={!viewSteps.some((s) => s.elementMeta)}
-                className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary-foreground bg-primary hover:bg-primary/90 px-3 py-0.5 rounded-full transition-colors disabled:opacity-30 disabled:cursor-not-allowed ml-auto"
+                className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary-foreground bg-primary hover:bg-primary/90 px-3 py-0.5 rounded-full transition-colors ml-auto"
               >
                 <Play size={11} />
                 {i18n.t('fullview_guideMe')}

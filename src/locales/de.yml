@@ -180,6 +180,18 @@ desktop:
   startButton: Starten
   guideCount: $1 Anleitung
   guideCountPlural: $1 Anleitungen
+  shortcutsSection: "Tastenkürzel"
+  captureKeys: "Kürzel und benannte Tasten aufzeichnen"
+  captureTyping: "Eingaben aufzeichnen"
+  typingDebounce: "Eingabeschritt beenden nach"
+  typingSmart: "Den Feldtext lesen, wenn möglich"
+  typingSmartHint: "Andernfalls werden die Tastenanschläge aufgezeichnet"
+  shortcutStartStop: "Aufnahme starten oder beenden"
+  shortcutPauseResume: "Pausieren oder fortsetzen"
+  shortcutCapture: "Jetzt einen Schritt aufnehmen"
+  shortcutPress: "Tasten drücken…"
+  shortcutClear: "Löschen"
+  shortcutTaken: "Eine andere Anwendung nutzt diese Taste bereits"
 
 fullview:
   allGuides: Alle Anleitungen
@@ -429,6 +441,7 @@ steps:
   toggleSwitch: "$1 umschalten"
   clickLink: 'Link "$1" anklicken'
   click: "$1 anklicken"
+  rightClick: "$1 rechtsklicken"
   typeIntoField: "In Feld $1 eingeben $2"
   typeInto: "In $1 eingeben"
   typeSecret: "Passwort eingeben"

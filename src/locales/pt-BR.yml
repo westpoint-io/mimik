@@ -180,6 +180,18 @@ desktop:
   startButton: Iniciar
   guideCount: $1 guia
   guideCountPlural: $1 guias
+  shortcutsSection: "Atalhos"
+  captureKeys: "Registrar atalhos e teclas nomeadas"
+  captureTyping: "Registrar o que você digita"
+  typingDebounce: "Encerrar a etapa de digitação após"
+  typingSmart: "Ler o texto do próprio campo quando possível"
+  typingSmartHint: "Se desligado, o guia registra suas teclas"
+  shortcutStartStop: "Iniciar ou finalizar uma gravação"
+  shortcutPauseResume: "Pausar ou retomar"
+  shortcutCapture: "Capturar uma etapa agora"
+  shortcutPress: "Pressione as teclas…"
+  shortcutClear: "Limpar"
+  shortcutTaken: "Outro aplicativo já usa esta tecla"
 
 fullview:
   allGuides: Todos os guias
@@ -498,6 +510,7 @@ steps:
   toggleSwitch: "Ligar/desligar $1"
   clickLink: 'Clicar no link "$1"'
   click: "Clicar em $1"
+  rightClick: "Clicar com o botão direito em $1"
   typeIntoField: "Digitar no campo $1 $2"
   typeInto: "Digitar em $1"
   typeSecret: "Digitar senha"

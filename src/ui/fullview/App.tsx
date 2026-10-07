@@ -2,12 +2,13 @@ import { TooltipProvider } from '@mimik/ui/components/ui/tooltip';
 import GuideContent from '@mimik/ui/fullview/GuideContent';
 import LibraryContent from '@mimik/ui/fullview/LibraryContent';
 import { useRoute } from '@mimik/ui/fullview/router';
+import SearchModal from '@mimik/ui/fullview/SearchModal';
+import TopNav from '@mimik/ui/fullview/TopNav';
 import { useFullview } from '@mimik/ui/stores/fullview';
 import { useEffect } from 'react';
+import { openSidebar } from '@/lib/browser-api';
 import UpdateNotice from '@/ui/shared/UpdateNotice';
 import VoiceNotice from './components/VoiceNotice';
-import SearchModal from './SearchModal';
-import TopNav from './TopNav';
 
 export default function FullViewApp() {
   const route = useRoute();
@@ -36,7 +37,7 @@ export default function FullViewApp() {
 
         {route.page === 'library' && (
           <main className="flex-1 p-8 max-w-6xl mx-auto w-full">
-            <LibraryContent category={route.category} />
+            <LibraryContent category={route.category} onStartCapture={openSidebar} />
           </main>
         )}
 

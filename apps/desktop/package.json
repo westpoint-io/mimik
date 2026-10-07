@@ -15,6 +15,7 @@
     "check:pipeline": "electron-vite build && electron out/main/check-pipeline.js"
   },
   "dependencies": {
+    "@mimik/capture-native": "workspace:*",
     "@mimik/core": "workspace:*",
     "@mimik/ui": "workspace:*",
     "dexie": "^4.3.0",

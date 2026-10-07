@@ -1,10 +1,11 @@
 import { join } from 'node:path';
-import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, protocol, shell, Tray } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, protocol, screen, shell, Tray } from 'electron';
 import { ask } from './ask';
 import { DesktopRecorder } from './capture/recorder';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from './capture/screenshot-store';
 import { type CaptureMode, type CaptureSettings, loadSettings, saveSettings } from './capture/settings';
 import { CaptureOverlay, type OverlayCommand } from './overlay';
+import { bindShortcuts, type ShortcutName, shortcutMap, unbindShortcuts } from './shortcuts';
 import { checkForUpdates } from './updater';
 
 let mainWindow: BrowserWindow | null = null;
@@ -113,6 +114,28 @@ function broadcastOverlay(command: OverlayCommand, id: string | null): void {
   mainWindow?.webContents.send('mimik:capture:command', command, overlay?.state, overlay?.region, id);
 }
 
+function applyShortcuts(): void {
+  setImmediate(() => {
+    if (!overlay) return;
+    const recording = overlay.state === 'recording' || overlay.state === 'paused';
+    bindShortcuts(shortcutMap((captureSettings ?? loadSettings()).shortcuts, recording), onShortcut);
+  });
+}
+
+function onShortcut(name: ShortcutName): void {
+  if (!overlay) return;
+  if (name === 'startStop') {
+    overlay.run(overlay.state === 'hidden' || overlay.state === 'armed' ? 'start' : 'stop');
+    return;
+  }
+  if (name === 'pauseResume') {
+    if (overlay.state === 'recording') overlay.run('pause');
+    else if (overlay.state === 'paused') overlay.run('resume');
+    return;
+  }
+  recorder?.captureNow(screen.getCursorScreenPoint());
+}
+
 async function onOverlayCommand(command: OverlayCommand): Promise<void> {
   let finished: string | null = null;
   if (command.startsWith('mode:')) {
@@ -150,6 +173,7 @@ async function onOverlayCommand(command: OverlayCommand): Promise<void> {
     guideId = null;
   }
   broadcastOverlay(command, finished ?? guideId);
+  applyShortcuts();
   if (finished) showWindow();
 }
 
@@ -202,21 +226,24 @@ if (!app.requestSingleInstanceLock()) {
           overlay?.setBusy(false);
         }
       },
-      undefined,
-      () => captureSettings ?? loadSettings(),
-      (point) => overlay?.ignores(point) ?? false,
+      {
+        settings: () => captureSettings ?? loadSettings(),
+        ignores: (point) => overlay?.ignores(point) ?? false,
+      },
     );
 
     ipcMain.handle('mimik:capture:settings:get', () => captureSettings ?? loadSettings());
     ipcMain.handle('mimik:capture:settings:set', (_event, patch: Partial<CaptureSettings>) => {
       captureSettings = saveSettings(patch);
       overlay?.refresh();
+      applyShortcuts();
       return captureSettings;
     });
     ipcMain.handle('mimik:capture:region', () => overlay?.region);
     ipcMain.handle('mimik:capture:edit', () => overlay?.edit());
     ipcMain.handle('mimik:capture:arm', () => overlay?.arm());
 
+    applyShortcuts();
     createWindow();
     createTray();
     checkForUpdates({ notifyWhenUpToDate: false });
@@ -225,6 +252,7 @@ if (!app.requestSingleInstanceLock()) {
   app.on('activate', () => showWindow());
   app.on('before-quit', () => {
     isQuitting = true;
+    unbindShortcuts();
     recorder?.stop();
     overlay?.destroy();
   });

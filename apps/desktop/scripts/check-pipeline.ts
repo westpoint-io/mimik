@@ -2,10 +2,32 @@ import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { app, BrowserWindow, nativeImage, protocol, screen } from 'electron';
 import { ask } from '../src/main/ask';
-import { DesktopRecorder, frameFor, isRepeatClick, shouldCapture } from '../src/main/capture/recorder';
+import type { ScreenElement } from '../src/main/capture/element';
+import type { KeyAction } from '../src/main/capture/input-hook';
+import {
+  type CaptureRequest,
+  chooseTypedText,
+  clickAction,
+  comboLabel,
+  DesktopRecorder,
+  frameFor,
+  isRepeatClick,
+  isRepeatKey,
+  isTypingKey,
+  matchesShortcut,
+  shouldCapture,
+  targetRect,
+} from '../src/main/capture/recorder';
 import { clampToDisplays } from '../src/main/capture/region';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from '../src/main/capture/screenshot-store';
-import { DEFAULT_CAPTURE_SETTINGS, loadSettings, normaliseSettings, saveSettings } from '../src/main/capture/settings';
+import {
+  DEFAULT_CAPTURE_SETTINGS,
+  loadSettings,
+  MAX_TYPING_DEBOUNCE_MS,
+  MIN_TYPING_DEBOUNCE_MS,
+  normaliseSettings,
+  saveSettings,
+} from '../src/main/capture/settings';
 import type { Capture, Rect } from '../src/main/capture/screenshot';
 
 interface CheckResult {
@@ -61,8 +83,7 @@ app.whenReady().then(async () => {
     () => region,
     (fn) => fn(),
     (request) => ask(win.webContents, 'mimik:capture:step', { ...request, guideId: activeGuide }),
-    syntheticDisplay,
-    () => settings,
+    { grab: syntheticDisplay, settings: () => settings },
   );
 
   activeGuide = await ask<string>(win.webContents, 'mimik:capture:startGuide');
@@ -85,6 +106,30 @@ app.whenReady().then(async () => {
       reloaded.screenshotDelayMs === 750 &&
       reloaded.captureOutsideClicks === stored.captureOutsideClicks,
     detail: `5000 ms clamped to ${clamped.screenshotDelayMs}, unknown style fell back to ${clamped.cursorStyle}, 750 ms reloaded as ${reloaded.screenshotDelayMs}`,
+  });
+
+  const knobs = normaliseSettings({
+    typingDebounceMs: 50,
+    captureKeys: 'yes' as never,
+    shortcuts: { startStop: '  ', pauseResume: null, capture: 'Alt+F2' } as never,
+  });
+  results.push({
+    name: 'toggles, knobs and shortcuts normalise',
+    ok:
+      knobs.typingDebounceMs === MIN_TYPING_DEBOUNCE_MS &&
+      normaliseSettings({ typingDebounceMs: 90_000 }).typingDebounceMs === MAX_TYPING_DEBOUNCE_MS &&
+      knobs.captureKeys === DEFAULT_CAPTURE_SETTINGS.captureKeys &&
+      knobs.shortcuts.startStop === null &&
+      knobs.shortcuts.pauseResume === null &&
+      knobs.shortcuts.capture === 'Alt+F2' &&
+      normaliseSettings({}).shortcuts.startStop === DEFAULT_CAPTURE_SETTINGS.shortcuts.startStop,
+    detail: `50 ms clamped to ${knobs.typingDebounceMs}, a blank accelerator cleared, a missing one kept its default`,
+  });
+
+  results.push({
+    name: 'a right click is its own action',
+    ok: clickAction(1) === 'click' && clickAction(2) === 'auxclick' && clickAction(3) === 'click',
+    detail: 'the right button reads as auxclick, left and middle as click',
   });
   saveSettings(userSettings);
 
@@ -126,6 +171,221 @@ app.whenReady().then(async () => {
       sameRect(frameFor('region', insidePoint, region, windowRect), region) &&
       sameRect(frameFor('region', outsidePoint, region, windowRect), display.bounds),
     detail: 'screen takes the display, window takes the window and falls back twice, region takes the region',
+  });
+
+  const control: ScreenElement = {
+    role: 'button',
+    name: 'SaveButton',
+    textContent: null,
+    ariaLabel: 'Save',
+    altText: null,
+    password: false,
+    rect: { x: region.x + 40, y: region.y + 30, width: 120, height: 32 },
+  };
+  let field: ScreenElement | null = {
+    role: 'textbox',
+    name: 'SearchBox',
+    textContent: 'hello world',
+    ariaLabel: 'Search',
+    altText: null,
+    password: false,
+    rect: { x: region.x + 20, y: region.y + 20, width: 200, height: 24 },
+  };
+  let seen: CaptureRequest | null = null;
+  const metaRecorder = new DesktopRecorder(
+    () => region,
+    (fn) => fn(),
+    (request) => {
+      seen = request;
+      return Promise.resolve(null);
+    },
+    {
+      grab: syntheticDisplay,
+      settings: () => ({
+        ...REGION_MODE,
+        showCursor: true,
+        shortcuts: { ...REGION_MODE.shortcuts, capture: 'Alt+Shift+S' },
+      }),
+      lookup: () => Promise.resolve(control),
+      focused: () => Promise.resolve(field),
+      label: (keycode) => Promise.resolve(keycode === 31 ? 'S' : null),
+    },
+  );
+  await metaRecorder.capture({ x: region.x + 60, y: region.y + 40 });
+  const clicked = seen as CaptureRequest | null;
+  const meta = clicked?.elementMeta;
+  results.push({
+    name: 'accessibility metadata reaches the step',
+    ok:
+      meta?.source === 'uia' &&
+      meta.ariaLabel === 'Save' &&
+      meta.name === 'SaveButton' &&
+      meta.role === 'button' &&
+      meta.rect.width === 120 &&
+      meta.rect.x === 40,
+    detail: `source ${meta?.source ?? 'none'}, role ${meta?.role ?? 'none'}, named ${meta?.ariaLabel ?? 'none'}`,
+  });
+
+  seen = null;
+  await metaRecorder.captureTyping();
+  const typed = seen as CaptureRequest | null;
+
+  seen = null;
+  field = { ...control };
+  await metaRecorder.captureTyping();
+  const onAButton = seen as CaptureRequest | null;
+
+  seen = null;
+  field = {
+    role: 'textbox',
+    name: null,
+    textContent: null,
+    ariaLabel: 'Search',
+    altText: null,
+    password: false,
+    rect: null,
+  };
+  await metaRecorder.captureTyping();
+  const empty = seen as CaptureRequest | null;
+
+  seen = null;
+  field = {
+    role: 'textbox',
+    name: null,
+    textContent: null,
+    ariaLabel: 'Password',
+    altText: null,
+    password: true,
+    rect: { x: region.x + 20, y: region.y + 60, width: 200, height: 24 },
+  };
+  await metaRecorder.captureTyping();
+  const secret = seen as CaptureRequest | null;
+
+  results.push({
+    name: 'typing lands as one input step',
+    ok:
+      typed?.action === 'input' &&
+      typed.inputValue === 'hello world' &&
+      typed.elementMeta.ariaLabel === 'Search' &&
+      typed.cursor === undefined &&
+      clicked?.cursor !== undefined &&
+      onAButton === null &&
+      empty === null,
+    detail: `wrote ${typed?.action ?? 'nothing'} carrying "${typed?.inputValue ?? ''}"; a button and an empty field wrote nothing`,
+  });
+
+  results.push({
+    name: 'a password is a step but never a value',
+    ok:
+      secret?.action === 'input' &&
+      secret.inputValue === undefined &&
+      secret.elementMeta.inputType === 'password' &&
+      secret.elementMeta.textContent === null,
+    detail: `wrote ${secret?.action ?? 'nothing'} with inputValue ${String(secret?.inputValue)} and no captured text`,
+  });
+
+  const press = (keycode: number, held: Partial<KeyAction> = {}) =>
+    isTypingKey({ kind: 'keydown', keycode, shift: false, alt: false, ctrl: false, meta: false, at: 0, ...held });
+  results.push({
+    name: 'only typing keys open a session',
+    ok:
+      press(30) &&
+      press(30, { shift: true }) &&
+      !press(30, { ctrl: true }) &&
+      !press(28) &&
+      !press(15) &&
+      !press(1) &&
+      !press(42),
+    detail: 'a letter types, shift still types, a shortcut does not, and Enter, Tab, Escape and Shift all close the session',
+  });
+
+  const pressed = (keycode: number, held: Partial<KeyAction> = {}): KeyAction => ({
+    kind: 'keydown',
+    keycode,
+    shift: false,
+    alt: false,
+    ctrl: false,
+    meta: false,
+    at: 0,
+    ...held,
+  });
+
+  seen = null;
+  field = { ...control };
+  await metaRecorder.captureKey(pressed(31, { ctrl: true }));
+  const shortcut = seen as CaptureRequest | null;
+
+  seen = null;
+  await metaRecorder.captureKey(pressed(99, { ctrl: true }));
+  const unnamed = seen as CaptureRequest | null;
+
+  seen = null;
+  await metaRecorder.captureKey(pressed(31, { alt: true, shift: true }));
+  const ownHotkey = seen as CaptureRequest | null;
+
+  results.push({
+    name: 'our own hotkey never becomes a step',
+    ok:
+      ownHotkey === null &&
+      matchesShortcut('Alt+Shift+S', pressed(31, { alt: true, shift: true }), 'S') &&
+      matchesShortcut('shift+ALT+s', pressed(31, { alt: true, shift: true }), 'S') &&
+      !matchesShortcut('Alt+Shift+S', pressed(31, { alt: true }), 'S') &&
+      !matchesShortcut('Alt+Shift+S', pressed(31, { alt: true, shift: true, ctrl: true }), 'S') &&
+      !matchesShortcut('Alt+Shift+S', pressed(31, { alt: true, shift: true }), 'R') &&
+      !matchesShortcut(null, pressed(31, { alt: true, shift: true }), 'S'),
+    detail: 'the configured accelerator is dropped whatever order it is written in, a near miss is not',
+  });
+
+  results.push({
+    name: 'a shortcut is its own step',
+    ok:
+      shortcut?.action === 'keydown:Ctrl+S' &&
+      comboLabel(pressed(31, { ctrl: true, shift: true }), 'S') === 'Ctrl+Shift+S' &&
+      unnamed === null &&
+      isRepeatKey({ keycode: 28, at: 1_000 }, 28, 1_400) &&
+      !isRepeatKey({ keycode: 28, at: 1_000 }, 28, 1_600) &&
+      !isRepeatKey({ keycode: 28, at: 1_000 }, 15, 1_100),
+    detail: `wrote ${shortcut?.action ?? 'nothing'}; an unnameable key wrote nothing, auto-repeat collapses, a different key does not`,
+  });
+
+  const editor = (value: string | null): ScreenElement => ({
+    role: 'document',
+    name: null,
+    textContent: value,
+    ariaLabel: 'Document',
+    altText: null,
+    password: false,
+    rect: { x: region.x + 10, y: region.y + 10, width: 400, height: 300 },
+  });
+
+  seen = null;
+  field = editor('x'.repeat(500));
+  await metaRecorder.captureTyping('hello');
+  const rich = seen as CaptureRequest | null;
+
+  results.push({
+    name: 'rich text falls back to the keystrokes',
+    ok:
+      rich?.inputValue === 'hello' &&
+      chooseTypedText(editor('a short note'), 'a sho', false) === 'a sho' &&
+      chooseTypedText(editor('a short note'), 'a sho') === 'a short note' &&
+      chooseTypedText(editor(null), 'typed') === 'typed' &&
+      chooseTypedText({ ...editor('\uFEFFhi\u200B'), role: 'textbox' }, '') === 'hi' &&
+      chooseTypedText(control, 'typed') === null,
+    detail: 'a document far longer than the buffer yields the buffer, a short one yields the field, markers are stripped, a button yields nothing',
+  });
+
+  const page = { x: 0, y: 0, width: 800, height: 600 };
+  const click = { x: 160, y: 66 };
+  const boxed = (rect: ScreenElement['rect']) => targetRect({ ...control, rect }, page, click).width;
+  results.push({
+    name: 'the target box hugs the control',
+    ok:
+      boxed({ x: 100, y: 50, width: 120, height: 32 }) === 120 &&
+      targetRect(null, page, click).width === 28 &&
+      boxed({ x: 0, y: 0, width: 800, height: 600 }) === 28 &&
+      boxed({ x: 700, y: 50, width: 200, height: 32 }) === 28,
+    detail: 'a real rectangle wins; no element, one covering the frame, or one overflowing it falls back to the click box',
   });
 
   activeGuide = await ask<string>(win.webContents, 'mimik:capture:startGuide');

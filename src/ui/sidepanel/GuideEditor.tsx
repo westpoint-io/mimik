@@ -7,6 +7,7 @@ import StepCard from '@mimik/ui/sidepanel/StepCard';
 import { ArrowLeft, Maximize2, Play } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { i18n } from '#imports';
+import { isReplayable } from '@/core/guideme/session';
 import { actionSteps, isBlock, stepNumbers } from '@/core/guides/blocks';
 import { getGuide, onGuidesChanged } from '@/core/guides/service';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
@@ -130,7 +131,7 @@ export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorP
 
           {data.steps.length > 0 &&
             (() => {
-              const replayable = data.steps.some((s) => s.elementMeta);
+              const replayable = data.steps.some(isReplayable);
               const label = i18n.t(replayable ? 'editor.guideMe' : 'editor.guideMeUnavailable');
               return (
                 <Tooltip>
