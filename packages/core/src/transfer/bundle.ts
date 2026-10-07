@@ -12,7 +12,7 @@ import {
   README_PATH,
   SCREENSHOT_DIR,
 } from './schema';
-import { scrubValues, typedValues } from './scrub';
+import { scrubUrl, scrubValues, typedValues } from './scrub';
 
 export type BundleUrlMode = 'full' | 'path' | 'origin';
 
@@ -34,13 +34,27 @@ export function trimUrl(url: string, mode: BundleUrlMode): string {
   } catch {
     return '';
   }
-  if (parsed.origin === 'null') return url;
+  if (parsed.origin === 'null') {
+    if (parsed.protocol === 'data:') return 'data:';
+    if (mode === 'origin' && parsed.protocol === 'file:') return 'file://';
+    return url.split(/[?#]/)[0];
+  }
   return mode === 'origin' ? parsed.origin : `${parsed.origin}${parsed.pathname}`;
 }
 
 function bundleStep(step: Step, options: BundleOptions, secrets: readonly string[]): BundleStep {
-  const { guideId: _guideId, aiPending: _aiPending, screenshotId: _screenshotId, ...rest } = step;
-  const travelling: BundleStep = { ...rest, url: trimUrl(step.url, options.urls) };
+  const {
+    guideId: _guideId,
+    aiPending: _aiPending,
+    screenshotId: _screenshotId,
+    narratedDescription: _narratedDescription,
+    ...rest
+  } = step;
+  const shareUrl = (url: string) => {
+    const trimmed = trimUrl(url, options.urls);
+    return options.stripInputValues ? scrubUrl(trimmed, secrets) : trimmed;
+  };
+  const travelling: BundleStep = { ...rest, url: shareUrl(step.url) };
 
   if (options.stripInputValues) {
     delete travelling.inputValue;
@@ -52,7 +66,7 @@ function bundleStep(step: Step, options: BundleOptions, secrets: readonly string
     const ownText = options.stripInputValues && step.inputValue ? null : meta.textContent;
     travelling.elementMeta = {
       ...meta,
-      href: meta.href ? trimUrl(meta.href, options.urls) : null,
+      href: meta.href ? shareUrl(meta.href) : null,
       textContent: ownText && options.stripInputValues ? scrubValues(ownText, secrets) : ownText,
     };
   }

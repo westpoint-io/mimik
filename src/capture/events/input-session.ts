@@ -43,7 +43,7 @@ export class InputSession {
   update(target: HTMLElement) {
     if (!this.stepId) return;
     this.atEvent = freezeRect(target);
-    const label = getFieldLabel(target);
+    const label = getFieldLabel(target) ?? i18n.t('steps.textField');
     if (isSensitiveField(target) || isRedactedField(target)) {
       const description = isSensitiveField(target) ? i18n.t('steps.typeSecret') : i18n.t('steps.typeInto', [label]);
       this.sink

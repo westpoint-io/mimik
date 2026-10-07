@@ -50,13 +50,14 @@ export function ExportPreviewModal({ open, onOpenChange, guide, steps, screensho
 
   useEffect(() => {
     if (open) loadExportOptions().then(setOptions);
+    else setOptions((current) => (current.voiceover ? { ...current, voiceover: false } : current));
   }, [open]);
 
   const voiceoverReady = useVoiceoverReady(open);
   const voiceover = options.voiceover && voiceoverReady;
   const doc = useGuideExport({ active: open && mode === 'document', guide, steps, screenshots, options, voiceover });
   const video = useVideoPreview({ active: open && mode === 'video', guide, steps, screenshots, options, voiceover });
-  const voiceoverError = video.voiceoverError ?? doc.voiceoverError;
+  const voiceoverError = doc.voiceoverError ?? video.voiceoverError;
   const typedStepCount = steps.filter((step) => step.inputValue && screenshots.has(step.id)).length;
 
   const update = (patch: Partial<ExportOptions>) => {

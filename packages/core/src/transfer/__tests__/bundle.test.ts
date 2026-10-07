@@ -73,6 +73,16 @@ describe('trimUrl', () => {
     expect(trimUrl(url, 'origin')).toBe('https://app.example.com');
   });
 
+  it('drops the query and fragment of an opaque-origin URL outside full mode', () => {
+    expect(trimUrl('file:///Users/jane/notes.html?q=secret#top', 'path')).toBe('file:///Users/jane/notes.html');
+    expect(trimUrl('file:///Users/jane/notes.html?q=secret', 'origin')).toBe('file://');
+  });
+
+  it('never ships the payload of a data URL outside full mode', () => {
+    expect(trimUrl('data:text/html,<p>jane@corp.com</p>', 'path')).toBe('data:');
+    expect(trimUrl('data:text/html,<p>jane@corp.com</p>', 'origin')).toBe('data:');
+  });
+
   it('discards a URL it cannot parse rather than passing it through', () => {
     expect(trimUrl('not a url', 'path')).toBe('');
   });
@@ -162,6 +172,36 @@ describe('exportGuideAsBundle', () => {
     expect(step.guideId).toBeUndefined();
     expect(step.aiPending).toBeUndefined();
     expect(step.screenshotId).toBeUndefined();
+  });
+
+  it('never ships what narration heard, whatever the typed-text option', async () => {
+    const step = makeStep({ narratedDescription: 'my password is hunter3', description: 'Type the password' });
+    for (const stripInputValues of [true, false]) {
+      const { entries } = await unpack(
+        await exportGuideAsBundle(makeGuide(), [step], new Map([['step-1', makeScreenshot()]]), {
+          ...DEFAULT_BUNDLE_OPTIONS,
+          stripInputValues,
+        }),
+      );
+
+      expect(strFromU8(entries[MANIFEST_PATH])).not.toContain('hunter3');
+    }
+  });
+
+  it('scrubs a typed value out of a full URL, encoded or not', async () => {
+    const step = makeStep({
+      inputValue: 'jane doe@corp.com',
+      description: 'Search',
+      url: 'https://app.example.com/search?q=jane+doe%40corp.com&raw=jane doe@corp.com',
+    });
+    const { manifest } = await unpack(
+      await exportGuideAsBundle(makeGuide(), [step], new Map([['step-1', makeScreenshot()]]), {
+        ...DEFAULT_BUNDLE_OPTIONS,
+        urls: 'full',
+      }),
+    );
+
+    expect(manifest.steps[0].url).not.toContain('jane');
   });
 
   it('trims the href inside elementMeta too', async () => {

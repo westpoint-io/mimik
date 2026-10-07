@@ -23,6 +23,60 @@ export function scrubValues(text: string, values: readonly string[]): string {
   return out;
 }
 
+function decodePart(raw: string, plusIsSpace: boolean): string | null {
+  try {
+    return decodeURIComponent(plusIsSpace ? raw.replace(/\+/g, ' ') : raw);
+  } catch {
+    return null;
+  }
+}
+
+function scrubPart(raw: string, values: readonly string[], plusIsSpace: boolean): string {
+  const decoded = decodePart(raw, plusIsSpace);
+  if (decoded === null) return raw;
+  const exact = values.some((value) => value.trim() !== '' && decoded === value.trim());
+  const scrubbed = exact ? SCRUB_PLACEHOLDER : scrubValues(decoded, values);
+  return scrubbed === decoded ? raw : encodeURIComponent(scrubbed);
+}
+
+function scrubQuery(search: string, values: readonly string[]): string {
+  if (search.length <= 1) return search;
+  const pairs = search
+    .slice(1)
+    .split('&')
+    .map((pair) => {
+      const at = pair.indexOf('=');
+      if (at === -1) return scrubPart(pair, values, true);
+      return `${pair.slice(0, at)}=${scrubPart(pair.slice(at + 1), values, true)}`;
+    });
+  return `?${pairs.join('&')}`;
+}
+
+export function scrubUrl(url: string, values: readonly string[]): string {
+  if (!url || values.length === 0) return url;
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return scrubValues(url, values);
+  }
+  if (parsed.origin === 'null' && parsed.protocol !== 'file:') return scrubValues(url, values);
+
+  const pathname = parsed.pathname
+    .split('/')
+    .map((segment) => scrubPart(segment, values, false))
+    .join('/');
+  const search = scrubQuery(parsed.search, values);
+  const hash = parsed.hash ? `#${scrubPart(parsed.hash.slice(1), values, false)}` : '';
+  if (pathname === parsed.pathname && search === parsed.search && hash === parsed.hash) return url;
+
+  const next = new URL(parsed.href);
+  next.pathname = pathname;
+  next.search = search;
+  next.hash = hash;
+  return next.href;
+}
+
 const CAPTURED_TEXT_LIMIT = 80;
 
 function variantsOf(value: string): string[] {

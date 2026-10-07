@@ -112,10 +112,24 @@ describe('normalizeVoiceProvider', () => {
   });
 });
 
+describe('resolveVoiceApiKey with a custom AI server', () => {
+  it('does not borrow a key meant for another server', () => {
+    expect(
+      resolveVoiceApiKey({ voiceProvider: 'openai', aiApiKey: 'sk-proxy', aiBaseUrl: 'https://llm.corp.example/v1' }),
+    ).toMatchObject({ apiKey: '' });
+  });
+
+  it('still borrows when the base URL is the default one', () => {
+    expect(
+      resolveVoiceApiKey({ voiceProvider: 'openai', aiApiKey: 'sk-ai', aiBaseUrl: 'https://api.openai.com/v1' }),
+    ).toMatchObject({ apiKey: 'sk-ai' });
+  });
+});
+
 describe('VOICE_KEY_SETTINGS', () => {
   it('names every storage key the resolution reads', () => {
     expect([...VOICE_KEY_SETTINGS]).toEqual(
-      expect.arrayContaining(['apiKeys', 'voiceProvider', 'voiceApiKey', 'aiApiKey', 'aiApiKeys']),
+      expect.arrayContaining(['apiKeys', 'voiceProvider', 'voiceApiKey', 'aiApiKey', 'aiApiKeys', 'aiBaseUrl']),
     );
   });
 });

@@ -192,7 +192,7 @@ vuelve atrás con el historial de versiones.
 
 Actívala en el panel de exportación y cada paso del vídeo se leerá en voz alta, con tu propia clave
 de OpenAI o ElevenLabs. Si ya configuraste una clave de OpenAI para las descripciones con IA, Mimik
-la reutiliza: no hay que registrarse en nada más. Los pasos narrados permanecen en pantalla hasta que
+la reutiliza: no hay que registrarse en nada más, salvo que las descripciones con IA usen un servidor propio, cuya clave no sale de ahí. Los pasos narrados permanecen en pantalla hasta que
 la voz termina, así que nada se corta, y los clips se guardan en caché local para que volver a
 exportar la misma guía no cueste nada.
 

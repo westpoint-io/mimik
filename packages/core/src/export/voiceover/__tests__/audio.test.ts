@@ -72,6 +72,25 @@ describe('writeVoiceTrack', () => {
     ]);
   });
 
+  it('stops writing as soon as the export is cancelled', async () => {
+    const controller = new AbortController();
+    let added = 0;
+    const writing = writeVoiceTrack(
+      [clip(1, 50)],
+      3,
+      async () => {
+        added += 1;
+        controller.abort();
+      },
+      RATE,
+      undefined,
+      controller.signal,
+    );
+
+    await expect(writing).rejects.toMatchObject({ name: 'AbortError' });
+    expect(added).toBe(1);
+  });
+
   it('ends on a full count, so the bar lands on 100%', async () => {
     const seen: [number, number][] = [];
     await writeVoiceTrack(

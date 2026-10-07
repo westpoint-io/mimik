@@ -155,8 +155,8 @@ export function useAskAi(value: string, onReplace: (next: string) => void, enabl
             style={{ top: anchor.top, left: anchor.left, width: PANEL_WIDTH }}
             className="fixed z-[2147483000] rounded-lg border border-border bg-card shadow-lg overflow-hidden"
           >
-            <p className="px-2.5 pt-2 pb-1.5 text-[11px] leading-snug text-muted-foreground border-b border-border line-clamp-2">
-              {active.core}
+            <p className="px-2.5 pt-2 pb-1.5 text-[11px] leading-snug text-muted-foreground border-b border-border">
+              <span className="line-clamp-2">{active.core}</span>
             </p>
             {result === null ? (
               <>

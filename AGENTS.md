@@ -164,6 +164,12 @@ start, not the recording's.
 and only `deleteTranscripts` clears it, so an edit replaces `description` and leaves it, and `restoreNarratedDescription`
 can put the spoken text back with its `narration` source. That is the whole answer to "an edit
 overwrote what I said": the step editor offers the restore only while the two actually differ.
+The reverse holds too: narration that lands on a step the user already edited (`manual`) writes only
+`narratedDescription` and leaves the edit alone. Speech from a later slice about a step an earlier slice
+already narrated (words after the final click, or after a resume with no new click) is appended to what
+that step said rather than replacing it: `applyNarrationToSteps` takes the slice's `epochMs` and appends
+when the step was captured before it. A stop still hands the transcriber every step, because the host
+skips transcription entirely when it is given none, and the tail would never reach the transcript.
 
 The dashboard's transcript panel is the answer to the other half. It shares the side-panel column
 with version history, so the store keeps them mutually exclusive, and the top bar's button only appears
@@ -190,8 +196,14 @@ not enough on its own: a step narration wrote holds the same words in `descripti
 go into every export while transcripts go into none, so `forgetSpokenWords` also puts any step still
 sourced `narration` back on its rule-based text (`buildFallbackDescription`, source `heuristic`), and
 strips the sentences an `addedByHand` line pushed into a step — those are stamped `manual`, so the
-source alone would have left verbatim speech behind. A description the user or the AI wrote is
-otherwise left alone. `mergeGuideInto` re-keys transcripts onto the
+source alone would have left verbatim speech behind. On a step that carried spoken text (it has a
+`narratedDescription`) it strips that spoken prefix and any trailing sentence matching a line that is
+unclaimed or claimed by the same step, because a snapshot can hold a line that
+`restoreNarratedDescription` has since released. A step narration never touched loses only its own
+`addedByHand` lines, and is otherwise left alone, whatever its text happens to end with.
+`duplicateGuide` copies the transcript rows onto the copy's step ids, so a copy that carries spoken
+text can still delete it, and `bundleStep` drops `narratedDescription` so a `.mimik` file never carries
+it. `mergeGuideInto` re-keys transcripts onto the
 guide it merges into and records the redirect in the `guideMerges` table (Dexie `version(5)`, swept by
 `permanentlyDeleteGuide`), and
 `saveTranscript` resolves the owning guide before it writes — by the guide a line's step now sits on,
@@ -1623,8 +1635,13 @@ WebM).
 list) and ElevenLabs (`/text-to-speech/{voice}`, per-account catalog via `listVoices`). Both return
 mp3. OpenAI is the default because most users already hold that key, and `resolveVoiceoverConfig`
 reads whichever key the API keys section holds for the chosen provider — the same one descriptions
-and narration use. **Holding a key never turns narration on**; `exportOptions.voiceover` defaults to
-false and only the user flips it. Switching provider loses nothing, since each provider keeps its own
+and narration use. A key typed for your own server under the old settings, where it sat in the OpenAI
+slot beside a custom `aiBaseUrl`, is moved to the server when `readApiKeys` builds the map, so it is
+never sent to `api.openai.com`. **Holding a key never turns narration on**; `exportOptions.voiceover`
+defaults to false and only the user flips it, for the current panel session only. It is never
+persisted: `saveExportOptions` stores it as false and `loadExportOptions` returns it as false, so no
+caller can inherit a paid option from storage, and the export panel, which stays mounted between
+opens, turns it off again on close. Switching provider loses nothing, since each provider keeps its own
 key, and a voice id is validated against the provider that issued it — an ElevenLabs id selected
 under OpenAI falls back to OpenAI's default rather than being sent and rejected. ElevenLabs ids are
 taken on trust, since the account catalog is larger than the shipped list.
@@ -1676,7 +1693,7 @@ bar with no volume affordance. Narrated previews flip both — a browser will no
 so a narrated preview waits for the play button and that gesture buys it audio from the first frame,
 while a silent one still autoplays muted as before. The mute toggle is there in both cases.
 
-The player sits on the app's light background rather than a dark one, in two white cards: the video
+The player is a plain `<video>`, with its state in `useVideoElement`; the extension dropped the `vidstack` player library, so the shared player no longer uses it. It sits on the app's light background rather than a dark one, in two white cards: the video
 with its controls under it, and the step list beside it. Only the frame itself stays dark
 (`FRAME_FILL`), sized by container query units to the largest 16:9 that fits the card. The timeline
 under the video is one segment per step, sized by the step's length and filled as it plays, and each
@@ -1778,6 +1795,7 @@ Font: Poppins (loaded via `@fontsource/poppins`).
 - **The restart has to outlive the flush.** Stopping narration leaves the phase on `'transcribing'` for a whole API round-trip, and `canStartNarrationNow` refuses that phase, so a single attempt on resume always failed and the mic never came back while the panel went on showing narration as enabled. `restartNarrationOnceTranscriptionSettles` retries while `isNarrationSettling()` holds, up to `NARRATION_RESTART_ATTEMPTS` waits on `whenNarrationSettled()`, then calls `reportNarrationLost` so the panel stops claiming the mic is on. It stops *immediately* when the phase is anything else: a start that failed on its own 8s timeout leaves the phase `'idle'`, and retrying there would call `startVoiceCapture` a second time, get `already-recording`, and `closeVoiceHost()` a host that had just started. It is deliberately *not* awaited by `resumeCapture` — the panel is waiting on that reply — so its rejection is caught rather than left unhandled
 - **`narrationWasLive` lives in the machine context**, not a module variable, because the worker can be evicted while the recording sits paused. Per the note above, a snapshot persisted before the key existed restores it as `undefined`, so it is read as `=== true`. Its *source* cannot be the module-level `phase` either, which an eviction resets to `'idle'`: `pauseCapture` calls `isNarrationLive()`, which asks the host when the phase says nothing, and counts `'transcribing'` as live so a second pause during the first one's flush does not lose the flag
 - **`claimTranscription`/`releaseTranscription` are a matched pair** and every path that reports `'transcribing'` uses them, `recoverNarration` included — a claim without `markNarrationPending` made `whenNarrationSettled()` resolve instantly and burned both restart attempts in one tick. They count outstanding transcriptions rather than holding one slot, because a pause followed by a stop claims twice; `releaseTranscription` returns whether it owned the claim, so a failed stop cannot report an error over a terminal `idle`
+- **Resume and Stop wait for a pause still in flight** (`whenPauseSettled`). A Resume that landed while the pause was flushing used to restart the mic before the pause stopped it, leaving the recording live with narration gone
 - **Pausing waits for the frames to drain.** `broadcastStopCaptureAndFlush` is answered only once each content script's queue is idle, because `CaptureController.stop()` enqueues the input session's finalize. `handleFinalizeInputStep` is therefore gated on "not IDLE" rather than `RECORDING`: it only ever completes a step the user finished before pausing, and `enterBlurMode` awaits the flush before opening the overlay so that screenshot cannot catch it
 - **Navigation listeners treat `PAUSED` as live** (`navigation.ts:isLive`). `URL_CHANGED` has to keep flowing or the first step after a resume is stamped with the pre-pause URL, which Guide Me then replays to; injection has to keep running or a tab opened mid-pause is deaf to the resume broadcast
 - **Blur mode pauses via that state**, and a top frame booting into `PAUSED`/`'blur'` re-opens the overlay, so a navigation mid-blur still has a Done button. `exitBlurMode` and the panel's Resume both broadcast `DISMISS_BLUR` before resuming, which closes the overlay but keeps the masks the user just picked; only the end of a recording sends `CLEAR_BLUR` to remove them
@@ -1788,6 +1806,8 @@ Font: Poppins (loaded via `@fontsource/poppins`).
 - **Recording notification** uses `animationend` event (not hardcoded delays) for timing
 - **Font loading** uses `@fontsource/poppins` (CSP-safe, no CDN dependency) everywhere, the HTML export included: `export/poppins.ts` inlines the same package's latin and latin-ext woff2 files for 400, 600 and 700 through Vite's `?inline` into `@font-face` rules, about 56 KB. The export used to link Google Fonts, which failed in the desktop's Document preview under its `default-src 'self'` policy and sent every reader's address to Google when the file was opened; the desktop policy now allows `font-src 'self' data:` for the embedded faces. The PDF is still drawn in Helvetica, since jsPDF takes TTF and the package ships only web formats
 - **Cross-context sync** via BroadcastChannel — star/delete events update other views without full reload
+- **A blur redaction blurs past its own box and clips back to it** (`drawBlurRedaction` in `core/screenshot/draw.ts`). Blurring only the box's pixels averages transparency in at the edges, so the sharp original showed through a ~12px band on every side, and a box drawn snugly around one line of text stayed readable. It blurs `BLUR_MARGIN` pixels beyond the box, and lays a coarse copy of the box underneath first, so where the image itself ends and the blur still thins, what shows is that copy and not the text. The coarse copy is built from the part of the box inside the image, so a box that crosses the edge of a crop is covered too
+- **Bundle URLs are scrubbed part by part** (`scrubUrl`): with typed text stripped, each path segment, query value and fragment is decoded, compared against the typed values (a short value only as a whole part) and re-encoded, and the scheme and host are never touched, so typing a word that also appears in the domain cannot corrupt the URL. Outside full mode a `data:` URL keeps only `data:`, and a `file:` URL in origin mode only `file://`
 - **Bundle export flattens before it ships** — `redact` annotations are drawn at render time, so `screenshot.blob` still holds the unblurred capture. `flattenScreenshot` burns redactions into the pixels and drops the annotation, and bakes an *explicit* crop (rebasing annotations and resolving `bounds` into an explicit target). The automatic zoom-to-target crop stays as data. Anything that ships a screenshot outside the browser must go through the renderer
-- **Guide titles are single-line**, normalised by `sanitizeGuideTitle` on every write path: `updateGuideTitle`, `importGuide`, `revertToSnapshot` and the AI meta path. Each renderer downstream already assumed it. The HTML and PDF covers clamp to `MAX_TITLE_LINES`, their running headers to one line, the video cover card wraps to two, the sidepanel truncates, and Markdown writes `# <title>`, where a newline ends the heading and spills the rest into the body. A fifth write path needs the same call. `MAX_TITLE_LENGTH` bounds the AI-generated title only (`core/capture/ai/meta.ts`); a typed title is deliberately uncapped, since every renderer above already clamps and a silent stop at 70 characters gave the user no reason for it
+- **Guide titles are single-line**, normalised by `sanitizeGuideTitle` on every write path: `updateGuideTitle`, `importGuide`, `revertToSnapshot`, `duplicateGuide` and the AI meta path. Each renderer downstream already assumed it. The HTML and PDF covers clamp to `MAX_TITLE_LINES`, their running headers to one line, the video cover card wraps to two, the sidepanel truncates, and Markdown writes `# <title>`, where a newline ends the heading and spills the rest into the body. A sixth write path needs the same call. `MAX_TITLE_LENGTH` bounds the AI-generated title only (`core/capture/ai/meta.ts`); a typed title is deliberately uncapped, since every renderer above already clamps and a silent stop at 70 characters gave the user no reason for it
 - **Imports re-mint every id** — `importGuide` mints new guide/step/screenshot ids in one Dexie transaction. Reusing the ids in the file would let a shared guide overwrite one the recipient recorded. It also clears `aiPending`, which no background job will ever resolve for an imported step

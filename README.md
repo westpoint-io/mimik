@@ -193,8 +193,8 @@ through version history.
 ### 🔊 Video voice-over (optional)
 
 Turn it on in the export panel and every step of a video export is read aloud, using your own OpenAI
-or ElevenLabs key. If you already set an OpenAI key for AI descriptions, Mimik reuses it — there is
-nothing else to sign up for. Narrated steps hold on screen until the voice finishes, so nothing gets
+or ElevenLabs key. If you already set an OpenAI key for AI descriptions, Mimik reuses it (unless those point at a custom
+server, whose key stays there) — there is nothing else to sign up for. Narrated steps hold on screen until the voice finishes, so nothing gets
 cut off, and clips are cached locally so re-exporting the same guide costs nothing.
 
 Off by default: holding a key never turns narration on, you do.

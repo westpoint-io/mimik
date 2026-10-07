@@ -95,6 +95,37 @@ describe('the spoken original', () => {
     expect(step?.narratedDescription).toBe(SPOKEN);
   });
 
+  it('adds speech from a later slice after what an earlier slice said, instead of replacing it', async () => {
+    const captured = (await db.steps.get('s1'))!.timestamp;
+    await applyNarrationToSteps([{ stepId: 's1', description: SPOKEN }], captured - 1);
+
+    await applyNarrationToSteps([{ stepId: 's1', description: 'and that is it' }], captured + 1);
+
+    const step = await db.steps.get('s1');
+    expect(step?.description).toBe(`${SPOKEN} and that is it`);
+    expect(step?.narratedDescription).toBe(`${SPOKEN} and that is it`);
+  });
+
+  it('replaces what a step said when the new speech comes from the slice it was captured in', async () => {
+    const captured = (await db.steps.get('s1'))!.timestamp;
+    await applyNarrationToSteps([{ stepId: 's1', description: 'first try' }], captured - 1);
+
+    await applyNarrationToSteps([{ stepId: 's1', description: SPOKEN }], captured - 1);
+
+    expect((await db.steps.get('s1'))?.narratedDescription).toBe(SPOKEN);
+  });
+
+  it('does not overwrite a description the user already edited', async () => {
+    await updateStepDescription('s1', 'Click the Billing tab', 'manual');
+
+    await applyNarrationToSteps([{ stepId: 's1', description: SPOKEN }]);
+
+    const step = await db.steps.get('s1');
+    expect(step?.description).toBe('Click the Billing tab');
+    expect(step?.descriptionSource).toBe('manual');
+    expect(step?.narratedDescription).toBe(SPOKEN);
+  });
+
   it('survives an edit that replaces the description', async () => {
     await applyNarrationToSteps([{ stepId: 's1', description: SPOKEN }]);
     await updateStepDescription('s1', 'Click Billing', 'manual');
@@ -159,6 +190,17 @@ describe('adding a transcript line to a step', () => {
 
     expect(await addTranscriptLineToStep(rowId, 0, 's1', 'then confirm the change')).toBeNull();
     expect((await db.steps.get('s1'))?.description).toBe('Clicked Billing then confirm the change');
+  });
+
+  it('accepts a line whose step has since been deleted, as the panel shows it unused', async () => {
+    await saveTranscript('g1', {
+      epochMs: 1_700_000_000_000,
+      lines: [{ start: 1, end: 3, text: 'Open billing', stepId: 'deleted-step', rejectReason: null }],
+    });
+    const row = (await getTranscripts('g1'))[0];
+
+    expect(await addTranscriptLineToStep(row.id, 0, 's1', 'Open billing')).toContain('Open billing');
+    expect((await getTranscripts('g1'))[0].lines[0]).toMatchObject({ stepId: 's1', addedByHand: true });
   });
 
   it('refuses a line index that is not in the row', async () => {
@@ -423,6 +465,18 @@ describe('deleting a transcript and the description narration wrote', () => {
     expect(step?.description).toBe('Clicked Billing');
   });
 
+  it('leaves a step narration never touched alone, even when its text ends like a transcript line', async () => {
+    await updateStepDescription('s1', 'Click Save.', 'manual');
+    await saveTranscript('g1', {
+      epochMs: 1_700_000_000_000,
+      lines: [{ start: 1, end: 3, text: 'Save.', stepId: null, rejectReason: null }],
+    });
+
+    await deleteTranscripts('g1');
+
+    expect((await db.steps.get('s1'))?.description).toBe('Click Save.');
+  });
+
   it('leaves a description the user wrote alone', async () => {
     await applyNarrationToSteps([{ stepId: 's1', description: SPOKEN }]);
     await saveTranscript('g1', transcript);
@@ -433,6 +487,52 @@ describe('deleting a transcript and the description narration wrote', () => {
     const step = await db.steps.get('s1');
     expect(step?.description).toBe('Click the Billing tab');
     expect(step?.descriptionSource).toBe('manual');
+  });
+
+  it('strips the narration from a step a hand-added line turned manual', async () => {
+    const secret = 'my password is hunter2';
+    await db.steps.update('s1', { elementMeta: BUTTON_META });
+    await applyNarrationToSteps([{ stepId: 's1', description: SPOKEN }]);
+    await saveTranscript('g1', {
+      epochMs: 1_700_000_000_000,
+      lines: [
+        { start: 1, end: 3, text: SPOKEN, stepId: 's1', rejectReason: null },
+        { start: 4, end: 6, text: secret, stepId: null, rejectReason: null },
+      ],
+    });
+    const row = (await getTranscripts('g1'))[0];
+    await addTranscriptLineToStep(row.id, 1, 's1', secret);
+    expect((await db.steps.get('s1'))?.descriptionSource).toBe('manual');
+
+    await deleteTranscripts('g1');
+
+    const step = await db.steps.get('s1');
+    expect(step?.description).toBe('steps.click[Billing]');
+    expect(step?.descriptionSource).toBe('heuristic');
+  });
+
+  it('strips a released line from a snapshot taken while it was attached', async () => {
+    const secret = 'my password is hunter2';
+    await db.steps.update('s1', { elementMeta: BUTTON_META });
+    await applyNarrationToSteps([{ stepId: 's1', description: SPOKEN }]);
+    await saveTranscript('g1', {
+      epochMs: 1_700_000_000_000,
+      lines: [
+        { start: 1, end: 3, text: SPOKEN, stepId: 's1', rejectReason: null },
+        { start: 4, end: 6, text: secret, stepId: null, rejectReason: null },
+      ],
+    });
+    const row = (await getTranscripts('g1'))[0];
+    await addTranscriptLineToStep(row.id, 1, 's1', secret);
+    await createSnapshot('g1');
+    await restoreNarratedDescription('s1');
+
+    await deleteTranscripts('g1');
+
+    const snapshots = await db.snapshots.where('guideId').equals('g1').toArray();
+    const text = JSON.stringify(snapshots.flatMap((s) => s.steps));
+    expect(text).not.toContain('hunter2');
+    expect(text).not.toContain(SPOKEN);
   });
 
   it('takes the spoken words out of the snapshots as well', async () => {

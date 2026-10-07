@@ -205,6 +205,21 @@ describe('getFieldLabel', () => {
     expect(getFieldLabel(input)).toBe('Search');
   });
 
+  it('reads a label written in a script without Latin letters', () => {
+    const label = document.createElement('label');
+    label.textContent = '邮箱';
+    const input = document.createElement('input');
+    label.appendChild(input);
+    document.body.appendChild(label);
+    Object.defineProperty(label, 'innerText', { value: '邮箱' });
+    expect(getFieldLabel(input)).toBe('邮箱');
+    label.remove();
+  });
+
+  it('has no label of its own to offer when nothing names the field', () => {
+    expect(getFieldLabel(document.createElement('input'))).toBeNull();
+  });
+
   it('falls back to the name when nothing readable is available', () => {
     const input = document.createElement('input');
     input.setAttribute('name', 'username');

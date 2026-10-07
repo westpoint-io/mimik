@@ -63,6 +63,52 @@ function drawArrowEnd(ctx: Ctx, x1: number, y1: number, x2: number, y2: number, 
   ctx.restore();
 }
 
+export const BLUR_RADIUS = 12;
+export const BLUR_MARGIN = BLUR_RADIUS * 2;
+export const BLUR_CELL = 8;
+
+type Rect = { x: number; y: number; w: number; h: number };
+
+function drawBlurRedaction(ctx: Ctx, a: Rect, originX: number, originY: number) {
+  const { width, height } = ctx.canvas;
+  const boxX = a.x - originX;
+  const boxY = a.y - originY;
+  const left = Math.max(0, boxX - BLUR_MARGIN);
+  const top = Math.max(0, boxY - BLUR_MARGIN);
+  const right = Math.min(width, boxX + a.w + BLUR_MARGIN);
+  const bottom = Math.min(height, boxY + a.h + BLUR_MARGIN);
+  const inX = Math.max(0, boxX);
+  const inY = Math.max(0, boxY);
+  const inW = Math.min(width, boxX + a.w) - inX;
+  const inH = Math.min(height, boxY + a.h) - inY;
+  if (inW <= 0 || inH <= 0) return;
+
+  ctx.beginPath();
+  ctx.rect(a.x, a.y, a.w, a.h);
+  ctx.clip();
+
+  const cellsX = Math.max(1, Math.ceil(inW / BLUR_CELL));
+  const cellsY = Math.max(1, Math.ceil(inH / BLUR_CELL));
+  const destX = inX + originX;
+  const destY = inY + originY;
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(ctx.canvas, inX, inY, inW, inH, destX, destY, cellsX, cellsY);
+  ctx.drawImage(ctx.canvas, inX, inY, cellsX, cellsY, destX, destY, inW, inH);
+
+  ctx.filter = `blur(${BLUR_RADIUS}px)`;
+  ctx.drawImage(
+    ctx.canvas,
+    left,
+    top,
+    right - left,
+    bottom - top,
+    left + originX,
+    top + originY,
+    right - left,
+    bottom - top,
+  );
+}
+
 export function drawAnnotation(ctx: Ctx, a: Annotation, originX: number, originY: number) {
   ctx.save();
   switch (a.type) {
@@ -139,8 +185,7 @@ export function drawAnnotation(ctx: Ctx, a: Annotation, originX: number, originY
         ctx.fillStyle = '#1E1B4B';
         ctx.fillRect(a.x, a.y, a.w, a.h);
       } else {
-        ctx.filter = 'blur(12px)';
-        ctx.drawImage(ctx.canvas, a.x - originX, a.y - originY, a.w, a.h, a.x, a.y, a.w, a.h);
+        drawBlurRedaction(ctx, a, originX, originY);
       }
       break;
   }

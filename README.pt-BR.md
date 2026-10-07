@@ -192,7 +192,7 @@ volta atrás pelo histórico de versões.
 
 Ative no painel de exportação e cada passo do vídeo será lido em voz alta, com sua própria chave da
 OpenAI ou ElevenLabs. Se você já configurou uma chave da OpenAI para as descrições com IA, o Mimik
-reaproveita — não há mais nada para assinar. Passos narrados ficam na tela até a voz terminar, então
+reaproveita — não há mais nada para assinar, a menos que as descrições com IA usem um servidor próprio, cuja chave fica só lá. Passos narrados ficam na tela até a voz terminar, então
 nada é cortado, e os clipes ficam em cache local para que reexportar o mesmo guia não custe nada.
 
 Desligada por padrão: ter uma chave nunca liga a narração; você liga.

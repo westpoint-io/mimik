@@ -1047,9 +1047,11 @@ export async function exportGuideAsVideo(
         (buffer) => audio.add(buffer),
         undefined,
         controls.onMuxProgress,
+        controls.signal,
       );
     }
 
+    if (controls.signal?.aborted) throw new DOMException('Video export was aborted', 'AbortError');
     await output.finalize();
   } catch (error) {
     await output.cancel();

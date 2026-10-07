@@ -42,11 +42,13 @@ vi.mock('@/lib/voice/read-transcription-settings', () => ({
 }));
 vi.mock('@/lib/voice/narrate-recording', () => ({ narrateRecording: vi.fn() }));
 
+const getStepsForGuide = vi.fn();
+
 vi.mock('@/core/guides/service', () => ({
   saveTranscript: vi.fn().mockResolvedValue(undefined),
   applyNarrationToSteps: vi.fn().mockResolvedValue(undefined),
   findExistingStepIds: vi.fn().mockResolvedValue([]),
-  getStepsForGuide: vi.fn().mockResolvedValue([]),
+  getStepsForGuide: (...args: unknown[]) => getStepsForGuide(...args),
 }));
 
 vi.mock('../deferred-descriptions', () => ({ discardDeferred: vi.fn() }));
@@ -87,6 +89,7 @@ beforeEach(() => {
   hasVoiceHost.mockReset().mockResolvedValue(true);
   closeVoiceHostIfIdle.mockReset().mockResolvedValue(undefined);
   stopVoiceCapture.mockReset();
+  getStepsForGuide.mockReset().mockResolvedValue([]);
 });
 
 describe('a narration that has nothing left to transcribe', () => {
@@ -136,5 +139,52 @@ describe('a narration that has nothing left to transcribe', () => {
     await applyNarration('g1', EMPTY_RESULT, false);
 
     expect(getVoiceUpdate().phase).toBe('transcribing');
+    await applyNarration('g1', EMPTY_RESULT, true);
+  });
+});
+
+describe('transcriptions from two recordings in flight at once', () => {
+  it('settles once both have landed, whichever guide claimed last', async () => {
+    stopVoiceCapture.mockResolvedValue({ ok: true, audioEpochMs: 1_700_000_000_000, durationSeconds: 4 });
+
+    await beginRecording();
+    await stopVoiceNarration('g1');
+    await beginRecording();
+    await stopVoiceNarration('g2');
+
+    const settledWithin = () =>
+      Promise.race([
+        whenNarrationSettled().then(() => 'settled'),
+        new Promise((resolve) => setTimeout(() => resolve('still waiting'), 20)),
+      ]);
+
+    await applyNarration('g1', EMPTY_RESULT, true);
+    expect(await settledWithin()).toBe('still waiting');
+
+    await applyNarration('g2', EMPTY_RESULT, true);
+    expect(await settledWithin()).toBe('settled');
+  });
+});
+
+describe('the steps a stop hands to the transcriber', () => {
+  it('includes steps an earlier slice already narrated, so the tail still has somewhere to go', async () => {
+    getStepsForGuide.mockResolvedValue([
+      { id: 's1', timestamp: 1, narratedDescription: 'Open billing' },
+      { id: 's2', timestamp: 2 },
+    ]);
+    stopVoiceCapture.mockResolvedValue({ ok: true, audioEpochMs: 1_700_000_000_000, durationSeconds: 4 });
+
+    await beginRecording();
+    await stopVoiceNarration('g3');
+    await applyNarration('g3', EMPTY_RESULT, true);
+
+    expect(stopVoiceCapture).toHaveBeenCalledWith(
+      'g3',
+      [
+        { stepId: 's1', timestamp: 1 },
+        { stepId: 's2', timestamp: 2 },
+      ],
+      expect.anything(),
+    );
   });
 });

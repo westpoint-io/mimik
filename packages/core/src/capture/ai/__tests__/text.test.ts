@@ -40,6 +40,26 @@ describe('unwrapQuotes', () => {
     expect(unwrapQuotes('"在Role下拉菜单中选择"Admin"选项"')).toBe('"在Role下拉菜单中选择"Admin"选项"');
   });
 
+  it('leaves two quoted terms written without spaces as they are', () => {
+    expect(unwrapQuotes('"设置"页面中点击"保存"')).toBe('"设置"页面中点击"保存"');
+  });
+
+  it('unwraps a whole description quoting a value that starts or ends with a symbol', () => {
+    expect(unwrapQuotes('"Click "+ New""')).toBe('Click "+ New"');
+    expect(unwrapQuotes('"Type "$100" in Amount"')).toBe('Type "$100" in Amount');
+    expect(unwrapQuotes('"Select "(GMT-05:00) Eastern" from Time zone"')).toBe(
+      'Select "(GMT-05:00) Eastern" from Time zone',
+    );
+  });
+
+  it('drops the stray opening quote of a reply cut off by the token limit', () => {
+    expect(unwrapQuotes('"Click Save')).toBe('Click Save');
+  });
+
+  it('leaves a lone quote standing between two spaces', () => {
+    expect(unwrapQuotes('"Type " in Email"')).toBe('"Type " in Email"');
+  });
+
   it('leaves an unquoted sentence alone', () => {
     expect(unwrapQuotes('Type "abc" in Email')).toBe('Type "abc" in Email');
   });

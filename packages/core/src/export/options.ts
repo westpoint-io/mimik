@@ -85,9 +85,9 @@ export function normaliseExportOptions(value: unknown): ExportOptions {
 
 export async function loadExportOptions(): Promise<ExportOptions> {
   const stored = await localStorage.get(['exportOptions']);
-  return normaliseExportOptions(stored.exportOptions);
+  return { ...normaliseExportOptions(stored.exportOptions), voiceover: false };
 }
 
 export async function saveExportOptions(options: ExportOptions): Promise<void> {
-  await localStorage.set({ exportOptions: options });
+  await localStorage.set({ exportOptions: { ...options, voiceover: false } });
 }

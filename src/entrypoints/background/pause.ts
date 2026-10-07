@@ -21,7 +21,25 @@ const NARRATION_RESTART_ATTEMPTS = 6;
 
 export type NarrationStarter = () => Promise<boolean> | boolean;
 
-export async function pauseCapture(reason: PauseReason): Promise<boolean> {
+let pauseInFlight: Promise<boolean> | null = null;
+
+export async function whenPauseSettled(): Promise<void> {
+  await pauseInFlight?.catch(() => false);
+}
+
+export function pauseCapture(reason: PauseReason): Promise<boolean> {
+  if (getActor().getSnapshot().value !== CaptureState.RECORDING) return Promise.resolve(false);
+  const pausing = pauseAndStopNarration(reason);
+  pauseInFlight = pausing;
+  void pausing
+    .catch(() => false)
+    .finally(() => {
+      if (pauseInFlight === pausing) pauseInFlight = null;
+    });
+  return pausing;
+}
+
+async function pauseAndStopNarration(reason: PauseReason): Promise<boolean> {
   const actor = getActor();
   if (actor.getSnapshot().value !== CaptureState.RECORDING) return false;
 
@@ -35,6 +53,7 @@ export async function pauseCapture(reason: PauseReason): Promise<boolean> {
 }
 
 export async function resumeCapture(tryStartNarration?: NarrationStarter): Promise<boolean> {
+  await whenPauseSettled();
   const actor = getActor();
   if (actor.getSnapshot().value !== CaptureState.PAUSED) return false;
 
@@ -70,6 +89,7 @@ export async function restartNarrationOnceTranscriptionSettles(tryStartNarration
 }
 
 export async function resumeFromPause(tryStartNarration?: NarrationStarter): Promise<boolean> {
+  await whenPauseSettled();
   await broadcastDismissBlur();
   return resumeCapture(tryStartNarration);
 }

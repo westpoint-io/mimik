@@ -25,6 +25,9 @@ export default defineConfig({
     '@mimik/ui': 'packages/ui/src',
     '@/core': 'packages/core/src',
     '@': 'src',
+    canvg: 'packages/core/src/export/empty.ts',
+    html2canvas: 'packages/core/src/export/empty.ts',
+    dompurify: 'packages/core/src/export/empty.ts',
   },
   vite: () => ({
     plugins: [tailwindcss()],

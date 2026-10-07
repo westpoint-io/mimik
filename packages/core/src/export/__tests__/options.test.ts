@@ -83,6 +83,15 @@ describe('export option persistence', () => {
     expect(await loadExportOptions()).toEqual(options);
   });
 
+  it('never brings voice-over back on from storage, since it costs money', async () => {
+    await fakeBrowser.storage.local.set({ exportOptions: { ...DEFAULT_EXPORT_OPTIONS, voiceover: true } });
+    expect((await loadExportOptions()).voiceover).toBe(false);
+
+    await saveExportOptions({ ...DEFAULT_EXPORT_OPTIONS, voiceover: true });
+    const stored = await fakeBrowser.storage.local.get('exportOptions');
+    expect((stored.exportOptions as { voiceover: boolean }).voiceover).toBe(false);
+  });
+
   it('survives a corrupted stored value', async () => {
     await fakeBrowser.storage.local.set({ exportOptions: 'corrupted' });
     expect(await loadExportOptions()).toEqual(DEFAULT_EXPORT_OPTIONS);

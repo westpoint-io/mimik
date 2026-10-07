@@ -1,6 +1,6 @@
 {
   "name": "mimik",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "",
   "main": "index.js",
   "packageManager": "pnpm@10.32.1",
@@ -34,7 +34,6 @@
     "@fontsource/poppins": "^5.2.7",
     "@mimik/ui": "workspace:*",
     "@tailwindcss/vite": "^4.2.2",
-    "@vidstack/react": "^1.15.6",
     "@webext-core/messaging": "^2.3.0",
     "@wxt-dev/module-react": "^1.2.2",
     "@xstate/react": "^6.1.0",

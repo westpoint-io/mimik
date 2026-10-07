@@ -18,6 +18,15 @@ describe('resolveVoiceoverConfig', () => {
     expect(config.apiKey).toBe('sk-ai');
   });
 
+  it('does not borrow a key meant for a custom AI server', () => {
+    const config = resolveVoiceoverConfig({
+      aiProvider: 'openai',
+      aiApiKeys: { openai: 'sk-proxy' },
+      aiBaseUrl: 'https://llm.corp.example/v1',
+    });
+    expect(config).toMatchObject({ apiKey: '' });
+  });
+
   it('never borrows across vendors', () => {
     expect(
       resolveVoiceoverConfig({

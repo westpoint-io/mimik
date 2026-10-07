@@ -525,6 +525,10 @@ videoPlayer:
   mute: "静音"
   unmute: "取消静音"
   spoken: "已配音的步骤"
+  play: "播放"
+  pause: "暂停"
+  fullscreen: "全屏"
+  exitFullscreen: "退出全屏"
 
 exportMenu:
   docx: DOCX
@@ -609,6 +613,7 @@ steps:
   drag: '拖动“$1”'
   typeValueInto: '在 $2 中输入 "$1"'
   clearField: "清空 $1"
+  textField: "文本框"
   navigate: 导航到页面
   defaultAction: "$1 $2"
 
