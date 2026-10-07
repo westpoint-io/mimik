@@ -3,6 +3,7 @@ import { queueDescription } from '@/core/capture/ai/description-queue';
 import type { DOMContext } from '@/core/capture/dom/context';
 import { isLive } from '@/core/capture/is-live';
 import { CaptureState } from '@/core/capture/machine';
+import { deferDescription } from '@/core/capture/voice/deferred-descriptions';
 import { type StepNarration, writeStep } from '@/core/capture/write-step';
 import {
   getStep,
@@ -17,7 +18,6 @@ import { captureVisibleTab } from '@/lib/browser-api/capture-visible-tab';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import type { CaptureStepData, CaptureStepResponse } from '@/lib/messaging';
 import { getActor } from './actor';
-import { deferDescription } from './deferred-descriptions';
 import { describeDomStep } from './describe-dom-step';
 import { flushNarrationForStep, getVoiceUpdate } from './voice';
 

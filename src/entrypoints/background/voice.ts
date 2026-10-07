@@ -1,12 +1,13 @@
 import { logger } from '@mimik/core/logger';
 import { CaptureState } from '@/core/capture/machine';
-import { hasVoiceApiKey, VOICE_KEY_SETTINGS } from '@/core/capture/voice/api-key';
+import { applyNarrationResult } from '@/core/capture/voice/apply-narration-result';
+import { describeStepNow, describeUnnarratedSteps } from '@/core/capture/voice/describe-unnarrated';
 import { narrateRecording, type VoiceRecording } from '@/core/capture/voice/narrate-recording';
-import { narrationUpdates } from '@/core/capture/voice/narration-updates';
+import { NARRATION_SETTLE_MS } from '@/core/capture/voice/narration-settle-ms';
 import { readTranscriptionSettings } from '@/core/capture/voice/read-transcription-settings';
+import { readVoiceSettings } from '@/core/capture/voice/read-voice-settings';
 import type { VoicePhase } from '@/core/capture/voice/voice-update';
-import { applyNarrationToSteps, findExistingStepIds, getStepsForGuide, saveTranscript } from '@/core/guides/service';
-import { localStorage } from '@/lib/browser-api/local-storage';
+import { getStepsForGuide } from '@/core/guides/service';
 import { onMessage as onRuntimeMessage } from '@/lib/browser-api/on-message';
 import { abortVoiceCapture } from '@/lib/offscreen/abort-voice-capture';
 import { closeVoiceHost } from '@/lib/offscreen/close-voice-host';
@@ -37,8 +38,6 @@ import {
   type VoiceStepMark,
 } from '@/lib/voice/voice-message';
 import { voiceStopAction } from '@/lib/voice/voice-stop-action';
-import { discardDeferred } from './deferred-descriptions';
-import { describeStepNow, describeUnnarratedSteps } from './describe-unnarrated';
 
 const START_TIMEOUT_MS = 8000;
 
@@ -83,29 +82,17 @@ function withTimeout(work: Promise<void>, ms: number): Promise<void> {
   });
 }
 
-async function readVoiceSettings(): Promise<{ enabled: boolean; hasApiKey: boolean; microphoneId?: string }> {
-  const stored = await localStorage.get([...VOICE_KEY_SETTINGS, 'voiceEnabled', 'voiceMicrophoneId']);
-  const microphoneId = typeof stored.voiceMicrophoneId === 'string' ? stored.voiceMicrophoneId.trim() : '';
-  return {
-    enabled: stored.voiceEnabled === true,
-    hasApiKey: hasVoiceApiKey(stored),
-    microphoneId: microphoneId || undefined,
-  };
-}
-
 let orphanAudio: VoiceRecording | null = null;
 let transcribingGuideId: string | null = null;
 let settleNarration: (() => void) | null = null;
 let narrationSettled: Promise<void> | null = null;
 const outstandingTranscriptions = new Map<string, number>();
 
-const NARRATION_SETTLE_TIMEOUT_MS = 30000;
-
 export function whenNarrationSettled(): Promise<void> {
   const pending = narrationSettled;
   if (!pending) return Promise.resolve();
   return new Promise<void>((resolve) => {
-    const timer = setTimeout(resolve, NARRATION_SETTLE_TIMEOUT_MS);
+    const timer = setTimeout(resolve, NARRATION_SETTLE_MS);
     void pending.then(() => {
       clearTimeout(timer);
       resolve();
@@ -271,8 +258,14 @@ export async function abortVoiceNarration(): Promise<void> {
   await closeVoiceHostIfIdle();
 }
 
+export async function turnOffNarration(guideId: string | null): Promise<void> {
+  await abortVoiceNarration();
+  if (guideId) describeUnnarratedSteps(guideId, takeNarrated(guideId));
+}
+
 export async function stopVoiceNarration(guideId: string): Promise<void> {
   if (!supportsVoice()) return;
+  if (phase.phase === 'idle' && orphanAudio === null) return;
   try {
     const action = voiceStopAction({
       hostAlive: await hasVoiceHost(),
@@ -319,19 +312,14 @@ export async function applyNarration(
   final: boolean,
 ): Promise<void> {
   try {
-    await saveTranscript(guideId, result.transcript).catch((error: unknown) =>
-      logger.warn('voice: the transcript could not be stored', error),
+    const updates = await applyNarrationResult(guideId, result);
+    recordNarrated(
+      guideId,
+      updates.map((update) => update.stepId),
     );
-    const narrated = result.descriptions.map((entry) => entry.stepId);
-    const surviving = await findExistingStepIds(narrated);
-    const updates = narrationUpdates(result, surviving);
-    await applyNarrationToSteps(updates, result.transcript.epochMs);
-    const narratedIds = updates.map((update) => update.stepId);
-    discardDeferred(guideId, narratedIds);
-    recordNarrated(guideId, narratedIds);
     logger.info('voice: narration applied', {
       narrated: updates.length,
-      of: narrated.length,
+      of: result.descriptions.length,
       final,
       stats: result.stats,
     });

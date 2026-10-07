@@ -1,6 +1,6 @@
 import { isRedactedField } from './element-utils';
 
-export interface SiblingElement {
+interface SiblingElement {
   tag: string;
   role: string | null;
   name: string | null;

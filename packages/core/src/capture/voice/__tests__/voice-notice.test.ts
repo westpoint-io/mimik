@@ -5,7 +5,7 @@ import { VOICE_CONFIRM_MS, voiceNotice } from '../voice-notice';
 import { voiceSignature } from '../voice-signature';
 import type { VoicePhase, VoiceUpdate } from '../voice-update';
 
-const LOCALES = ['en', 'es', 'fr', 'pt-BR', 'zh-CN'];
+const LOCALES = ['en', 'es', 'fr', 'pt-BR', 'zh-CN', 'ru'];
 
 function update(phase: VoicePhase, extra: Partial<VoiceUpdate> = {}): VoiceUpdate {
   return { phase, ...extra };

@@ -390,8 +390,8 @@ app.whenReady().then(async () => {
     "JSON.stringify([...document.querySelectorAll('#foot button')].map((b) => b.id + ':' + b.textContent.trim()))",
   );
   check(
-    'Finish leads the footer, with the mic and Pause after it',
-    /^\["primary:Finish recording","mic:","secondary:"\]$/.test(String(order)),
+    'Finish leads the footer, with the mic, Pause and Discard after it',
+    /^\["primary:Finish recording","mic:","secondary:","discard:"\]$/.test(String(order)),
     String(order),
   );
   check(

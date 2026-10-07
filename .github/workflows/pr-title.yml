@@ -1,0 +1,21 @@
+name: PR title
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions: {}
+
+jobs:
+  title:
+    name: Conventional title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the title
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if ! printf '%s' "$TITLE" | grep -Eq '^(feat|fix|docs|chore|test|ci|refactor|perf|build|style|revert)(\([a-z0-9-]+\))?!?: [a-z]'; then
+            echo "The PR title must be a conventional commit subject, such as 'fix(desktop): keep the card on screen'. Got: $TITLE"
+            exit 1
+          fi

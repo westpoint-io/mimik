@@ -134,5 +134,4 @@ function findElement(meta: ElementMeta): FindResult {
   return bestResult;
 }
 
-export type { FindResult };
 export { compareText, findElement, isVisible, scoreCandidate, THRESHOLD, WEIGHTS };

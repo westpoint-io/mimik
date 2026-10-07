@@ -8,7 +8,7 @@ import { Row } from './Row';
 
 const LOGIN_HINT = navigator.userAgent.includes('Mac') ? 'desktop.startAtLoginHintMac' : 'desktop.startAtLoginHint';
 
-export function GeneralSettings() {
+export function GeneralSettings({ onSaved }: { onSaved: () => void }) {
   const [version, setVersion] = useState('');
   const [atLogin, setAtLogin] = useState(false);
 
@@ -30,7 +30,10 @@ export function GeneralSettings() {
           <Switch
             checked={atLogin}
             label={i18n.t('desktop.startAtLogin')}
-            onChange={async (next) => setAtLogin(await window.mimik.openAtLogin.set(next))}
+            onChange={async (next) => {
+              setAtLogin(await window.mimik.openAtLogin.set(next));
+              onSaved();
+            }}
           />
         </Row>
       </Card>

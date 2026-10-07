@@ -1,6 +1,6 @@
 import { REDACT_ATTR } from '../../blur/redactor';
 
-export const FOCUSABLE_SELECTOR =
+const FOCUSABLE_SELECTOR =
   'a[href], button, input, select, textarea, [role="button"], [role="link"], [role="tab"], [role="menuitem"], [role="checkbox"], [role="radio"], [role="switch"], [role="option"], [tabindex], [contenteditable="true"]';
 
 const MAX_ELEMENT_RATIO = 0.8;

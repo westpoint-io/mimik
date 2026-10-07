@@ -1,7 +1,7 @@
 import type { ElementMeta, ScreenshotBounds, StoredScreenshot } from '@/core/guides/types';
 import { DEFAULT_TARGET_COLOR, type ScreenshotEdits } from '@/core/screenshot/types';
 
-export type ZoomMode = 'element' | 'click' | 'none';
+type ZoomMode = 'element' | 'click' | 'none';
 
 export const MIN_ZOOM = 1;
 export const MAX_ZOOM = 5;

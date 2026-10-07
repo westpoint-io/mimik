@@ -86,7 +86,7 @@ const positive = (value: unknown): number | undefined => {
 
 const SAFE_SCHEMES = ['http:', 'https:'];
 
-export function safeUrl(value: unknown): string {
+function safeUrl(value: unknown): string {
   const raw = str(value)?.trim();
   if (!raw) return '';
   try {

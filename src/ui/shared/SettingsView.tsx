@@ -6,12 +6,13 @@ import {
   ApiKeysSettings,
   BrandingSettings,
   NarrationSettings,
+  SavedBadge,
   SettingsCard,
   Switch,
   useApiKeys,
   VoiceoverSettings,
 } from '@mimik/ui';
-import { ArrowLeft, Bug, Check, ChevronRight, EyeOff, Keyboard, Shield, Star } from 'lucide-react';
+import { ArrowLeft, Bug, ChevronRight, EyeOff, Keyboard, Shield, Star } from 'lucide-react';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import { sendMessage } from '@/lib/messaging';
@@ -71,31 +72,22 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
     macAddress: 'blurPresets.macAddress',
   };
 
-  const savedBadge = (
-    <span
-      aria-live="polite"
-      className={`ml-auto flex items-center gap-1 text-[11px] font-semibold transition-opacity duration-300 ${
-        saved ? 'opacity-100' : 'opacity-0'
-      }`}
-      style={{ color: 'var(--color-success)' }}
-    >
-      <Check size={12} />
-      {i18n.t('settings.saved')}
-    </span>
-  );
+  const savedBadge = <SavedBadge saved={saved} />;
 
   const sections: Record<SettingsSection, ReactNode> = {
-    ai: <AiSettings keys={keys} onOpenKeys={openKeys} onChange={queue} />,
-    narration: (
-      <NarrationSettings
-        keys={keys}
-        onOpenKeys={openKeys}
-        onChange={queue}
-        onRequestAccess={import.meta.env.BROWSER !== 'firefox' ? requestMicrophoneAccess : undefined}
-        liveMeter
-      />
+    ai: (
+      <>
+        <AiSettings keys={keys} onOpenKeys={openKeys} onChange={queue} />
+        <NarrationSettings
+          keys={keys}
+          onOpenKeys={openKeys}
+          onChange={queue}
+          onRequestAccess={import.meta.env.BROWSER !== 'firefox' ? requestMicrophoneAccess : undefined}
+          liveMeter
+        />
+        <VoiceoverSettings keys={keys.keys} listVoices={listVoices} onOpenKeys={openKeys} onChange={queue} />
+      </>
     ),
-    'voice-over': <VoiceoverSettings keys={keys.keys} listVoices={listVoices} onOpenKeys={openKeys} onChange={queue} />,
     branding: <BrandingSettings onChange={queue} />,
     'smart-blur': (
       <SettingsCard icon={EyeOff} title={i18n.t('settings.smartBlur')} className="space-y-1 [&>*:first-child]:mb-2">
@@ -196,8 +188,6 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
         </div>
         {sections.ai}
         {sections.branding}
-        {sections.narration}
-        {sections['voice-over']}
         {sections['smart-blur']}
         {sections.keys}
         <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-secondary text-[10px] text-muted-foreground leading-relaxed">

@@ -3,7 +3,6 @@ import { store } from './store';
 
 export type { GuideChangeEvent } from './dexie-store';
 export { onGuidesChanged } from './dexie-store';
-export { configureStore, resetStore } from './store';
 export type { GuideStore };
 
 export const createGuide: GuideStore['createGuide'] = (...args) => store.createGuide(...args);

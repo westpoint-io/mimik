@@ -2,7 +2,7 @@ import type { Guide, Screenshot, Step } from '@mimik/core/guides/types';
 import type { StateCreator } from 'zustand';
 import { CLOSED_EDITOR, type EditorSlice } from './editor-slice';
 
-export interface GuideExportData {
+interface GuideExportData {
   guideId: string;
   guide: Guide;
   steps: Step[];

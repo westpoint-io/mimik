@@ -133,6 +133,20 @@ describe('background guide-meta', () => {
   });
 
   describe('generateGuideMetaOnStop', () => {
+    it('applies the domain fallback title without calling the model when AI is off for the guide', async () => {
+      localStorageGetMock.mockResolvedValue({
+        aiApiKey: 'key',
+        aiProvider: 'openai',
+        aiModel: 'gpt-4o',
+        aiForGuide: false,
+      });
+
+      await generateGuideMetaOnStop(GUIDE_ID);
+
+      expect(generateGuideMetaMock).not.toHaveBeenCalled();
+      expect(updateGuideTitleMock).toHaveBeenCalledWith(GUIDE_ID, 'background.guideOnDomain[example.com]');
+    });
+
     it('applies the domain fallback title without calling the model when no key is set', async () => {
       localStorageGetMock.mockResolvedValue({});
 

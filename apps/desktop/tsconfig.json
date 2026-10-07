@@ -24,12 +24,19 @@
       "@/core/*": [
         "../../packages/core/src/*"
       ],
-      "@mimik/ui": ["../../packages/ui/src/index.ts"],
+      "@mimik/ui": [
+        "../../packages/ui/src/index.ts"
+      ],
       "@mimik/ui/*": [
         "../../packages/ui/src/*"
       ]
     },
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
   },
   "include": [
     "src/**/*",

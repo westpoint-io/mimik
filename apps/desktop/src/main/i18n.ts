@@ -3,6 +3,7 @@ import en from '@mimik/locales/en.yml';
 import es from '@mimik/locales/es.yml';
 import fr from '@mimik/locales/fr.yml';
 import ptBR from '@mimik/locales/pt-BR.yml';
+import ru from '@mimik/locales/ru.yml';
 import zhCN from '@mimik/locales/zh-CN.yml';
 
 type Messages = { [key: string]: string | Messages };
@@ -14,6 +15,7 @@ const LOCALES: Record<string, Messages> = {
   fr: fr as Messages,
   'pt-BR': ptBR as Messages,
   'zh-CN': zhCN as Messages,
+  ru: ru as Messages,
 };
 const active = { locale: 'en' };
 

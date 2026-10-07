@@ -3,6 +3,7 @@ import type { ElementMeta } from '@/core/guides/types';
 
 const created: Array<Record<string, unknown>> = [];
 let hasKey = true;
+let aiForSteps = true;
 
 vi.mock('@/core/guides/service', () => ({
   createStep: vi.fn(async (step: Record<string, unknown>) => {
@@ -15,6 +16,7 @@ vi.mock('../ai/read-ai-credentials', () => ({
   readAiCredentials: vi.fn(async () => (hasKey ? { provider: 'openai', model: 'm', apiKey: 'k' } : null)),
 }));
 vi.mock('../ai/description-queue', () => ({ queueDescription: vi.fn() }));
+vi.mock('../ai/read-ai-use', () => ({ readAiUse: vi.fn(async () => ({ steps: aiForSteps, guide: true })) }));
 
 import { queueDescription } from '../ai/description-queue';
 import { buildFallbackDescription } from '../step-description';
@@ -39,6 +41,7 @@ function step(overrides: Partial<StepWrite> = {}): StepWrite {
 beforeEach(() => {
   created.length = 0;
   hasKey = true;
+  aiForSteps = true;
   vi.mocked(queueDescription).mockClear();
 });
 
@@ -50,6 +53,14 @@ describe('writeStep', () => {
     expect(first).toMatchObject({ description: buildFallbackDescription('click', meta), pending: true });
     expect(created.map((row) => row.index)).toEqual([0, 1]);
     expect(queueDescription).toHaveBeenCalledTimes(2);
+  });
+
+  it('leaves the step settled and asks nothing when AI is off for steps, even with a key', async () => {
+    aiForSteps = false;
+    const written = await writeStep(step());
+
+    expect(written.pending).toBe(false);
+    expect(queueDescription).not.toHaveBeenCalled();
   });
 
   it('leaves the step settled and asks nothing without a key', async () => {

@@ -726,6 +726,25 @@ app.whenReady().then(async () => {
     detail: merged,
   });
 
+  let discarded = 'no reply';
+  try {
+    const kept = await ask<string>(app_.webContents, 'mimik:capture:createGuide', {}, 20_000);
+    const staging = await ask<string>(app_.webContents, 'mimik:capture:createGuide', { staging: true }, 20_000);
+    await ask(app_.webContents, 'mimik:capture:discardRecording', { guideId: kept, staging: false }, 20_000);
+    await ask(app_.webContents, 'mimik:capture:discardRecording', { guideId: staging, staging: true }, 20_000);
+    const trashed = await ask<boolean | null>(win.webContents, 'mimik:check:trashed', kept, 20_000);
+    const left = await ask<boolean | null>(win.webContents, 'mimik:check:trashed', staging, 20_000);
+    discarded = `${trashed ? 'in Trash' : 'not in Trash'}; staging ${left === null ? 'gone' : 'left behind'}`;
+    await ask(app_.webContents, 'mimik:check:cleanup', [kept, staging], 20_000).catch(() => undefined);
+  } catch (error) {
+    discarded = error instanceof Error ? error.message : String(error);
+  }
+  results.push({
+    name: 'a discarded recording goes to Trash, as in the extension',
+    ok: discarded === 'in Trash; staging gone',
+    detail: discarded,
+  });
+
   results.push({
     name: 'an empty recording is named New guide, as in the extension',
     ok: titled === 'New guide',

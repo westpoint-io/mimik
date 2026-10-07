@@ -8,6 +8,7 @@ vi.mock('@mimik/locales/de.yml', () => ({ default: {} }));
 vi.mock('@mimik/locales/es.yml', () => ({ default: {} }));
 vi.mock('@mimik/locales/fr.yml', () => ({ default: {} }));
 vi.mock('@mimik/locales/zh-CN.yml', () => ({ default: {} }));
+vi.mock('@mimik/locales/ru.yml', () => ({ default: {} }));
 
 import { mainI18n } from '../i18n';
 

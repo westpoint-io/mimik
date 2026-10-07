@@ -1,27 +1,20 @@
-import { queueDescription } from '@mimik/core/capture/ai/description-queue';
-import { hasVoiceApiKey, VOICE_KEY_SETTINGS } from '@mimik/core/capture/voice/api-key';
+import { applyNarrationResult } from '@mimik/core/capture/voice/apply-narration-result';
+import { deferDescription } from '@mimik/core/capture/voice/deferred-descriptions';
+import { describeStepNow, describeUnnarratedSteps } from '@mimik/core/capture/voice/describe-unnarrated';
 import { MicRecorder } from '@mimik/core/capture/voice/mic-recorder';
 import { narrateRecording, type VoiceRecording } from '@mimik/core/capture/voice/narrate-recording';
-import { narrationUpdates } from '@mimik/core/capture/voice/narration-updates';
+import { NARRATION_SETTLE_MS } from '@mimik/core/capture/voice/narration-settle-ms';
 import { partialRecording } from '@mimik/core/capture/voice/partial-recording';
 import { readTranscriptionSettings } from '@mimik/core/capture/voice/read-transcription-settings';
+import { readVoiceSettings } from '@mimik/core/capture/voice/read-voice-settings';
 import { startFailureReason } from '@mimik/core/capture/voice/start-failure-reason';
 import type { StepMark } from '@mimik/core/capture/voice/step-windows';
 import { usableRecording } from '@mimik/core/capture/voice/usable-recording';
 import type { VoiceUpdate } from '@mimik/core/capture/voice/voice-update';
+import type { Describe } from '@mimik/core/capture/write-step';
 import { assetUrl, localStorage } from '@mimik/core/env';
-import {
-  applyNarrationToSteps,
-  clearStepAiPending,
-  findExistingStepIds,
-  getStepsForGuide,
-  saveTranscript,
-} from '@mimik/core/guides/service';
+import { clearStepAiPending, getStepsForGuide } from '@mimik/core/guides/service';
 import { logger } from '@mimik/core/logger';
-
-const SETTLE_MS = 30_000;
-
-type Describe = () => Promise<void>;
 
 export class DesktopNarration {
   private live: Promise<MicRecorder | null> | null = null;
@@ -33,7 +26,6 @@ export class DesktopNarration {
   private current: VoiceUpdate = { phase: 'idle' };
   private readonly listeners = new Set<(update: VoiceUpdate) => void>();
   private readonly pending = new Set<Promise<void>>();
-  private readonly deferredDescriptions = new Map<string, { guideId: string; describe: Describe | null }>();
 
   get update(): VoiceUpdate {
     return this.current;
@@ -51,19 +43,19 @@ export class DesktopNarration {
   }
 
   flushForStep(guideId: string, mark: StepMark, describe: Describe | null): void {
-    this.deferredDescriptions.set(mark.stepId, { guideId, describe });
+    deferDescription(guideId, mark.stepId, describe ?? (() => this.undescribed(mark.stepId)));
     const mic = this.mic;
     this.track(async () => {
       const full = mic && usableRecording(mic.snapshot());
       const closesAt = full ? (mark.timestamp - full.audioEpochMs) / 1000 : 0;
       const slice = full && closesAt > this.flushedUpTo ? partialRecording(full, this.flushedUpTo, closesAt) : null;
       if (!slice) {
-        this.describeStepNow(mark.stepId);
+        describeStepNow(guideId, mark.stepId);
         return;
       }
       this.flushedUpTo = closesAt;
       const narrated = await this.transcribe(guideId, slice, [mark]);
-      if (!narrated.includes(mark.stepId)) this.describeStepNow(mark.stepId);
+      if (!narrated.includes(mark.stepId)) describeStepNow(guideId, mark.stepId);
     });
   }
 
@@ -92,7 +84,7 @@ export class DesktopNarration {
           steps.map((step) => ({ stepId: step.id, timestamp: step.timestamp })),
         );
       }
-      this.describeDeferred(guideId);
+      describeUnnarratedSteps(guideId, []);
       this.settled();
     });
   }
@@ -108,13 +100,13 @@ export class DesktopNarration {
       mic?.release();
       window.mimik.capture.narration(null);
     });
-    if (guideId) this.describeDeferred(guideId);
+    if (guideId) describeUnnarratedSteps(guideId, []);
     if (this.current.phase === 'recording') this.report({ phase: 'idle' });
   }
 
   async settle(): Promise<void> {
     this.stop();
-    await Promise.race([Promise.all(this.pending), new Promise((resolve) => setTimeout(resolve, SETTLE_MS))]);
+    await Promise.race([Promise.all(this.pending), new Promise((resolve) => setTimeout(resolve, NARRATION_SETTLE_MS))]);
   }
 
   private report(update: VoiceUpdate): void {
@@ -133,10 +125,9 @@ export class DesktopNarration {
     if (this.current.phase === 'transcribing') this.report({ phase: 'idle', narrated: this.narrated });
   }
 
-  private describeDeferred(guideId: string): void {
-    for (const [stepId, entry] of [...this.deferredDescriptions]) {
-      if (entry.guideId === guideId) this.describeStepNow(stepId);
-    }
+  private async undescribed(stepId: string): Promise<void> {
+    await clearStepAiPending(stepId);
+    window.mimik.capture.described(stepId, null, null);
   }
 
   private track(work: () => Promise<void>): void {
@@ -146,21 +137,10 @@ export class DesktopNarration {
     this.pending.add(running);
   }
 
-  private describeStepNow(stepId: string): void {
-    const entry = this.deferredDescriptions.get(stepId);
-    if (!entry) return;
-    this.deferredDescriptions.delete(stepId);
-    if (entry.describe) {
-      queueDescription(entry.guideId, entry.describe);
-      return;
-    }
-    void clearStepAiPending(stepId).then(() => window.mimik.capture.described(stepId, null, null));
-  }
-
   private async open(): Promise<MicRecorder | null> {
-    const stored = await localStorage.get([...VOICE_KEY_SETTINGS, 'voiceEnabled', 'voiceMicrophoneId']);
-    if (stored.voiceEnabled !== true) return null;
-    if (!hasVoiceApiKey(stored)) {
+    const voice = await readVoiceSettings();
+    if (!voice.enabled) return null;
+    if (!voice.hasApiKey) {
       this.report({ phase: 'error', reason: 'missing-api-key' });
       return null;
     }
@@ -173,7 +153,7 @@ export class DesktopNarration {
       },
     });
     try {
-      await mic.start(stored.voiceMicrophoneId || undefined);
+      await mic.start(voice.microphoneId);
       if (!this.live) {
         mic.release();
         return null;
@@ -195,14 +175,9 @@ export class DesktopNarration {
   private async transcribe(guideId: string, audio: VoiceRecording, marks: StepMark[]): Promise<string[]> {
     const settings = await readTranscriptionSettings();
     if (!settings.apiKey) return [];
-    const result = await narrateRecording(audio, marks, settings);
-    await saveTranscript(guideId, result.transcript);
-    const surviving = await findExistingStepIds(result.descriptions.map((entry) => entry.stepId));
-    const updates = narrationUpdates(result, surviving);
-    await applyNarrationToSteps(updates, result.transcript.epochMs);
+    const updates = await applyNarrationResult(guideId, await narrateRecording(audio, marks, settings));
     this.narrated += updates.length;
     for (const { stepId, description } of updates) {
-      this.deferredDescriptions.delete(stepId);
       window.mimik.capture.described(stepId, description, null, 'narration');
     }
     return updates.map((update) => update.stepId);

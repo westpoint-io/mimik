@@ -116,6 +116,24 @@ const EXAMPLES: Record<AILanguageCode, PromptExamples> = {
       '配置哪些 Slack 频道发送桌面通知，并设置免打扰时间。',
     ],
   },
+  ru: {
+    steps: [
+      'Нажать кнопку Submit',
+      'Ввести адрес электронной почты в поле Email',
+      'Выбрать "Admin" в раскрывающемся списке Role',
+      'Перейти на страницу Settings',
+    ],
+    titles: [
+      'Проверка Pull Request в claude-code',
+      'Настройка уведомлений Slack',
+      'Отправка отчёта о расходах в Workday',
+      'Создание репозитория в организации GitHub',
+    ],
+    descriptions: [
+      'Сброс пароля заблокированного пользователя в панели администратора Okta. Для сотрудников ИТ-поддержки.',
+      'Выбор каналов Slack, которые отправляют уведомления на рабочий стол, и настройка расписания режима «Не беспокоить».',
+    ],
+  },
 };
 
 export function resolveExamples(locale: string): PromptExamples {

@@ -14,21 +14,15 @@ const HANDLERS: Record<string, (payload: never) => Promise<unknown>> = {
 
 configureUi({
   tabs: {
-    active: async () => null,
-    get: async () => null,
-    query: async () => [],
     create: async (url) => {
       window.open(url, '_blank');
       return null;
     },
-    update: async () => null,
-    focusWindow: async () => undefined,
     recordable: async () => [],
     startInsertRecording: unsupported,
   },
   panel: {
     open: () => undefined,
-    requestHostPermissions: async () => false,
   },
   send: (name, payload) => (HANDLERS[name] ?? unsupported)(payload as never) as never,
   appIconUrl: (id) => (/^([/\\]|[A-Za-z]:)/.test(id) ? `mimik-app-icon://icon/?path=${encodeURIComponent(id)}` : null),

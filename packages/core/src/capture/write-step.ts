@@ -2,6 +2,7 @@ import { addStepToGuide, createStep, getStepsForGuide } from '@/core/guides/serv
 import type { ElementMeta, Step } from '@/core/guides/types';
 import { queueDescription } from './ai/description-queue';
 import { readAiCredentials } from './ai/read-ai-credentials';
+import { readAiUse } from './ai/read-ai-use';
 import type { StepAction } from './step-action';
 import { buildFallbackDescription } from './step-description';
 
@@ -39,7 +40,8 @@ function inOrder(write: () => Promise<void>): Promise<void> {
 }
 
 export async function writeStep(step: StepWrite): Promise<WrittenStep> {
-  const hasKey = (await readAiCredentials()) !== null;
+  const [credentials, use] = await Promise.all([readAiCredentials(), readAiUse()]);
+  const hasKey = credentials !== null && use.steps;
   const narrating = step.narration !== null;
   const willDescribe = step.describable && hasKey;
   const pending = narrating || willDescribe;

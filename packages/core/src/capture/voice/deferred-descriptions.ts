@@ -1,4 +1,4 @@
-import type { Describe } from '@/core/capture/write-step';
+import type { Describe } from '../write-step';
 
 export interface DeferredDescription {
   stepId: string;

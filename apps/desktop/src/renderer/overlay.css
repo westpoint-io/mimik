@@ -12,6 +12,7 @@
   --violet-mid: #3730a3;
   --muted: #6b7280;
   --success: #059669;
+  --destructive: #dc2626;
 }
 
 * {
@@ -827,10 +828,19 @@ body.controls #foot button {
 
 body.controls #foot #primary {
   flex: 1 1 0;
+  min-width: 0;
+}
+
+body.controls #foot #primary span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 body.controls #foot #mic,
-body.controls #foot #secondary {
+body.controls #foot #secondary,
+body.controls #foot #discard {
   width: 40px;
   padding: 0;
   color: var(--muted);
@@ -839,6 +849,11 @@ body.controls #foot #secondary {
 body.controls #foot #secondary:hover,
 body.controls #foot #mic:hover {
   color: var(--accent);
+}
+
+body.controls #foot #discard:hover {
+  border-color: rgba(220, 38, 38, 0.3);
+  color: var(--destructive);
 }
 
 body.controls #foot #mic.on {

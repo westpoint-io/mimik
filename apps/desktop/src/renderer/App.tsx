@@ -2,7 +2,7 @@ import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import { i18n, localStorage } from '@mimik/core/env';
 import {
   AppFrame,
-  GuideContent,
+  GuidePage,
   LibraryContent,
   navigate,
   SearchModal,
@@ -100,17 +100,13 @@ export function App() {
         }
       >
         {route.page === 'guide' ? (
-          <main className="flex-1 py-10 px-6">
-            <div className="mx-auto max-w-[780px]">
-              <GuideContent
-                key={guideKey}
-                guideId={route.guideId}
-                initialStepId={route.stepId}
-                initialTool={route.tool}
-                onCaptureMore={(insert) => setSheet({ insert })}
-              />
-            </div>
-          </main>
+          <GuidePage
+            key={guideKey}
+            guideId={route.guideId}
+            initialStepId={route.stepId}
+            initialTool={route.tool}
+            onCaptureMore={(insert) => setSheet({ insert })}
+          />
         ) : (
           <main className="flex-1 flex flex-col py-8 px-6">
             <LibraryContent category={route.category} />

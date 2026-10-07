@@ -5,6 +5,7 @@ extraMetadata:
   name: mimik
   productName: Mimik
 npmRebuild: false
+afterPack: scripts/flip-fuses.cjs
 directories:
   output: dist
   buildResources: resources

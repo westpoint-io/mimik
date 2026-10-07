@@ -7,7 +7,6 @@ import { hasVoiceApiKey, VOICE_KEY_SETTINGS } from '@/core/capture/voice/api-key
 import { getActiveTab } from '@/lib/browser-api/get-active-tab';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import { sendMessage } from '@/lib/messaging';
-import { abortVoiceCapture } from '@/lib/offscreen/abort-voice-capture';
 import { openMicPermissionPage } from '@/lib/offscreen/open-mic-permission-page';
 import { microphoneGranted } from './lib/microphone-granted';
 
@@ -50,7 +49,11 @@ export function MicToggle({ enabled, live, paused = false, onChange }: MicToggle
     await localStorage.set({ voiceEnabled: next });
 
     if (!next) {
-      if (live) await abortVoiceCapture().catch(() => undefined);
+      if (live) {
+        await sendMessage('stopNarration', undefined).catch((error) => {
+          logger.error('voice: the background did not take the request to stop narration', error);
+        });
+      }
       return;
     }
 

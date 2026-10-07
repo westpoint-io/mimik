@@ -10,18 +10,30 @@ import type { AILanguageCode } from '@mimik/core/capture/ai/prompts';
 import { localStorage } from '@mimik/core/env';
 import { useCallback, useEffect, useState } from 'react';
 
-const AI_KEYS = ['aiProvider', 'aiModel', 'aiBaseUrl', 'aiServerUrl', 'aiLanguage'] as const;
+const AI_KEYS = [
+  'aiProvider',
+  'aiModel',
+  'aiBaseUrl',
+  'aiServerUrl',
+  'aiLanguage',
+  'aiForSteps',
+  'aiForGuide',
+] as const;
 
 export interface AiSettingsState {
   provider: AiChoice;
   model: string;
   language: AILanguageCode;
+  forSteps: boolean;
+  forGuide: boolean;
   usingCustomModel: boolean;
   models: AIModelOption[];
   defaultModel: string;
   setProvider: (provider: AiChoice) => void;
   setModel: (model: string) => void;
   setLanguage: (language: AILanguageCode) => void;
+  setForSteps: (on: boolean) => void;
+  setForGuide: (on: boolean) => void;
 }
 
 interface Options {
@@ -38,6 +50,8 @@ export function useAiSettings({ onDirty, reloadOnFocus = false }: Options = {}):
   const [model, setModelState] = useState(AI_PROVIDERS[DEFAULT_AI_PROVIDER].defaultModel);
   const [language, setLanguageState] = useState<AILanguageCode>('en');
   const [customModel, setCustomModel] = useState(false);
+  const [forSteps, setForStepsState] = useState(true);
+  const [forGuide, setForGuideState] = useState(true);
 
   useEffect(() => {
     const load = () =>
@@ -46,6 +60,8 @@ export function useAiSettings({ onDirty, reloadOnFocus = false }: Options = {}):
         setProviderState(next);
         setModelState(typeof stored.aiModel === 'string' ? stored.aiModel : defaultModelFor(next));
         if (typeof stored.aiLanguage === 'string') setLanguageState(stored.aiLanguage as AILanguageCode);
+        setForStepsState(stored.aiForSteps !== false);
+        setForGuideState(stored.aiForGuide !== false);
       });
 
     void load();
@@ -98,17 +114,37 @@ export function useAiSettings({ onDirty, reloadOnFocus = false }: Options = {}):
     [dirty],
   );
 
+  const setForSteps = useCallback(
+    (on: boolean) => {
+      setForStepsState(on);
+      dirty({ aiForSteps: on });
+    },
+    [dirty],
+  );
+
+  const setForGuide = useCallback(
+    (on: boolean) => {
+      setForGuideState(on);
+      dirty({ aiForGuide: on });
+    },
+    [dirty],
+  );
+
   const config = provider === SERVER ? null : AI_PROVIDERS[provider];
 
   return {
     provider,
     model,
     language,
+    forSteps,
+    forGuide,
     usingCustomModel: config === null || customModel || isCustomModel(model, config),
     models: config?.models ?? [],
     defaultModel: config?.defaultModel ?? '',
     setProvider,
     setModel,
     setLanguage,
+    setForSteps,
+    setForGuide,
   };
 }

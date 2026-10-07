@@ -113,6 +113,12 @@ settings:
   title: Einstellungen
   aiDescriptions: "Schrittbeschreibungen"
   aiDescriptionsHint: "Mimik schreibt den Text jedes Schritts und benennt deine Anleitung mit deinem KI-Anbieter."
+  aiUseFor: "KI verwenden für"
+  aiForSteps: "Schrittbeschreibungen"
+  aiForStepsHint: "Der Text unter jedem Screenshot."
+  aiForGuide: "Titel und Zusammenfassung der Anleitung"
+  aiForGuideHint: "Wird geschrieben, wenn du die Aufnahme beendest."
+  aiUnusedNote: "Schritte behalten ihre einfachen Titel, und die Anleitung wird nach der Website oder App benannt. Sprachaufnahme und Sprachausgabe nutzen deinen Schlüssel weiterhin."
   modelCustom: Eigenes Modell
   baseUrl: Basis-URL
   ownServerHintOpenai: "Funktioniert mit Ollama, LM Studio, vLLM oder jedem OpenAI-kompatiblen Server."

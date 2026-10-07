@@ -81,6 +81,8 @@ export interface Settings {
   aiServerUrl: string;
   aiServerProtocol: AIProtocol;
   aiLanguage: string;
+  aiForSteps: boolean;
+  aiForGuide: boolean;
   voiceEnabled: boolean;
   voiceProvider: VoiceProvider;
   voiceApiKey: string;

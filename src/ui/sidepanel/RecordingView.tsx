@@ -8,7 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@mimik/ui';
-import { Check, EyeOff, Loader2, Pause, Play, X } from 'lucide-react';
+import { Check, EyeOff, Loader2, Pause, Play, Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { i18n } from '#imports';
 import type { PauseReason } from '@/core/capture/machine';
@@ -126,7 +126,6 @@ export function RecordingView({
     [guideId, loadSteps],
   );
 
-  const _domain = extractDomain(siteUrl);
   return (
     <div className="flex flex-col h-screen bg-card relative">
       {/* Floating recording pill */}
@@ -264,7 +263,7 @@ export function RecordingView({
                 onClick={onDiscard}
                 className="w-9 h-9 shrink-0 rounded-full border border-border flex items-center justify-center transition-colors text-purple hover:border-destructive/30 hover:text-destructive"
               >
-                <X size={16} />
+                <Trash2 size={16} />
               </button>
             </TooltipTrigger>
             <TooltipContent align="end">{i18n.t('recording.discard')}</TooltipContent>

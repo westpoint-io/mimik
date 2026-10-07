@@ -1,4 +1,4 @@
-import { AppFrame, GuideContent, LibraryContent, SearchModal, TooltipProvider, useFullview, useRoute } from '@mimik/ui';
+import { AppFrame, GuidePage, LibraryContent, SearchModal, TooltipProvider, useRoute } from '@mimik/ui';
 import { browser } from '#imports';
 import { openSidebar } from '@/lib/browser-api/open-sidebar';
 import { UpdateNotice } from '@/ui/shared/UpdateNotice';
@@ -6,10 +6,6 @@ import { BackgroundVoiceNotice } from './components/BackgroundVoiceNotice';
 
 export function FullViewApp() {
   const route = useRoute();
-  const { historyOpen, transcriptOpen } = useFullview((s) => ({
-    historyOpen: s.historyOpen,
-    transcriptOpen: s.transcriptOpen,
-  }));
 
   return (
     <TooltipProvider>
@@ -29,11 +25,7 @@ export function FullViewApp() {
         )}
 
         {route.page === 'guide' && (
-          <main className="flex-1 py-10 px-6">
-            <div className={`mx-auto ${historyOpen || transcriptOpen ? 'max-w-[1032px]' : 'max-w-[720px]'}`}>
-              <GuideContent guideId={route.guideId} initialStepId={route.stepId} initialTool={route.tool} />
-            </div>
-          </main>
+          <GuidePage guideId={route.guideId} initialStepId={route.stepId} initialTool={route.tool} />
         )}
 
         {import.meta.env.BROWSER !== 'firefox' && <BackgroundVoiceNotice />}

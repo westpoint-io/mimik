@@ -1,7 +1,7 @@
 import { DEFAULT_FONT_SIZE, DEFAULT_LINE_HEIGHT, type FontFamily } from '@mimik/core/screenshot/types';
 import { useState } from 'react';
 
-export interface TextStyle {
+interface TextStyle {
   fontFamily: FontFamily;
   bold: boolean;
   italic: boolean;

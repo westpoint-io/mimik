@@ -56,7 +56,7 @@ async function hydrateAll(rows: StoredScreenshot[]): Promise<Screenshot[]> {
   return out.filter((row): row is Screenshot => row !== undefined);
 }
 
-export async function createGuide(guideId: string, staging = false): Promise<Guide> {
+async function createGuide(guideId: string, staging = false): Promise<Guide> {
   const guide: Guide = {
     id: guideId,
     title: i18n.t('fullview.untitledGuide'),
@@ -71,7 +71,7 @@ export async function createGuide(guideId: string, staging = false): Promise<Gui
   return guide;
 }
 
-export async function getGuide(
+async function getGuide(
   id: string,
 ): Promise<{ guide: Guide; steps: Step[]; screenshots: Map<string, Screenshot> } | null> {
   const guide = await db.guides.get(id);
@@ -83,7 +83,7 @@ export async function getGuide(
   return { guide, steps, screenshots };
 }
 
-export async function getGuides(): Promise<Guide[]> {
+async function getGuides(): Promise<Guide[]> {
   return db.guides
     .orderBy('updatedAt')
     .reverse()
@@ -91,7 +91,7 @@ export async function getGuides(): Promise<Guide[]> {
     .toArray();
 }
 
-export async function getStarredGuides(): Promise<Guide[]> {
+async function getStarredGuides(): Promise<Guide[]> {
   return db.guides
     .orderBy('updatedAt')
     .reverse()
@@ -99,7 +99,7 @@ export async function getStarredGuides(): Promise<Guide[]> {
     .toArray();
 }
 
-export async function getTrashedGuides(): Promise<Guide[]> {
+async function getTrashedGuides(): Promise<Guide[]> {
   return db.guides
     .orderBy('updatedAt')
     .reverse()
@@ -107,17 +107,17 @@ export async function getTrashedGuides(): Promise<Guide[]> {
     .toArray();
 }
 
-export async function updateGuideTitle(id: string, title: string): Promise<void> {
+async function updateGuideTitle(id: string, title: string): Promise<void> {
   await db.guides.update(id, { title: sanitizeGuideTitle(title), updatedAt: Date.now() });
   notifyGuidesChanged({ type: 'mutated' });
 }
 
-export async function updateGuideDescription(id: string, description: string): Promise<void> {
+async function updateGuideDescription(id: string, description: string): Promise<void> {
   await db.guides.update(id, { description, updatedAt: Date.now() });
   notifyGuidesChanged({ type: 'mutated' });
 }
 
-export async function addStepToGuide(guideId: string, stepId: string): Promise<void> {
+async function addStepToGuide(guideId: string, stepId: string): Promise<void> {
   await db.transaction('rw', db.guides, async () => {
     const guide = await db.guides.get(guideId);
     if (guide) {
@@ -129,7 +129,7 @@ export async function addStepToGuide(guideId: string, stepId: string): Promise<v
   });
 }
 
-export async function toggleStar(id: string): Promise<boolean> {
+async function toggleStar(id: string): Promise<boolean> {
   const guide = await db.guides.get(id);
   if (!guide) return false;
   const starred = !guide.starred;
@@ -138,17 +138,17 @@ export async function toggleStar(id: string): Promise<boolean> {
   return starred;
 }
 
-export async function softDeleteGuide(id: string): Promise<void> {
+async function softDeleteGuide(id: string): Promise<void> {
   await db.guides.update(id, { deletedAt: Date.now(), updatedAt: Date.now() });
   notifyGuidesChanged({ type: 'mutated' });
 }
 
-export async function restoreGuide(id: string): Promise<void> {
+async function restoreGuide(id: string): Promise<void> {
   await db.guides.update(id, { deletedAt: null, updatedAt: Date.now() });
   notifyGuidesChanged({ type: 'mutated' });
 }
 
-export async function permanentlyDeleteGuide(id: string): Promise<void> {
+async function permanentlyDeleteGuide(id: string): Promise<void> {
   const steps = await db.steps.where('guideId').equals(id).toArray();
   const snapshots = await db.snapshots.where('guideId').equals(id).toArray();
   const stepIds = new Set(steps.map((s) => s.id));
@@ -168,7 +168,7 @@ export async function permanentlyDeleteGuide(id: string): Promise<void> {
   notifyGuidesChanged({ type: 'mutated' });
 }
 
-export async function importGuide(bundle: ParsedBundle): Promise<string> {
+async function importGuide(bundle: ParsedBundle): Promise<string> {
   const { manifest, images } = bundle;
   const guideId = crypto.randomUUID();
   const now = Date.now();
@@ -223,7 +223,7 @@ export async function importGuide(bundle: ParsedBundle): Promise<string> {
   return guideId;
 }
 
-export async function reorderSteps(guideId: string, orderedStepIds: string[]): Promise<void> {
+async function reorderSteps(guideId: string, orderedStepIds: string[]): Promise<void> {
   await db.transaction('rw', db.steps, db.guides, async () => {
     for (let i = 0; i < orderedStepIds.length; i++) {
       await db.steps.update(orderedStepIds[i], { index: i });
@@ -232,11 +232,11 @@ export async function reorderSteps(guideId: string, orderedStepIds: string[]): P
   });
 }
 
-export async function createStep(step: Step): Promise<void> {
+async function createStep(step: Step): Promise<void> {
   await db.steps.add(step);
 }
 
-export async function duplicateGuide(guideId: string): Promise<string | null> {
+async function duplicateGuide(guideId: string): Promise<string | null> {
   const copyId = await db.transaction('rw', [db.guides, db.steps, db.screenshots, db.transcripts], async () => {
     const guide = await db.guides.get(guideId);
     if (!guide) return null;
@@ -299,7 +299,7 @@ export async function duplicateGuide(guideId: string): Promise<string | null> {
   return copyId;
 }
 
-export async function mergeGuideInto(sourceGuideId: string, targetGuideId: string, atIndex: number): Promise<number> {
+async function mergeGuideInto(sourceGuideId: string, targetGuideId: string, atIndex: number): Promise<number> {
   const moved = await db.transaction('rw', db.steps, db.guides, db.transcripts, db.guideMerges, async () => {
     const incoming = await db.steps.where('guideId').equals(sourceGuideId).sortBy('index');
     const target = await db.steps.where('guideId').equals(targetGuideId).sortBy('index');
@@ -324,7 +324,7 @@ export async function mergeGuideInto(sourceGuideId: string, targetGuideId: strin
   return moved;
 }
 
-export async function insertBlock(
+async function insertBlock(
   guideId: string,
   atIndex: number,
   blockType: BlockType,
@@ -351,19 +351,15 @@ export async function insertBlock(
   return id;
 }
 
-export async function updateCallout(stepId: string, variant: CalloutVariant, color?: string): Promise<void> {
+async function updateCallout(stepId: string, variant: CalloutVariant, color?: string): Promise<void> {
   await db.steps.update(stepId, { calloutVariant: variant, calloutColor: color });
 }
 
-export async function updateStepDescription(
-  stepId: string,
-  description: string,
-  source?: DescriptionSource,
-): Promise<void> {
+async function updateStepDescription(stepId: string, description: string, source?: DescriptionSource): Promise<void> {
   await db.steps.update(stepId, source ? { description, descriptionSource: source } : { description });
 }
 
-export async function applyNarrationToSteps(
+async function applyNarrationToSteps(
   updates: readonly NarrationUpdate[],
   sliceStartMs = Number.NEGATIVE_INFINITY,
 ): Promise<void> {
@@ -410,7 +406,7 @@ async function resolveTranscriptOwner(guideId: string, transcript: NarrationTran
   return owner && (await db.guides.get(owner)) ? owner : null;
 }
 
-export async function saveTranscript(guideId: string, transcript: NarrationTranscript): Promise<void> {
+async function saveTranscript(guideId: string, transcript: NarrationTranscript): Promise<void> {
   if (transcript.lines.length === 0) return;
   const owner = await resolveTranscriptOwner(guideId, transcript);
   if (!owner) return;
@@ -424,11 +420,11 @@ export async function saveTranscript(guideId: string, transcript: NarrationTrans
   notifyGuidesChanged({ type: 'mutated' });
 }
 
-export async function getTranscripts(guideId: string): Promise<GuideTranscript[]> {
+async function getTranscripts(guideId: string): Promise<GuideTranscript[]> {
   return db.transcripts.where('guideId').equals(guideId).toArray();
 }
 
-export async function hasTranscript(guideId: string): Promise<boolean> {
+async function hasTranscript(guideId: string): Promise<boolean> {
   return (await db.transcripts.where('guideId').equals(guideId).count()) > 0;
 }
 
@@ -491,7 +487,7 @@ function spokenLinesFor(stepId: string, narrated: boolean, rows: readonly GuideT
   );
 }
 
-export async function deleteTranscripts(guideId: string): Promise<void> {
+async function deleteTranscripts(guideId: string): Promise<void> {
   await db.transaction('rw', db.transcripts, db.steps, db.snapshots, async () => {
     const rows = await db.transcripts.where('guideId').equals(guideId).toArray();
     await db.transcripts.where('guideId').equals(guideId).delete();
@@ -528,7 +524,7 @@ async function releaseHandAddedLines(guideId: string, stepId: string): Promise<v
     });
 }
 
-export async function restoreNarratedDescription(stepId: string): Promise<string | null> {
+async function restoreNarratedDescription(stepId: string): Promise<string | null> {
   const step = await db.steps.get(stepId);
   const spoken = step?.narratedDescription?.trim();
   if (!step || !spoken) return null;
@@ -565,7 +561,7 @@ async function isLineStillUnused(rowId: string, lineIndex: number): Promise<bool
   return !line.stepId || !(await db.steps.get(line.stepId));
 }
 
-export async function addTranscriptLineToStep(
+async function addTranscriptLineToStep(
   rowId: string,
   lineIndex: number,
   stepId: string,
@@ -584,7 +580,7 @@ export async function addTranscriptLineToStep(
   return description;
 }
 
-export async function applyAiDescription(stepId: string, description: string): Promise<void> {
+async function applyAiDescription(stepId: string, description: string): Promise<void> {
   const wrote = await db.transaction('rw', db.steps, async () => {
     const step = await db.steps.get(stepId);
     if (!step || step.descriptionSource === 'narration') return false;
@@ -594,7 +590,7 @@ export async function applyAiDescription(stepId: string, description: string): P
   if (wrote) notifyGuidesChanged({ type: 'mutated' });
 }
 
-export async function clearStepAiPending(stepId: string, description?: string): Promise<void> {
+async function clearStepAiPending(stepId: string, description?: string): Promise<void> {
   const wrote = await db.transaction('rw', db.steps, async () => {
     const step = await db.steps.get(stepId);
     if (!step) return false;
@@ -609,29 +605,25 @@ export async function clearStepAiPending(stepId: string, description?: string): 
   if (wrote) notifyGuidesChanged({ type: 'mutated' });
 }
 
-export async function getStep(stepId: string): Promise<Step | undefined> {
+async function getStep(stepId: string): Promise<Step | undefined> {
   return db.steps.get(stepId);
 }
 
-export async function updateStepInputValue(stepId: string, inputValue: string): Promise<void> {
+async function updateStepInputValue(stepId: string, inputValue: string): Promise<void> {
   await db.steps.update(stepId, { inputValue });
 }
 
-export async function updateStepCapture(
-  stepId: string,
-  elementMeta: ElementMeta,
-  screenshotId?: string,
-): Promise<void> {
+async function updateStepCapture(stepId: string, elementMeta: ElementMeta, screenshotId?: string): Promise<void> {
   const updates: Partial<Step> = { elementMeta };
   if (screenshotId) updates.screenshotId = screenshotId;
   await db.steps.update(stepId, updates);
 }
 
-export async function getStepsForGuide(guideId: string): Promise<Step[]> {
+async function getStepsForGuide(guideId: string): Promise<Step[]> {
   return db.steps.where('guideId').equals(guideId).sortBy('index');
 }
 
-export async function findExistingStepIds(stepIds: readonly string[]): Promise<string[]> {
+async function findExistingStepIds(stepIds: readonly string[]): Promise<string[]> {
   const found = await db.steps
     .where('id')
     .anyOf([...stepIds])
@@ -639,7 +631,7 @@ export async function findExistingStepIds(stepIds: readonly string[]): Promise<s
   return found as string[];
 }
 
-export async function deleteSteps(guideId: string, stepIds: readonly string[]): Promise<void> {
+async function deleteSteps(guideId: string, stepIds: readonly string[]): Promise<void> {
   if (stepIds.length === 0) return;
   const doomed = new Set(stepIds);
   await db.transaction('rw', db.guides, db.steps, db.screenshots, db.snapshots, async () => {
@@ -662,16 +654,16 @@ export async function deleteSteps(guideId: string, stepIds: readonly string[]): 
   });
 }
 
-export async function deleteStep(guideId: string, stepId: string): Promise<void> {
+async function deleteStep(guideId: string, stepId: string): Promise<void> {
   await deleteSteps(guideId, [stepId]);
 }
 
-export async function getGuideDomain(guideId: string): Promise<string> {
+async function getGuideDomain(guideId: string): Promise<string> {
   const steps = await db.steps.where('guideId').equals(guideId).sortBy('index');
   return getMostCommonDomain(steps);
 }
 
-export async function allScreenshotIds(): Promise<string[]> {
+async function allScreenshotIds(): Promise<string[]> {
   const ids = new Set<string>();
   await db.screenshots.each((row) => {
     ids.add(row.id);
@@ -681,11 +673,11 @@ export async function allScreenshotIds(): Promise<string[]> {
   return [...ids];
 }
 
-export async function saveScreenshot(screenshot: StoredScreenshot): Promise<void> {
+async function saveScreenshot(screenshot: StoredScreenshot): Promise<void> {
   await db.screenshots.add(screenshot);
 }
 
-export async function replaceScreenshot(
+async function replaceScreenshot(
   stepId: string,
   blob: Blob,
   dimensions: { width: number; height: number },
@@ -707,20 +699,20 @@ export async function replaceScreenshot(
   return id;
 }
 
-export async function updateScreenshotEdits(screenshotId: string, edits: ScreenshotEdits): Promise<void> {
+async function updateScreenshotEdits(screenshotId: string, edits: ScreenshotEdits): Promise<void> {
   await db.screenshots.update(screenshotId, { edits });
 }
 
-export async function deleteScreenshot(stepId: string): Promise<void> {
+async function deleteScreenshot(stepId: string): Promise<void> {
   await db.steps.update(stepId, { screenshotId: undefined });
 }
 
-export async function getScreenshotsForSteps(stepIds: string[]): Promise<Map<string, Screenshot>> {
+async function getScreenshotsForSteps(stepIds: string[]): Promise<Map<string, Screenshot>> {
   const rows = await hydrateAll(await db.screenshots.where('id').anyOf(stepIds).toArray());
   return new Map(rows.map((s) => [s.stepId, s]));
 }
 
-export async function getFirstScreenshot(guideId: string): Promise<Screenshot | null> {
+async function getFirstScreenshot(guideId: string): Promise<Screenshot | null> {
   const steps = await db.steps.where('guideId').equals(guideId).sortBy('index');
   for (const step of steps) {
     if (step.screenshotId) {
@@ -731,7 +723,7 @@ export async function getFirstScreenshot(guideId: string): Promise<Screenshot | 
   return null;
 }
 
-export async function createSnapshot(guideId: string): Promise<Snapshot | null> {
+async function createSnapshot(guideId: string): Promise<Snapshot | null> {
   return db.transaction('rw', db.guides, db.steps, db.screenshots, db.snapshots, async () => {
     const guide = await db.guides.get(guideId);
     if (!guide) return null;
@@ -757,7 +749,7 @@ export async function createSnapshot(guideId: string): Promise<Snapshot | null> 
   });
 }
 
-export async function getSnapshots(guideId: string): Promise<Snapshot[]> {
+async function getSnapshots(guideId: string): Promise<Snapshot[]> {
   return db.snapshots
     .where('[guideId+createdAt]')
     .between([guideId, -Infinity], [guideId, Infinity])
@@ -765,12 +757,12 @@ export async function getSnapshots(guideId: string): Promise<Snapshot[]> {
     .toArray();
 }
 
-export async function renameSnapshot(snapshotId: string, name: string): Promise<void> {
+async function renameSnapshot(snapshotId: string, name: string): Promise<void> {
   const trimmed = name.trim();
   await db.snapshots.update(snapshotId, { name: trimmed === '' ? undefined : trimmed });
 }
 
-export async function revertToSnapshot(snapshotId: string): Promise<Snapshot | null> {
+async function revertToSnapshot(snapshotId: string): Promise<Snapshot | null> {
   const undo = await db.transaction('rw', db.guides, db.steps, db.screenshots, db.snapshots, async () => {
     const snapshot = await db.snapshots.get(snapshotId);
     if (!snapshot) return null;

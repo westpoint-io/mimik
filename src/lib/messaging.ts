@@ -1,6 +1,6 @@
 import { defineExtensionMessaging } from '@webext-core/messaging';
 import type { GenerateGuideDescriptionResponse } from '@/core/capture/ai/guide-description';
-import type { RewriteError, RewriteSelectionResponse } from '@/core/capture/ai/rewrite';
+import type { RewriteSelectionResponse } from '@/core/capture/ai/rewrite';
 import type { CaptureStateValue, PauseReason } from '@/core/capture/machine';
 import type {
   CaptureStepData,
@@ -19,105 +19,109 @@ export interface GetStateResponse {
   pauseReason: PauseReason | null;
 }
 
-export interface StartRecordingData {
+interface StartRecordingData {
   url: string;
   insertTargetGuideId?: string;
   insertAtIndex?: number;
 }
 
-export interface StartRecordingResponse {
+interface StartRecordingResponse {
   guideId: string;
 }
 
-export interface StopRecordingResponse {
+interface StopRecordingResponse {
   success: boolean;
   guideId?: string;
   inserted?: boolean;
 }
 
-export interface DiscardRecordingResponse {
+interface DiscardRecordingResponse {
   discarded: boolean;
 }
 
-export interface StartGuideMeData {
+interface StartGuideMeData {
   guideId: string;
 }
 
-export interface StartGuideMeResponse {
+interface StartGuideMeResponse {
   started: boolean;
   error?: string;
 }
 
-export interface GuideMeStepCompletedData {
+interface GuideMeStepCompletedData {
   stepIndex: number;
 }
 
-export interface GuideMeStepCompletedResponse {
+interface GuideMeStepCompletedResponse {
   advanced: boolean;
   completed?: boolean;
 }
 
-export interface GuideMe_CancelResponse {
+interface GuideMe_CancelResponse {
   cancelled: boolean;
 }
 
-export interface GuideMe_GoToData {
+interface GuideMe_GoToData {
   stepIndex: number;
 }
 
-export interface GuideMe_GoToResponse {
+interface GuideMe_GoToResponse {
   moved: boolean;
 }
 
-export interface GenerateGuideDescriptionData {
+interface GenerateGuideDescriptionData {
   guideId: string;
 }
 
-export interface RewriteSelectionData {
+interface RewriteSelectionData {
   text: string;
   instruction: string;
 }
 
-export interface ValidateApiKeyData {
+interface ValidateApiKeyData {
   provider: string;
   apiKey: string;
   baseUrl?: string;
   model?: string;
 }
 
-export interface ValidateApiKeyResponse {
+interface ValidateApiKeyResponse {
   valid: boolean;
   reason?: 'rejected' | 'network' | 'model-required' | 'model-invalid';
   models?: string[];
   warning?: 'cannot-spend';
 }
 
-export interface ListVoicesData {
+interface ListVoicesData {
   provider: VoiceoverProviderKey;
   apiKey: string;
 }
 
-export interface ListVoicesResponse {
+interface ListVoicesResponse {
   voices: { id: string; name: string }[];
 }
 
-export interface EnterBlurModeResponse {
+interface EnterBlurModeResponse {
   entered: boolean;
 }
 
-export interface StartNarrationResponse {
+interface StartNarrationResponse {
   started: boolean;
 }
 
-export interface ExitBlurModeResponse {
+interface StopNarrationResponse {
+  stopped: boolean;
+}
+
+interface ExitBlurModeResponse {
   exited: boolean;
 }
 
-export interface PauseCaptureResponse {
+interface PauseCaptureResponse {
   paused: boolean;
 }
 
-export interface ResumeCaptureResponse {
+interface ResumeCaptureResponse {
   resumed: boolean;
 }
 
@@ -138,21 +142,13 @@ interface MimikProtocol {
   pauseCapture(): PauseCaptureResponse;
   resumeCapture(): ResumeCaptureResponse;
   startNarration(): StartNarrationResponse;
+  stopNarration(): StopNarrationResponse;
   generateGuideDescription(data: GenerateGuideDescriptionData): GenerateGuideDescriptionResponse;
   validateApiKey(data: ValidateApiKeyData): ValidateApiKeyResponse;
   listVoices(data: ListVoicesData): ListVoicesResponse;
   rewriteSelection(data: RewriteSelectionData): RewriteSelectionResponse;
 }
 
-export type {
-  CaptureStepData,
-  CaptureStepResponse,
-  FinalizeInputStepData,
-  FinalizeInputStepResponse,
-  RewriteError,
-  RewriteSelectionResponse,
-  UpdateInputStepData,
-  UpdateInputStepResponse,
-};
+export type { CaptureStepData, CaptureStepResponse };
 
 export const { sendMessage, onMessage } = defineExtensionMessaging<MimikProtocol>();

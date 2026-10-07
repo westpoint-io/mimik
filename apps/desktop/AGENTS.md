@@ -12,6 +12,8 @@ exactly as the extension does. The preload exposes `window.mimik` with context i
   reason `area`.
 - Main bundles `@mimik/core` (it is excluded from `externalizeDepsPlugin`), so value imports from
   core work there. Every other dependency stays external.
+- A packed app has its Electron fuses flipped (`scripts/flip-fuses.cjs`): no run-as-node, no
+  `NODE_OPTIONS` and no `--inspect`. Pack with `MIMIK_INSPECTABLE=1` to keep the inspector.
 - `out/main` stays flat (`chunkFileNames` is pinned), because main resolves `../renderer` and
   `../preload` from `__dirname`.
 - Every AI and provider request goes through main (`mimik:ai:fetch`). A renderer `fetch` to a

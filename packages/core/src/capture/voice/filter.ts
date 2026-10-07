@@ -1,6 +1,6 @@
 import type { ScoredTranscriptSegment, TranscriptSegment } from './types';
 
-export function normalise(text: string): string {
+function normalise(text: string): string {
   return text
     .toLowerCase()
     .replace(/[^\p{L}\p{N}\s.]/gu, '')
@@ -9,7 +9,7 @@ export function normalise(text: string): string {
     .replace(/\.+$/, '');
 }
 
-export const BLOCKLIST = new Set(
+const BLOCKLIST = new Set(
   [
     'thank you',
     'thanks for watching',
@@ -32,9 +32,9 @@ export const BLOCKLIST = new Set(
   ].map(normalise),
 );
 
-export const SOLO_ONLY = new Set(['you', 'so', 'the', 'oh', 'okay', 'ok', 'yeah', 'hmm']);
+const SOLO_ONLY = new Set(['you', 'so', 'the', 'oh', 'okay', 'ok', 'yeah', 'hmm']);
 
-export function isScored(segment: TranscriptSegment): segment is ScoredTranscriptSegment {
+function isScored(segment: TranscriptSegment): segment is ScoredTranscriptSegment {
   return (
     typeof segment.no_speech_prob === 'number' &&
     typeof segment.avg_logprob === 'number' &&

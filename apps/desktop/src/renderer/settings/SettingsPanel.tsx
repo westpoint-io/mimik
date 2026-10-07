@@ -57,13 +57,13 @@ const KEYS: { id: keyof CaptureShortcuts; labelKey: string }[] = [
   { id: 'capture', labelKey: 'desktop.shortcutCapture' },
 ];
 
-export function SettingsPanel() {
+export function SettingsPanel({ onSaved }: { onSaved: () => void }) {
   const [section, setSection] = useState<Section>(() => {
     const reopened = sessionStorage.getItem(REOPEN_SETTINGS) as Section | null;
     sessionStorage.removeItem(REOPEN_SETTINGS);
     return reopened ?? 'general';
   });
-  const keys = useApiKeys();
+  const keys = useApiKeys({ onChange: onSaved });
   const microphone = useMicrophoneGate();
   const [settings, setSettings] = useState<CaptureSettings | null>(null);
 
@@ -74,6 +74,7 @@ export function SettingsPanel() {
   const save = async (patch: Partial<CaptureSettings>) => {
     setSettings((current) => current && { ...current, ...patch });
     setSettings(await window.mimik.capture.settings.set(patch));
+    onSaved();
   };
 
   return (
@@ -103,22 +104,28 @@ export function SettingsPanel() {
         <div className="flex flex-col gap-3.5">
           {section === 'ai' && (
             <>
-              <AiSettings keys={keys} onOpenKeys={() => setSection('keys')} />
+              <AiSettings keys={keys} onOpenKeys={() => setSection('keys')} onChange={onSaved} />
               <NarrationSettings
                 keys={keys}
                 onOpenKeys={() => setSection('keys')}
+                onChange={onSaved}
                 onRequestAccess={requestMicrophoneAccess}
                 access={microphone.row}
                 microphoneDisabled={microphone.locked}
                 liveMeter
               />
-              <VoiceoverSettings keys={keys.keys} listVoices={fetchVoices} onOpenKeys={() => setSection('keys')} />
+              <VoiceoverSettings
+                keys={keys.keys}
+                listVoices={fetchVoices}
+                onOpenKeys={() => setSection('keys')}
+                onChange={onSaved}
+              />
             </>
           )}
 
           {section === 'keys' && <ApiKeysSettings state={keys} validate={validateApiKey} />}
 
-          {section === 'branding' && <BrandingSettings />}
+          {section === 'branding' && <BrandingSettings onChange={onSaved} />}
 
           {section === 'capture' && settings && (
             <>
@@ -201,7 +208,7 @@ export function SettingsPanel() {
             </>
           )}
 
-          {section === 'general' && <GeneralSettings />}
+          {section === 'general' && <GeneralSettings onSaved={onSaved} />}
 
           {section === 'shortcuts' && settings && (
             <Card icon={Command} title={i18n.t('desktop.cardGlobalKeys')} hint={i18n.t('desktop.cardGlobalKeysHint')}>

@@ -1,6 +1,6 @@
-import { logger } from '@mimik/core/logger';
-import { queueDescription } from '@/core/capture/ai/description-queue';
 import { clearStepAiPending } from '@/core/guides/service';
+import { logger } from '@/core/logger';
+import { queueDescription } from '../ai/description-queue';
 import { takeDeferredDescription, takeDeferredDescriptions } from './deferred-descriptions';
 
 export function describeStepNow(guideId: string, stepId: string): void {

@@ -128,7 +128,9 @@ CI (`pr-test.yml`) will run lint, tests, and both browser builds on every PR.
 
 AI-assisted contributions are welcome here.
 
-Tick the disclosure box in the pull request template and name the tools you used. Saying so costs you nothing. Passing off output you have not read is what gets a PR closed.
+Name the models you used on the "AI model(s) used" line at the top of the pull request template, or write "None". Saying so costs you nothing. Passing off output you have not read is what gets a PR closed.
+
+That line is the only place AI use is disclosed. Commits are authored by you: do not let a tool set itself as the commit author or add `Co-Authored-By`, `Assisted-by` or session-link trailers. If your tool adds them by default, turn that off in its settings.
 
 You are responsible for every line you submit. If a reviewer asks why something is there, "the model wrote it" is not an answer. Be ready to debug it without going back to the tool.
 

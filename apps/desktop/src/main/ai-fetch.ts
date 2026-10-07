@@ -1,6 +1,6 @@
 import { ipcMain, net } from 'electron';
 
-export interface AiRequest {
+interface AiRequest {
   id: string;
   url: string;
   method?: string;
@@ -8,7 +8,7 @@ export interface AiRequest {
   body?: string | Uint8Array<ArrayBuffer>;
 }
 
-export interface AiResponse {
+interface AiResponse {
   status: number;
   statusText: string;
   headers: Record<string, string>;

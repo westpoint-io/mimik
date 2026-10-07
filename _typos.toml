@@ -1,0 +1,25 @@
+[files]
+extend-exclude = [
+  "patches/",
+  "pnpm-lock.yaml",
+  "README.*.md",
+  "src/locales/*.yml",
+  "!src/locales/en.yml",
+  "*.svg",
+  "__snapshots__/",
+  "packages/core/src/export/poppins.ts",
+  "packages/core/src/capture/ai/examples.ts",
+  "packages/core/src/capture/ai/prompts.ts",
+]
+
+[default]
+extend-ignore-re = ["[A-Za-z0-9]{20}"]
+
+[default.extend-words]
+iy = "iy"
+seeked = "seeked"
+unparseable = "unparseable"
+duplicat = "duplicat"
+feld = "feld"
+sur = "sur"
+importante = "importante"

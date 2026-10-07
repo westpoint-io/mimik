@@ -26,7 +26,7 @@ export const VoiceMessage = {
   VOICE_PERMISSION_RESULT: 'VOICE_PERMISSION_RESULT',
 } as const;
 
-export type VoiceMessageType = (typeof VoiceMessage)[keyof typeof VoiceMessage];
+type VoiceMessageType = (typeof VoiceMessage)[keyof typeof VoiceMessage];
 
 export interface VoiceEnvelope {
   type: VoiceMessageType;
