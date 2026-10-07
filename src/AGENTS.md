@@ -13,7 +13,7 @@ Guide changes cross contexts on the `mimik-guides` BroadcastChannel. The message
 
 ## Capture lifecycle (xstate in the background)
 
-- `PAUSED` is a real state with a `pauseReason` (`'blur' | 'manual'`). It never handles
+- `PAUSED` is a real state with a `pauseReason` (`'blur' | 'manual' | 'area'`, where `area` is desktop only). It never handles
   `USER_ACTION`. Step writes are gated on `RECORDING`, except `finalizeInputStep`, which is gated on
   "not IDLE".
 - Read paused-ness from the state value, never from `pauseReason`. A snapshot restored from
