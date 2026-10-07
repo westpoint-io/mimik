@@ -26,11 +26,15 @@ vi.mock('@/lib/offscreen/close-voice-host-if-idle', () => ({
   closeVoiceHostIfIdle: (...args: unknown[]) => closeVoiceHostIfIdle(...args),
 }));
 vi.mock('@/lib/offscreen/close-voice-host', () => ({ closeVoiceHost: vi.fn() }));
+vi.mock('@/lib/offscreen/abort-voice-capture', () => ({
+  abortVoiceCapture: vi.fn().mockResolvedValue({ aborted: true }),
+}));
 vi.mock('@/lib/offscreen/flush-voice-capture', () => ({ flushVoiceCapture: vi.fn() }));
 vi.mock('@/lib/offscreen/open-mic-permission-page', () => ({ openMicPermissionPage: vi.fn() }));
 vi.mock('@/lib/offscreen/register-voice-panel-relay', () => ({ registerVoicePanelRelay: vi.fn() }));
 
-vi.mock('@/lib/browser-api/local-storage', () => ({
+vi.mock('@/core/env', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/core/env')>()),
   localStorage: { get: (...args: unknown[]) => storageGet(...args), set: vi.fn() },
 }));
 vi.mock('@/lib/browser-api/on-message', () => ({ onMessage: vi.fn() }));
@@ -51,14 +55,19 @@ vi.mock('@/core/guides/service', () => ({
   getStepsForGuide: (...args: unknown[]) => getStepsForGuide(...args),
 }));
 
-vi.mock('../deferred-descriptions', () => ({ discardDeferred: vi.fn() }));
-vi.mock('../describe-unnarrated', () => ({ describeStepNow: vi.fn(), describeUnnarratedSteps: vi.fn() }));
+vi.mock('@/core/capture/voice/deferred-descriptions', () => ({ discardDeferred: vi.fn() }));
+vi.mock('@/core/capture/voice/describe-unnarrated', () => ({
+  describeStepNow: vi.fn(),
+  describeUnnarratedSteps: vi.fn(),
+}));
 
+import { describeUnnarratedSteps } from '@/core/capture/voice/describe-unnarrated';
 import {
   applyNarration,
   getVoiceUpdate,
   startVoiceNarration,
   stopVoiceNarration,
+  turnOffNarration,
   whenNarrationSettled,
 } from '../voice';
 
@@ -186,5 +195,19 @@ describe('the steps a stop hands to the transcriber', () => {
       ],
       expect.anything(),
     );
+  });
+});
+
+describe('turning the mic off mid-recording', () => {
+  it('releases the steps held for narration and leaves nothing for Stop to report', async () => {
+    await beginRecording();
+    await turnOffNarration('g1');
+
+    expect(getVoiceUpdate().phase).toBe('idle');
+    expect(describeUnnarratedSteps).toHaveBeenCalledWith('g1', []);
+
+    await stopVoiceNarration('g1');
+    expect(stopVoiceCapture).not.toHaveBeenCalled();
+    expect(getVoiceUpdate().phase).toBe('idle');
   });
 });

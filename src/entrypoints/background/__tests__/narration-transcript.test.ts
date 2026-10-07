@@ -11,8 +11,11 @@ vi.mock('@/core/guides/service', () => ({
   getStepsForGuide: vi.fn(),
 }));
 
-vi.mock('../deferred-descriptions', () => ({ discardDeferred: vi.fn() }));
-vi.mock('../describe-unnarrated', () => ({ describeStepNow: vi.fn(), describeUnnarratedSteps: vi.fn() }));
+vi.mock('@/core/capture/voice/deferred-descriptions', () => ({ discardDeferred: vi.fn() }));
+vi.mock('@/core/capture/voice/describe-unnarrated', () => ({
+  describeStepNow: vi.fn(),
+  describeUnnarratedSteps: vi.fn(),
+}));
 
 import { applyNarration, takeNarrated } from '../voice';
 

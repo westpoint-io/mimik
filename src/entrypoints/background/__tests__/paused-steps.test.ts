@@ -40,7 +40,10 @@ vi.mock('@mimik/core/logger', () => ({ logger: { info: vi.fn(), debug: vi.fn(), 
 vi.mock('../voice', () => ({ getVoiceUpdate: () => ({ phase: 'idle' }), flushNarrationForStep: vi.fn() }));
 vi.mock('../ai-description', () => ({ generateAiDescription: vi.fn() }));
 vi.mock('@/core/capture/ai/description-queue', () => ({ queueDescription: vi.fn() }));
-vi.mock('../deferred-descriptions', () => ({ deferDescription: vi.fn(), shouldQueueAiDescription: () => false }));
+vi.mock('@/core/capture/voice/deferred-descriptions', () => ({
+  deferDescription: vi.fn(),
+  shouldQueueAiDescription: () => false,
+}));
 vi.mock('@/core/capture/ai/keys', () => ({ AI_KEY_SETTINGS: [], resolveAiKey: () => ({ apiKey: undefined }) }));
 
 const meta = { rect: { x: 0, y: 0, width: 10, height: 10 }, devicePixelRatio: 1 } as ElementMeta;

@@ -3,6 +3,7 @@ import '@/lib/ui-env';
 import { logger } from '@mimik/core/logger';
 import { browser, defineBackground } from '#imports';
 import { generateDescriptionOnDemand } from '@/core/capture/ai/guide-description';
+import { mergeRecording } from '@/core/capture/ai/merge-recording';
 import { rewriteSelection } from '@/core/capture/ai/rewrite';
 import { validateApiKey } from '@/core/capture/ai/validate';
 import { stepRequiresManual } from '@/core/guideme/manual';
@@ -10,10 +11,8 @@ import { advanceSession, cancelSession, completeSession, getSession, startSessio
 import { actionSteps } from '@/core/guides/blocks';
 import {
   createGuide,
-  createSnapshot,
   getScreenshotsForSteps,
   getStepsForGuide,
-  mergeGuideInto,
   permanentlyDeleteGuide,
   softDeleteGuide,
 } from '@/core/guides/service';
@@ -30,7 +29,7 @@ import { setupPortListener } from '@/lib/port/setup-port-listener';
 import { TabMessage } from '@/lib/tab-messages';
 import { recordUpdate } from '@/lib/update-notice/record-update';
 import { getActor, getStateUpdate, initActor, initActorFallback, waitUntilReady } from './actor';
-import { generateGuideMetaOnStop, settlePendingDescriptions } from './guide-meta';
+import { generateGuideMetaOnStop } from './guide-meta';
 import { registerNavigationListeners } from './navigation';
 import { pauseCapture, resumeFromPause, whenPauseSettled } from './pause';
 import { handleCaptureStep, handleFinalizeInputStep, handleUpdateInputStep } from './step-pipeline';
@@ -49,6 +48,8 @@ import {
   registerVoiceListeners,
   startVoiceNarration,
   stopVoiceNarration,
+  turnOffNarration,
+  whenNarrationSettled,
 } from './voice';
 
 async function resolveManual(step: Step): Promise<boolean> {
@@ -163,16 +164,17 @@ export default defineBackground(() => {
     await broadcastClearBlur();
     actor.send({ type: 'STOP_RECORDING' });
 
-    if (guideId) void stopVoiceNarration(guideId);
+    const narrationStopped = guideId ? stopVoiceNarration(guideId) : Promise.resolve();
 
     if (guideId && insertTargetGuideId !== null && insertAtIndex !== null) {
-      await settlePendingDescriptions(guideId);
-      await createSnapshot(insertTargetGuideId);
-      await mergeGuideInto(guideId, insertTargetGuideId, insertAtIndex);
+      await narrationStopped;
+      await mergeRecording(guideId, { insertTargetGuideId, insertAtIndex }, whenNarrationSettled);
       return { success: true, guideId: insertTargetGuideId, inserted: true };
     }
 
-    if (guideId) generateGuideMetaOnStop(guideId).catch(() => {});
+    if (guideId) {
+      narrationStopped.then(() => generateGuideMetaOnStop(guideId)).catch(() => {});
+    }
 
     return { success: true, guideId: guideId ?? undefined, inserted: false };
   });
@@ -193,6 +195,12 @@ export default defineBackground(() => {
   });
 
   onMessage('startNarration', async () => ({ started: await startNarrationIfPossible() }));
+
+  onMessage('stopNarration', async () => {
+    await waitUntilReady();
+    await turnOffNarration(getActor().getSnapshot().context.currentGuideId);
+    return { stopped: true };
+  });
 
   onMessage('enterBlurMode', async () => {
     await waitUntilReady();
