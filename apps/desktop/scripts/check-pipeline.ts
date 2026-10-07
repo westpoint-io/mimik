@@ -1,8 +1,10 @@
+import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
-import { app, BrowserWindow, nativeImage, screen } from 'electron';
+import { app, BrowserWindow, nativeImage, protocol, screen } from 'electron';
 import { ask } from '../src/main/ask';
 import { DesktopRecorder, shouldCapture } from '../src/main/capture/recorder';
 import { clampToDisplays } from '../src/main/capture/region';
+import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from '../src/main/capture/screenshot-store';
 import { DEFAULT_CAPTURE_SETTINGS, loadSettings, normaliseSettings, saveSettings } from '../src/main/capture/settings';
 import type { Capture } from '../src/main/capture/screenshot';
 
@@ -20,10 +22,15 @@ function bail(error: unknown): never {
 
 setTimeout(() => bail(new Error('check did not finish within 120s')), 120_000).unref();
 
+protocol.registerSchemesAsPrivileged([
+  { scheme: SCREENSHOT_SCHEME, privileges: { standard: true, secure: true, supportFetchAPI: true } },
+]);
+
 app.disableHardwareAcceleration();
 app.on('window-all-closed', () => {});
 
 app.whenReady().then(async () => {
+  registerScreenshotProtocol();
   const win = new BrowserWindow({
     show: false,
     webPreferences: { preload: join(__dirname, '../preload/index.cjs'), contextIsolation: true },
@@ -106,12 +113,16 @@ app.whenReady().then(async () => {
 
   settings = { ...DEFAULT_CAPTURE_SETTINGS, showCursor: true, cursorStyle: 'arrow', screenshotDelayMs: 0 };
   await recorder.capture({ x: region.x + 200, y: region.y + 150 });
-  const cursorSizes = await ask<number[]>(win.webContents, 'mimik:check:blobSizes', activeGuide, 30_000);
+  const cursorSizes = await ask<number[]>(win.webContents, 'mimik:check:renderedSizes', activeGuide, 30_000);
+  const bare = cursorSizes[cursorSizes.length - 2] ?? 0;
+  const drawn = cursorSizes[cursorSizes.length - 1] ?? 0;
   results.push({
-    name: 'cursor is drawn into the frame',
-    ok: cursorSizes.length >= 2 && cursorSizes[cursorSizes.length - 1] !== cursorSizes[0],
-    detail: `${cursorSizes[0]} bytes without a cursor, ${cursorSizes[cursorSizes.length - 1]} bytes with one`,
+    name: 'cursor is drawn when rendered',
+    ok: bare > 0 && drawn > 0 && bare !== drawn,
+    detail: `${bare} bytes rendered without a cursor, ${drawn} bytes with one`,
   });
+
+  const probeSrc = await ask<string | null>(win.webContents, 'mimik:check:screenshotSrc', activeGuide, 20_000);
 
   await ask(win.webContents, 'mimik:check:cleanup', [guideId, activeGuide], 30_000);
 
@@ -147,6 +158,24 @@ app.whenReady().then(async () => {
     name: 'stopping names the guide',
     ok: titled.length > 0 && titled !== 'Untitled Guide' && !titled.includes('untitledGuide'),
     detail: titled,
+  });
+
+  const probe = probeSrc ?? `${SCREENSHOT_SCHEME}://${randomUUID()}`;
+  const fetched = await app_.webContents.executeJavaScript(
+    `fetch(${JSON.stringify(probe)}).then(r => r.ok ? r.blob().then(b => 'ok ' + b.size + ' bytes') : 'status ' + r.status).catch(e => 'threw ' + e.message)`,
+  );
+  results.push({
+    name: 'the app window can reach the scheme',
+    ok: typeof fetched === 'string' && fetched.startsWith('ok '),
+    detail: String(fetched),
+  });
+
+  const kept = await ask<string[]>(win.webContents, 'mimik:check:screenshotIds', undefined, 20_000);
+  const swept = sweepScreenshots(kept);
+  results.push({
+    name: 'deleted guides leave no files',
+    ok: sweepScreenshots(kept) === 0,
+    detail: `${swept} orphaned file(s) removed, none left behind`,
   });
 
   const stopped = 'bc4e4a1e-0000-4000-8000-000000000001';

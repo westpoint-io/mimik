@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { CaptureImage } from '@mimik/core/capture/sink';
 import type { ElementMeta } from '@mimik/core/guides/types';
 import { nativeImage, screen } from 'electron';
@@ -5,6 +6,7 @@ import { focusedWindow } from './focused-window';
 import { type InputAction, InputHook } from './input-hook';
 import type { Region } from './region';
 import { type Capture, captureDisplay } from './screenshot';
+import { writeScreenshot } from './screenshot-store';
 import { type CaptureSettings, DEFAULT_CAPTURE_SETTINGS } from './settings';
 
 const TARGET_SIZE = 28;
@@ -115,6 +117,7 @@ export class DesktopRecorder {
     });
     const size = cropped.getSize();
 
+    const screenshotId = randomUUID();
     const local = { x: point.x - framed.x, y: point.y - framed.y };
     const found = await focusedWindow();
 
@@ -138,7 +141,12 @@ export class DesktopRecorder {
         clickPoint: local,
         ...(found.ok ? { app: found.window.app, window: { title: found.window.title } } : {}),
       },
-      image: { png: cropped.toPNG(), width: size.width, height: size.height },
+      image: {
+        screenshotId,
+        src: writeScreenshot(screenshotId, cropped.toPNG()),
+        width: size.width,
+        height: size.height,
+      },
       ...(settings.showCursor ? { cursor: { x: local.x, y: local.y, style: settings.cursorStyle, scale } } : {}),
     });
   }

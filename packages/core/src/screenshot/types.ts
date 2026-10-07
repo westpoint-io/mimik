@@ -138,9 +138,19 @@ export type Annotation =
   | { id: string; type: 'redact'; x: number; y: number; w: number; h: number; style: 'blur' | 'solid' }
   | { id: string; type: 'target'; x: number; y: number; w: number; h: number; color: string; border: TargetBorder };
 
+export type CursorStyle = 'arrow' | 'hand' | 'dot';
+
+export interface CursorMark {
+  x: number;
+  y: number;
+  style: CursorStyle;
+  scale: number;
+}
+
 export interface ScreenshotEdits {
   viewport?: ScreenshotBounds;
   target?: ClickTarget | null;
   annotations?: Annotation[];
+  cursor?: CursorMark | null;
   alt?: string;
 }

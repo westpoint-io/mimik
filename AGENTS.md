@@ -259,9 +259,12 @@ on a machine where half the primitives cannot work.
 
 ## Desktop Storage
 
-The desktop app reuses `@mimik/core/guides` unchanged — Electron's Chromium provides IndexedDB, so
-`MimikDB`, the service layer and the Dexie migrations all carry over with no rewrite. `MimikDB` takes
-an optional database name so a check can open a throwaway store instead of the user's `mimik` one.
+The desktop app reuses `@mimik/core/guides` for everything except the screenshot bytes — Electron's
+Chromium provides IndexedDB, so `MimikDB`, the service layer and the Dexie migrations all carry over
+with no rewrite. A screenshot row holds a `src` instead of a `blob` when the bytes live on disk, and
+the service hydrates one into the other on read, so the distinction stops at the storage layer.
+`MimikDB` takes an optional database name so a check can open a throwaway store instead of the
+user's `mimik` one.
 
 Core reaches the surface through `configureCore`, so every desktop entry point imports
 `src/renderer/core-env.ts` for its side effect, exactly as the extension imports `src/lib/core-env.ts`.
@@ -325,13 +328,31 @@ The work splits across the process boundary the way the extension splits across 
 service worker. `DesktopRecorder` in main owns the global input hook, discards clicks outside the
 capture region or while paused, and serialises the rest through a single promise chain so two clicks
 cannot interleave. For each click it hides the overlays, grabs the display, crops to the region with
-`nativeImage.crop`, and hands the pixels to the renderer. `DesktopCaptureSink` in the renderer
+`nativeImage.crop`, and writes the result to disk. `DesktopCaptureSink` in the renderer
 implements `CaptureSink` and writes through `@mimik/core/guides/service`, exactly as the extension's
 `step-pipeline.ts` does.
 
 Main cannot `invoke` a renderer, so `ask()` sends a request with a generated reply channel and waits
 for `ipcMain.once` on it, with a timeout. The preload's `onRequest` is the other half. Guide creation
 and step writes both ride it, because both need IndexedDB, which only the renderer has.
+
+Screenshot bytes never cross the process boundary. Main writes each capture to a PNG under
+`screenshots/` in `app.getPath('userData')` and sends the renderer only an id, a URL and the pixel
+size, so the message stays small and no image data rides an IPC channel. The renderer stores that URL
+on the row and the service fetches it back into a `Blob` on read, which is why every consumer still
+sees the shape it always did. A large binary crossing IPC is the one thing this avoids: the buffer a
+native capture hands back points at memory the capture library still owns, and it does not reliably
+survive the trip.
+
+The renderer reads those files over a registered `mimik-screenshot://` scheme rather than being given
+filesystem access. Main decides what that scheme will serve, the id has to look like a uuid, and
+context isolation stays on. The scheme is declared privileged before the app is ready, or `fetch`
+inside the renderer refuses it, and any entry point that reads a guide has to register the handler,
+which includes the checks.
+
+Files outlive the rows that point at them, because deleting a guide only removes database rows. The
+renderer sends every known screenshot id to main at startup and main deletes any file not in that
+set, so an interrupted delete costs disk until the next launch rather than forever.
 
 `elementSource` is `'screen'` for these steps: the click point, the region-relative target rect, the
 display scale factor, and the foreground app and window title are all known, but nothing about the
@@ -378,11 +399,12 @@ read by main rather than by core, because none of them mean anything to the exte
 `normaliseSettings` runs on every read and write, so an out-of-range delay clamps and an unknown
 cursor style falls back to the platform default rather than reaching the recorder.
 
-Electron exposes no way to read the real system cursor bitmap and `desktopCapturer` never includes
-the pointer, so the shapes are drawn as canvas paths in the renderer. `withCursor` decodes the PNG
-onto an `OffscreenCanvas`, draws the pointer and re-encodes, so the cursor is baked into the stored
-blob rather than living as an annotation. Every exporter therefore shows it with no export-side work,
-and it survives the portable format.
+Electron exposes no way to read the real system cursor bitmap and a screen grab never includes the
+pointer, so the shapes are drawn as canvas paths. The cursor is an entry in `edits` beside the click
+target, not something baked into the stored bytes, so `renderScreenshot` draws it and every exporter
+and the editor show it with no export-side work. Keeping it out of the file means the capture is
+never decoded and re-encoded on the way to disk, and the pointer can be moved or removed later
+without touching the original.
 
 A click outside the capture area cannot be framed by a region that does not contain it, so those
 captures fall back to the whole display the click landed on. `shouldCapture` is exported for that
@@ -390,37 +412,8 @@ decision rather than being inline in the hook handler, so the rule is testable o
 
 `check:pipeline` covers all four: clamping and persistence round-trip through the real file, the
 opt-in rule holds in three positions, a 400 ms delay measurably slows the grab, and the same
-synthetic frame encodes to a different size once a cursor is drawn into it. It restores whatever
+synthetic frame renders to a different size once a cursor is drawn over it. It restores whatever
 settings were on disk when it finishes.
-
-## Testing on Windows
-
-`pnpm vm:windows` runs the desktop app inside a local Windows virtual machine, because the app cannot
-be built for Windows from a Linux machine at all. `get-windows` and `uiohook-napi` are native, no
-win32 binary matches the Electron ABI during a cross-build, and `node-gyp` refuses to cross-compile,
-so `electron-builder --win` fails before it packages anything. Windows has to build its own copy.
-
-The script creates the machine on first run through `quickemu`, fetches the VirtIO drivers, stages the
-working tree, uncommitted and untracked files included, serves it on loopback and boots. Staging the
-working tree rather than a commit is what makes the documented loop true, since otherwise the guest
-silently runs the last commit and a fix appears not to work. QEMU user-mode networking always
-maps the host to `10.0.2.2`, so the guest pulls the source over plain HTTP and needs no shared folder,
-no samba and no SPICE webdav. Inside Windows one line installs Node and pnpm through `winget`,
-unpacks the source to `C:\mimik`, installs and launches. Iterating is: change code, re-run the
-script, re-run the same line in the guest.
-
-Four steps cannot be scripted and the script says so rather than failing quietly:
-
-- Microsoft blocks automated ISO downloads by IP, so the Windows image is fetched once by hand
-- PowerShell refuses unsigned scripts, so the bootstrap runs through `-ExecutionPolicy Bypass`
-- Windows remembers its own display mode, so `--width` and `--height` do not stick and the resolution
-  is set once inside the guest
-- `quickget` leaves a truncated VirtIO download that curl cannot resume, so the script refetches it
-  whenever the file is implausibly small
-
-Whether `uiohook-napi` ships a prebuilt binary for this Electron version on Windows is still unknown.
-The first machine had the Visual Studio Build Tools installed before `pnpm install` ran, so it may
-have compiled rather than downloaded. A fresh machine without them settles it.
 
 ## Export Formats
 

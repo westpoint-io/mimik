@@ -233,3 +233,27 @@ describe('resizeAnnotation', () => {
     expect(resizeAnnotation(arrow, 'se', 20, 0)).toMatchObject({ x1: 10, y1: 10, x2: 130, y2: 60 });
   });
 });
+
+describe('viewport padding on a large frame', () => {
+  const shot = (imgW: number, imgH: number, w: number, h: number) =>
+    ({
+      id: 's',
+      stepId: 't',
+      blob: new Blob(),
+      mimeType: 'image/png',
+      width: imgW,
+      height: imgH,
+      pixelRatio: 1,
+      bounds: { x: imgW / 2, y: imgH / 2, width: w, height: h },
+    }) as Screenshot;
+
+  it('frames a small target tightly instead of a third of the screen', () => {
+    const viewport = resolveViewport(shot(2560, 1440, 40, 40));
+    expect(viewport.width).toBeLessThan(2560 * 0.15);
+  });
+
+  it('leaves a browser-sized target as it was', () => {
+    const viewport = resolveViewport(shot(1440, 900, 120, 40));
+    expect(viewport.width).toBeCloseTo(552, 0);
+  });
+});

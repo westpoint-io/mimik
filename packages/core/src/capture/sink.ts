@@ -2,7 +2,8 @@ import type { DOMContext } from '@/core/capture/dom/context';
 import type { ElementMeta } from '@/core/guides/types';
 
 export interface CaptureImage {
-  png: Uint8Array;
+  screenshotId: string;
+  src: string;
   width: number;
   height: number;
 }

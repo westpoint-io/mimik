@@ -102,6 +102,18 @@ app.whenReady().then(async () => {
     commands.includes('pause') && overlay.state === 'paused',
     `commands: ${commands.join(', ')}; state is ${overlay.state}`,
   );
+  await windowWithHash('controls')?.webContents.executeJavaScript(
+    "document.querySelectorAll('button')[document.querySelectorAll('button').length - 1].click()",
+  );
+  await settle();
+  check(
+    'finishing hides the area and the controls',
+    overlay.state === 'hidden' && overlayWindows().every((w) => !w.isVisible()),
+    `state is ${overlay.state}; ${overlayWindows().filter((w) => w.isVisible()).length} window(s) still visible`,
+  );
+  overlay.arm();
+  await settle();
+
   let hiddenDuringCapture = false;
   await overlay.withHidden(async () => {
     hiddenDuringCapture = overlayWindows().every((w) => !w.isVisible());

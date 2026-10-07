@@ -375,7 +375,7 @@ describe('revertToSnapshot', () => {
       alt: 'original caption',
       annotations: [{ id: 'a1', type: 'redact', x: 1, y: 2, w: 3, h: 4, style: 'blur' }],
     });
-    expect(await restored?.blob.text()).toBe('edited');
+    expect(await restored?.blob?.text()).toBe('edited');
     expect((await db.guides.get('g1'))?.updatedAt).toBeGreaterThan(1000);
   });
 
@@ -488,7 +488,7 @@ describe('append-only screenshots', () => {
     await revertToSnapshot(snapshot!.id);
 
     expect((await db.steps.get('s1'))?.screenshotId).toBe('sc1');
-    expect(await (await db.screenshots.get('sc1'))?.blob.text()).toBe('img');
+    expect(await (await db.screenshots.get('sc1'))?.blob?.text()).toBe('img');
   });
 
   it('restores a deleted image', async () => {

@@ -1,7 +1,8 @@
 import { join } from 'node:path';
-import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, shell, Tray } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, protocol, shell, Tray } from 'electron';
 import { ask } from './ask';
 import { DesktopRecorder } from './capture/recorder';
+import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from './capture/screenshot-store';
 import { type CaptureSettings, loadSettings, saveSettings } from './capture/settings';
 import { CaptureOverlay, type OverlayCommand } from './overlay';
 import { checkForUpdates } from './updater';
@@ -154,18 +155,24 @@ function quit(): void {
   app.quit();
 }
 
+protocol.registerSchemesAsPrivileged([
+  { scheme: SCREENSHOT_SCHEME, privileges: { standard: true, secure: true, supportFetchAPI: true } },
+]);
+
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
   app.on('second-instance', () => showWindow());
 
   app.whenReady().then(() => {
+    registerScreenshotProtocol();
     ipcMain.handle('mimik:openAtLogin:get', () => opensAtLogin());
     ipcMain.handle('mimik:openAtLogin:set', (_event, enabled: boolean) => {
       setOpenAtLogin(Boolean(enabled));
       return opensAtLogin();
     });
     ipcMain.handle('mimik:version', () => app.getVersion());
+    ipcMain.handle('mimik:screenshots:sweep', (_event, keep: string[]) => sweepScreenshots(keep));
 
     overlay = new CaptureOverlay((command) => void onOverlayCommand(command));
     captureSettings = loadSettings();

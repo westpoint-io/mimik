@@ -3,6 +3,7 @@ import type { Annotation, ClickTarget } from './types';
 import { DEFAULT_TARGET_COLOR } from './types';
 
 const PAD_RATIO = 0.3;
+const MAX_PAD_MULTIPLE = 6;
 
 export function clamp(val: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, val));
@@ -34,8 +35,8 @@ export function resolveViewport(screenshot: Screenshot): ScreenshotBounds {
   const imgAspect = imgW / imgH;
   const elAspect = bw / bh;
 
-  let visW = bw + PAD_RATIO * imgW;
-  let visH = bh + PAD_RATIO * imgH;
+  let visW = bw + Math.min(PAD_RATIO * imgW, bw * MAX_PAD_MULTIPLE);
+  let visH = bh + Math.min(PAD_RATIO * imgH, bh * MAX_PAD_MULTIPLE);
 
   if (elAspect > 1) {
     visH = visW / imgAspect;

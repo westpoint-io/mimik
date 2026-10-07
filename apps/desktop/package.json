@@ -12,8 +12,7 @@
     "check:capture": "electron-vite build && electron out/main/check-capture.js",
     "check:storage": "electron-vite build && electron out/main/check-storage.js",
     "check:overlay": "electron-vite build && node scripts/run-check.mjs out/main/check-overlay.js",
-    "check:pipeline": "electron-vite build && electron out/main/check-pipeline.js",
-    "vm:windows": "bash scripts/windows-vm.sh"
+    "check:pipeline": "electron-vite build && electron out/main/check-pipeline.js"
   },
   "dependencies": {
     "@mimik/core": "workspace:*",

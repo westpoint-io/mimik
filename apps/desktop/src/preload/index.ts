@@ -36,6 +36,9 @@ const api = {
       }
     });
   },
+  screenshots: {
+    sweep: (keep: string[]): Promise<number> => ipcRenderer.invoke('mimik:screenshots:sweep', keep),
+  },
   openAtLogin: {
     get: (): Promise<boolean> => ipcRenderer.invoke('mimik:openAtLogin:get'),
     set: (enabled: boolean): Promise<boolean> => ipcRenderer.invoke('mimik:openAtLogin:set', enabled),

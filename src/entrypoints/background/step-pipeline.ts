@@ -3,15 +3,17 @@ import { AI_KEY_SETTINGS, resolveAiKey } from '@/core/capture/ai/keys';
 import type { DOMContext } from '@/core/capture/dom/context';
 import { CaptureState } from '@/core/capture/machine';
 import { buildFallbackDescription } from '@/core/capture/step-description';
-import { db } from '@/core/guides/db';
 import {
   addStepToGuide,
   clearStepAiPending,
   createStep,
+  getStep,
   saveScreenshot,
+  updateStepCapture,
   updateStepDescription,
+  updateStepInputValue,
 } from '@/core/guides/service';
-import type { ElementMeta, Screenshot, Step } from '@/core/guides/types';
+import type { ElementMeta, Screenshot } from '@/core/guides/types';
 import { DEFAULT_TARGET_COLOR } from '@/core/screenshot/types';
 import { captureVisibleTab, localStorage } from '@/lib/browser-api';
 import type { CaptureStepData, CaptureStepResponse } from '@/lib/messaging';
@@ -118,7 +120,7 @@ export async function handleCaptureStep(data: CaptureStepData): Promise<CaptureS
 export async function handleUpdateInputStep(stepId: string, description: string, inputValue?: string) {
   await updateStepDescription(stepId, description);
   if (inputValue !== undefined) {
-    await db.steps.update(stepId, { inputValue });
+    await updateStepInputValue(stepId, inputValue);
   }
 }
 
@@ -128,11 +130,9 @@ export async function handleFinalizeInputStep(
   domContext: DOMContext | undefined,
 ) {
   const screenshotId = await takeScreenshot(stepId, elementMeta);
-  const updates: Partial<Step> = { elementMeta };
-  if (screenshotId) updates.screenshotId = screenshotId;
-  await db.steps.update(stepId, updates);
+  await updateStepCapture(stepId, elementMeta, screenshotId);
 
-  const guideId = (await db.steps.get(stepId))?.guideId;
+  const guideId = (await getStep(stepId))?.guideId;
   if (domContext && guideId) {
     queueDescription(guideId, () => tryAIDescription(stepId, domContext));
   }
