@@ -99,7 +99,7 @@ describe('parseManifest', () => {
         ],
       }),
     );
-    expect(parsed.screenshots[0].edits?.annotations?.map((a) => a.id)).toEqual(['good']);
+    expect(parsed.screenshots[0]!.edits?.annotations?.map((a) => a.id)).toEqual(['good']);
   });
 
   it('rejects a traversal that starts inside the screenshots folder', () => {
@@ -137,7 +137,7 @@ describe('parseManifest', () => {
         ],
       }),
     );
-    expect(parsed.screenshots[0].mimeType).toBe('image/webp');
+    expect(parsed.screenshots[0]!.mimeType).toBe('image/webp');
   });
 
   it('drops a javascript: url rather than letting it reach an href', () => {
@@ -156,8 +156,8 @@ describe('parseManifest', () => {
         ],
       }),
     );
-    expect(parsed.steps[0].url).toBe('');
-    expect(parsed.steps[0].elementMeta?.href).toBeNull();
+    expect(parsed.steps[0]!.url).toBe('');
+    expect(parsed.steps[0]!.elementMeta?.href).toBeNull();
   });
 
   it('clamps absurd screenshot dimensions instead of sizing a canvas from them', () => {
@@ -168,8 +168,8 @@ describe('parseManifest', () => {
         ],
       }),
     );
-    expect(parsed.screenshots[0].width).toBeLessThanOrEqual(32_768);
-    expect(parsed.screenshots[0].height).toBeLessThanOrEqual(32_768);
+    expect(parsed.screenshots[0]!.width).toBeLessThanOrEqual(32_768);
+    expect(parsed.screenshots[0]!.height).toBeLessThanOrEqual(32_768);
   });
 
   it("enforces the manifest's own claim that typed values were stripped", () => {
@@ -179,7 +179,7 @@ describe('parseManifest', () => {
         steps: [{ id: 's', index: 0, description: 'x', action: 'input', url: '', timestamp: 1, inputValue: 'hunter2' }],
       }),
     );
-    expect(parsed.steps[0].inputValue).toBeUndefined();
+    expect(parsed.steps[0]!.inputValue).toBeUndefined();
   });
 
   it('keeps typed values when the bundle does not claim to have stripped them', () => {
@@ -189,7 +189,7 @@ describe('parseManifest', () => {
         steps: [{ id: 's', index: 0, description: 'x', action: 'input', url: '', timestamp: 1, inputValue: 'hunter2' }],
       }),
     );
-    expect(parsed.steps[0].inputValue).toBe('hunter2');
+    expect(parsed.steps[0]!.inputValue).toBe('hunter2');
   });
 
   it('drops a text annotation with no size, which would compute NaN geometry', () => {
@@ -208,7 +208,7 @@ describe('parseManifest', () => {
             },
           ],
         }),
-      ).screenshots[0].edits?.annotations;
+      ).screenshots[0]!.edits?.annotations;
 
     expect(withAnnotations([{ id: 'bad', type: 'text', x: 1, y: 2, text: 'hi', color: '#000' }])).toBeUndefined();
     expect(
@@ -220,7 +220,7 @@ describe('parseManifest', () => {
 
   it('titles a bundle with no title the way a new guide is titled', () => {
     const parsed = parseManifest(manifest({ guide: { title: '   ', createdAt: 1_700_000_000_000 } }));
-    expect(parsed.guide.title).toBe('fullview.untitledGuide');
+    expect(parsed.guide.title).toBe('guide.untitled');
   });
 
   it('orders steps by their recorded index', () => {

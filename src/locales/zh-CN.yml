@@ -48,6 +48,12 @@ library:
   duplicate: 创建副本
   copyOfTitle: "$1 的副本"
   duplicateFailed: "无法创建此指南的副本"
+  collapseSidebar: 收起侧边栏
+  expandSidebar: 展开侧边栏
+  allGuides: 全部指南
+  starred: 已收藏
+  trash: 回收站
+  searchPlaceholder: 搜索指南…
 
 guideme:
   live: 实时
@@ -280,21 +286,17 @@ desktop:
   shortcutPress: "请按下按键…"
   shortcutClear: "清除"
 
-fullview:
-  collapseSidebar: 收起侧边栏
-  expandSidebar: 展开侧边栏
-  allGuides: 全部指南
-  starred: 已收藏
-  trash: 回收站
-  searchPlaceholder: 搜索指南…
+guide:
   guideMe: "引导我"
-  untitledGuide: 未命名指南
+  untitled: 未命名指南
   writingTitle: 正在根据捕获的步骤生成标题...
   writingDescription: "正在生成描述…"
-  guideNotFound: "未找到指南。"
+  notFound: "未找到指南。"
   stepCount: "$1 个步骤"
   stepCountPlural: "$1 个步骤"
   pageOf: "$1 / $2"
+  onDomain: "$1 上的指南"
+  newGuide: 新指南
 
 sort:
   recentFirst: 最近优先
@@ -424,6 +426,7 @@ blurPanel:
   title: 智能模糊
   manualMode: 手动模式
   selectElements: 选择要模糊的元素
+  clickToBlur: "点击以模糊"
   done: 完成
   doneResume: "完成 · 继续录制"
   resetAll: 全部重置
@@ -668,10 +671,6 @@ export:
   stepsCount: "$1 个步骤"
   createdLabel: "创建于 $1"
   sourceLabel: "来源：$1"
-
-background:
-  guideOnDomain: "$1 上的指南"
-  newGuide: 新指南
 
 voice:
   turnOn: 开启语音讲解

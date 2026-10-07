@@ -48,6 +48,12 @@ library:
   duplicate: Duplizieren
   copyOfTitle: "Kopie von $1"
   duplicateFailed: Diese Anleitung konnte nicht dupliziert werden
+  collapseSidebar: Seitenleiste einklappen
+  expandSidebar: Seitenleiste ausklappen
+  allGuides: Alle Anleitungen
+  starred: Favoriten
+  trash: Papierkorb
+  searchPlaceholder: Anleitungen durchsuchen…
 
 guideme:
   manualStep: "Bearbeitete Schritte werden nicht erkannt. Klicke auf Weiter, wenn du fertig bist."
@@ -280,21 +286,17 @@ desktop:
   shortcutPress: "Tasten drücken…"
   shortcutClear: "Löschen"
 
-fullview:
-  collapseSidebar: Seitenleiste einklappen
-  expandSidebar: Seitenleiste ausklappen
-  allGuides: Alle Anleitungen
-  starred: Favoriten
-  trash: Papierkorb
-  searchPlaceholder: Anleitungen durchsuchen…
+guide:
   guideMe: "Anleiten"
-  untitledGuide: Unbenannte Anleitung
+  untitled: Unbenannte Anleitung
   writingTitle: Titel wird aus deinen aufgenommenen Schritten erstellt...
-  guideNotFound: "Anleitung nicht gefunden."
+  notFound: "Anleitung nicht gefunden."
   stepCount: "$1 Schritt"
   stepCountPlural: "$1 Schritte"
   pageOf: "$1 / $2"
   writingDescription: "Beschreibung wird geschrieben…"
+  onDomain: "Anleitung auf $1"
+  newGuide: Neue Anleitung
 
 sort:
   recentFirst: Neueste zuerst
@@ -420,11 +422,11 @@ emptyGuide:
   title: Diese Anleitung ist leer
   subtitle: "Nimm Schritte auf, um sie zu füllen"
 
-
 blurPanel:
   title: Smart Blur
   manualMode: Manueller Modus
   selectElements: "Elemente zum Unkenntlichmachen auswählen"
+  clickToBlur: "Zum Verwischen klicken"
   done: Fertig
   doneResume: "Fertig \xB7 Aufnahme fortsetzen"
   resetAll: Alles zurücksetzen
@@ -599,10 +601,6 @@ export:
   stepsCount: "$1 Schritte"
   createdLabel: "Erstellt am $1"
   sourceLabel: "Quelle: $1"
-
-background:
-  guideOnDomain: "Anleitung auf $1"
-  newGuide: Neue Anleitung
 
 annotationEditor:
   title: "Screenshot bearbeiten"

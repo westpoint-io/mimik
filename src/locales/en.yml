@@ -48,6 +48,12 @@ library:
   duplicate: Duplicate
   copyOfTitle: "Copy of $1"
   duplicateFailed: Couldn't duplicate this guide
+  collapseSidebar: Collapse sidebar
+  expandSidebar: Expand sidebar
+  allGuides: "All guides"
+  starred: Starred
+  trash: Trash
+  searchPlaceholder: Search guides…
 
 guideme:
   live: Live
@@ -280,21 +286,17 @@ desktop:
   shortcutPress: "Press keys…"
   shortcutClear: "Clear"
 
-fullview:
-  collapseSidebar: Collapse sidebar
-  expandSidebar: Expand sidebar
-  allGuides: "All guides"
-  starred: Starred
-  trash: Trash
-  searchPlaceholder: Search guides…
+guide:
   guideMe: "Guide Me"
-  untitledGuide: "Untitled guide"
+  untitled: "Untitled guide"
   writingTitle: Writing a title from your captured steps...
   writingDescription: "Writing a description\u2026"
-  guideNotFound: "Guide not found"
+  notFound: "Guide not found"
   stepCount: "$1 step"
   stepCountPlural: "$1 steps"
   pageOf: "$1 / $2"
+  onDomain: "Guide on $1"
+  newGuide: "New guide"
 
 sort:
   recentFirst: Recent first
@@ -424,6 +426,7 @@ blurPanel:
   title: "Smart blur"
   manualMode: "Manual mode"
   selectElements: Select elements to blur
+  clickToBlur: "Click to blur"
   done: Done
   doneResume: "Done · Resume recording"
   resetAll: "Reset all"
@@ -668,10 +671,6 @@ export:
   stepsCount: "$1 steps"
   createdLabel: "Created $1"
   sourceLabel: "Source: $1"
-
-background:
-  guideOnDomain: "Guide on $1"
-  newGuide: "New guide"
 
 voice:
   turnOn: Turn on voice narration

@@ -111,13 +111,13 @@ export function TopBar({ route, guideActions }: TopBarProps) {
         <Button
           size="sm"
           variant="ghost"
-          aria-label={i18n.t('fullview.searchPlaceholder')}
+          aria-label={i18n.t('library.searchPlaceholder')}
           onClick={() => setSearchOpen(true)}
           className={`${barWidth < COMPACT_SEARCH_PX ? 'w-auto' : 'w-72'} justify-start ${NAV_CONTROL}`}
         >
           <Search size={14} className="shrink-0 text-muted-foreground" />
           {barWidth >= COMPACT_SEARCH_PX && (
-            <span className="flex-1 text-left text-muted-foreground">{i18n.t('fullview.searchPlaceholder')}</span>
+            <span className="flex-1 text-left text-muted-foreground">{i18n.t('library.searchPlaceholder')}</span>
           )}
           <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-secondary text-muted-foreground">
             {SEARCH_KEY}

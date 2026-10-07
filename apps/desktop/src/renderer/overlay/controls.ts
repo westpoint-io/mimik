@@ -216,7 +216,7 @@ export function controls(): void {
         : paused
           ? i18n.t('recording.capturePaused')
           : i18n.t('desktop.armed');
-    counter.textContent = i18n.t(count === 1 ? 'fullview.stepCount' : 'fullview.stepCountPlural', counted);
+    counter.textContent = i18n.t(count === 1 ? 'guide.stepCount' : 'guide.stepCountPlural', counted);
     counter.hidden = !paused;
 
     const modeId = mode;
@@ -297,7 +297,7 @@ export function controls(): void {
       ? i18n.t(voiceErrorKey(narration.reason))
       : i18n.t(narration?.speaking ? 'voice.micHearing' : 'voice.micQuiet');
     bars.forEach((bar, index) => {
-      const scale = Math.max(VOICE_BAR_FLOOR, Math.min(1, (narration?.level ?? 0) * VOICE_BARS[index]));
+      const scale = Math.max(VOICE_BAR_FLOOR, Math.min(1, (narration?.level ?? 0) * VOICE_BARS[index]!));
       bar.style.transform = `scaleY(${scale})`;
     });
     hintKey.textContent = key ?? '';

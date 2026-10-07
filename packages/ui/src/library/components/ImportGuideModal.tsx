@@ -123,8 +123,8 @@ export function ImportGuideModal({ file, onClose, onImported }: ImportGuideModal
               <div className="text-[15px] font-semibold text-foreground leading-snug">{manifest.guide.title}</div>
               <div className="text-[12px] text-muted-foreground mt-0.5">
                 {stepCount === 1
-                  ? i18n.t('fullview.stepCount', [String(stepCount)])
-                  : i18n.t('fullview.stepCountPlural', [String(stepCount)])}
+                  ? i18n.t('guide.stepCount', [String(stepCount)])
+                  : i18n.t('guide.stepCountPlural', [String(stepCount)])}
                 {manifest.sourceDomain ? ` · ${manifest.sourceDomain}` : ''}
               </div>
             </div>

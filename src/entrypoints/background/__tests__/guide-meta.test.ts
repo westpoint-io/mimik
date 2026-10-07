@@ -70,7 +70,7 @@ describe('background guide-meta', () => {
       await generateGuideMetaOnStop(GUIDE_ID);
 
       expect(generateGuideMetaMock).not.toHaveBeenCalled();
-      expect(updateGuideTitleMock).toHaveBeenCalledWith(GUIDE_ID, 'background.guideOnDomain[example.com]');
+      expect(updateGuideTitleMock).toHaveBeenCalledWith(GUIDE_ID, 'guide.onDomain[example.com]');
     });
 
     it('waits for narration before generating a title when a key is set', async () => {

@@ -239,7 +239,7 @@ function refreshTrayMenu(): void {
   if (!tray) return;
   tray.setContextMenu(
     Menu.buildFromTemplate([
-      { label: mainI18n.t('fullview.allGuides'), click: () => openInWindow('library') },
+      { label: mainI18n.t('library.allGuides'), click: () => openInWindow('library') },
       { label: mainI18n.t('capture.startCapture'), click: () => openInWindow('capture') },
       { label: mainI18n.t('settings.title'), click: () => openInWindow('settings') },
       { type: 'separator' },
@@ -261,7 +261,13 @@ function createTray(): void {
 }
 
 function stateUpdate(command: OverlayCommand | null, guideId: string | null): DesktopStateUpdate {
-  return { command, ...captureStateUpdate(capture.getSnapshot()), currentGuideId: guideId };
+  const snapshot = capture.getSnapshot();
+  return {
+    command,
+    ...captureStateUpdate(snapshot),
+    currentGuideId: guideId,
+    narrationWasLive: snapshot.context.narrationWasLive,
+  };
 }
 
 function broadcastState(command: OverlayCommand, guideId: string | null): void {

@@ -14,14 +14,13 @@ import { DesktopCaptureSink } from './capture-sink';
 import { desktopNarration as narration } from './desktop-narration';
 
 const sink = new DesktopCaptureSink(narration);
-let narratingBeforePause = false;
 
 allScreenshotIds().then((ids) => window.mimik.screenshots.sweep(ids));
 
 window.mimik.onRequest('mimik:capture:createGuide', (payload) => sink.createGuide(payload));
 window.mimik.onRequest('mimik:capture:captureStep', (payload) => sink.captureStep(payload));
 
-window.mimik.capture.onStateUpdate(async ({ command, state, currentGuideId }) => {
+window.mimik.capture.onStateUpdate(async ({ command, state, currentGuideId, narrationWasLive }) => {
   if (command === 'narration:start' || command === 'narration:stop') {
     await localStorage.set({ voiceEnabled: command === 'narration:start' });
   }
@@ -29,14 +28,12 @@ window.mimik.capture.onStateUpdate(async ({ command, state, currentGuideId }) =>
   const recording = state === CaptureState.RECORDING;
   if (
     command === 'start' ||
-    (command === 'resume' && narratingBeforePause) ||
+    (command === 'resume' && narrationWasLive) ||
     (command === 'narration:start' && recording)
   ) {
     narration.start(currentGuideId);
-  } else if (command === 'pause') {
-    narratingBeforePause = narration.update.phase === 'recording';
-    narration.stop();
-  } else if (command === 'narration:stop') narration.turnOff();
+  } else if (command === 'pause') narration.stop();
+  else if (command === 'narration:stop') narration.turnOff();
 });
 
 window.mimik.onRequest('mimik:capture:deleteStep', async (payload) => {
@@ -47,7 +44,7 @@ window.mimik.onRequest('mimik:capture:deleteStep', async (payload) => {
 
 async function appTitle(guideId: string): Promise<string> {
   const app = getMostCommonApp(await getStepsForGuide(guideId))?.name;
-  return app ? i18n.t('desktop.guideInApp', [app]) : i18n.t('background.newGuide');
+  return app ? i18n.t('desktop.guideInApp', [app]) : i18n.t('guide.newGuide');
 }
 
 window.mimik.onRequest('mimik:capture:finishGuide', async (payload) => {

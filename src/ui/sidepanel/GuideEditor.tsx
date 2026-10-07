@@ -65,10 +65,10 @@ export function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorProps) {
     if (options?.stepId) params.set('stepId', options.stepId);
     if (options?.tool) params.set('tool', options.tool);
     const url = getExtensionURL(`/fullview.html?${params.toString()}`);
-    queryTabs({ url: getExtensionURL('/fullview.html') }).then((tabs) => {
-      if (tabs.length > 0 && tabs[0].id) {
-        updateTab(tabs[0].id, { active: true, url });
-        if (tabs[0].windowId) focusWindow(tabs[0].windowId);
+    queryTabs({ url: getExtensionURL('/fullview.html') }).then(([tab]) => {
+      if (tab?.id) {
+        updateTab(tab.id, { active: true, url });
+        if (tab.windowId) focusWindow(tab.windowId);
       } else {
         createTab({ url });
       }
@@ -84,7 +84,7 @@ export function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorProps) {
           <ArrowLeft size={18} />
           {i18n.t('common.back')}
         </button>
-        <p className="text-sm text-destructive">{i18n.t('fullview.guideNotFound')}</p>
+        <p className="text-sm text-destructive">{i18n.t('guide.notFound')}</p>
       </div>
     );
   }
@@ -116,8 +116,8 @@ export function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorProps) {
             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground leading-tight">
               <span>
                 {actionCount !== 1
-                  ? i18n.t('fullview.stepCountPlural', [String(actionCount)])
-                  : i18n.t('fullview.stepCount', [String(actionCount)])}
+                  ? i18n.t('guide.stepCountPlural', [String(actionCount)])
+                  : i18n.t('guide.stepCount', [String(actionCount)])}
               </span>
               {domain && (
                 <>

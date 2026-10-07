@@ -71,8 +71,8 @@ export function GuideListView({
                 )}
                 <span className="shrink-0">
                   {guide.stepIds.length !== 1
-                    ? i18n.t('fullview.stepCountPlural', [String(guide.stepIds.length)])
-                    : i18n.t('fullview.stepCount', [String(guide.stepIds.length)])}{' '}
+                    ? i18n.t('guide.stepCountPlural', [String(guide.stepIds.length)])
+                    : i18n.t('guide.stepCount', [String(guide.stepIds.length)])}{' '}
                   &middot; {formatDate(guide.updatedAt)}
                 </span>
               </p>

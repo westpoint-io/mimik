@@ -48,6 +48,12 @@ library:
   duplicate: Duplicar
   copyOfTitle: "Copia de $1"
   duplicateFailed: No se pudo duplicar esta guía
+  collapseSidebar: Contraer la barra lateral
+  expandSidebar: Expandir la barra lateral
+  allGuides: Todas las guías
+  starred: Favoritos
+  trash: Papelera
+  searchPlaceholder: Buscar guías…
 
 guideme:
   live: En vivo
@@ -280,21 +286,17 @@ desktop:
   shortcutPress: "Pulsa las teclas…"
   shortcutClear: "Borrar"
 
-fullview:
-  collapseSidebar: Contraer la barra lateral
-  expandSidebar: Expandir la barra lateral
-  allGuides: Todas las guías
-  starred: Favoritos
-  trash: Papelera
-  searchPlaceholder: Buscar guías…
+guide:
   guideMe: "Guíame"
-  untitledGuide: Guía sin título
+  untitled: Guía sin título
   writingTitle: Escribiendo un título con tus pasos capturados...
   writingDescription: "Escribiendo una descripci\xF3n\u2026"
-  guideNotFound: "No se encontró la guía."
+  notFound: "No se encontró la guía."
   stepCount: "$1 paso"
   stepCountPlural: "$1 pasos"
   pageOf: "$1 / $2"
+  onDomain: "Guía en $1"
+  newGuide: Nueva guía
 
 sort:
   recentFirst: Más recientes
@@ -424,6 +426,7 @@ blurPanel:
   title: Desenfoque inteligente
   manualMode: Modo manual
   selectElements: Selecciona elementos para desenfocar
+  clickToBlur: "Haz clic para difuminar"
   done: Listo
   doneResume: "Listo · Reanudar grabación"
   resetAll: Restablecer todo
@@ -668,10 +671,6 @@ export:
   stepsCount: "$1 pasos"
   createdLabel: "Creado $1"
   sourceLabel: "Fuente: $1"
-
-background:
-  guideOnDomain: "Guía en $1"
-  newGuide: Nueva guía
 
 voice:
   turnOn: "Activar narración por voz"

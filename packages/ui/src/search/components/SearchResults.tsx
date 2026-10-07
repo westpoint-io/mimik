@@ -51,7 +51,7 @@ export function SearchResults({ guides, thumbnails, places, query, selected, onS
             </div>
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
               <p className="truncate text-[13.5px] font-semibold text-foreground">
-                <MatchText text={guide.title || i18n.t('fullview.untitledGuide')} query={query} />
+                <MatchText text={guide.title || i18n.t('guide.untitled')} query={query} />
               </p>
               <p className="flex min-w-0 items-center gap-1.5 text-[11.5px] text-muted-foreground">
                 {place && (
@@ -62,9 +62,7 @@ export function SearchResults({ guides, thumbnails, places, query, selected, onS
                   </>
                 )}
                 <span className="shrink-0">
-                  {steps === 1
-                    ? i18n.t('fullview.stepCount', ['1'])
-                    : i18n.t('fullview.stepCountPlural', [String(steps)])}{' '}
+                  {steps === 1 ? i18n.t('guide.stepCount', ['1']) : i18n.t('guide.stepCountPlural', [String(steps)])}{' '}
                   &middot; {formatDateShort(guide.updatedAt)}
                 </span>
               </p>

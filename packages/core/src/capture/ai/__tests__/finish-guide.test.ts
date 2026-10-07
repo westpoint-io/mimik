@@ -47,7 +47,7 @@ const GUIDE_ID = 'guide-1';
 
 async function fallbackTitle(guideId: string): Promise<string> {
   const domain = await getGuideDomainMock(guideId);
-  return domain ? i18n.t('background.guideOnDomain', [domain]) : i18n.t('background.newGuide');
+  return domain ? i18n.t('guide.onDomain', [domain]) : i18n.t('guide.newGuide');
 }
 
 const finish = (guideId: string) =>
@@ -83,7 +83,7 @@ describe('guide meta', () => {
 
       await run(GUIDE_ID);
 
-      const sent = generateGuideMetaMock.mock.calls[0][0];
+      const sent = generateGuideMetaMock.mock.calls[0]![0];
       expect(sent).toHaveLength(15);
       expect(sent[0].description).toBe('step 0');
       expect(sent[9].description).toBe('step 9');
@@ -96,7 +96,7 @@ describe('guide meta', () => {
 
       await run(GUIDE_ID);
 
-      expect(generateGuideMetaMock.mock.calls[0][0]).toHaveLength(15);
+      expect(generateGuideMetaMock.mock.calls[0]![0]).toHaveLength(15);
     });
 
     it.each(entryPoints)('%s drops steps that have no description', async (_name, run) => {
@@ -107,7 +107,9 @@ describe('guide meta', () => {
 
       await run(GUIDE_ID);
 
-      expect(generateGuideMetaMock.mock.calls[0][0]).toEqual([{ description: 'kept', place: 'https://example.com/a' }]);
+      expect(generateGuideMetaMock.mock.calls[0]![0]).toEqual([
+        { description: 'kept', place: 'https://example.com/a' },
+      ]);
     });
 
     it.each(entryPoints)("%s defaults the model to the provider's own default", async (_name, run) => {
@@ -151,7 +153,7 @@ describe('guide meta', () => {
       await finish(GUIDE_ID);
 
       expect(generateGuideMetaMock).not.toHaveBeenCalled();
-      expect(updateGuideTitleMock).toHaveBeenCalledWith(GUIDE_ID, 'background.guideOnDomain[example.com]');
+      expect(updateGuideTitleMock).toHaveBeenCalledWith(GUIDE_ID, 'guide.onDomain[example.com]');
     });
 
     it('applies the domain fallback title without calling the model when no key is set', async () => {
@@ -160,7 +162,7 @@ describe('guide meta', () => {
       await finish(GUIDE_ID);
 
       expect(generateGuideMetaMock).not.toHaveBeenCalled();
-      expect(updateGuideTitleMock).toHaveBeenCalledWith(GUIDE_ID, 'background.guideOnDomain[example.com]');
+      expect(updateGuideTitleMock).toHaveBeenCalledWith(GUIDE_ID, 'guide.onDomain[example.com]');
     });
 
     it('writes the fallback title before narration settles when no key is set', async () => {
@@ -177,7 +179,7 @@ describe('guide meta', () => {
 
       const run = finish(GUIDE_ID);
       await vi.waitFor(() =>
-        expect(updateGuideTitleMock).toHaveBeenCalledWith(GUIDE_ID, 'background.guideOnDomain[example.com]'),
+        expect(updateGuideTitleMock).toHaveBeenCalledWith(GUIDE_ID, 'guide.onDomain[example.com]'),
       );
       expect(clearStepAiPendingMock).not.toHaveBeenCalled();
 
@@ -238,7 +240,7 @@ describe('guide meta', () => {
       await finish(GUIDE_ID);
 
       expect(generateGuideMetaMock).not.toHaveBeenCalled();
-      expect(updateGuideTitleMock).toHaveBeenCalledWith(GUIDE_ID, 'background.guideOnDomain[example.com]');
+      expect(updateGuideTitleMock).toHaveBeenCalledWith(GUIDE_ID, 'guide.onDomain[example.com]');
       expect(clearStepAiPendingMock).toHaveBeenCalledWith('step-1');
     });
 
@@ -248,7 +250,7 @@ describe('guide meta', () => {
 
       await finish(GUIDE_ID);
 
-      expect(updateGuideTitleMock).toHaveBeenCalledWith(GUIDE_ID, 'background.newGuide');
+      expect(updateGuideTitleMock).toHaveBeenCalledWith(GUIDE_ID, 'guide.newGuide');
     });
 
     it('names a guide with no described step by the fallback, without asking the model', async () => {
@@ -266,7 +268,7 @@ describe('guide meta', () => {
 
       await finish(GUIDE_ID);
 
-      expect(updateGuideTitleMock).toHaveBeenCalledWith(GUIDE_ID, 'background.guideOnDomain[example.com]');
+      expect(updateGuideTitleMock).toHaveBeenCalledWith(GUIDE_ID, 'guide.onDomain[example.com]');
     });
 
     it('stores both the title and the description on success', async () => {
@@ -290,7 +292,7 @@ describe('guide meta', () => {
 
       await finish(GUIDE_ID);
 
-      expect(updateGuideTitleMock).toHaveBeenNthCalledWith(2, GUIDE_ID, 'background.guideOnDomain[example.com]');
+      expect(updateGuideTitleMock).toHaveBeenNthCalledWith(2, GUIDE_ID, 'guide.onDomain[example.com]');
     });
   });
 
