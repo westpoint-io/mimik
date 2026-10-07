@@ -46,7 +46,7 @@ export function createVoiceHost(): VoiceHost {
   let retained: VoiceRecording | null = null;
   const slicer = new NarrationSlicer();
 
-  const recorder = new MicRecorder(getExtensionURL('/pcm-processor.js'), {
+  const recorder = new MicRecorder(getExtensionURL('/mic-frames.js'), {
     onEpoch: (audioEpochMs) =>
       emit(
         voiceMessage<VoiceEpochEvent>({
