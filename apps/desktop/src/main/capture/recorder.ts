@@ -26,6 +26,7 @@ import { type CaptureMode, type CaptureSettings, DEFAULT_CAPTURE_SETTINGS } from
 const TARGET_SIZE = 28;
 const SETTLE_MS = 60;
 const REPEAT_CLICK_MS = 500;
+const SAME_SPOT_PX = 4;
 const HIDDEN_CHARACTERS = /[\p{Cf}\uFFFC\uFFFD]/gu;
 const STEP_TEXT_LIMIT = 200;
 
@@ -126,8 +127,14 @@ function inside(region: Rect, point: Point): boolean {
   );
 }
 
-export function isRepeatClick(previousAt: number | null, at: number): boolean {
-  return previousAt !== null && at - previousAt <= REPEAT_CLICK_MS;
+export interface PressedAt {
+  at: number;
+  point: Point;
+}
+
+export function isRepeatClick(previous: PressedAt | null, next: PressedAt): boolean {
+  if (previous === null || next.at - previous.at > REPEAT_CLICK_MS) return false;
+  return Math.hypot(next.point.x - previous.point.x, next.point.y - previous.point.y) <= SAME_SPOT_PX;
 }
 
 export function shouldCapture(settings: CaptureSettings, region: Rect, point: Point): boolean {
@@ -213,7 +220,7 @@ export class DesktopRecorder {
   private hook = new InputHook();
   private queue: Promise<unknown> = Promise.resolve();
   private running = false;
-  private lastClickAt: number | null = null;
+  private lastClick: PressedAt | null = null;
   private lastKey: { keycode: number; at: number } | null = null;
   private readonly input: InputSession;
   private passwordWatch: PasswordWatch | null = null;
@@ -265,7 +272,7 @@ export class DesktopRecorder {
     });
     if (!started.ok) return { ok: false, reason: started.reason, detail: started.detail };
     this.running = true;
-    this.lastClickAt = null;
+    this.lastClick = null;
     return { ok: true };
   }
 
@@ -293,9 +300,9 @@ export class DesktopRecorder {
     const point = { x: action.x, y: action.y };
     if (this.ignores(point)) return;
     if (!shouldCapture(this.settings(), this.region(), point)) return;
-    const at = Date.now();
-    const repeat = isRepeatClick(this.lastClickAt, at);
-    this.lastClickAt = at;
+    const pressed = { at: Date.now(), point };
+    const repeat = isRepeatClick(this.lastClick, pressed);
+    this.lastClick = pressed;
     if (repeat) return;
     this.clickAt(clickAction(action.button), point);
   }

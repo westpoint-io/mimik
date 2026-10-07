@@ -105,11 +105,18 @@ describe('clicks', () => {
     expect(shouldCapture({ ...DEFAULT_CAPTURE_SETTINGS, keepClicksBeyondArea: false }, region, outside)).toBe(true);
   });
 
-  it('treats a second press within 500 ms as the same click', () => {
-    expect(isRepeatClick(1_000, 1_120)).toBe(true);
-    expect(isRepeatClick(1_000, 1_500)).toBe(true);
-    expect(isRepeatClick(1_000, 1_501)).toBe(false);
-    expect(isRepeatClick(null, 1_000)).toBe(false);
+  it('treats a second press on the same spot within 500 ms as the same click', () => {
+    const at = (time: number, x = 100, y = 100) => ({ at: time, point: { x, y } });
+    expect(isRepeatClick(at(1_000), at(1_120))).toBe(true);
+    expect(isRepeatClick(at(1_000), at(1_500, 103, 102))).toBe(true);
+    expect(isRepeatClick(at(1_000), at(1_501))).toBe(false);
+    expect(isRepeatClick(null, at(1_000))).toBe(false);
+  });
+
+  it('keeps a quick click on a different button as its own step', () => {
+    expect(isRepeatClick({ at: 1_000, point: { x: 100, y: 100 } }, { at: 1_150, point: { x: 180, y: 100 } })).toBe(
+      false,
+    );
   });
 
   it('frames the display, the window under the click, or the area', () => {
