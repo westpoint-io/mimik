@@ -5,6 +5,8 @@
 @import "@fontsource/poppins/800.css";
 @import "tailwindcss";
 
+@source ".";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
