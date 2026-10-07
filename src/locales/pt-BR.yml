@@ -99,6 +99,12 @@ settings:
   title: Ajustes
   aiDescriptions: "Descrições das etapas"
   aiDescriptionsHint: "O Mimik escreve o texto de cada etapa e dá nome ao seu guia com o seu provedor de IA."
+  aiUseFor: "Usar IA para"
+  aiForSteps: "Descrições dos passos"
+  aiForStepsHint: "O texto abaixo de cada captura."
+  aiForGuide: "Título e resumo do guia"
+  aiForGuideHint: "Escritos quando você termina a gravação."
+  aiUnusedNote: "Os passos mantêm os títulos básicos e o guia recebe o nome do site ou app. A narração e a locução continuam usando sua chave."
   provider: Provedor
   model: Modelo
   modelCustom: Modelo personalizado

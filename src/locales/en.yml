@@ -99,6 +99,12 @@ settings:
   title: Settings
   aiDescriptions: "Step descriptions"
   aiDescriptionsHint: "Mimik writes each step's text and names your guide with your AI provider."
+  aiUseFor: "Use AI for"
+  aiForSteps: "Step descriptions"
+  aiForStepsHint: "The text under each screenshot."
+  aiForGuide: "Guide title and summary"
+  aiForGuideHint: "Written when you finish recording."
+  aiUnusedNote: "Steps keep their basic titles and the guide is named after the site or app. Narration and voice-over still use your key."
   provider: Provider
   model: Model
   modelCustom: Custom model

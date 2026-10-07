@@ -3,6 +3,7 @@ import { logger } from '@/core/logger';
 import { resolveGuideMetaInputs } from './guide-description';
 import { generateGuideMeta } from './meta';
 import { readAiCredentials } from './read-ai-credentials';
+import { readAiUse } from './read-ai-use';
 import { settleDescriptions } from './settle-descriptions';
 
 export interface FinishGuideOptions {
@@ -17,7 +18,8 @@ export async function finishGuide(guideId: string, { fallbackTitle, settleNarrat
     await settleDescriptions(guideId);
   };
 
-  const keys = await readAiCredentials().catch(() => null);
+  const use = await readAiUse().catch(() => ({ guide: true }));
+  const keys = use.guide ? await readAiCredentials().catch(() => null) : null;
   if (!keys) {
     const titled = applyFallbackTitle().catch((err) => logger.error('Fallback title write failed', err));
     await settle().catch((err) => logger.error('Settling step descriptions failed', err));

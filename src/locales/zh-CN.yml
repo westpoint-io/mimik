@@ -99,6 +99,12 @@ settings:
   title: 设置
   aiDescriptions: "步骤描述"
   aiDescriptionsHint: "Mimik 使用你的 AI 服务商撰写每个步骤的文字并为指南命名。"
+  aiUseFor: "AI 用于"
+  aiForSteps: "步骤描述"
+  aiForStepsHint: "每张截图下方的文字。"
+  aiForGuide: "指南标题和摘要"
+  aiForGuideHint: "在结束录制时生成。"
+  aiUnusedNote: "步骤保留基础标题，指南以网站或应用命名。语音旁白和配音仍使用你的密钥。"
   provider: 提供商
   model: 模型
   modelCustom: 自定义模型
