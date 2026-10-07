@@ -25,11 +25,11 @@ use windows::Win32::UI::Input::KeyboardAndMouse::{
 use windows::Win32::UI::WindowsAndMessaging::{
   EnumWindows, GetAncestor, GetClassNameW, GetForegroundWindow, GetWindow, GetWindowLongPtrW, GetWindowRect,
   GetWindowTextW, GetWindowThreadProcessId, IsWindowVisible, WindowFromPoint, GA_ROOT, GWL_EXSTYLE,
-  GWL_STYLE, GW_OWNER, WS_CAPTION, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_POPUP, WS_SYSMENU,
+  GWL_STYLE, GW_OWNER, WS_CAPTION, WS_CHILD, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_POPUP, WS_SYSMENU,
 };
 
 use crate::hit::smallest_under;
-use crate::window::{fills, is_popup, Edges, Traits};
+use crate::window::{fills, is_popup, names_its_surface, Edges, Traits};
 use crate::{ActiveWindow, ElementNode, ElementRect, UiElement};
 
 const ROLES: &[(UIA_CONTROLTYPE_ID, &str)] = &[
@@ -133,10 +133,27 @@ fn rect_of(element: &IUIAutomationElement) -> Option<ElementRect> {
   })
 }
 
+fn shown_name(element: &IUIAutomationElement, control: UIA_CONTROLTYPE_ID) -> Option<String> {
+  let name = text(unsafe { element.CurrentName() })?;
+  let class = text(unsafe { element.CurrentClassName() }).unwrap_or_default();
+  let container = [
+    UIA_PaneControlTypeId,
+    UIA_DocumentControlTypeId,
+    UIA_WindowControlTypeId,
+  ]
+  .contains(&control);
+  let hidden_caption = unsafe { element.CurrentNativeWindowHandle() }
+    .ok()
+    .filter(|window| !window.is_invalid() && style(*window) & WS_CHILD.0 != 0)
+    .and_then(|window| text_of(|buffer| unsafe { GetWindowTextW(window, buffer) }));
+  (!names_its_surface(&name, &class, container, hidden_caption.as_deref())).then_some(name)
+}
+
 fn describe(found: &IUIAutomationElement) -> UiElement {
+  let control = unsafe { found.CurrentControlType() }.unwrap_or_default();
   UiElement {
-    role: role(unsafe { found.CurrentControlType() }.unwrap_or_default()),
-    name: text(unsafe { found.CurrentName() }),
+    role: role(control),
+    name: shown_name(found, control),
     automation_id: text(unsafe { found.CurrentAutomationId() }),
     value: value_of(found),
     help_text: text(unsafe { found.CurrentHelpText() }),
@@ -155,9 +172,10 @@ const TAB_DRAG_LAYER: &str = "TabDragContextImpl";
 const MAX_CHILDREN: usize = 12;
 
 fn node(element: &IUIAutomationElement) -> ElementNode {
+  let control = unsafe { element.CurrentControlType() }.unwrap_or_default();
   ElementNode {
-    role: role(unsafe { element.CurrentControlType() }.unwrap_or_default()),
-    name: text(unsafe { element.CurrentName() }),
+    role: role(control),
+    name: shown_name(element, control),
   }
 }
 

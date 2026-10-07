@@ -22,6 +22,10 @@ pub fn is_popup(traits: &Traits) -> bool {
   styled || SYSTEM_POPUP_CLASSES.contains(&traits.class)
 }
 
+pub fn names_its_surface(name: &str, class: &str, container: bool, hidden_caption: Option<&str>) -> bool {
+  name == class || (container && hidden_caption == Some(name))
+}
+
 pub fn fills(window: Edges, work_area: Edges) -> bool {
   window.left <= work_area.left + EDGE_SLACK
     && window.top <= work_area.top + EDGE_SLACK
@@ -31,7 +35,7 @@ pub fn fills(window: Edges, work_area: Edges) -> bool {
 
 #[cfg(test)]
 mod tests {
-  use super::{fills, is_popup, Edges, Traits};
+  use super::{fills, is_popup, names_its_surface, Edges, Traits};
 
   fn plain(class: &str) -> Traits<'_> {
     Traits {
@@ -107,5 +111,39 @@ mod tests {
     let second = edges(1920, 0, 3840, 1040);
     assert!(fills(edges(1920, 0, 3840, 1040), second));
     assert!(!fills(edges(0, 0, 1920, 1040), second));
+  }
+
+  #[test]
+  fn a_container_named_after_its_hidden_child_window_caption_has_no_name() {
+    assert!(names_its_surface(
+      "Chrome Legacy Window",
+      "Chrome_RenderWidgetHostHWND",
+      true,
+      Some("Chrome Legacy Window")
+    ));
+    assert!(names_its_surface(
+      "Intermediate D3D Window",
+      "Intermediate D3D Window",
+      true,
+      None
+    ));
+    assert!(names_its_surface(
+      "Chrome_WidgetWin_1",
+      "Chrome_WidgetWin_1",
+      false,
+      None
+    ));
+  }
+
+  #[test]
+  fn controls_and_visible_window_titles_keep_their_names() {
+    assert!(!names_its_surface("OK", "Button", false, Some("OK")));
+    assert!(!names_its_surface(
+      "Hello world.txt - Notepad",
+      "Notepad",
+      true,
+      None
+    ));
+    assert!(!names_its_surface("Search", "", true, Some("Search box")));
   }
 }
