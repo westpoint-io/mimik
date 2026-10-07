@@ -36,6 +36,8 @@ mac:
   target:
     - dmg
     - zip
+  entitlements: resources/entitlements.mac.plist
+  entitlementsInherit: resources/entitlements.mac.plist
   extendInfo:
     NSMicrophoneUsageDescription: Mimik listens while you narrate a recording, when you turn narration on.
 win:

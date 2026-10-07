@@ -1,7 +1,7 @@
 import { createOverlayRoot } from '@/core/capture/dom/overlay-root';
 import { i18n } from '@/core/env';
-import type { PresetKey } from './regexes';
-import { PRESET_LABELS } from './regexes';
+import type { PresetKey } from './patterns';
+import { PRESET_LABELS } from './patterns';
 
 const PRESET_KEYS: PresetKey[] = ['email', 'phone', 'ssn', 'creditCard', 'ipAddress', 'macAddress'];
 

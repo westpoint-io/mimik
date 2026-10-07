@@ -1,4 +1,4 @@
-import { type ComponentType, useState } from 'react';
+import { type ComponentType, type ReactNode, useState } from 'react';
 import type { ValidateKey } from '../../ai/types';
 import type { StepProps } from '../types';
 import { DoneStep } from './DoneStep';
@@ -8,13 +8,22 @@ interface OnboardingFlowProps {
   steps: ComponentType<StepProps>[];
   validate: ValidateKey;
   requestMicrophoneAccess: () => Promise<void>;
+  microphoneAccess?: ReactNode;
+  microphoneLocked?: boolean;
   onFinish: () => void;
 }
 
 const KEYFRAMES =
   '@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}@keyframes sparkle{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}';
 
-export function OnboardingFlow({ steps, validate, requestMicrophoneAccess, onFinish }: OnboardingFlowProps) {
+export function OnboardingFlow({
+  steps,
+  validate,
+  requestMicrophoneAccess,
+  microphoneAccess,
+  microphoneLocked,
+  onFinish,
+}: OnboardingFlowProps) {
   const [step, setStep] = useState(0);
 
   const lastStep = steps.length + 1;
@@ -35,6 +44,8 @@ export function OnboardingFlow({ steps, validate, requestMicrophoneAccess, onFin
           total={steps.length}
           validate={validate}
           requestMicrophoneAccess={requestMicrophoneAccess}
+          microphoneAccess={microphoneAccess}
+          microphoneLocked={microphoneLocked}
         />
       )}
       {step === lastStep && <DoneStep onOpen={onFinish} />}

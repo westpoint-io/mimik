@@ -90,6 +90,9 @@ recording:
   minutesAgo: "$1 分钟前"
 
 settings:
+  microphoneAccess: "麦克风权限"
+  microphoneAccessAsk: "浏览器会先询问一次，Mimik 才能听到你的声音。"
+  microphoneAccessAllow: "允许"
   title: 设置
   aiDescriptions: "步骤描述"
   aiDescriptionsHint: "Mimik 使用你的 AI 服务商撰写每个步骤的文字并为指南命名。"
@@ -183,6 +186,9 @@ blurPresets:
   macAddress: MAC 地址
 
 desktop:
+  micAccessAsk: "macOS 会先询问一次，Mimik 才能听到你的声音。"
+  micAccessRefused: "已拒绝。请在“隐私与安全性”中打开 Mimik。"
+  micAccessOpen: "打开设置"
   ready: "就绪"
   pause: "暂停"
   resume: "继续"
@@ -198,15 +204,15 @@ desktop:
   modeScreen: 屏幕
   modeRegion: 区域
   startSheetTitle: 开始捕获
-  permissionsTitle: "需要权限"
+  permissionsTitle: "允许 Mimik 录制"
   permissionsIntro: "Mimik 需要几项权限才能录制。"
   permissionAccessibility: "辅助功能"
-  permissionAccessibilityHint: "用于记录你的点击和按键。"
+  permissionAccessibilityHint: "让 Mimik 能看到你点击和输入的内容。"
   permissionScreen: "屏幕录制"
-  permissionScreenHint: "用于为你的指南截取屏幕截图。"
+  permissionScreenHint: "让 Mimik 能为每一步截取屏幕。"
   permissionScreenRestart: "重启 Mimik 以完成开启。"
-  permissionGrant: "授予权限"
-  permissionGranted: "已授予"
+  permissionGrant: "允许"
+  permissionGranted: "已允许"
   permissionRestart: "重启 Mimik"
   moreStepsAfter: "新步骤会插入到第 $1 步之后。"
   moreStepsFirst: "新步骤会插入到第 1 步之前。"

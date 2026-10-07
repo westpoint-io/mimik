@@ -90,6 +90,9 @@ recording:
   minutesAgo: "Il y a $1 min"
 
 settings:
+  microphoneAccess: "Accès au micro"
+  microphoneAccessAsk: "Votre navigateur demande une fois avant que Mimik puisse vous entendre."
+  microphoneAccessAllow: "Autoriser"
   title: "Paramètres"
   aiDescriptions: "Descriptions des étapes"
   aiDescriptionsHint: "Mimik rédige le texte de chaque étape et nomme votre guide avec votre fournisseur d’IA."
@@ -183,6 +186,9 @@ blurPresets:
   macAddress: Adresse MAC
 
 desktop:
+  micAccessAsk: "macOS demande une fois avant que Mimik puisse vous entendre."
+  micAccessRefused: "Refusé. Activez Mimik dans Confidentialité et sécurité."
+  micAccessOpen: "Ouvrir les réglages"
   ready: "Prêt"
   pause: "Pause"
   resume: "Reprendre"
@@ -198,15 +204,15 @@ desktop:
   modeScreen: Écran
   modeRegion: Zone
   startSheetTitle: Démarrer une capture
-  permissionsTitle: "Autorisations requises"
+  permissionsTitle: "Autoriser Mimik à enregistrer"
   permissionsIntro: "Mimik a besoin de quelques autorisations pour enregistrer."
   permissionAccessibility: "Accessibilité"
-  permissionAccessibilityHint: "Nécessaire pour enregistrer vos clics et vos frappes."
+  permissionAccessibilityHint: "Permet à Mimik de voir où vous cliquez et ce que vous tapez."
   permissionScreen: "Enregistrement de l’écran"
-  permissionScreenHint: "Nécessaire pour prendre les captures d’écran de vos guides."
+  permissionScreenHint: "Permet à Mimik de prendre la capture de chaque étape."
   permissionScreenRestart: "Redémarrez Mimik pour finir de l’activer."
-  permissionGrant: "Accorder l’autorisation"
-  permissionGranted: "Accordée"
+  permissionGrant: "Autoriser"
+  permissionGranted: "Autorisé"
   permissionRestart: "Redémarrer Mimik"
   moreStepsAfter: "Les nouvelles étapes sont insérées après l'étape $1."
   moreStepsFirst: "Les nouvelles étapes sont insérées avant l'étape 1."

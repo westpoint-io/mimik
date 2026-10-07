@@ -4,7 +4,7 @@ use napi::bindgen_prelude::AsyncTask;
 use napi::{Env, Result, Task};
 use napi_derive::napi;
 
-#[cfg(any(windows, test))]
+#[cfg(any(windows, target_os = "macos", test))]
 mod hit;
 #[cfg(target_os = "macos")]
 mod mac;

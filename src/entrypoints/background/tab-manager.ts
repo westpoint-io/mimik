@@ -1,20 +1,12 @@
 import { logger } from '@mimik/core/logger';
+import { isRecordableUrl } from '@/capture/recordable-tabs';
 import { executeScript } from '@/lib/browser-api/execute-script';
 import { queryTabs } from '@/lib/browser-api/query-tabs';
 import { sendMessageToTab } from '@/lib/browser-api/send-message-to-tab';
 import { TabMessage, type TabMessageType } from '@/lib/tab-messages';
 
 export function isInjectableTab(tab: { url?: string; pendingUrl?: string }): boolean {
-  const url = tab.url || tab.pendingUrl || '';
-  if (
-    !url ||
-    url.startsWith('chrome://') ||
-    url.startsWith('chrome-extension://') ||
-    url.startsWith('chrome.google.com/webstore') ||
-    url.startsWith('about:')
-  )
-    return false;
-  return /^https?:/.test(url);
+  return isRecordableUrl(tab.url || tab.pendingUrl);
 }
 
 export async function injectContentScript(tabId: number): Promise<void> {

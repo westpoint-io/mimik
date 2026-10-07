@@ -37,10 +37,10 @@ vi.mock('@/lib/browser-api/on-message', () => ({ onMessage: vi.fn() }));
 
 vi.mock('@/lib/port/broadcast-voice-to-panel', () => ({ broadcastVoiceToPanel: vi.fn() }));
 
-vi.mock('@/lib/voice/read-transcription-settings', () => ({
+vi.mock('@/core/capture/voice/read-transcription-settings', () => ({
   readTranscriptionSettings: () => Promise.resolve({ provider: 'openai', apiKey: 'sk-test' }),
 }));
-vi.mock('@/lib/voice/narrate-recording', () => ({ narrateRecording: vi.fn() }));
+vi.mock('@/core/capture/voice/narrate-recording', () => ({ narrateRecording: vi.fn() }));
 
 const getStepsForGuide = vi.fn();
 

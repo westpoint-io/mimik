@@ -90,6 +90,9 @@ recording:
   minutesAgo: "hace $1m"
 
 settings:
+  microphoneAccess: "Acceso al micrófono"
+  microphoneAccessAsk: "Tu navegador pregunta una vez antes de que Mimik pueda oírte."
+  microphoneAccessAllow: "Permitir"
   title: Ajustes
   aiDescriptions: "Descripciones de los pasos"
   aiDescriptionsHint: "Mimik escribe el texto de cada paso y nombra tu guía con tu proveedor de IA."
@@ -183,6 +186,9 @@ blurPresets:
   macAddress: "Dirección MAC"
 
 desktop:
+  micAccessAsk: "macOS pregunta una vez antes de que Mimik pueda oírte."
+  micAccessRefused: "Denegado. Activa Mimik en Privacidad y seguridad."
+  micAccessOpen: "Abrir ajustes"
   ready: "Listo"
   pause: "Pausar"
   resume: "Reanudar"
@@ -198,15 +204,15 @@ desktop:
   modeScreen: Pantalla
   modeRegion: Área
   startSheetTitle: Iniciar una captura
-  permissionsTitle: "Permisos necesarios"
+  permissionsTitle: "Permite que Mimik grabe"
   permissionsIntro: "Mimik necesita un par de permisos para grabar."
   permissionAccessibility: "Accesibilidad"
-  permissionAccessibilityHint: "Necesario para grabar tus clics y pulsaciones de teclas."
+  permissionAccessibilityHint: "Permite a Mimik ver dónde haces clic y qué escribes."
   permissionScreen: "Grabación de pantalla"
-  permissionScreenHint: "Necesario para tomar capturas de pantalla para tus guías."
+  permissionScreenHint: "Permite a Mimik hacer la captura de cada paso."
   permissionScreenRestart: "Reinicia Mimik para terminar de activarlo."
-  permissionGrant: "Conceder permiso"
-  permissionGranted: "Concedido"
+  permissionGrant: "Permitir"
+  permissionGranted: "Permitido"
   permissionRestart: "Reiniciar Mimik"
   moreStepsAfter: "Los nuevos pasos se insertan después del paso $1."
   moreStepsFirst: "Los nuevos pasos se insertan antes del paso 1."

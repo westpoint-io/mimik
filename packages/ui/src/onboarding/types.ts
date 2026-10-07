@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import type { ValidateKey } from '../ai/types';
 
 export interface StepProps {
@@ -8,4 +9,6 @@ export interface StepProps {
   total: number;
   validate: ValidateKey;
   requestMicrophoneAccess: () => Promise<void>;
+  microphoneAccess?: ReactNode;
+  microphoneLocked?: boolean;
 }

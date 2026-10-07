@@ -1,3 +1,5 @@
+import { REDACT_ATTR } from '../../blur/redactor';
+
 export const FOCUSABLE_SELECTOR =
   'a[href], button, input, select, textarea, [role="button"], [role="link"], [role="tab"], [role="menuitem"], [role="checkbox"], [role="radio"], [role="switch"], [role="option"], [tabindex], [contenteditable="true"]';
 
@@ -73,7 +75,7 @@ export function isSensitiveField(el: Element | null): boolean {
 }
 
 export function isRedactedField(el: Element | null): boolean {
-  return el instanceof Element && !!el.closest('[data-mimik-blur]');
+  return el instanceof Element && !!el.closest(`[${REDACT_ATTR}]`);
 }
 
 export function eventTarget(e: Event): Element | null {

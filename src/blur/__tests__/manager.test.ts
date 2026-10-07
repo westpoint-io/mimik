@@ -82,13 +82,13 @@ describe('BlurManager start/stop races', () => {
     const manager = new BlurManager();
     manager.start();
     await settle();
-    expect(document.querySelectorAll('[data-mimik-blur]')).toHaveLength(1);
+    expect(document.querySelectorAll('[data-mimik-redact]')).toHaveLength(1);
 
     manager.dismiss();
 
     expect(overlayHosts()).toBe(0);
-    expect(document.querySelectorAll('[data-mimik-blur]')).toHaveLength(1);
-    expect(document.getElementById('mimik-blur-style')).not.toBeNull();
+    expect(document.querySelectorAll('[data-mimik-redact]')).toHaveLength(1);
+    expect(document.getElementById('mimik-redact-sheet')).not.toBeNull();
   });
 
   it('stop removes the masks and the styles as well as the overlay', async () => {
@@ -96,13 +96,13 @@ describe('BlurManager start/stop races', () => {
     const manager = new BlurManager();
     manager.start();
     await settle();
-    expect(document.querySelectorAll('[data-mimik-blur]')).toHaveLength(1);
+    expect(document.querySelectorAll('[data-mimik-redact]')).toHaveLength(1);
 
     manager.stop();
 
     expect(overlayHosts()).toBe(0);
-    expect(document.querySelectorAll('[data-mimik-blur]')).toHaveLength(0);
-    expect(document.getElementById('mimik-blur-style')).toBeNull();
+    expect(document.querySelectorAll('[data-mimik-redact]')).toHaveLength(0);
+    expect(document.getElementById('mimik-redact-sheet')).toBeNull();
   });
 
   it('stop still clears the masks after a dismiss has already run', async () => {
@@ -114,8 +114,8 @@ describe('BlurManager start/stop races', () => {
 
     manager.stop();
 
-    expect(document.querySelectorAll('[data-mimik-blur]')).toHaveLength(0);
-    expect(document.getElementById('mimik-blur-style')).toBeNull();
+    expect(document.querySelectorAll('[data-mimik-redact]')).toHaveLength(0);
+    expect(document.getElementById('mimik-redact-sheet')).toBeNull();
   });
 
   it('does not mount two panels when a dismiss and a restart share one await', async () => {

@@ -31,6 +31,8 @@ import {
 } from '../src/main/capture/settings';
 import type { Capture, Rect } from '../src/main/capture/screenshot';
 
+const MAC = process.platform === 'darwin';
+
 interface CheckResult {
   name: string;
   ok: boolean;
@@ -332,7 +334,7 @@ app.whenReady().then(async () => {
   results.push({
     name: 'accessibility metadata reaches the step',
     ok:
-      meta?.source === 'uia' &&
+      meta?.source === (MAC ? 'ax' : 'uia') &&
       meta.ariaLabel === 'Save' &&
       meta.name === 'SaveButton' &&
       meta.role === 'button' &&
@@ -393,11 +395,12 @@ app.whenReady().then(async () => {
 
   results.push({
     name: 'a password is a step but never a value',
-    ok:
-      secret?.action === 'input' &&
-      secret.inputValue === undefined &&
-      secret.elementMeta.inputType === 'password' &&
-      secret.elementMeta.textContent === null,
+    ok: MAC
+      ? secret === null
+      : secret?.action === 'input' &&
+        secret.inputValue === undefined &&
+        secret.elementMeta.inputType === 'password' &&
+        secret.elementMeta.textContent === null,
     detail: `wrote ${secret?.action ?? 'nothing'} with inputValue ${String(secret?.inputValue)} and no captured text`,
   });
 
@@ -456,7 +459,7 @@ app.whenReady().then(async () => {
   results.push({
     name: 'a shortcut is its own step',
     ok:
-      shortcut?.action === 'keydown:Ctrl+S' &&
+      shortcut?.action === (MAC ? 'keydown:⌃S' : 'keydown:Ctrl+S') &&
       comboLabel(pressed(31, { ctrl: true, shift: true }), 'S', false) === 'Ctrl+Shift+S' &&
       comboLabel(pressed(31, { meta: true, shift: true, alt: true }), 'S', true) === '⌥⇧⌘S' &&
       unnamed === null &&
@@ -492,10 +495,13 @@ app.whenReady().then(async () => {
       typedTextFor(editor(null), 'typed') === 'typed' &&
       typedTextFor({ ...editor('\uFEFFhi\u200B'), role: 'textbox' }, '') === 'hi' &&
       typedTextFor(control, 'typed') === null &&
-      typedTextFor(editor('x'.repeat(81)), 'ab') === 'ab' &&
-      typedTextFor(editor('y'.repeat(100)), 'z'.repeat(60)) === 'y'.repeat(100),
+      typedTextFor(editor('x'.repeat(201)), 'ab') === 'ab' &&
+      typedTextFor(editor('y'.repeat(200)), 'ab') === 'y'.repeat(200) &&
+      typedTextFor(editor('Last login: Thu Oct  1 12:39:09 on ttys000\n➜  ~ testing, clicking above showed the full desk'), 'testing, clicking above showed the full desk') === 'testing, clicking above showed the full desk' &&
+      typedTextFor(editor(`Last login\r\n➜  ~ ${'w'.repeat(60)}`), 'w'.repeat(60)) === 'w'.repeat(60) &&
+      typedTextFor(editor('line one\nline two'), '') === 'line one\nline two',
     detail:
-      'a field longer than twice the buffer and 80 characters yields the buffer, a shorter one yields the field, markers are stripped, a button yields nothing',
+      'a field spanning lines or longer than a step can show yields the keystrokes, any other field yields its text, hidden characters are stripped, a button yields nothing',
   });
 
   const typedThenClicked = async (keysAfterSnapshot: number) => {
@@ -583,7 +589,7 @@ app.whenReady().then(async () => {
   const count = (name: string) => early.filter((call) => call === name).length;
   results.push({
     name: 'a press is read when it happens, not when the queue gets to it',
-    ok: count('lookup') === 2 && count('grab') === 3 && count('focused') === 1,
+    ok: count('lookup') === 2 && count('grab') === 3 && count('focused') === (MAC ? 2 : 1),
     detail: `with the first step still being written: ${count('lookup')} lookups, ${count('grab')} grabs, ${count('focused')} field reads`,
   });
 

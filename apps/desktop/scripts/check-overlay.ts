@@ -268,6 +268,28 @@ app.whenReady().then(async () => {
   await settle();
   check('removing the step reaches the host', commands.includes('remove'), `commands: ${commands.join(', ')}`);
 
+  overlay.run('mic:on');
+  await settle();
+  check(
+    'turning narration on reaches the host and keeps recording',
+    commands.includes('mic:on') && overlay.state === 'recording',
+    `state ${overlay.state}, commands: ${commands.join(', ')}`,
+  );
+
+  overlay.setNarration({ level: 0.8, speaking: true });
+  await settle();
+  const narrating = await card(
+    "shown: !document.querySelector('#voice').hidden, text: document.querySelector('#voice').textContent, height: document.body.scrollHeight",
+  );
+  overlay.setNarration(null);
+  await settle();
+  const quiet = await card("shown: !document.querySelector('#voice').hidden, height: document.body.scrollHeight");
+  check(
+    'narrating shows the meter, and it goes when narration stops',
+    narrating.shown === true && String(narrating.text).includes('Hearing you') && quiet.shown === false,
+    `while narrating: ${narrating.text} (${narrating.height}px); after: shown ${quiet.shown} (${quiet.height}px)`,
+  );
+
   overlay.setBusy(true);
   await settle();
   const whileBusy = await windowWithHash('controls')?.webContents.executeJavaScript(
@@ -357,8 +379,8 @@ app.whenReady().then(async () => {
     "JSON.stringify([...document.querySelectorAll('#foot button')].map((b) => b.id + ':' + b.textContent.trim()))",
   );
   check(
-    'Finish sits on the right, as the primary action',
-    String(order).includes('secondary:Pause') && String(order).indexOf('primary:Finish') > String(order).indexOf('secondary:Pause'),
+    'Finish leads the footer, with the mic and Pause after it',
+    /^\["primary:Finish","mic:","secondary:"\]$/.test(String(order)),
     String(order),
   );
   check(

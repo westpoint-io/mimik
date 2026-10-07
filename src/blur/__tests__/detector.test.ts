@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { BlurDetector } from '@/core/blur/detector';
-import type { PresetKey } from '@/core/blur/regexes';
+import type { PresetKey } from '@/core/blur/patterns';
 import { BlurManager } from '../manager';
 
 const stored: { blurPresets?: Record<PresetKey, boolean> } = {};

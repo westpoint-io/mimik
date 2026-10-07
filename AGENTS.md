@@ -447,7 +447,11 @@ in it was a text field and typing there wrote no step. The first hit therefore a
 animations in that application and upsets window managers such as Rectangle, so `releaseWebContent`
 clears it again when the recording stops, on every process Mimik turned it on for and on none that
 already had it, so a running VoiceOver keeps its own. A
-hit that lands on Mimik's own overlay answers null rather than naming the card. The accessible name
+hit that lands on Mimik's own overlay answers null rather than naming the card. Chromium lays an empty, unnamed group over its whole tab strip, the tab-drag layer the Windows
+lookup already skips, and the hit test answers with it, so a click on a tab or its close button read
+"Click here". A hit that is an unnamed group with nothing inside it is therefore narrowed the Windows
+way: the elements beside it, four levels down, are searched for the smallest one holding the point,
+with the same `smallest_under`. The accessible name
 is `AXTitle`, then `AXDescription`, then the value of `AXTitleUIElement`, which is how a text field
 names its label; the placeholder rides in the help text, and a password is `AXSecureTextField`,
 whose value is never read. `macmap.rs` holds the role table and the key tables with no FFI in them,
@@ -826,14 +830,17 @@ is the same mascot dropped by `CAMERA_MASCOT_DROP` with `CAMERA_MASCOT_PARTS` ov
 coordinates — copying the paths into the overlay would have made it the fifth copy of this drawing in
 the repository.
 
-The footer is always the same two slots: the transient action on the left, the one that moves the
-recording forward on the right, filled. That filled button is `--deep` in every state. A paused
+The footer is the extension's recording bar: one wide filled pill that moves the recording forward,
+then round icon buttons, the microphone and the transient action, each naming itself in a tooltip.
+That filled button is `--deep` in every state. A paused
 variant that filled it with `--accent` was tried and removed: the design system reserves the accent
 for icons, links, focus rings, toggles and meters and never for a button fill, and the header
 already says "Paused" beside a stopped dot, so the colour was carrying no information the card did
-not already show. Close then Start while armed, Pause then Finish while
-recording, Resume then Finish while paused. Finish keeps the right-hand slot for the whole recording
-so it never moves under the cursor.
+not already show. Start, the mic and Close while armed; Finish, the mic and Pause while recording;
+Finish, the mic and Resume while paused. Finish keeps the left-hand slot for the whole recording so
+it never moves under the cursor. It used to sit on the right with a labelled Pause, and a mic squeezed
+between two wide buttons looked out of place, so the card took the side panel's arrangement and the
+two surfaces now read the same.
 
 A capture is in flight from the moment the grab starts until the capture queue is empty again, and
 `overlay.setBusy` spans exactly that: the grab sets it and the recorder's `drained` hook clears it.
@@ -878,8 +885,8 @@ the extension, a `src` on the desktop — into a row with the bounds in CSS pixe
 the click point, and the dashed target scaled by that ratio. Scaling the target is the part worth
 having once: a rectangle multiplied in one surface and not the other puts the dashed box on the wrong
 thing, and nothing about that fails a build. The description queue is shared too, as below. The rest
-of the two paths genuinely differs — voice narration and the input finalisation exist only in the
-extension, and the application name only on the desktop.
+of the two paths genuinely differs — the input finalisation exists only in the extension, and the
+application name only on the desktop.
 
 Main cannot `invoke` a renderer, so `ask()` sends a request with a generated reply channel and waits
 for `ipcMain.once` on it, with a timeout. The preload's `onRequest` is the other half. A handler that throws
@@ -1102,13 +1109,15 @@ by default, because it is what is actually on screen and it survives caret movem
 autocomplete. It is always read — a switch to use only the keystroke buffer was taken out, because it
 existed for edge cases nobody would set on purpose. The
 keystroke buffer wins in three cases: the focused element reports no value, the value is empty, or
-the field holds more than both twice what was typed and 80 characters. That last rule is what
-makes rich text and terminals work: in a word processor the "field" is the whole document, and in a
-terminal it is the whole screen, so its value is everything shown rather than what was just typed,
-and the buffer is the only thing that knows which part is new. It used to be a margin of 120
-characters beyond what was typed, 24 for a document, and a terminal screen holding only its login
-line and a prompt stayed under it, so the first command typed into a fresh terminal read as the
-whole screen. A screen shorter than 80 characters still does. A non-text role yields nothing at all, so a keypress in a file manager is not a
+the field is a canvas rather than a box: it spans more than one line, or it holds more text than a
+step can show, the 200 characters a typing step is cut to. That last rule is what makes rich text
+and terminals work: in a word processor the "field" is the whole document, and in a terminal it is
+the whole screen, so its value is everything shown rather than what was just typed, and the buffer
+is the only thing that knows which part is new. A single-line field is read whole, which keeps
+autocomplete and edits right, so a terminal showing only one line, its prompt and the command,
+records the prompt with it. It used to be a margin of 120 characters beyond what was typed, and a
+terminal screen holding only its login line and a prompt stayed under it, so the first command typed
+into a fresh terminal read as the whole screen. A non-text role yields nothing at all, so a keypress in a file manager is not a
 step.
 
 Two shortcuts feed the buffer rather than becoming steps. A paste, Cmd+V on a Mac and Ctrl+V
@@ -1125,7 +1134,8 @@ after it, because it keeps that state per thread and every keystroke goes throug
 cost is that the state is real and can be left armed, so `clearDeadKey` flushes it whenever a
 session ends.
 
-Values are stripped of `\uFFF9`–`\uFFFD`, `\uFEFF` and `\u200B` before use. Accessibility
+Values are stripped of every format character (`\p{Cf}`, which covers `\uFEFF`, `\u200B` and
+the `\uFFF9`–`\uFFFB` annotation marks), `\uFFFC` and `\uFFFD` before use. Accessibility
 implementations use those to mark annotations and inline objects, and they arrive as invisible
 garbage in the middle of otherwise ordinary text.
 
@@ -1180,7 +1190,9 @@ renderer names the url and main is the one holding the network. A text, JSON or 
 response comes back as text and anything else as base64, which the renderer decodes into bytes:
 voice-over audio went through the same path as JSON and arrived as mangled text. The voice-over
 client calls `coreFetch` for that reason rather than the global `fetch`, which a renderer origin
-cannot use against a provider. The request's abort signal crosses too: `mainFetch` stops waiting the moment the signal fires and
+cannot use against a provider, and so does the narration transcriber. Its body is a form carrying the
+audio, and `mainFetch` used to send only string bodies, so it now encodes any other body through a
+`Request` and sends the bytes with the multipart content type that encoding chose. The request's abort signal crosses too: `mainFetch` stops waiting the moment the signal fires and
 sends `mimik:ai:abort` with the request's id, and main aborts its `net.fetch`. It used to drop the
 signal, so neither the 60-second limit on a voice-over clip nor cancelling the export ever reached the
 request, and one stalled clip held the export on "Narrating step 3 of 6" forever.
@@ -1258,11 +1270,26 @@ is the accessible name first; a text field
 then falls back to its placeholder and help text but never its value, which is what was typed into
 it, and the machine identifier is used only when it does not read as one. An element with no name of its own borrows one: a group or pane from the first named control
 inside it, anything else from its nearest named ancestor, stopping at the window, because naming
-the window as the click target would be wrong. Chrome's internal window class names and bare numbers
-on panes are discarded, since the accessibility tree reports both as names, and invisible format
+the window as the click target would be wrong. Names Chromium gives its own plumbing are discarded,
+since the accessibility tree reports them as names: its window classes all start with `Chrome_`, its
+web content surface is named "Chrome Legacy Window", its compositor window "Intermediate D3D Window",
+and the embedded framework's browser window `CefBrowserWindow`, all of them visible in Chromium's open
+source. A bare number on a pane is discarded too, because it is a handle, not a label, and invisible format
 characters are stripped from every name — web pages wrap words in direction isolates and
 zero-width marks that the PDF font draws as boxes. When nothing is left the
-step reads "Click here" rather than "Click treeitem" — the control type is not a name. A
+step reads "Click here" rather than "Click treeitem" — the control type is not a name.
+
+How the name is chosen is one ranking rather than a chain of checks. `nameCandidates` lists every
+string that could name the step with a weight: the element's own label, placeholder, shown value, alt
+text and identifier first, in that order, then, for a group or pane, the controls inside it ahead of
+plain text inside it, then the areas around it up to the nearest window, document or pane, closest
+first. `elementName` takes the heaviest non-empty one. What each role contributes lives in
+`ROLE_TRAITS`: whether it is typed into (its value is the input, not its name), picked from (the verb
+is Select), lends its name to an unnamed holder, holds controls, or ends the search outward. A text
+field's value never names it because the value is what the person typed. The search stops at a pane
+because a pane is a region of its own, and a name from beyond it describes somewhere else. The titles
+this produces are pinned by `naming-baseline.test.ts`, 6000 generated controls recorded before the
+ranking replaced the old checks. A
 `screen`-sourced recording, with no lookup at all, is every step reading "Click here".
 
 The AI rewrite runs only when a provider key is saved, which is what enabling AI means here, and
@@ -1630,8 +1657,10 @@ that genuinely differs — the extension goes through background messaging becau
 what has `host_permissions`, and the desktop calls `validateApiKey` directly on top of the main
 process fetch.
 
-The rest of `SettingsView` stayed put. Voice narration and smart blur have no desktop card yet, and it
-reaches into `@/lib/browser-api/`. `MicrophonePicker` moved to `packages/ui/src/voice` with the
+The rest of `SettingsView` stayed put: smart blur has no desktop card, and it reaches into
+`@/lib/browser-api/`. Voice narration is `NarrationSettings` in `packages/ui/src/voice`, the provider
+and the microphone, saved as each changes, and the desktop shows it in the AI section, between
+Step descriptions and voice-over, since narration is an AI feature. `MicrophonePicker` moved to `packages/ui/src/voice` with the
 onboarding, taking `onRequestAccess`: the extension opens its permission page, because a side panel
 cannot show the browser's microphone prompt, and the desktop calls `getUserMedia`, which Electron
 grants. It mounts the API keys card at the top,
@@ -1649,9 +1678,14 @@ privacy note, the bug link and the star card stay in the side panel, which keeps
 The options page used to centre its card vertically in a box the height of the window, and
 once the settings outgrew the window the header and the API keys card sat above it, out of reach.
 
-The key rows line up the same way on every surface: the field runs to the card's edge with its status
-inside it, and your own server's labels share the width of the name column, so its fields start where
-the key fields do. Every field is Poppins, the server's address included, which used to be monospace.
+The key rows line up the same way on every surface wide enough for them: the field runs to the card's
+edge with its status inside it, and your own server's labels share the width of the name column, so its fields start where
+the key fields do. Every field is Poppins, the server's address included, which used to be monospace. The side panel is not wide enough for that: a field
+reserving 160px for its pill beside a 112px name could not shrink below about 174px and spilled past
+the card. The key list is therefore a container, and under 440px the pill moves out of the field to a
+small coloured line under the provider's name, which narrows to 96px. The switch is the card's own
+width, not the surface, because the extension's options page is as wide as the desktop dialog. A row
+only reserves room for a pill while it has one to show.
 
 A feature whose chosen provider has lost its key keeps the choice and says so: the select shows a red
 No key pill at its right end, in the Verified pill's place and shape, and the list ticks only
@@ -1690,7 +1724,67 @@ what they buy is a screen they can only skip.
 
 Done writes `onboardingCompleted`, and the desktop `App` shows the flow until it is set, reading it
 through core's `localStorage` like every other setting. The narration step saves the provider and
-microphone the desktop's narration will read; the recording card has no microphone button yet.
+microphone the desktop's narration reads. The step's microphone picker runs in its live mode on both surfaces, and on
+the desktop it sits under the same macOS Microphone access row as Settings, through
+`useMicrophoneGate`, so a first run asks macOS for the microphone instead of trusting Electron's silent
+grant. `DesktopOnboarding` holds that hook so its polling stops once onboarding is done.
+
+## Desktop Narration
+
+The recording card has the extension's microphone toggle, the first round button after Finish, as
+in the side panel: on, off, or dashed and inert while the narration provider has no key. While the
+microphone is open, the lavender box that holds the keyboard tip holds the extension's level meter
+instead, five bars with Hearing you or No sound, and before the first step the extension's hint on
+how to narrate, in smaller grey text on a line of its own, as the side panel lays them out; after a step lands it sits under the step. The app window sends the recorder's level
+through `mimik:capture:narration` and main puts it on the overlay view as `narration`, null whenever
+the microphone is closed. It is the same `voiceEnabled` setting the extension's toggle writes. The card reads it, and
+the key, from the window's own `localStorage`, which it shares with the app window, and redraws on
+the `storage` event, so a refusal written by the app window turns the button off on the card. A
+click sends `mic:on` or `mic:off`; the overlay passes those to main without touching its state,
+since any command it does not know closes the card. On a Mac main asks for the microphone first with
+`askForMediaAccess`, or opens the Microphone pane of System Settings when it was refused, and drops
+`mic:on` unless it is granted. The command then reaches the app window, which writes the setting.
+
+The app window records, because it stays alive and at full speed while hidden. `DesktopNarration`
+runs core's `MicRecorder`, the extension's offscreen recorder moved into
+`core/capture/voice` with `narrateRecording`, `usableRecording` and `readTranscriptionSettings`.
+It opens the microphone on `start` and `resume` when the setting and a key are both there, and on
+`mic:on` mid-recording. Pause, `mic:off` and the end each cut the audio into a slice and transcribe
+it against the guide's steps in the background, the way the extension stops on pause and starts
+again on resume: each slice keeps its own epoch, and `applyNarrationToSteps` appends a later slice's
+words to a step an earlier one already narrated. Finish and the insert merge wait up to 30 s for
+those slices before descriptions settle and the guide is named. `cancel` drops the audio. A refused
+microphone turns the setting off rather than failing the recording.
+
+Settings cannot take the microphone's state from the browser. Electron grants the page's own
+microphone permission without asking, so the picker's badge read Allowed on a Mac that had never been
+asked. The desktop therefore reads macOS instead, through `mimik:microphone:get`, which answers
+`granted`, `ask` or `denied` from `getMediaAccessStatus` and `granted` everywhere else. While it is
+not granted, the Voice narration card shows a Microphone access row whose button asks macOS, or opens
+the Microphone pane once refused, and the picker is greyed out. Once granted the row is gone, since a
+row reading Granted beside a badge reading Allowed said one thing twice. The picker's `live`
+mode drops the badge and the Test button and runs the level meter for as long as the card is open,
+and both surfaces use it, so the card reads the same in each. In the extension, where the browser's
+permission is the real one, the picker itself shows the same access row (`MicrophoneAccessRow` in
+`packages/ui/src/voice`) while access is not granted: Allow opens the permission page, and once
+blocked it carries the browser's unblock instructions and Try again. The cost is Chrome's recording
+indicator on the settings tab while the card is open.
+
+Each step is narrated as it lands, as in the extension. While the microphone is open a step is
+written pending and its AI description is held back rather than queued; `DesktopNarration.step`
+transcribes the audio from the last slice up to that step's timestamp, against that step alone, and
+writes the words straight into it. Only a step nothing was said for falls back to its AI
+description, or to its basic one without a key, so narration comes first and AI is the fallback,
+and a narrated step costs no description. Pause, `mic:off` and the end transcribe the tail against
+every step once the slices still in flight have landed, then describe whatever narration never
+reached. The card hears the spoken text through `mimik:capture:described` with source `narration`
+and badges it Voice, the guide's own word for it. An AI description that finishes after narration
+landed writes nothing, since `clearStepAiPending` never writes over a narrated step, and the card is
+not told about it.
+
+The signed `.dmg` carries `resources/entitlements.mac.plist`, with
+`com.apple.security.device.audio-input`, because the hardened runtime denies the microphone without
+it whatever the user grants.
 
 ## Capture Shortcuts
 
@@ -2030,7 +2124,8 @@ Font: Poppins (loaded via `@fontsource/poppins`).
 - **Pausing waits for the frames to drain.** `broadcastStopCaptureAndFlush` is answered only once each content script's queue is idle, because `CaptureController.stop()` enqueues the input session's finalize. `handleFinalizeInputStep` is therefore gated on "not IDLE" rather than `RECORDING`: it only ever completes a step the user finished before pausing, and `enterBlurMode` awaits the flush before opening the overlay so that screenshot cannot catch it
 - **Navigation listeners treat `PAUSED` as live** (`navigation.ts:isLive`). `URL_CHANGED` has to keep flowing or the first step after a resume is stamped with the pre-pause URL, which Guide Me then replays to; injection has to keep running or a tab opened mid-pause is deaf to the resume broadcast
 - **Blur mode pauses via that state**, and a top frame booting into `PAUSED`/`'blur'` re-opens the overlay, so a navigation mid-blur still has a Done button. `exitBlurMode` and the panel's Resume both broadcast `DISMISS_BLUR` before resuming, which closes the overlay but keeps the masks the user just picked; only the end of a recording sends `CLEAR_BLUR` to remove them
-- **Smart blur cannot reach** iframes, shadow DOM, canvas/image text, `::before`/`::after`, `<select>`/`<option>`, or attribute-only values like `title`/`alt`; it runs in the top frame only, and a matching input blurs as a whole field. SVG `<text>` *is* blurred. These limits are documented in all five READMEs and *partly* pinned by `core/blur/__tests__/scanner.test.ts` — shadow DOM, `select`/`option`, attribute-only values and whole-field input blur have assertions; canvas/image text, `::before`/`::after` and top-frame-only do not (the last lives in `content.ts`, not the scanner). Move the READMEs with any scanner change
+- **Smart blur cannot reach** iframes, shadow DOM, canvas/image text, `::before`/`::after`, `<select>`/`<option>`, or attribute-only values like `title`/`alt`; it runs in the top frame only, and a matching input blurs as a whole field. SVG `<text>` *is* blurred. These limits are documented in all five READMEs and *partly* pinned by `core/blur/__tests__/redactor.test.ts` — shadow DOM, `select`/`option`, attribute-only values and whole-field input blur have assertions; canvas/image text, `::before`/`::after` and top-frame-only do not (the last lives in `content.ts`, not the scanner). Move the READMEs with any scanner change
+- **What Smart blur matches is pinned by recorded output, not by the patterns.** `core/blur/__tests__/blur-baseline.test.ts` runs hand-written samples, 4000 random strings, 8000 strings built from near-matches and a set of whole pages through `patternsFor`, `sensitiveSpans` and `PageRedactor`, and compares the result with JSON files under `__snapshots__` that were recorded before the module was rewritten. Any change to a pattern, the merging or the page walk that blurs one character more or less fails it. Re-record (`vitest -u`) only for a deliberate change in what is blurred. `naming-baseline.test.ts` pins step titles the same way over 6000 generated controls
 - **Paused-ness is read from the state value, never from `pauseReason`.** A snapshot persisted before `PAUSED` existed has no `pauseReason` key, so it restores as `undefined` — and `undefined !== null` read as paused, which left the panel offering Resume while the machine was still `RECORDING`. `getStateUpdate` normalises the reason to `null`; the reason only picks the wording. The same applies to any context key added later: a restored snapshot will not have it
 - **`BlurManager.start()` re-checks `active` after awaiting the presets.** A stop landing inside that await tore down a panel that did not exist yet, and the pending `start()` then mounted it with `active` already `false`, so nothing could ever close it. Any new `await` before the panel mounts needs the same guard
 - **xstate snapshot** persisted to sessionStorage so the state machine survives service worker restarts

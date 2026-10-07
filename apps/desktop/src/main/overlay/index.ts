@@ -17,6 +17,8 @@ export type OverlayCommand =
   | 'mode:screen'
   | 'mode:region'
   | 'remove'
+  | 'mic:on'
+  | 'mic:off'
   | 'intro:done';
 
 export interface OverlayStep {
@@ -25,7 +27,7 @@ export interface OverlayStep {
   title: string;
   action: string;
   src: string;
-  source: 'heuristic' | 'ai';
+  source: 'heuristic' | 'ai' | 'narration';
   pending: boolean;
   app: string | null;
 }
@@ -43,6 +45,11 @@ export interface OverlayShortcuts {
 export interface OverlayAiFailure {
   reason: AiFailureReason;
   provider: string;
+}
+
+export interface OverlayNarration {
+  level: number;
+  speaking: boolean;
 }
 
 export interface OverlayAim {
@@ -67,6 +74,7 @@ export interface OverlayView {
   starting: boolean;
   shortcuts: OverlayShortcuts;
   aiFailure: OverlayAiFailure | null;
+  narration: OverlayNarration | null;
 }
 
 export interface OverlayOptions {
@@ -144,6 +152,7 @@ export class CaptureOverlay {
   private progress: OverlayProgress = { percent: 0, ms: 0 };
   private print: OverlayPrint = { src: null, aim: null };
   private aiFailure: OverlayAiFailure | null = null;
+  private narration: OverlayNarration | null = null;
   private editingFrom: OverlayState = 'hidden';
   private modeBeforeEdit: CaptureMode | null = null;
   private hiding: { shown: BrowserWindow[]; ready: Promise<unknown>; users: number } | null = null;
@@ -192,6 +201,7 @@ export class CaptureOverlay {
       starting: this.starting,
       shortcuts: this.options.shortcuts?.() ?? NO_SHORTCUTS,
       aiFailure: this.aiFailure,
+      narration: this.narration,
     };
   }
 
@@ -220,6 +230,11 @@ export class CaptureOverlay {
 
   setAiFailure(failure: OverlayAiFailure | null): void {
     this.aiFailure = failure;
+    this.broadcast();
+  }
+
+  setNarration(narration: OverlayNarration | null): void {
+    this.narration = narration;
     this.broadcast();
   }
 
@@ -408,6 +423,7 @@ export class CaptureOverlay {
   hide(): void {
     this.introDone?.(false);
     this.starting = false;
+    this.narration = null;
     this.current = 'hidden';
     this.closeEditors();
     for (const win of this.windows()) win.hide();
@@ -449,6 +465,10 @@ export class CaptureOverlay {
     }
     if (command === 'remove') {
       if (!this.busy) this.onCommand(command);
+      return;
+    }
+    if (command === 'mic:on' || command === 'mic:off') {
+      this.onCommand(command);
       return;
     }
     if (this.starting && command !== 'cancel' && command !== 'stop') return;

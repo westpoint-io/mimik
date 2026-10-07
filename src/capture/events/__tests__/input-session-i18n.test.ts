@@ -81,7 +81,7 @@ describe('InputSession describes typing through i18n', () => {
 
   it('describes a blurred field without echoing the value', () => {
     const wrapper = document.createElement('div');
-    wrapper.setAttribute('data-mimik-blur', '');
+    wrapper.setAttribute('data-mimik-redact', '');
     const input = field('bonjour', 'Notes');
     wrapper.appendChild(input);
     document.body.appendChild(wrapper);

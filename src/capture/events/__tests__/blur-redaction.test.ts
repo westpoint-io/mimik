@@ -17,7 +17,7 @@ function blurredInput(value: string): HTMLInputElement {
   el.type = 'text';
   el.value = value;
   el.setAttribute('aria-label', 'API key');
-  el.setAttribute('data-mimik-blur', 'input');
+  el.setAttribute('data-mimik-redact', 'field');
   document.body.appendChild(el);
   return el;
 }
@@ -35,7 +35,7 @@ describe('isRedactedField', () => {
 
   it('reports a field inside a manually blurred container', () => {
     const box = document.createElement('div');
-    box.setAttribute('data-mimik-blur', 'manual');
+    box.setAttribute('data-mimik-redact', 'manual');
     const el = document.createElement('input');
     box.appendChild(el);
     document.body.appendChild(box);

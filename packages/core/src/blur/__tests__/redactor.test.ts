@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from 'vitest';
-import { BlurScanner } from '../scanner';
+import { PageRedactor } from '../redactor';
 
-const BLURRED = '.mimik-blur';
+const BLURRED = '.mimik-redact';
 
 function scanWith(html: string): Document {
   document.body.innerHTML = html;
-  const scanner = new BlurScanner();
+  const scanner = new PageRedactor();
   scanner.start(['email']);
   scanner.detach();
   return document;
@@ -47,7 +47,7 @@ describe('text node filtering', () => {
   it('does not blur inside something already blurred', () => {
     scanWith('<p>ada@example.com and bob@example.com</p>');
     const first = document.querySelectorAll(BLURRED).length;
-    const scanner = new BlurScanner();
+    const scanner = new PageRedactor();
     scanner.start(['email']);
     scanner.detach();
     expect(document.querySelectorAll(BLURRED)).toHaveLength(first);
@@ -60,7 +60,7 @@ describe('documented coverage limits', () => {
     const host = document.getElementById('host') as HTMLElement;
     host.attachShadow({ mode: 'open' }).innerHTML = '<p>ada@example.com</p>';
 
-    const scanner = new BlurScanner();
+    const scanner = new PageRedactor();
     scanner.start(['email']);
     scanner.detach();
 
@@ -91,12 +91,12 @@ describe('documented coverage limits', () => {
 
   it('blurs a whole matching input rather than the matched substring', () => {
     document.body.innerHTML = '<input value="reach me at ada@example.com ok">';
-    const scanner = new BlurScanner();
+    const scanner = new PageRedactor();
     scanner.start(['email']);
     scanner.detach();
 
     const input = document.querySelector('input') as HTMLInputElement;
-    expect(input.getAttribute('data-mimik-blur')).toBe('input');
+    expect(input.getAttribute('data-mimik-redact')).toBe('field');
     expect(input.style.filter).toContain('blur');
     expect(document.querySelectorAll(BLURRED)).toHaveLength(0);
   });

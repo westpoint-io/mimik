@@ -17,7 +17,7 @@ export function ApiKeysSettings({ state, validate, title }: ApiKeysSettingsProps
   return (
     <>
       <SettingsCard icon={KeyRound} title={title} className={title ? 'pb-1' : 'py-1'}>
-        <div className="divide-y divide-secondary">
+        <div className="@container divide-y divide-secondary">
           {KEY_PROVIDERS.map((provider) => (
             <ProviderKeyRow
               key={provider}

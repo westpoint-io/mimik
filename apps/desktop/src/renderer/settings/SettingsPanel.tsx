@@ -5,6 +5,7 @@ import {
   AiSettings,
   ApiKeysSettings,
   BrandingSettings,
+  NarrationSettings,
   Segmented,
   Switch,
   useApiKeys,
@@ -24,6 +25,8 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { CaptureSettings, CaptureShortcuts } from '../../main/capture/settings';
+import { useMicrophoneGate } from '../hooks/use-microphone-gate';
+import { requestMicrophoneAccess } from '../lib/request-microphone-access';
 import { Card } from './Card';
 import { GeneralSettings } from './GeneralSettings';
 import { REOPEN_SETTINGS } from './lib/reopen-settings';
@@ -61,6 +64,7 @@ export function SettingsPanel() {
     return reopened ?? 'general';
   });
   const keys = useApiKeys();
+  const microphone = useMicrophoneGate();
   const [settings, setSettings] = useState<CaptureSettings | null>(null);
 
   useEffect(() => {
@@ -100,6 +104,14 @@ export function SettingsPanel() {
           {section === 'ai' && (
             <>
               <AiSettings keys={keys} onOpenKeys={() => setSection('keys')} />
+              <NarrationSettings
+                keys={keys}
+                onOpenKeys={() => setSection('keys')}
+                onRequestAccess={requestMicrophoneAccess}
+                access={microphone.row}
+                microphoneDisabled={microphone.locked}
+                liveMeter
+              />
               <VoiceoverSettings keys={keys.keys} listVoices={fetchVoices} onOpenKeys={() => setSection('keys')} />
             </>
           )}

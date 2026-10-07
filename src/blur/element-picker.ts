@@ -1,10 +1,10 @@
 import { i18n } from '#imports';
+import { REDACT_ATTR } from '@/core/blur/redactor';
+import { PICKED_CLASS } from '@/core/blur/styles';
 import { isMimikElement } from '@/core/capture/dom/element-utils';
 import { createOverlayRoot } from '@/core/capture/dom/overlay-root';
 import { HoverRing } from '@/lib/hover-ring';
 
-const MANUAL_CLASS = 'mimik-manual-blur';
-const BLUR_ATTR = 'data-mimik-blur';
 const RING_COLOR = '#7C3AED';
 
 const STYLES = `
@@ -123,12 +123,12 @@ export class ElementPicker {
   }
 
   private toggleBlur(el: HTMLElement) {
-    if (el.classList.contains(MANUAL_CLASS)) {
-      el.classList.remove(MANUAL_CLASS);
-      el.removeAttribute(BLUR_ATTR);
+    if (el.classList.contains(PICKED_CLASS)) {
+      el.classList.remove(PICKED_CLASS);
+      el.removeAttribute(REDACT_ATTR);
     } else {
-      el.classList.add(MANUAL_CLASS);
-      el.setAttribute(BLUR_ATTR, 'manual');
+      el.classList.add(PICKED_CLASS);
+      el.setAttribute(REDACT_ATTR, 'manual');
     }
   }
 

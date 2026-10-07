@@ -7,6 +7,8 @@ import {
   createElement,
   Keyboard,
   LoaderCircle,
+  Mic,
+  MicOff,
   Monitor,
   MousePointer2,
   Pause,
@@ -14,6 +16,7 @@ import {
   Trash2,
   TriangleAlert,
   Video,
+  X,
 } from 'lucide';
 
 const ICONS = {
@@ -31,6 +34,9 @@ const ICONS = {
   keyboard: Keyboard,
   pointer: MousePointer2,
   alert: TriangleAlert,
+  mic: Mic,
+  micOff: MicOff,
+  close: X,
 };
 
 export type IconName = keyof typeof ICONS;

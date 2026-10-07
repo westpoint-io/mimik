@@ -1,5 +1,5 @@
-import { SPEECH_RMS_THRESHOLD } from '@/core/capture/voice/energy-gate';
 import { concat } from './concat';
+import { SPEECH_RMS_THRESHOLD } from './energy-gate';
 import { openStream } from './open-stream';
 
 export const TARGET_SAMPLE_RATE = 16000;

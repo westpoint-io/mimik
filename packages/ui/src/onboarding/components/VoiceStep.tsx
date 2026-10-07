@@ -14,7 +14,17 @@ const VOICE_PROVIDERS: ProviderOption<VoiceProvider>[] = [
   { value: 'groq', label: 'Groq', logo: 'groq', available: true },
 ];
 
-export function VoiceStep({ onNext, onSkip, onBack, index, total, validate, requestMicrophoneAccess }: StepProps) {
+export function VoiceStep({
+  onNext,
+  onSkip,
+  onBack,
+  index,
+  total,
+  validate,
+  requestMicrophoneAccess,
+  microphoneAccess,
+  microphoneLocked = false,
+}: StepProps) {
   const [provider, setProvider] = useState<VoiceProvider>('openai');
   const [microphoneId, setMicrophoneId] = useState('');
   const keys = useApiKeys({ reloadOnFocus: true });
@@ -85,7 +95,11 @@ export function VoiceStep({ onNext, onSkip, onBack, index, total, validate, requ
               <p className="mt-1.5 text-[11px] text-muted-foreground">{i18n.t('onboarding.keySaved')}</p>
             </div>
 
+            {microphoneAccess}
+
             <MicrophonePicker
+              live
+              disabled={microphoneLocked}
               value={microphoneId}
               onChange={handleMicrophoneChange}
               onRequestAccess={requestMicrophoneAccess}

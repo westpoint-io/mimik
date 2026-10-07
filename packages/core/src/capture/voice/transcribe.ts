@@ -1,3 +1,4 @@
+import { coreFetch } from '@/core/env';
 import type { TranscriptionResponse } from './types';
 
 export type VoiceProvider = 'openai' | 'groq';
@@ -28,7 +29,7 @@ export function createTranscriber(config: TranscribeConfig): (wav: Blob) => Prom
     form.append('temperature', '0');
     if (config.language) form.append('language', config.language);
 
-    const response = await fetch(url, {
+    const response = await coreFetch(url, {
       method: 'POST',
       headers: { Authorization: `Bearer ${config.apiKey}` },
       body: form,

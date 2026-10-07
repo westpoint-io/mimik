@@ -33,8 +33,9 @@ export function ProviderKeyRow({ provider, value, onChange, validate, bare = fal
             <span className="w-7 h-7 rounded-lg bg-secondary text-foreground flex items-center justify-center shrink-0">
               <ProviderLogo provider={provider} />
             </span>
-            <span className="w-28 shrink-0 text-[13px] font-semibold text-foreground">
+            <span className="flex w-28 shrink-0 flex-col text-[13px] font-semibold text-foreground @max-[440px]:w-24">
               {KEY_PROVIDER_LABELS[provider]}
+              <KeyStatusPill status={keyCheck.status} compact className="hidden @max-[440px]:flex" />
             </span>
           </>
         )}
@@ -48,7 +49,7 @@ export function ProviderKeyRow({ provider, value, onChange, validate, bare = fal
             if (value.trim()) void check(provider, value.trim());
           }}
           placeholder={KEY_PLACEHOLDERS[provider]}
-          status={<KeyStatusPill status={keyCheck.status} />}
+          status={keyCheck.status ? <KeyStatusPill status={keyCheck.status} /> : undefined}
           aria-label={bare ? i18n.t('settings.apiKey') : undefined}
           className={bare ? 'h-11 rounded-xl pl-4 text-sm border-border' : 'h-8 text-[13px] rounded-lg border-border'}
         />

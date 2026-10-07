@@ -8,10 +8,15 @@ interface MainReply {
 
 export async function mainFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+  const raw = init?.body;
+  const encoded = raw == null || typeof raw === 'string' ? null : new Request(url, { method: 'POST', body: raw });
   const headers: Record<string, string> = {};
   new Headers(init?.headers).forEach((value, key) => {
     headers[key] = value;
   });
+  const type = encoded?.headers.get('content-type');
+  if (type && !headers['content-type']) headers['content-type'] = type;
+  const payload = encoded ? new Uint8Array(await encoded.arrayBuffer()) : typeof raw === 'string' ? raw : undefined;
   const signal = init?.signal ?? undefined;
   signal?.throwIfAborted();
 
@@ -32,7 +37,7 @@ export async function mainFetch(input: RequestInfo | URL, init?: RequestInit): P
         url,
         method: init?.method ?? 'GET',
         headers,
-        body: typeof init?.body === 'string' ? init.body : undefined,
+        body: payload,
       }),
       aborted,
     ])) as MainReply;

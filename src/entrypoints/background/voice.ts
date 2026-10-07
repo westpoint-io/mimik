@@ -1,7 +1,9 @@
 import { logger } from '@mimik/core/logger';
 import { CaptureState } from '@/core/capture/machine';
 import { hasVoiceApiKey, VOICE_KEY_SETTINGS } from '@/core/capture/voice/api-key';
+import { narrateRecording, type VoiceRecording } from '@/core/capture/voice/narrate-recording';
 import { narrationUpdates } from '@/core/capture/voice/narration-updates';
+import { readTranscriptionSettings } from '@/core/capture/voice/read-transcription-settings';
 import { applyNarrationToSteps, findExistingStepIds, getStepsForGuide, saveTranscript } from '@/core/guides/service';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import { onMessage as onRuntimeMessage } from '@/lib/browser-api/on-message';
@@ -22,8 +24,6 @@ import type { PanelVoiceUpdate, VoicePhase } from '@/lib/port/types';
 import { handedOffPcm } from '@/lib/voice/handed-off-pcm';
 import { isVoiceMessageFor } from '@/lib/voice/is-voice-message-for';
 import { isVoiceStatus } from '@/lib/voice/is-voice-status';
-import { narrateRecording, type VoiceRecording } from '@/lib/voice/narrate-recording';
-import { readTranscriptionSettings } from '@/lib/voice/read-transcription-settings';
 import {
   VOICE_BACKGROUND_TARGET,
   type VoiceErrorEvent,

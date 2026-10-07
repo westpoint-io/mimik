@@ -1,6 +1,7 @@
 import { aiFailureNotice } from '@mimik/core/capture/ai/errors';
 import { splitAtShortcut } from '@mimik/core/capture/split-at-shortcut';
-import { i18n } from '@mimik/core/env';
+import { hasVoiceApiKey, VOICE_KEY_SETTINGS } from '@mimik/core/capture/voice/api-key';
+import { i18n, localStorage } from '@mimik/core/env';
 import type { OverlayView } from '../../main/overlay';
 import { icon } from '../icons';
 import { cameraMascot } from './camera-mascot';
@@ -21,6 +22,9 @@ const MODE_COMMAND: Record<string, string> = {
 const MODE_ID: Record<string, string> = { window: 'window', screen: 'screen', region: 'area' };
 
 const AI_WAIT_MS = 8000;
+
+const VOICE_BARS = [0.45, 0.75, 1, 0.75, 0.45];
+const VOICE_BAR_FLOOR = 0.14;
 
 export function controls(): void {
   document.body.className = 'controls';
@@ -78,7 +82,17 @@ export function controls(): void {
   const flyerShot = el('img', { alt: '' });
   const flyer = el('div', { id: 'flyer' }, flyerShot);
   const stage = el('div', { id: 'stage' }, preview, stepTitle, stepMeta, printer, flyer);
-  const body = el('div', { id: 'body' }, stage, intro, hint);
+  const voiceBars = el('span', { id: 'voiceBars' });
+  const bars = VOICE_BARS.map(() => voiceBars.appendChild(el('i', {})));
+  const voiceLabel = el('strong', {});
+  const voiceHint = el('p', { id: 'voiceHint' }, i18n.t('voice_orderHint'));
+  const voice = el(
+    'div',
+    { id: 'voice', role: 'status' },
+    el('div', { id: 'voiceLine' }, voiceBars, voiceLabel),
+    voiceHint,
+  );
+  const body = el('div', { id: 'body' }, stage, intro, hint, voice);
 
   const modeLabel = el('p', { id: 'modeLabel' }, i18n.t('desktop_captureMode'));
   const modeRow = el('div', { id: 'modes' });
@@ -102,12 +116,16 @@ export function controls(): void {
 
   const secondary = el('button', { id: 'secondary', type: 'button' });
   const primary = el('button', { id: 'primary', type: 'button', className: 'primary' });
-  const foot = el('div', { id: 'foot' }, secondary, primary);
+  const mic = el('button', { id: 'mic', type: 'button' });
+  const foot = el('div', { id: 'foot' }, primary, mic, secondary);
 
   document.body.append(head, body, modes, aiNotice, foot);
 
   const report = () => window.mimikOverlay.size(document.body.scrollWidth, document.body.scrollHeight);
 
+  let micOn = false;
+  let micKeyed = false;
+  let shownMic = '';
   let shownIcon = '';
   let shownChevron = '';
   let shownMode = '';
@@ -146,7 +164,7 @@ export function controls(): void {
   };
 
   const render = (view: OverlayView) => {
-    const { state, step, busy, progress, print, starting, mode, shortcuts, aiFailure } = view;
+    const { state, step, busy, progress, print, starting, mode, shortcuts, aiFailure, narration } = view;
     const armed = state === 'armed';
     const recording = state === 'recording';
     const paused = state === 'paused';
@@ -209,6 +227,18 @@ export function controls(): void {
     }
     badge.hidden = paused || collapsed;
 
+    const micLocked = !micKeyed && !micOn;
+    const micState = micOn ? 'on' : micLocked ? 'locked' : 'off';
+    if (micState !== shownMic) {
+      shownMic = micState;
+      const micLabel = i18n.t(micLocked ? 'voice_needsApiKey' : micOn ? 'voice_turnOff' : 'voice_turnOn');
+      mic.className = micState;
+      mic.title = micLabel;
+      mic.setAttribute('aria-label', micLabel);
+      mic.setAttribute('aria-pressed', String(micOn));
+      mic.replaceChildren(icon(micOn ? 'mic' : 'micOff', 16));
+    }
+
     const chevron = collapsed ? 'up' : 'down';
     if (chevron !== shownChevron) {
       shownChevron = chevron;
@@ -242,8 +272,9 @@ export function controls(): void {
     const extra = stepTitle.getBoundingClientRect().height - Number.parseFloat(getComputedStyle(stepTitle).lineHeight);
     preview.style.setProperty('--title-extra', `${step ? Math.max(0, extra) : 0}px`);
     source.hidden = !step;
-    source.textContent = i18n.t(step?.source === 'ai' ? 'stepSource_ai' : 'stepSource_basic');
-    source.className = step?.source === 'ai' ? 'ai' : 'basic';
+    const sourceKind = step?.source === 'ai' ? 'ai' : step?.source === 'narration' ? 'voice' : 'basic';
+    source.textContent = i18n.t(`stepSource_${sourceKind}`);
+    source.className = sourceKind;
     metaText.textContent =
       [step ? i18n.t('export_stepLabel', [String(step.index)]) : '', step?.app ?? ''].filter(Boolean).join(' · ') ||
       '\u00a0';
@@ -255,7 +286,15 @@ export function controls(): void {
         ? 'Nothing is recorded while paused.'
         : 'Your first click will show up here.';
     const key = armed ? shortcuts.startStop : shortcuts.capture;
-    hint.hidden = intro.hidden || resting || !key;
+    hint.hidden = intro.hidden || resting || !key || Boolean(narration);
+    voice.hidden = collapsed || !narration;
+    voiceHint.hidden = intro.hidden;
+    voiceBars.classList.toggle('speaking', narration?.speaking === true);
+    voiceLabel.textContent = i18n.t(narration?.speaking ? 'voice_micHearing' : 'voice_micQuiet');
+    bars.forEach((bar, index) => {
+      const scale = Math.max(VOICE_BAR_FLOOR, Math.min(1, (narration?.level ?? 0) * VOICE_BARS[index]));
+      bar.style.transform = `scaleY(${scale})`;
+    });
     hintKey.textContent = key ?? '';
     hintText.textContent = armed ? ' to start and stop.' : ' to capture without clicking.';
     body.hidden = collapsed;
@@ -265,9 +304,10 @@ export function controls(): void {
 
     if (state !== shownIcon) {
       shownIcon = state;
-      secondary.replaceChildren();
-      if (!armed) secondary.append(icon(recording ? 'pause' : 'play'));
-      secondary.append(i18n.t(armed ? 'common_close' : recording ? 'desktop_pause' : 'desktop_resume'));
+      const secondaryLabel = i18n.t(armed ? 'common_close' : recording ? 'desktop_pause' : 'desktop_resume');
+      secondary.replaceChildren(icon(armed ? 'close' : recording ? 'pause' : 'play', 16));
+      secondary.title = secondaryLabel;
+      secondary.setAttribute('aria-label', secondaryLabel);
       primary.replaceChildren(icon(armed ? 'video' : 'check'));
       primary.append(i18n.t(armed ? 'desktop_startButton' : 'desktop_finish'));
     }
@@ -324,6 +364,17 @@ export function controls(): void {
   primary.addEventListener('click', () => window.mimikOverlay.command(primary.dataset.command ?? 'start'));
   secondary.addEventListener('click', () => window.mimikOverlay.command(secondary.dataset.command ?? 'cancel'));
   remove.addEventListener('click', () => window.mimikOverlay.command('remove'));
+  mic.addEventListener('click', () => {
+    if (shownMic !== 'locked') window.mimikOverlay.command(micOn ? 'mic:off' : 'mic:on');
+  });
+  const readMic = () =>
+    localStorage.get([...VOICE_KEY_SETTINGS, 'voiceEnabled']).then((stored) => {
+      micOn = stored.voiceEnabled === true;
+      micKeyed = hasVoiceApiKey(stored);
+      paint();
+    });
+  void readMic();
+  window.addEventListener('storage', () => void readMic());
   collapse.addEventListener('click', () => {
     collapsed = !collapsed;
     paint();

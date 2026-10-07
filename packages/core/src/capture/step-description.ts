@@ -1,61 +1,80 @@
 import { i18n } from '@/core/env';
-import type { ElementMeta, ElementNode } from '@/core/guides/types';
+import type { ElementMeta } from '@/core/guides/types';
 
-const VERB_BY_ROLE: Record<string, 'enter' | 'select'> = {
-  combobox: 'select',
-  menuitem: 'select',
-  option: 'select',
-  radio: 'select',
-  searchbox: 'enter',
-  textbox: 'enter',
+type RoleTrait = 'typedInto' | 'pickedFrom' | 'namesItsHolder' | 'holdsControls' | 'endsTheSearch';
+
+const ROLE_TRAITS: Record<string, readonly RoleTrait[]> = {
+  textbox: ['typedInto', 'namesItsHolder'],
+  searchbox: ['typedInto', 'namesItsHolder'],
+  combobox: ['pickedFrom', 'namesItsHolder'],
+  radio: ['pickedFrom', 'namesItsHolder'],
+  option: ['pickedFrom'],
+  menuitem: ['pickedFrom'],
+  button: ['namesItsHolder'],
+  checkbox: ['namesItsHolder'],
+  link: ['namesItsHolder'],
+  slider: ['namesItsHolder'],
+  group: ['holdsControls'],
+  pane: ['holdsControls', 'endsTheSearch'],
+  window: ['endsTheSearch'],
+  document: ['endsTheSearch'],
+  application: ['endsTheSearch'],
 };
-const WRAPPERS = new Set(['group', 'pane']);
-const BOUNDARIES = new Set(['application', 'document', 'pane', 'window']);
-const LABELLING_CONTROLS = new Set([
-  'button',
-  'checkbox',
-  'combobox',
-  'link',
-  'radio',
-  'searchbox',
-  'slider',
-  'textbox',
-]);
-const HOST_SURFACES = new Set([
-  'cefbrowserwindow',
-  'chrome legacy window',
-  'chrome_renderwidgethosthwnd',
-  'intermediate d3d window',
-]);
+
+const CHROMIUM_SURFACES = new Set(['chrome legacy window', 'intermediate d3d window', 'cefbrowserwindow']);
 const NAME_LIMIT = 200;
+const VALUE_LIMIT = 80;
 const INVISIBLE = /[\p{Cf}\uFFFC\uFFFD]/gu;
 const IDENTIFIER = /^(?=.*(?:[\d_.:[\]-]|[a-z][A-Z]))\S+$/;
+const DIGITS_ONLY = /^\d+$/;
 
-function elementName(meta: ElementMeta): string {
-  const usable = (value: string | null | undefined) => {
+function hasTrait(role: string | null | undefined, trait: RoleTrait): boolean {
+  return ROLE_TRAITS[role ?? '']?.includes(trait) ?? false;
+}
+
+interface NameCandidate {
+  text: string;
+  weight: number;
+}
+
+function nameCandidates(meta: ElementMeta): NameCandidate[] {
+  const tidy = (value: string | null | undefined) => {
     const text = (value ?? '').replace(INVISIBLE, '').trim();
     const lower = text.toLowerCase();
-    return HOST_SURFACES.has(lower) || lower.startsWith('chrome_widgetwin_') ? '' : text;
+    return lower.startsWith('chrome_') || CHROMIUM_SURFACES.has(lower) ? '' : text;
   };
-  const role = meta.role ?? '';
-  const value = usable(meta.textContent?.slice(0, 80));
-  const hideValue = VERB_BY_ROLE[role] === 'enter' || (BOUNDARIES.has(role) && /^\d+$/.test(value));
-  const handle = IDENTIFIER.test(meta.name ?? '') ? null : meta.name;
-  const own = [meta.ariaLabel, meta.placeholder, hideValue ? null : value, meta.altText, handle]
-    .map(usable)
-    .find(Boolean);
-  if (own) return own.slice(0, NAME_LIMIT);
+  const role = meta.role;
+  const shown = tidy(meta.textContent?.slice(0, VALUE_LIMIT));
+  const shownIsLabel = !hasTrait(role, 'typedInto') && !(hasTrait(role, 'endsTheSearch') && DIGITS_ONLY.test(shown));
+  const ownName = IDENTIFIER.test(meta.name ?? '') ? null : meta.name;
+  const found: NameCandidate[] = [
+    meta.ariaLabel,
+    meta.placeholder,
+    shownIsLabel ? shown : null,
+    meta.altText,
+    ownName,
+  ].map((value, order) => ({ text: tidy(value), weight: 300 - order }));
 
-  const rank = (node: ElementNode) => (LABELLING_CONTROLS.has(node.role ?? '') ? 0 : node.role === 'text' ? 1 : 2);
-  const inside = WRAPPERS.has(role)
-    ? (meta.children ?? []).filter((node) => rank(node) < 2 && usable(node.name)).sort((a, b) => rank(a) - rank(b))[0]
-    : undefined;
-  if (inside) return usable(inside.name).slice(0, NAME_LIMIT);
+  if (hasTrait(role, 'holdsControls')) {
+    (meta.children ?? []).forEach((child, order) => {
+      const kind = hasTrait(child.role, 'namesItsHolder') ? 200 : child.role === 'text' ? 100 : 0;
+      if (kind > 0) found.push({ text: tidy(child.name), weight: kind - order / 1000 });
+    });
+  }
 
-  const ancestors = meta.ancestors ?? [];
-  const boundary = ancestors.findIndex((node) => BOUNDARIES.has(node.role ?? ''));
-  const around = (boundary === -1 ? ancestors : ancestors.slice(0, boundary)).find((node) => usable(node.name));
-  return around ? usable(around.name).slice(0, NAME_LIMIT) : '';
+  for (const [depth, ancestor] of (meta.ancestors ?? []).entries()) {
+    if (hasTrait(ancestor.role, 'endsTheSearch')) break;
+    found.push({ text: tidy(ancestor.name), weight: 50 - depth / 1000 });
+  }
+  return found;
+}
+
+function elementName(meta: ElementMeta): string {
+  let best: NameCandidate = { text: '', weight: Number.NEGATIVE_INFINITY };
+  for (const candidate of nameCandidates(meta)) {
+    if (candidate.text && candidate.weight > best.weight) best = candidate;
+  }
+  return best.text.slice(0, NAME_LIMIT);
 }
 
 export function buildFallbackDescription(action: string, meta: ElementMeta, typed?: string): string {
@@ -76,8 +95,8 @@ export function buildFallbackDescription(action: string, meta: ElementMeta, type
       if (meta.tag === 'input' && meta.inputType === 'radio') return i18n.t('steps.select', [name]);
       if (meta.role === 'switch') return i18n.t('steps.toggleSwitch', [name]);
       if (meta.role === 'checkbox') return i18n.t('steps.toggleCheckbox', [name]);
-      if (VERB_BY_ROLE[meta.role ?? ''] === 'select') return i18n.t('steps.select', [name]);
-      if (VERB_BY_ROLE[meta.role ?? ''] === 'enter') return i18n.t('steps.enter', [name]);
+      if (hasTrait(meta.role, 'pickedFrom')) return i18n.t('steps.select', [name]);
+      if (hasTrait(meta.role, 'typedInto')) return i18n.t('steps.enter', [name]);
       if (meta.href) return i18n.t('steps.clickLink', [name]);
       return i18n.t('steps.click', [name]);
     case 'input':

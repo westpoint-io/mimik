@@ -35,4 +35,18 @@ describe('mainFetch', () => {
 
     expect([...new Uint8Array(await response.arrayBuffer())]).toEqual([1, 2, 255]);
   });
+
+  it('sends a form as bytes with its multipart boundary', async () => {
+    stubBridge(async () => ({ status: 200, statusText: 'OK', headers: {}, body: '{}', encoding: 'text' }));
+    const form = new FormData();
+    form.append('model', 'whisper-1');
+
+    await mainFetch('https://api.openai.com/v1/audio/transcriptions', { method: 'POST', body: form });
+
+    const [sent] = (window.mimik.ai.fetch as ReturnType<typeof vi.fn>).mock.calls[0] as [
+      { body: Uint8Array; headers: Record<string, string> },
+    ];
+    expect(sent.headers['content-type']).toMatch(/^multipart\/form-data; boundary=/);
+    expect(new TextDecoder().decode(sent.body)).toContain('whisper-1');
+  });
 });
