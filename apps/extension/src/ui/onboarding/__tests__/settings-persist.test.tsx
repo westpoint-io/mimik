@@ -23,7 +23,7 @@ vi.mock('@/lib/offscreen/open-mic-permission-page', () => ({
   openMicPermissionPage: vi.fn().mockResolvedValue(undefined),
 }));
 
-import { fakeBrowser } from 'wxt/testing';
+import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { OnboardingApp } from '../App';
 
 const savedKeys = async () =>
