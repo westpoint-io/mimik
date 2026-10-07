@@ -6,5 +6,29 @@ onlyBuiltDependencies:
   - electron
   - esbuild
 
+ignoredBuiltDependencies:
+  - core-js
+  - get-windows
+  - spawn-sync
+  - uiohook-napi
+
 patchedDependencies:
   jspdf: patches/jspdf.patch
+
+minimumReleaseAge: 1440
+strictDepBuilds: true
+trustPolicy: no-downgrade
+blockExoticSubdeps: true
+trustPolicyExclude:
+  - 'jscpd@4.3.0'
+  - 'semver@6.3.1'
+  - '@webext-core/isolated-element@1.1.5'
+  - 'undici-types@6.21.0'
+
+overrides:
+  dompurify: ^3.4.16
+  shell-quote: ^1.9.0
+
+auditConfig:
+  ignoreGhsas:
+    - GHSA-23hp-3jrh-7fpw
