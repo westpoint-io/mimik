@@ -43,9 +43,8 @@ app.disableHardwareAcceleration();
 app.on('window-all-closed', () => {});
 
 function bail(error: unknown): never {
-  process.stdout.write(`FAIL check-overlay aborted: ${error instanceof Error ? error.stack : String(error)}\n`);
-  app.exit(1);
-  throw error;
+  process.stdout.write(`FAIL check-overlay aborted after "${results.at(-1)?.name ?? 'nothing'}": ${error instanceof Error ? error.stack : String(error)}\n`);
+  process.exit(1);
 }
 
 setTimeout(() => bail(new Error('check did not finish within 60s')), 60_000).unref();
@@ -433,12 +432,12 @@ app.whenReady().then(async () => {
       )) ?? '{}',
     ),
   ) as { buttons?: string[]; edge?: string; corner?: string };
-  await inEditor("document.querySelector('#bar button.secondary').click()");
+  await inEditor("setTimeout(() => document.querySelector('#bar button.secondary').click())");
   await settle();
   const cancelled = { state: overlay.isEditing ? 'editor' : overlay.state, editors: editorWindows().length, sent: commands.at(-1) };
   await pickArea();
   await settle();
-  await inEditor("document.querySelector('#bar button.primary').click()");
+  await inEditor("setTimeout(() => document.querySelector('#bar button.primary').click())");
   await settle();
   const confirmed = { state: overlay.isEditing ? 'editor' : overlay.state, editors: editorWindows().length, sent: commands.at(-1) };
   check(

@@ -30,8 +30,7 @@ const MAC = process.platform === 'darwin';
 
 function bail(error: unknown): never {
   process.stdout.write(`FAIL check-pipeline aborted: ${error instanceof Error ? error.stack : String(error)}\n`);
-  app.exit(1);
-  throw error;
+  process.exit(1);
 }
 
 setTimeout(() => bail(new Error('check did not finish within 120s')), 120_000).unref();
