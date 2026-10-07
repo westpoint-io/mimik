@@ -79,5 +79,105 @@
     "typescript": "^5.9.3",
     "vitest": "^4.1.0",
     "wxt": "^0.20.20"
+  },
+  "knip": {
+    "ignoreUnresolved": [
+      "#imports"
+    ],
+    "ignoreDependencies": [
+      "@mimik/locales"
+    ],
+    "workspaces": {
+      ".": {
+        "entry": [
+          "src/entrypoints/*.ts",
+          "src/entrypoints/*/index.{ts,tsx}",
+          "scripts/*.mjs"
+        ],
+        "project": [
+          "src/**/*.{ts,tsx}",
+          "scripts/**"
+        ]
+      },
+      "apps/desktop": {
+        "entry": [
+          "src/preload/*.ts",
+          "src/renderer/*.html",
+          "scripts/*.{ts,mjs,cjs}"
+        ],
+        "project": [
+          "src/**/*.{ts,tsx}",
+          "scripts/**"
+        ],
+        "ignoreDependencies": [
+          "tailwindcss"
+        ]
+      },
+      "packages/core": {
+        "includeEntryExports": true,
+        "project": [
+          "src/**/*.ts"
+        ],
+        "ignore": [
+          "src/export/empty.ts"
+        ]
+      },
+      "packages/ui": {
+        "includeEntryExports": true,
+        "project": [
+          "src/**/*.{ts,tsx}"
+        ],
+        "ignore": [
+          "src/components/ui/**"
+        ]
+      },
+      "packages/capture-native": {
+        "ignore": [
+          "index.js"
+        ]
+      }
+    }
+  },
+  "size-limit": [
+    {
+      "name": "background",
+      "path": ".output/chrome-mv3/background.js",
+      "limit": "170 kB"
+    },
+    {
+      "name": "content script",
+      "path": ".output/chrome-mv3/content-scripts/*.js",
+      "limit": "40 kB"
+    },
+    {
+      "name": "pages",
+      "path": ".output/chrome-mv3/chunks/*.js",
+      "limit": "600 kB"
+    }
+  ],
+  "jscpd": {
+    "path": [
+      "src",
+      "apps/desktop/src",
+      "packages/core/src",
+      "packages/ui/src"
+    ],
+    "format": [
+      "typescript",
+      "tsx"
+    ],
+    "minLines": 12,
+    "minTokens": 80,
+    "threshold": 0.5,
+    "ignore": [
+      "**/__tests__/**",
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "**/components/ui/**"
+    ],
+    "reporters": [
+      "console"
+    ],
+    "silent": true
   }
 }
