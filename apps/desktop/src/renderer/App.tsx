@@ -24,6 +24,7 @@ export function App() {
   const route = useRoute();
   const narration = useNarrationUpdate();
   const [settingsOpen, setSettingsOpen] = useState(() => sessionStorage.getItem(REOPEN_SETTINGS) !== null);
+  const [settingsOnKeys, setSettingsOnKeys] = useState(false);
   const [sheet, setSheet] = useState<{ insert?: CaptureInsert } | null>(null);
   const [guideKey, setGuideKey] = useState(0);
   const [onboarded, setOnboarded] = useState<boolean | null>(null);
@@ -114,11 +115,21 @@ export function App() {
         )}
       </AppFrame>
       <SearchModal />
-      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <SettingsDialog
+        open={settingsOpen}
+        startOnKeys={settingsOnKeys}
+        onOpenChange={(open) => {
+          setSettingsOpen(open);
+          if (!open) setSettingsOnKeys(false);
+        }}
+      />
       <VoiceNotice
         update={narration.update}
         seenLive={narration.seenLive}
-        onOpenSettings={() => setSettingsOpen(true)}
+        onOpenSettings={() => {
+          setSettingsOnKeys(true);
+          setSettingsOpen(true);
+        }}
       />
       {sheet && <CaptureSheet insert={sheet.insert} onClose={() => setSheet(null)} />}
       <PermissionsDialog open={permissionsOpen} onClose={closePermissions} />

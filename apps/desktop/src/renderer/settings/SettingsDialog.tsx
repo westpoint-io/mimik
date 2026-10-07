@@ -2,7 +2,15 @@ import { i18n } from '@mimik/core/env';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, SavedBadge, useSavedFlash } from '@mimik/ui';
 import { SettingsPanel } from './SettingsPanel';
 
-export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+export function SettingsDialog({
+  open,
+  onOpenChange,
+  startOnKeys = false,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  startOnKeys?: boolean;
+}) {
   const { saved, flash } = useSavedFlash();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -11,7 +19,7 @@ export function SettingsDialog({ open, onOpenChange }: { open: boolean; onOpenCh
           <DialogTitle className="text-[15px] font-bold">{i18n.t('settings.title')}</DialogTitle>
           <SavedBadge saved={saved} />
         </DialogHeader>
-        <SettingsPanel onSaved={flash} />
+        <SettingsPanel onSaved={flash} startOnKeys={startOnKeys} />
       </DialogContent>
     </Dialog>
   );
