@@ -1,5 +1,6 @@
 import { logger } from '@mimik/core/logger';
 import PQueue from 'p-queue';
+import { browser } from '#imports';
 import { extensionCaptureSink } from '@/capture/sink';
 import { extractDOMContext } from '@/core/capture/dom/context';
 import { extractElementMeta, freezeRect } from '@/core/capture/dom/element-meta';
@@ -74,6 +75,12 @@ class CaptureController {
   private busy = false;
   private recordKeys = false;
   private recordTyping = true;
+  private readonly onSettingsChanged = (changes: Record<string, { newValue?: unknown }>) => {
+    if (changes.recordKeys) this.recordKeys = changes.recordKeys.newValue === true;
+    if (changes.recordTyping) this.recordTyping = changes.recordTyping.newValue !== false;
+    const color = changes.targetColor?.newValue;
+    if (typeof color === 'string' && color) this.ring.setColor(color);
+  };
 
   constructor(
     private guideId: string,
@@ -113,6 +120,7 @@ class CaptureController {
         this.recordTyping = recordTyping !== false;
       })
       .catch(() => {});
+    browser.storage.local.onChanged.addListener(this.onSettingsChanged);
     for (const [event, handler, opts] of this.listeners) {
       window.addEventListener(event, handler, opts);
     }
@@ -334,6 +342,7 @@ class CaptureController {
   }
 
   stop(): Promise<void> {
+    browser.storage.local.onChanged.removeListener(this.onSettingsChanged);
     for (const [event, handler, opts] of this.listeners) {
       window.removeEventListener(event, handler, opts);
     }
