@@ -1,9 +1,5 @@
-export interface RecordableTab {
-  id: number;
-  title: string;
-  url: string;
-  favIconUrl?: string;
-}
+import type { GenerateGuideDescriptionResponse } from '@mimik/core/capture/ai/guide-description';
+import type { RewriteSelectionResponse } from '@mimik/core/capture/ai/rewrite';
 
 interface TabLike {
   id?: number;
@@ -16,13 +12,11 @@ interface TabLike {
 export interface UiEnv {
   tabs: {
     create(url: string): Promise<TabLike | null>;
-    recordable(): Promise<RecordableTab[]>;
-    startInsertRecording(guideId: string, index: number, tabId: number): Promise<void>;
   };
-  panel: {
-    open(): void;
+  ai: {
+    rewriteSelection(text: string, instruction: string): Promise<RewriteSelectionResponse>;
+    describeGuide(guideId: string): Promise<GenerateGuideDescriptionResponse>;
   };
-  send<T = any>(name: string, payload?: unknown): Promise<T>;
   appIconUrl?(id: string): string | null;
 }
 
@@ -39,18 +33,13 @@ function env(): UiEnv {
 
 export const tabs: UiEnv['tabs'] = {
   create: (url) => env().tabs.create(url),
-  recordable: () => env().tabs.recordable(),
-  startInsertRecording: (guideId, index, tabId) => env().tabs.startInsertRecording(guideId, index, tabId),
 };
 
-export const panel: UiEnv['panel'] = {
-  open: () => env().panel.open(),
+export const ai: UiEnv['ai'] = {
+  rewriteSelection: (text, instruction) => env().ai.rewriteSelection(text, instruction),
+  describeGuide: (guideId) => env().ai.describeGuide(guideId),
 };
 
 export const appIcons = {
   url: (id: string): string | null => current?.appIconUrl?.(id) ?? null,
-};
-
-export const messages: Pick<UiEnv, 'send'> = {
-  send: (name, payload) => env().send(name, payload),
 };

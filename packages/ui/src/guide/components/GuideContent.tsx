@@ -1,6 +1,6 @@
-import { AI_CREDENTIAL_SETTINGS, resolveAiCredentials } from '@mimik/core/capture/ai/keys';
+import { readAiCredentials } from '@mimik/core/capture/ai/read-ai-credentials';
 import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
-import { i18n, localStorage } from '@mimik/core/env';
+import { i18n } from '@mimik/core/env';
 import { formatDate } from '@mimik/core/export/utils';
 import { isReplayable } from '@mimik/core/guideme/session';
 import { actionSteps } from '@mimik/core/guides/blocks';
@@ -28,13 +28,11 @@ import { AnnotationEditor } from '../../annotation/components/AnnotationEditor';
 import { FaviconImg } from '../../common/components/FaviconImg';
 import { Toast } from '../../common/components/Toast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
-import { messages, panel, tabs } from '../../env';
 import { TranscriptPanel } from '../../history/components/TranscriptPanel';
 import { VersionHistoryPanel } from '../../history/components/VersionHistoryPanel';
 import { useFullview } from '../../stores/use-fullview';
 import { buildPreview } from '../lib/build-preview';
 import type { PreviewData } from '../types';
-import { CaptureTabDialog } from './CaptureTabDialog';
 import { GuideStepList } from './GuideStepList';
 
 interface GuideContentProps {
@@ -42,6 +40,7 @@ interface GuideContentProps {
   initialStepId?: string;
   initialTool?: 'annotate' | 'redact' | 'crop' | 'target';
   onCaptureMore?: (target: CaptureInsert) => void;
+  onGuideMe?: (guideId: string) => void;
 }
 
 interface GuideData {
@@ -50,7 +49,7 @@ interface GuideData {
   screenshots: Map<string, Screenshot>;
 }
 
-export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMore }: GuideContentProps) {
+export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMore, onGuideMe }: GuideContentProps) {
   const {
     setGuideTitle,
     setGuideStepCount,
@@ -80,7 +79,6 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
   }));
 
   const [data, setData] = useState<GuideData | null>(null);
-  const [pendingInsert, setPendingInsert] = useState<CaptureInsert | null>(null);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
   const [typingTitle, setTypingTitle] = useState<string | null>(null);
@@ -135,7 +133,7 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
   }, [data, guideId, setGuideExportData]);
 
   useEffect(() => {
-    localStorage.get(AI_CREDENTIAL_SETTINGS).then((stored) => desc.setHasApiKey(resolveAiCredentials(stored) !== null));
+    readAiCredentials().then((keys) => desc.setHasApiKey(keys !== null));
   }, []);
 
   const handleTitleBlur = useCallback(async () => {
@@ -450,12 +448,9 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
                 {domain}
               </span>
             )}
-            {!editing && !preview && viewSteps.some(isReplayable) && (
+            {onGuideMe && !editing && !preview && viewSteps.some(isReplayable) && (
               <button
-                onClick={() => {
-                  panel.open();
-                  void messages.send('startGuideMe', { guideId });
-                }}
+                onClick={() => onGuideMe(guideId)}
                 className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary-foreground bg-primary hover:bg-primary/90 px-3 py-0.5 rounded-full transition-colors ml-auto"
               >
                 <Play size={11} />
@@ -475,21 +470,9 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
             readOnly={!editing || preview !== null}
             hasApiKey={desc.hasApiKey}
             onChanged={loadGuide}
-            onCaptureMore={onCaptureMore ?? setPendingInsert}
+            onCaptureMore={onCaptureMore}
           />
         </div>
-
-        <CaptureTabDialog
-          open={pendingInsert !== null}
-          onCancel={() => setPendingInsert(null)}
-          onStart={(tabId) => {
-            const target = pendingInsert;
-            setPendingInsert(null);
-            if (!target) return;
-            panel.open();
-            void tabs.startInsertRecording(target.insertTargetGuideId, target.insertAtIndex, tabId);
-          }}
-        />
 
         {transcriptOpen && (
           <TranscriptPanel

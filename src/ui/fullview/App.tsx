@@ -1,11 +1,17 @@
+import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import { AppFrame, GuidePage, LibraryContent, SearchModal, TooltipProvider, useRoute } from '@mimik/ui';
+import { useState } from 'react';
 import { browser } from '#imports';
+import { startInsertRecording } from '@/capture/start-insert-recording';
 import { openSidebar } from '@/lib/browser-api/open-sidebar';
+import { sendMessage } from '@/lib/messaging';
 import { UpdateNotice } from '@/ui/shared/UpdateNotice';
 import { BackgroundVoiceNotice } from './components/BackgroundVoiceNotice';
+import { CaptureTabDialog } from './components/CaptureTabDialog';
 
 export function FullViewApp() {
   const route = useRoute();
+  const [pendingInsert, setPendingInsert] = useState<CaptureInsert | null>(null);
 
   return (
     <TooltipProvider>
@@ -25,8 +31,29 @@ export function FullViewApp() {
         )}
 
         {route.page === 'guide' && (
-          <GuidePage guideId={route.guideId} initialStepId={route.stepId} initialTool={route.tool} />
+          <GuidePage
+            guideId={route.guideId}
+            initialStepId={route.stepId}
+            initialTool={route.tool}
+            onCaptureMore={setPendingInsert}
+            onGuideMe={(guideId) => {
+              openSidebar();
+              void sendMessage('startGuideMe', { guideId });
+            }}
+          />
         )}
+
+        <CaptureTabDialog
+          open={pendingInsert !== null}
+          onCancel={() => setPendingInsert(null)}
+          onStart={(tabId) => {
+            const target = pendingInsert;
+            setPendingInsert(null);
+            if (!target) return;
+            openSidebar();
+            void startInsertRecording(target.insertTargetGuideId, target.insertAtIndex, tabId);
+          }}
+        />
 
         {import.meta.env.BROWSER !== 'firefox' && <BackgroundVoiceNotice />}
       </AppFrame>

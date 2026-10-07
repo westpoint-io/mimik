@@ -15,7 +15,14 @@ export { useSavedFlash } from './common/hooks/use-saved-flash';
 export { getDomainInitial } from './common/lib/domain-initial';
 export { formatRelativeTime } from './common/lib/format-relative-time';
 export { Button } from './components/ui/button';
-export { Dialog, DialogContent, DialogHeader, DialogTitle } from './components/ui/dialog';
+export {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from './components/ui/dialog';
 export { Input } from './components/ui/input';
 export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './components/ui/tooltip';
