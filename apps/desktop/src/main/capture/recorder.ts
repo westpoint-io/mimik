@@ -7,10 +7,11 @@ import { type InputAction, InputHook } from './input-hook';
 import type { Region } from './region';
 import { type Capture, captureArea, type Rect } from './screenshot';
 import { writeScreenshot } from './screenshot-store';
-import { type CaptureSettings, DEFAULT_CAPTURE_SETTINGS } from './settings';
+import { type CaptureMode, type CaptureSettings, DEFAULT_CAPTURE_SETTINGS } from './settings';
 
 const TARGET_SIZE = 28;
 const SETTLE_MS = 60;
+const REPEAT_CLICK_MS = 500;
 
 export interface CursorMark {
   x: number;
@@ -41,8 +42,25 @@ function inside(region: Region, point: { x: number; y: number }): boolean {
   );
 }
 
+export function isRepeatClick(previousAt: number | null, at: number): boolean {
+  return previousAt !== null && at - previousAt <= REPEAT_CLICK_MS;
+}
+
 export function shouldCapture(settings: CaptureSettings, region: Region, point: { x: number; y: number }): boolean {
+  if (settings.captureMode !== 'region') return true;
   return inside(region, point) || settings.captureOutsideClicks;
+}
+
+export function frameFor(
+  mode: CaptureMode,
+  point: { x: number; y: number },
+  region: Region,
+  window: Rect | null,
+): Rect {
+  const display = screen.getDisplayNearestPoint(point).bounds;
+  if (mode === 'screen') return display;
+  if (mode === 'window') return window && inside(window, point) ? window : display;
+  return inside(region, point) ? region : display;
 }
 
 export class DesktopRecorder {
@@ -50,6 +68,7 @@ export class DesktopRecorder {
   private queue: Promise<unknown> = Promise.resolve();
   private paused = false;
   private running = false;
+  private lastClickAt: number | null = null;
 
   constructor(
     private readonly region: () => Region,
@@ -57,6 +76,7 @@ export class DesktopRecorder {
     private readonly send: (request: CaptureRequest) => Promise<unknown>,
     private readonly grab: (area: Rect) => Promise<Capture> = captureArea,
     private readonly settings: () => CaptureSettings = () => DEFAULT_CAPTURE_SETTINGS,
+    private readonly ignores: (point: { x: number; y: number }) => boolean = () => false,
   ) {}
 
   async start(): Promise<RecorderStart> {
@@ -65,6 +85,7 @@ export class DesktopRecorder {
     if (!started.ok) return { ok: false, reason: started.reason, detail: started.detail };
     this.running = true;
     this.paused = false;
+    this.lastClickAt = null;
     return { ok: true };
   }
 
@@ -89,7 +110,12 @@ export class DesktopRecorder {
   private onAction(action: InputAction): void {
     if (action.kind !== 'click' || !this.isRecording) return;
     const point = { x: action.x, y: action.y };
+    if (this.ignores(point)) return;
     if (!shouldCapture(this.settings(), this.region(), point)) return;
+    const at = Date.now();
+    const repeat = isRepeatClick(this.lastClickAt, at);
+    this.lastClickAt = at;
+    if (repeat) return;
     this.enqueue(point);
   }
 
@@ -104,17 +130,18 @@ export class DesktopRecorder {
   async capture(point: { x: number; y: number }): Promise<void> {
     const settings = this.settings();
     const region = this.region();
-    const framed = inside(region, point) ? region : screen.getDisplayNearestPoint(point).bounds;
 
-    const shot = await this.withHidden(async () => {
+    const taken = await this.withHidden(async () => {
       await delay(SETTLE_MS + settings.screenshotDelayMs);
-      return this.grab(framed);
+      const focused = await focusedWindow();
+      const rect = frameFor(settings.captureMode, point, region, focused.ok ? focused.window.bounds : null);
+      return { found: focused, framed: rect, shot: await this.grab(rect) };
     });
+    const { found, framed, shot } = taken;
     const scale = shot.scaleFactor;
 
     const screenshotId = randomUUID();
     const local = { x: point.x - framed.x, y: point.y - framed.y };
-    const found = await focusedWindow();
 
     await this.send({
       action: 'click',

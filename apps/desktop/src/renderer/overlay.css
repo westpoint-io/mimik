@@ -2,6 +2,7 @@
   --accent: #4f46e5;
   --deep: #1e1b4b;
   --lavender: #c7d2fe;
+  --violet-mid: #3730a3;
   --muted: #6b7280;
   --success: #059669;
 }
@@ -144,26 +145,47 @@ body.boundary[data-state='armed'] #frame {
   }
 }
 
+body.controls [hidden] {
+  display: none !important;
+}
+
 body.controls {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 10px;
-  border-radius: 12px;
-  background: var(--deep);
+  flex-direction: column;
+  width: 300px;
+  height: auto;
+  border-radius: 14px;
+  border: 1px solid var(--lavender);
+  background: #fff;
+  color: var(--deep);
+  box-shadow: 0 12px 30px rgba(15, 12, 45, 0.28);
+  overflow: hidden;
   -webkit-app-region: drag;
 }
 
-#status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-right: auto;
-  padding-left: 4px;
-  font-size: 12px;
+body.controls.collapsed {
+  width: fit-content;
+  border-radius: 999px;
+  border-color: transparent;
+  background: var(--deep);
+  color: #fff;
 }
 
-#dot {
+body.controls #head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 14px;
+  border-bottom: 1px solid #eef2ff;
+  font-size: 12.5px;
+}
+
+body.controls.collapsed #head {
+  border-bottom: 0;
+  padding: 9px 14px;
+}
+
+body.controls #dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -171,7 +193,7 @@ body.controls {
 }
 
 body.controls[data-state='recording'] #dot {
-  background: var(--success);
+  background: #dc2626;
   animation: blink 1.4s ease-in-out infinite;
 }
 
@@ -181,44 +203,192 @@ body.controls[data-state='recording'] #dot {
   }
 }
 
-button {
-  -webkit-app-region: no-drag;
-  padding: 6px 12px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  background: rgba(199, 210, 254, 0.14);
-  color: var(--lavender);
-  font: inherit;
+body.controls #label {
+  flex-grow: 1;
+  font-weight: 600;
+}
+
+body.controls #counter {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.65;
+}
+
+body.controls #badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--secondary, #eef2ff);
+  color: var(--accent);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+body.controls #collapse {
+  display: flex;
+  padding: 3px;
+  border: 0;
+  background: transparent;
+  color: currentColor;
+  opacity: 0.6;
+}
+
+body.controls #collapse svg {
+  width: 15px;
+  height: 15px;
+}
+
+body.controls #body {
+  padding: 12px 14px 0;
+}
+
+body.controls #preview {
+  height: 128px;
+  margin-bottom: 11px;
+  border: 1px solid var(--lavender);
+  border-radius: 10px;
+  background: #eef2ff;
+  overflow: hidden;
+}
+
+body.controls #shot {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+
+body.controls #stepTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.controls #stepMeta {
+  margin: 3px 0 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+body.controls #intro {
+  display: flex;
+  gap: 11px;
+  padding-bottom: 2px;
+}
+
+body.controls #mascot {
+  display: flex;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+body.controls #tip {
+  margin: 0;
   font-size: 12px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+body.controls #modeBlock {
+  padding: 14px 14px 0;
+}
+
+body.controls #modeLabel {
+  margin: 0 0 8px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+body.controls #modes {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 10px;
+  background: #eef2ff;
+}
+
+body.controls #foot {
+  display: flex;
+  gap: 8px;
+  padding: 13px 14px 14px;
+}
+
+body.controls #foot button {
+  flex-grow: 1;
+  justify-content: center;
+}
+
+body.controls #foot button.primary {
+  flex-grow: 1.3;
+}
+
+body.controls button {
+  -webkit-app-region: no-drag;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 12px;
+  border: 1px solid var(--lavender);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--deep);
+  font: inherit;
+  font-size: 13px;
   cursor: pointer;
 }
 
-button:hover {
-  background: rgba(199, 210, 254, 0.26);
+body.controls button:hover {
+  border-color: var(--accent);
 }
 
-button.primary {
+body.controls button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+body.controls button:disabled:hover {
+  border-color: var(--lavender);
+}
+
+body.controls button.primary {
+  border-color: transparent;
+  background: var(--deep);
+  color: var(--lavender);
+  font-weight: 600;
+}
+
+body.controls[data-state='paused'] button.primary {
   background: var(--accent);
   color: #fff;
 }
 
-#counter {
-  margin-left: 4px;
-  font-variant-numeric: tabular-nums;
-  opacity: 0.7;
+body.controls button svg {
+  width: 15px;
+  height: 15px;
 }
 
-#step {
-  position: absolute;
-  left: 12px;
-  right: 12px;
-  bottom: -30px;
-  padding: 5px 10px;
+body.controls button.mode {
+  flex-grow: 1;
+  justify-content: center;
+  padding: 7px;
+  border: 0;
   border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+body.controls button.mode.active {
   background: var(--deep);
   color: var(--lavender);
-  font-size: 11px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 600;
+}
+
+body.controls.collapsed #collapse {
+  order: 9;
 }

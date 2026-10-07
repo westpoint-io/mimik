@@ -171,6 +171,15 @@ desktop:
   newGuide: New Guide
   capturingSection: Capturing
   milliseconds: ms
+  captureMode: O que capturar
+  modeWindow: Janela ativa
+  modeScreen: Tela inteira
+  modeRegion: Região selecionada
+  readyToRecord: Pronto para gravar
+  startSheetTitle: Iniciar uma captura
+  startButton: Iniciar
+  guideCount: $1 guia
+  guideCountPlural: $1 guias
 
 fullview:
   allGuides: Todos os guias

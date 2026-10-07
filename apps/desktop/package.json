@@ -33,6 +33,7 @@
     "electron-builder": "^25.1.8",
     "electron-vite": "^2.3.0",
     "js-yaml": "^4.1.0",
+    "lucide": "^1.47.0",
     "tailwindcss": "^4.2.2",
     "vite": "^6.0.3"
   },

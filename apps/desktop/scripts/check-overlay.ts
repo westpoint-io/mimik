@@ -1,5 +1,6 @@
 import { app, BrowserWindow, screen, webContents } from 'electron';
 import { clampToDisplays, defaultRegion, loadRegion, type Region, saveRegion } from '../src/main/capture/region';
+import type { CaptureMode } from '../src/main/capture/settings';
 import { CaptureOverlay } from '../src/main/overlay';
 
 interface CheckResult {
@@ -40,7 +41,11 @@ setTimeout(() => bail(new Error('check did not finish within 60s')), 60_000).unr
 
 app.whenReady().then(async () => {
   const commands: string[] = [];
-  const overlay = new CaptureOverlay((command) => commands.push(command));
+  let mode: CaptureMode = 'region';
+  const overlay = new CaptureOverlay(
+    (command) => commands.push(command),
+    () => mode,
+  );
 
   const stored: Region = { x: 120, y: 90, width: 640, height: 400 };
   const written = saveRegion(stored);
@@ -82,29 +87,47 @@ app.whenReady().then(async () => {
   check('boundary and controls shown', armed.length === 2 && armed.every((w) => w.isVisible()), `${armed.length} windows visible`);
   const controls = windowWithHash('controls');
   const bar = controls?.getBounds();
-  const r = overlay.region;
+  const { workArea } = screen.getDisplayMatching(overlay.region);
   check(
-    'controls sit outside the region',
-    bar !== undefined && (bar.y >= r.y + r.height || bar.y + bar.height <= r.y),
-    bar ? `controls at y ${bar.y}, region spans ${r.y} to ${r.y + r.height}` : 'no controls window',
+    'controls dock to the corner, clear of the middle',
+    bar !== undefined &&
+      bar.x + bar.width <= workArea.x + workArea.width &&
+      bar.y + bar.height <= workArea.y + workArea.height &&
+      bar.x > workArea.x + workArea.width / 2 &&
+      bar.y > workArea.y + workArea.height / 2,
+    bar ? `controls at ${bar.x}, ${bar.y} (${bar.width} × ${bar.height}) in a ${workArea.width} × ${workArea.height} work area` : 'no controls window',
   );
-  await controls?.webContents.executeJavaScript("document.querySelector('button.primary').click()");
+  const layout = await controls?.webContents.executeJavaScript(
+    "JSON.stringify({ tip: getComputedStyle(document.querySelector('#tip')).position, body: document.body.scrollHeight, win: window.innerHeight })",
+  );
+  const parsed = JSON.parse(String(layout ?? '{}')) as { tip?: string; body?: number; win?: number };
+  check(
+    'the card measures itself and owns its own styles',
+    parsed.tip === 'static' && typeof parsed.body === 'number' && parsed.body > 0 && parsed.body <= (parsed.win ?? 0) + 4,
+    `hint is ${parsed.tip}, content ${parsed.body}px in a ${parsed.win}px window`,
+  );
+
+  check(
+    'the controls card never takes focus',
+    controls !== null && !controls.isFocusable() && overlayWindows().every((w) => !w.isFocused()),
+    `controls focusable: ${controls?.isFocusable()}, focused overlay windows: ${overlayWindows().filter((w) => w.isFocused()).length}`,
+  );
+
+  await controls?.webContents.executeJavaScript("document.querySelector('#primary').click()");
   await settle();
   check(
     'Start reaches the host and records',
     commands.includes('start') && overlay.state === 'recording',
     `commands: ${commands.join(', ') || 'none'}; state is ${overlay.state}`,
   );
-  await windowWithHash('controls')?.webContents.executeJavaScript("document.querySelector('button.primary').click()");
+  await windowWithHash('controls')?.webContents.executeJavaScript("document.querySelector('#secondary').click()");
   await settle();
   check(
     'Pause reaches the host and pauses',
     commands.includes('pause') && overlay.state === 'paused',
     `commands: ${commands.join(', ')}; state is ${overlay.state}`,
   );
-  await windowWithHash('controls')?.webContents.executeJavaScript(
-    "document.querySelectorAll('button')[document.querySelectorAll('button').length - 1].click()",
-  );
+  await windowWithHash('controls')?.webContents.executeJavaScript("document.querySelector('#primary').click()");
   await settle();
   check(
     'finishing hides the area and the controls',
@@ -114,13 +137,89 @@ app.whenReady().then(async () => {
   overlay.arm();
   await settle();
 
-  let hiddenDuringCapture = false;
+  const protectedAfterShow = overlayWindows().every((w) => w.isVisible());
+  let outOfFrame = false;
   await overlay.withHidden(async () => {
-    hiddenDuringCapture = overlayWindows().every((w) => !w.isVisible());
+    outOfFrame = process.platform === 'linux' ? overlayWindows().every((w) => !w.isVisible()) : protectedAfterShow;
   });
   await settle();
   const restored = overlayWindows().every((w) => w.isVisible());
-  check('overlays leave the frame for a capture', hiddenDuringCapture && restored, 'hidden during, restored after');
+  check(
+    'overlays leave the frame for a capture',
+    outOfFrame && restored,
+    process.platform === 'linux'
+      ? 'hidden during, restored after'
+      : 'content protection applied after show, so no hide is needed',
+  );
+  const drawn = await windowWithHash('controls')?.webContents.executeJavaScript(
+    "JSON.stringify({ paths: document.querySelectorAll('#mascot svg path').length, visible: !document.querySelector('#intro').hidden })",
+  );
+  const mascot = JSON.parse(String(drawn ?? '{}')) as { paths?: number; visible?: boolean };
+  check(
+    'the armed card draws the shared mascot',
+    mascot.paths === 6 && mascot.visible === true,
+    `${mascot.paths} mascot paths, intro visible: ${mascot.visible}`,
+  );
+
+  overlay.record();
+  await settle();
+  overlay.stepCaptured(1, 'Click "Save"', 'mimik-screenshot://00000000-0000-4000-8000-000000000000');
+  await settle();
+  const afterStep = await windowWithHash('controls')?.webContents.executeJavaScript(
+    "JSON.stringify({ intro: getComputedStyle(document.querySelector('#intro')).display, title: document.querySelector('#stepTitle').textContent })",
+  );
+  const step = JSON.parse(String(afterStep ?? '{}')) as { intro?: string; title?: string };
+  check(
+    'the first step replaces the instructions',
+    step.intro === 'none' && step.title === 'Click "Save"',
+    `intro display: ${step.intro}, title: ${step.title}`,
+  );
+
+  overlay.setBusy(true);
+  await settle();
+  const whileBusy = await windowWithHash('controls')?.webContents.executeJavaScript(
+    "document.querySelector('#primary').disabled",
+  );
+  overlay.setBusy(false);
+  await settle();
+  const whenIdle = await windowWithHash('controls')?.webContents.executeJavaScript(
+    "document.querySelector('#primary').disabled",
+  );
+  const order = await windowWithHash('controls')?.webContents.executeJavaScript(
+    "JSON.stringify([...document.querySelectorAll('#foot button')].map((b) => b.id + ':' + b.textContent.trim()))",
+  );
+  check(
+    'Finish sits on the right, as the primary action',
+    String(order).includes('secondary:Pause') && String(order).indexOf('primary:Finish') > String(order).indexOf('secondary:Pause'),
+    String(order),
+  );
+  check(
+    'Finish is disabled while a capture is in flight',
+    whileBusy === true && whenIdle === false,
+    `disabled while busy: ${whileBusy}, after: ${whenIdle}`,
+  );
+
+  mode = 'screen';
+  overlay.refresh();
+  await settle();
+  const framed = overlayWindows();
+  const active = await windowWithHash('controls')?.webContents.executeJavaScript(
+    "document.querySelector('button.mode.active')?.dataset.mode ?? 'none'",
+  );
+  check(
+    'whole-screen mode drops the boundary',
+    framed.length === 1 && windowWithHash('boundary') === null && active === 'screen',
+    `${framed.length} overlay window(s), active mode button is ${active}`,
+  );
+
+  const outside = { x: overlay.region.x - 5000, y: overlay.region.y - 5000 };
+  const bars = windowWithHash('controls')?.getBounds();
+  check(
+    'clicks on the controls never become steps',
+    overlay.ignores({ x: (bars?.x ?? 0) + 4, y: (bars?.y ?? 0) + 4 }) && !overlay.ignores(outside),
+    'the controls bar is ignored, a point away from it is not',
+  );
+
   overlay.hide();
   overlay.destroy();
   saveRegion(defaultRegion());

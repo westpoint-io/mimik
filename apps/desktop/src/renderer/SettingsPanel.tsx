@@ -1,9 +1,14 @@
-import { useEffect, useState } from 'react';
 import { i18n } from '@mimik/core/env';
-import type { CaptureSettings } from '../main/capture/settings';
 import { Button } from '@mimik/ui/components/ui/button';
+import { useEffect, useState } from 'react';
+import type { CaptureSettings } from '../main/capture/settings';
 
 const STYLES: CaptureSettings['cursorStyle'][] = ['arrow', 'hand', 'dot'];
+const MODES: { id: CaptureSettings['captureMode']; label: string }[] = [
+  { id: 'window', label: 'desktop_modeWindow' },
+  { id: 'screen', label: 'desktop_modeScreen' },
+  { id: 'region', label: 'desktop_modeRegion' },
+];
 
 export default function SettingsPanel({ onClose }: { onClose(): void }) {
   const [settings, setSettings] = useState<CaptureSettings | null>(null);
@@ -30,6 +35,21 @@ export default function SettingsPanel({ onClose }: { onClose(): void }) {
           <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {i18n.t('desktop_capturingSection')}
           </h2>
+
+          <label className="mb-3 flex items-center gap-3 text-sm text-foreground">
+            <span className="mr-auto">{i18n.t('desktop_captureMode')}</span>
+            <select
+              className="rounded-md border border-border bg-background px-2 py-1"
+              value={settings.captureMode}
+              onChange={(e) => save({ captureMode: e.target.value as CaptureSettings['captureMode'] })}
+            >
+              {MODES.map((mode) => (
+                <option key={mode.id} value={mode.id}>
+                  {i18n.t(mode.label)}
+                </option>
+              ))}
+            </select>
+          </label>
 
           <label className="mb-3 flex items-center gap-3 text-sm text-foreground">
             <input
@@ -70,17 +90,18 @@ export default function SettingsPanel({ onClose }: { onClose(): void }) {
             <span className="text-muted-foreground">{i18n.t('desktop_milliseconds')}</span>
           </label>
 
-          <label className="flex items-center gap-3 text-sm text-foreground">
-            <input
-              type="checkbox"
-              checked={settings.captureOutsideClicks}
-              onChange={(e) => save({ captureOutsideClicks: e.target.checked })}
-            />
-            {i18n.t('desktop_captureOutside')}
-          </label>
+          {settings.captureMode === 'region' && (
+            <label className="flex items-center gap-3 text-sm text-foreground">
+              <input
+                type="checkbox"
+                checked={settings.captureOutsideClicks}
+                onChange={(e) => save({ captureOutsideClicks: e.target.checked })}
+              />
+              {i18n.t('desktop_captureOutside')}
+            </label>
+          )}
         </section>
       )}
-
     </div>
   );
 }

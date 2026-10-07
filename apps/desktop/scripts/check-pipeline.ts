@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { app, BrowserWindow, nativeImage, protocol, screen } from 'electron';
 import { ask } from '../src/main/ask';
-import { DesktopRecorder, shouldCapture } from '../src/main/capture/recorder';
+import { DesktopRecorder, frameFor, isRepeatClick, shouldCapture } from '../src/main/capture/recorder';
 import { clampToDisplays } from '../src/main/capture/region';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from '../src/main/capture/screenshot-store';
 import { DEFAULT_CAPTURE_SETTINGS, loadSettings, normaliseSettings, saveSettings } from '../src/main/capture/settings';
@@ -54,7 +54,8 @@ app.whenReady().then(async () => {
     return Promise.resolve({ png: image.toPNG(), width, height, scaleFactor: scale, displayId: display.id });
   }
 
-  let settings = { ...DEFAULT_CAPTURE_SETTINGS, showCursor: false };
+  const REGION_MODE = { ...DEFAULT_CAPTURE_SETTINGS, captureMode: 'region' as const };
+  let settings = { ...REGION_MODE, showCursor: false };
   let activeGuide = '';
   const recorder = new DesktopRecorder(
     () => region,
@@ -80,6 +81,7 @@ app.whenReady().then(async () => {
     ok:
       clamped.screenshotDelayMs === 2000 &&
       clamped.cursorStyle === DEFAULT_CAPTURE_SETTINGS.cursorStyle &&
+      normaliseSettings({ captureMode: 'sideways' as never }).captureMode === DEFAULT_CAPTURE_SETTINGS.captureMode &&
       reloaded.screenshotDelayMs === 750 &&
       reloaded.captureOutsideClicks === stored.captureOutsideClicks,
     detail: `5000 ms clamped to ${clamped.screenshotDelayMs}, unknown style fell back to ${clamped.cursorStyle}, 750 ms reloaded as ${reloaded.screenshotDelayMs}`,
@@ -90,18 +92,45 @@ app.whenReady().then(async () => {
   results.push({
     name: 'outside clicks are opt in',
     ok:
-      !shouldCapture({ ...DEFAULT_CAPTURE_SETTINGS, captureOutsideClicks: false }, region, outsidePoint) &&
-      shouldCapture({ ...DEFAULT_CAPTURE_SETTINGS, captureOutsideClicks: true }, region, outsidePoint) &&
-      shouldCapture({ ...DEFAULT_CAPTURE_SETTINGS, captureOutsideClicks: false }, region, {
+      !shouldCapture({ ...REGION_MODE, captureOutsideClicks: false }, region, outsidePoint) &&
+      shouldCapture({ ...REGION_MODE, captureOutsideClicks: true }, region, outsidePoint) &&
+      shouldCapture({ ...REGION_MODE, captureOutsideClicks: false }, region, {
         x: region.x + 10,
         y: region.y + 10,
-      }),
-    detail: 'ignored when off, captured when on, inside always captured',
+      }) &&
+      shouldCapture({ ...DEFAULT_CAPTURE_SETTINGS, captureOutsideClicks: false }, region, outsidePoint),
+    detail: 'ignored when off, captured when on, inside always captured, never filtered outside region mode',
+  });
+
+  results.push({
+    name: 'a double click is one step',
+    ok:
+      isRepeatClick(1_000, 1_120) &&
+      isRepeatClick(1_000, 1_500) &&
+      !isRepeatClick(1_000, 1_501) &&
+      !isRepeatClick(null, 1_000),
+    detail: 'a press within 500 ms of the last one is dropped, later is kept, the first always captures',
+  });
+
+  const insidePoint = { x: region.x + 10, y: region.y + 10 };
+  const windowRect = { x: region.x + 5, y: region.y + 5, width: 300, height: 200 };
+  const elsewhere = { x: region.x + 900, y: region.y + 900, width: 100, height: 100 };
+  const sameRect = (a: Rect, b: Rect) => a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height;
+  results.push({
+    name: 'each mode frames its own rectangle',
+    ok:
+      sameRect(frameFor('screen', insidePoint, region, windowRect), display.bounds) &&
+      sameRect(frameFor('window', insidePoint, region, windowRect), windowRect) &&
+      sameRect(frameFor('window', insidePoint, region, elsewhere), display.bounds) &&
+      sameRect(frameFor('window', insidePoint, region, null), display.bounds) &&
+      sameRect(frameFor('region', insidePoint, region, windowRect), region) &&
+      sameRect(frameFor('region', outsidePoint, region, windowRect), display.bounds),
+    detail: 'screen takes the display, window takes the window and falls back twice, region takes the region',
   });
 
   activeGuide = await ask<string>(win.webContents, 'mimik:capture:startGuide');
 
-  settings = { ...DEFAULT_CAPTURE_SETTINGS, screenshotDelayMs: 400, showCursor: false };
+  settings = { ...REGION_MODE, screenshotDelayMs: 400, showCursor: false };
   const before = Date.now();
   await recorder.capture({ x: region.x + 10, y: region.y + 10 });
   const elapsed = Date.now() - before;
@@ -111,7 +140,7 @@ app.whenReady().then(async () => {
     detail: `${elapsed} ms for a 400 ms delay`,
   });
 
-  settings = { ...DEFAULT_CAPTURE_SETTINGS, showCursor: true, cursorStyle: 'arrow', screenshotDelayMs: 0 };
+  settings = { ...REGION_MODE, showCursor: true, cursorStyle: 'arrow', screenshotDelayMs: 0 };
   await recorder.capture({ x: region.x + 200, y: region.y + 150 });
   const cursorSizes = await ask<number[]>(win.webContents, 'mimik:check:renderedSizes', activeGuide, 30_000);
   const bare = cursorSizes[cursorSizes.length - 2] ?? 0;

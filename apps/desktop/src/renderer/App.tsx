@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react';
-import LibraryContent from '@mimik/ui/fullview/LibraryContent';
-import GuideContent from '@mimik/ui/fullview/GuideContent';
 import { TooltipProvider } from '@mimik/ui/components/ui/tooltip';
+import GuideContent from '@mimik/ui/fullview/GuideContent';
+import { useEffect, useState } from 'react';
+import CaptureSheet from './CaptureSheet';
+import HomeScreen from './HomeScreen';
 import SettingsPanel from './SettingsPanel';
 import TopBar from './TopBar';
 
 export default function App() {
   const [guideId, setGuideId] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   useEffect(() => {
     const onHash = () => {
@@ -23,6 +25,7 @@ export default function App() {
     window.mimik.capture.onCommand((command, _state, _region, id) => {
       if (command === 'stop' && id) {
         setSettingsOpen(false);
+        setSheetOpen(false);
         window.location.hash = `#guide/${id}`;
       }
     });
@@ -43,10 +46,14 @@ export default function App() {
             </div>
           </main>
         ) : (
-          <main className="flex-1 p-8 max-w-6xl mx-auto w-full">
-            <LibraryContent category="all" />
-          </main>
+          <HomeScreen
+            onOpen={(id) => {
+              window.location.hash = `#guide/${id}`;
+            }}
+            onStart={() => setSheetOpen(true)}
+          />
         )}
+        {sheetOpen && <CaptureSheet onClose={() => setSheetOpen(false)} />}
       </div>
     </TooltipProvider>
   );
