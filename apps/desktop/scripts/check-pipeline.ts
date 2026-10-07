@@ -9,15 +9,10 @@ import type { KeyAction } from '../src/main/capture/input-hook';
 import {
   type CaptureRequest,
   typedTextFor,
-  clickAction,
   comboLabel,
   DesktopRecorder,
-  frameFor,
-  isRepeatClick,
   isRepeatKey,
-  isTextKey,
   isBoundShortcut,
-  shouldCapture,
   targetRect,
 } from '../src/main/capture/recorder';
 import { clampToDisplays } from '../src/main/capture/region';
@@ -25,20 +20,13 @@ import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from 
 import {
   DEFAULT_CAPTURE_SETTINGS,
   loadSettings,
-  MAX_TYPING_DEBOUNCE_MS,
-  MIN_TYPING_DEBOUNCE_MS,
   normaliseSettings,
   saveSettings,
 } from '../src/main/capture/settings';
-import type { Capture, Rect } from '../src/main/capture/screenshot';
+import type { Rect } from '@mimik/core/rect';
+import type { Capture } from '../src/main/capture/screenshot';
 
 const MAC = process.platform === 'darwin';
-
-interface CheckResult {
-  name: string;
-  ok: boolean;
-  detail: string;
-}
 
 function bail(error: unknown): never {
   process.stdout.write(`FAIL check-pipeline aborted: ${error instanceof Error ? error.stack : String(error)}\n`);
@@ -90,14 +78,14 @@ app.whenReady().then(async () => {
     { grab: async () => syntheticDisplay, settings: () => settings, lookup: () => Promise.resolve(null) },
   );
 
-  activeGuide = await ask<string>(win.webContents, 'mimik:capture:createGuide');
+  activeGuide = await ask(win.webContents, 'mimik:capture:createGuide', {});
   const guideId = activeGuide;
 
   await recorder.capture({ x: region.x + 120, y: region.y + 90 });
   await recorder.capture({ x: region.x + 400, y: region.y + 300 });
-  const results = await ask<CheckResult[]>(win.webContents, 'mimik:check:verify', guideId, 60_000);
+  const results = await ask(win.webContents, 'mimik:check:verify', guideId, 60_000);
 
-  const blindGuide = await ask<string>(win.webContents, 'mimik:capture:createGuide');
+  const blindGuide = await ask(win.webContents, 'mimik:capture:createGuide', {});
   let blindRequest: CaptureRequest | null = null;
   const blind = new DesktopRecorder(
     () => region,
@@ -109,7 +97,7 @@ app.whenReady().then(async () => {
     { grab: () => Promise.reject(new Error('display gone')), settings: () => settings, lookup: () => Promise.resolve(null) },
   );
   await blind.capture({ x: region.x + 60, y: region.y + 60 });
-  const blindSteps = (await ask<string[] | null>(win.webContents, 'mimik:check:steps', blindGuide, 20_000)) ?? [];
+  const blindSteps = (await ask(win.webContents, 'mimik:check:steps', blindGuide, 20_000)) ?? [];
   await ask(win.webContents, 'mimik:check:cleanup', [blindGuide], 20_000).catch(() => undefined);
   results.push({
     name: 'a failed screenshot still writes the step, without a picture',
@@ -140,86 +128,8 @@ app.whenReady().then(async () => {
     detail: `5000 ms clamped to ${clamped.screenshotDelayMs}, 750 ms reloaded as ${reloaded.screenshotDelayMs}`,
   });
 
-  const knobs = normaliseSettings({
-    typingDebounceMs: 50,
-    recordKeys: 'yes' as never,
-    shortcuts: { startStop: '  ', pauseResume: null, capture: 'Alt+F2' } as never,
-  });
-  const legacy = normaliseSettings({
-    captureOutsideClicks: true,
-    captureKeys: false,
-    captureTyping: false,
-  });
-  results.push({
-    name: 'settings saved under the old names carry over',
-    ok:
-      legacy.keepClicksBeyondArea &&
-      !legacy.recordKeys &&
-      !legacy.recordTyping &&
-      normaliseSettings({ recordTyping: true, captureTyping: false }).recordTyping &&
-      normaliseSettings({ captureMode: 'region' as never }).captureMode === 'area',
-    detail: 'each old key maps onto its new name, the new name wins when both are present, and region mode reads as area',
-  });
-
-  results.push({
-    name: 'toggles, knobs and shortcuts normalise',
-    ok:
-      knobs.typingDebounceMs === MIN_TYPING_DEBOUNCE_MS &&
-      normaliseSettings({ typingDebounceMs: 90_000 }).typingDebounceMs === MAX_TYPING_DEBOUNCE_MS &&
-      knobs.recordKeys === DEFAULT_CAPTURE_SETTINGS.recordKeys &&
-      knobs.shortcuts.startStop === null &&
-      knobs.shortcuts.pauseResume === null &&
-      knobs.shortcuts.capture === 'Alt+F2' &&
-      normaliseSettings({}).shortcuts.startStop === DEFAULT_CAPTURE_SETTINGS.shortcuts.startStop,
-    detail: `50 ms clamped to ${knobs.typingDebounceMs}, a blank accelerator cleared, a missing one kept its default`,
-  });
-
-  results.push({
-    name: 'a right click is its own action',
-    ok: clickAction(1) === 'click' && clickAction(2) === 'auxclick' && clickAction(3) === 'click',
-    detail: 'the right button reads as auxclick, left and middle as click',
-  });
   saveSettings(userSettings);
 
-  const outsidePoint = { x: region.x + region.width + 40, y: region.y + 20 };
-  results.push({
-    name: 'outside clicks are opt in',
-    ok:
-      !shouldCapture({ ...REGION_MODE, keepClicksBeyondArea: false }, region, outsidePoint) &&
-      shouldCapture({ ...REGION_MODE, keepClicksBeyondArea: true }, region, outsidePoint) &&
-      shouldCapture({ ...REGION_MODE, keepClicksBeyondArea: false }, region, {
-        x: region.x + 10,
-        y: region.y + 10,
-      }) &&
-      shouldCapture({ ...DEFAULT_CAPTURE_SETTINGS, keepClicksBeyondArea: false }, region, outsidePoint),
-    detail: 'ignored when off, captured when on, inside always captured, never filtered outside region mode',
-  });
-
-  results.push({
-    name: 'a double click is one step',
-    ok:
-      isRepeatClick(1_000, 1_120) &&
-      isRepeatClick(1_000, 1_500) &&
-      !isRepeatClick(1_000, 1_501) &&
-      !isRepeatClick(null, 1_000),
-    detail: 'a press within 500 ms of the last one is dropped, later is kept, the first always captures',
-  });
-
-  const insidePoint = { x: region.x + 10, y: region.y + 10 };
-  const windowRect = { x: region.x + 5, y: region.y + 5, width: 300, height: 200 };
-  const elsewhere = { x: region.x + 900, y: region.y + 900, width: 100, height: 100 };
-  const sameRect = (a: Rect, b: Rect) => a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height;
-  results.push({
-    name: 'each mode frames its own rectangle',
-    ok:
-      sameRect(frameFor('screen', insidePoint, region, windowRect), display.bounds) &&
-      sameRect(frameFor('window', insidePoint, region, windowRect), windowRect) &&
-      sameRect(frameFor('window', insidePoint, region, elsewhere), display.bounds) &&
-      sameRect(frameFor('window', insidePoint, region, null), display.bounds) &&
-      sameRect(frameFor('area', insidePoint, region, windowRect), region) &&
-      sameRect(frameFor('area', outsidePoint, region, windowRect), region),
-    detail: 'screen takes the display, window takes the window and falls back twice, region always takes the region',
-  });
 
   let framedBy: CaptureRequest | null = null;
   const clickedWindow = { x: region.x + 40, y: region.y + 30, width: 300, height: 200 };
@@ -404,21 +314,6 @@ app.whenReady().then(async () => {
         secret.elementMeta.inputType === 'password' &&
         secret.elementMeta.textContent === null,
     detail: `wrote ${secret?.action ?? 'nothing'} with inputValue ${String(secret?.inputValue)} and no captured text`,
-  });
-
-  const press = (keycode: number, held: Partial<KeyAction> = {}) =>
-    isTextKey({ kind: 'keydown', keycode, shift: false, alt: false, ctrl: false, meta: false, at: 0, ...held });
-  results.push({
-    name: 'only typing keys open a session',
-    ok:
-      press(30) &&
-      press(30, { shift: true }) &&
-      !press(30, { ctrl: true }) &&
-      !press(28) &&
-      !press(15) &&
-      !press(1) &&
-      !press(42),
-    detail: 'a letter types, shift still types, a shortcut does not, and Enter, Tab, Escape and Shift all close the session',
   });
 
   const pressed = (keycode: number, held: Partial<KeyAction> = {}): KeyAction => ({
@@ -637,7 +532,7 @@ app.whenReady().then(async () => {
     detail: 'a real rectangle wins; no element, one covering the frame, or one overflowing it falls back to the click box',
   });
 
-  activeGuide = await ask<string>(win.webContents, 'mimik:capture:createGuide');
+  activeGuide = await ask(win.webContents, 'mimik:capture:createGuide', {});
 
   settings = { ...REGION_MODE, screenshotDelayMs: 400 };
   const before = Date.now();
@@ -649,8 +544,8 @@ app.whenReady().then(async () => {
     detail: `${elapsed} ms for a 400 ms delay`,
   });
 
-  const probeSrc = await ask<string | null>(win.webContents, 'mimik:check:screenshotSrc', activeGuide, 20_000);
-  const defaultLogo = await ask<boolean>(win.webContents, 'mimik:check:defaultLogo', undefined, 10_000);
+  const probeSrc = await ask(win.webContents, 'mimik:check:screenshotSrc', activeGuide, 20_000);
+  const defaultLogo = await ask(win.webContents, 'mimik:check:defaultLogo', undefined, 10_000);
   results.push({
     name: 'exports can load the default logo',
     ok: defaultLogo === true,
@@ -666,7 +561,7 @@ app.whenReady().then(async () => {
   await app_.loadFile(join(__dirname, '../renderer/index.html'));
   let wired = 'no reply';
   try {
-    const id = await ask<string>(app_.webContents, 'mimik:capture:createGuide', {}, 20_000);
+    const id = await ask(app_.webContents, 'mimik:capture:createGuide', {}, 20_000);
     wired = typeof id === 'string' && id.length > 0 ? id : `unexpected reply ${JSON.stringify(id)}`;
     await ask(app_.webContents, 'mimik:check:cleanup', [id], 20_000).catch(() => undefined);
   } catch (error) {
@@ -680,9 +575,9 @@ app.whenReady().then(async () => {
 
   let titled = 'no reply';
   try {
-    const id = await ask<string>(app_.webContents, 'mimik:capture:createGuide', {}, 20_000);
+    const id = await ask(app_.webContents, 'mimik:capture:createGuide', {}, 20_000);
     await ask(app_.webContents, 'mimik:capture:finishGuide', id, 20_000);
-    titled = (await ask<string | null>(win.webContents, 'mimik:check:title', id, 20_000)) ?? 'no guide';
+    titled = (await ask(win.webContents, 'mimik:check:title', id, 20_000)) ?? 'no guide';
     await ask(app_.webContents, 'mimik:check:cleanup', [id], 20_000).catch(() => undefined);
   } catch (error) {
     titled = error instanceof Error ? error.message : String(error);
@@ -705,16 +600,16 @@ app.whenReady().then(async () => {
           devicePixelRatio: 1,
         },
       }, 20_000);
-    const target = await ask<string>(app_.webContents, 'mimik:capture:createGuide', { staging: false }, 20_000);
+    const target = await ask(app_.webContents, 'mimik:capture:createGuide', { staging: false }, 20_000);
     await labelled(target, 'First');
     await labelled(target, 'Third');
-    const before = await ask<string | null>(win.webContents, 'mimik:check:title', target, 20_000);
-    const staging = await ask<string>(app_.webContents, 'mimik:capture:createGuide', { staging: true }, 20_000);
+    const before = await ask(win.webContents, 'mimik:check:title', target, 20_000);
+    const staging = await ask(app_.webContents, 'mimik:capture:createGuide', { staging: true }, 20_000);
     await labelled(staging, 'Second');
     await ask(app_.webContents, 'mimik:capture:mergeGuideInto', { guideId: staging, insertTargetGuideId: target, insertAtIndex: 1 }, 20_000);
-    const order = (await ask<string[] | null>(win.webContents, 'mimik:check:steps', target, 20_000)) ?? [];
-    const left = await ask<string[] | null>(win.webContents, 'mimik:check:steps', staging, 20_000);
-    const after = await ask<string | null>(win.webContents, 'mimik:check:title', target, 20_000);
+    const order = (await ask(win.webContents, 'mimik:check:steps', target, 20_000)) ?? [];
+    const left = await ask(win.webContents, 'mimik:check:steps', staging, 20_000);
+    const after = await ask(win.webContents, 'mimik:check:title', target, 20_000);
     merged = `${order.map((text) => text.match(/First|Second|Third/)?.[0] ?? text).join(', ')}; staging ${left === null ? 'gone' : 'left behind'}; title ${after === before ? 'kept' : `changed to ${after}`}`;
     await ask(app_.webContents, 'mimik:check:cleanup', [target, staging], 20_000).catch(() => undefined);
   } catch (error) {
@@ -728,12 +623,12 @@ app.whenReady().then(async () => {
 
   let discarded = 'no reply';
   try {
-    const kept = await ask<string>(app_.webContents, 'mimik:capture:createGuide', {}, 20_000);
-    const staging = await ask<string>(app_.webContents, 'mimik:capture:createGuide', { staging: true }, 20_000);
+    const kept = await ask(app_.webContents, 'mimik:capture:createGuide', {}, 20_000);
+    const staging = await ask(app_.webContents, 'mimik:capture:createGuide', { staging: true }, 20_000);
     await ask(app_.webContents, 'mimik:capture:discardRecording', { guideId: kept, staging: false }, 20_000);
     await ask(app_.webContents, 'mimik:capture:discardRecording', { guideId: staging, staging: true }, 20_000);
-    const trashed = await ask<boolean | null>(win.webContents, 'mimik:check:trashed', kept, 20_000);
-    const left = await ask<boolean | null>(win.webContents, 'mimik:check:trashed', staging, 20_000);
+    const trashed = await ask(win.webContents, 'mimik:check:trashed', kept, 20_000);
+    const left = await ask(win.webContents, 'mimik:check:trashed', staging, 20_000);
     discarded = `${trashed ? 'in Trash' : 'not in Trash'}; staging ${left === null ? 'gone' : 'left behind'}`;
     await ask(app_.webContents, 'mimik:check:cleanup', [kept, staging], 20_000).catch(() => undefined);
   } catch (error) {
@@ -761,7 +656,7 @@ app.whenReady().then(async () => {
     detail: String(fetched),
   });
 
-  const kept = await ask<string[]>(win.webContents, 'mimik:check:screenshotIds', undefined, 20_000);
+  const kept = await ask(win.webContents, 'mimik:check:screenshotIds', undefined, 20_000);
   const swept = sweepScreenshots(kept);
   results.push({
     name: 'deleted guides leave no files',

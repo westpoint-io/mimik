@@ -1,5 +1,6 @@
 import { i18n } from '@/core/env';
 import type { ElementMeta } from '@/core/guides/types';
+import { typedTitle } from './typed-title';
 
 type RoleTrait = 'typedInto' | 'pickedFrom' | 'namesItsHolder' | 'holdsControls' | 'endsTheSearch';
 
@@ -82,7 +83,7 @@ export function buildFallbackDescription(action: string, meta: ElementMeta, type
   const target = name || meta.role || meta.tag || '';
 
   if (action.startsWith('keydown:')) {
-    const key = action.split(':')[1];
+    const key = action.split(':')[1]!;
     return i18n.t('steps.pressKey', [key, target]);
   }
 
@@ -101,7 +102,7 @@ export function buildFallbackDescription(action: string, meta: ElementMeta, type
       return i18n.t('steps.click', [name]);
     case 'input':
       if (meta.inputType === 'password') return i18n.t('steps.typeSecret');
-      if (typed?.trim()) return i18n.t('steps.type', [typed.replace(/\s+/g, ' ').trim().slice(0, NAME_LIMIT)]);
+      if (typed?.trim()) return typedTitle(typed, name || null);
       if (meta.inputType) return i18n.t('steps.typeIntoField', [meta.inputType, target]);
       return i18n.t('steps.typeInto', [target]);
     case 'copy':

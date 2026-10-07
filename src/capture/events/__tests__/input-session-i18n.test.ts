@@ -40,14 +40,14 @@ describe('InputSession describes typing through i18n', () => {
     expect(lastUpdate().description).toBe('steps.typeValueInto[bonjour,Email]');
   });
 
-  it('names a field nothing labels with the translated fallback, not English', () => {
+  it('names only what was typed when nothing labels the field', () => {
     const input = document.createElement('input');
     input.value = 'bonjour';
     document.body.appendChild(input);
 
     session().update(input);
 
-    expect(lastUpdate().description).toBe('steps.typeValueInto[bonjour,steps.textField]');
+    expect(lastUpdate().description).toBe('steps.type[bonjour]');
   });
 
   it('asks for the cleared-field message with just the label', () => {

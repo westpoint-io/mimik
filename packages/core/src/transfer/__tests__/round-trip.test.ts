@@ -149,14 +149,14 @@ describe('bundle round trip', () => {
   it('carries the editorial structure a guide depends on', async () => {
     const { steps: importedSteps } = await roundTrip();
 
-    expect(importedSteps[1].blockType).toBe('callout');
-    expect(importedSteps[1].calloutVariant).toBe('warning');
-    expect(importedSteps[0].descriptionSource).toBe('narration');
+    expect(importedSteps[1]!.blockType).toBe('callout');
+    expect(importedSteps[1]!.calloutVariant).toBe('warning');
+    expect(importedSteps[0]!.descriptionSource).toBe('narration');
   });
 
   it('keeps the element metadata Guide Me matches on', async () => {
     const { steps: importedSteps } = await roundTrip();
-    const meta = importedSteps[0].elementMeta;
+    const meta = importedSteps[0]!.elementMeta;
 
     expect(meta?.cssSelector).toBe('nav a.security');
     expect(meta?.textContent).toBe('Security');
@@ -166,7 +166,7 @@ describe('bundle round trip', () => {
 
   it('leaves the redaction behind and keeps the ordinary annotation', async () => {
     const { steps: importedSteps, screenshots: importedShots } = await roundTrip();
-    const shot = importedShots.get(importedSteps[0].id);
+    const shot = importedShots.get(importedSteps[0]!.id);
 
     expect(shot?.edits?.annotations?.map((a) => a.type)).toEqual(['arrow']);
     expect(shot?.edits?.alt).toBe('the security link');
@@ -176,16 +176,16 @@ describe('bundle round trip', () => {
   it('strips the secrets the defaults promise to strip', async () => {
     const { steps: importedSteps } = await roundTrip();
 
-    expect(importedSteps[2].inputValue).toBeUndefined();
-    expect(importedSteps[0].url).toBe('https://app.example.com/settings');
+    expect(importedSteps[2]!.inputValue).toBeUndefined();
+    expect(importedSteps[0]!.url).toBe('https://app.example.com/settings');
   });
 
   it('attaches each screenshot to the right step and leaves the blockless step bare', async () => {
     const { steps: importedSteps, screenshots: importedShots } = await roundTrip();
 
     expect(importedShots.size).toBe(2);
-    expect(importedShots.get(importedSteps[0].id)?.stepId).toBe(importedSteps[0].id);
-    expect(importedSteps[1].screenshotId).toBeUndefined();
+    expect(importedShots.get(importedSteps[0]!.id)?.stepId).toBe(importedSteps[0]!.id);
+    expect(importedSteps[1]!.screenshotId).toBeUndefined();
   });
 
   it('carries non-ascii text through the zip intact', async () => {

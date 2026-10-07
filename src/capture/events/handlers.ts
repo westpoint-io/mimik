@@ -71,6 +71,7 @@ class CaptureController {
   private hovered: HTMLElement | null = null;
   private busy = false;
   private recordKeys = false;
+  private recordTyping = true;
 
   constructor(
     private guideId: string,
@@ -104,9 +105,10 @@ class CaptureController {
         .catch(() => {});
     }
     localStorage
-      .get(['recordKeys'])
-      .then(({ recordKeys }) => {
+      .get(['recordKeys', 'recordTyping'])
+      .then(({ recordKeys, recordTyping }) => {
         this.recordKeys = recordKeys === true;
+        this.recordTyping = recordTyping !== false;
       })
       .catch(() => {});
     for (const [event, handler, opts] of this.listeners) {
@@ -267,6 +269,7 @@ class CaptureController {
     }
 
     if (target instanceof HTMLInputElement && (target.type === 'checkbox' || target.type === 'radio')) return;
+    if (!this.recordTyping) return;
 
     if (this.input.active && this.input.target !== target) {
       this.enqueue(() => this.input.finalize());

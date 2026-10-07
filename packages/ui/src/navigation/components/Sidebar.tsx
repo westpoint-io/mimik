@@ -16,9 +16,9 @@ interface SidebarProps {
 }
 
 const navItems = [
-  { key: 'all' as const, labelKey: 'fullview.allGuides' as const, icon: FileText },
-  { key: 'starred' as const, labelKey: 'fullview.starred' as const, icon: Star },
-  { key: 'trash' as const, labelKey: 'fullview.trash' as const, icon: Trash2 },
+  { key: 'all' as const, labelKey: 'library.allGuides' as const, icon: FileText },
+  { key: 'starred' as const, labelKey: 'library.starred' as const, icon: Star },
+  { key: 'trash' as const, labelKey: 'library.trash' as const, icon: Trash2 },
 ];
 
 export function Sidebar({
@@ -32,7 +32,7 @@ export function Sidebar({
 }: SidebarProps) {
   const counts = useFullview((s) => s.counts);
   const row = collapsed ? 'justify-center w-9 mx-auto' : 'gap-2.5 px-2.5';
-  const toggleLabel = i18n.t(collapsed ? 'fullview.expandSidebar' : 'fullview.collapseSidebar');
+  const toggleLabel = i18n.t(collapsed ? 'library.expandSidebar' : 'library.collapseSidebar');
   const startLabel = i18n.t('capture.startCapture');
   const settingsLabel = i18n.t('settings.title');
 

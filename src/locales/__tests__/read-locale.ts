@@ -23,7 +23,7 @@ export function localeKeys(locale: string): string[] {
   for (const line of lines(locale)) {
     const top = /^([\w-]+):/.exec(line);
     if (top) {
-      section = top[1];
+      section = top[1]!;
       continue;
     }
 
@@ -40,11 +40,11 @@ function localeMessage(locale: string, path: string): string {
 
   for (const line of lines(locale)) {
     const top = /^([\w-]+):/.exec(line);
-    if (top) section = top[1];
+    if (top) section = top[1]!;
     if (section !== wanted) continue;
 
     const match = new RegExp(`^ {2}${key}: (.*)$`).exec(line);
-    if (match) return unquote(match[1]);
+    if (match) return unquote(match[1]!);
   }
 
   throw new Error(`${path} missing from ${locale}.yml`);

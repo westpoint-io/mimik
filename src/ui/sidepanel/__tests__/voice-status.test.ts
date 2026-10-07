@@ -91,7 +91,7 @@ describe('micBarScale', () => {
   });
 
   it('keeps the outer bars shorter than the centre one', () => {
-    expect(micBarScale(1, MIC_BARS[0].weight)).toBeLessThan(micBarScale(1, MIC_BARS[2].weight));
+    expect(micBarScale(1, MIC_BARS[0]!.weight)).toBeLessThan(micBarScale(1, MIC_BARS[2]!.weight));
   });
 });
 

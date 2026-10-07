@@ -29,7 +29,7 @@ function makeContext(overrides: Partial<DOMContext> = {}): DOMContext {
 async function promptFor(aiLanguage: string, context = makeContext()): Promise<string> {
   vi.mocked(localStorage.get).mockResolvedValue({ aiLanguage });
   await getAIDescription(serializeDOMContext(context), 'openai', 'gpt-4o-mini', 'key');
-  return generateTextMock.mock.calls[0][0].prompt as string;
+  return generateTextMock.mock.calls[0]![0].prompt as string;
 }
 
 describe('getAIDescription', () => {

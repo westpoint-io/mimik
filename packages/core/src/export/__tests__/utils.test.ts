@@ -123,7 +123,7 @@ describe('blobToDataUrl', () => {
     const blob = new Blob(['hello'], { type: 'text/plain' });
     const result = await blobToDataUrl(blob);
     expect(result).toMatch(/^data:text\/plain;base64,/);
-    const b64Part = result.split(',')[1];
+    const b64Part = result.split(',')[1]!;
     expect(atob(b64Part)).toBe('hello');
   });
 });

@@ -15,7 +15,8 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noUnusedLocals": true,
-    "noUnusedParameters": true
+    "noUnusedParameters": true,
+    "noUncheckedIndexedAccess": true
   },
   "include": ["src/**/*", "packages/core/src/**/*", "packages/ui/src/**/*", "wxt.config.ts", ".wxt/wxt.d.ts"]
 }

@@ -98,7 +98,7 @@ export function GuideStepList({
     if (dragIndex !== null && dragOverIndex !== null && dragIndex !== dragOverIndex) {
       const newSteps = [...steps];
       const [moved] = newSteps.splice(dragIndex, 1);
-      newSteps.splice(dragOverIndex, 0, moved);
+      newSteps.splice(dragOverIndex, 0, moved!);
       reorderSteps(
         guideId,
         newSteps.map((s) => s.id),
@@ -119,10 +119,10 @@ export function GuideStepList({
     anchorIndex.current = index;
     setSelected((prev) => {
       const next = new Set(prev);
-      const adding = !prev.has(steps[index].id);
+      const adding = !prev.has(steps[index]!.id);
       for (let i = Math.min(from, index); i <= Math.max(from, index); i++) {
-        if (adding) next.add(steps[i].id);
-        else next.delete(steps[i].id);
+        if (adding) next.add(steps[i]!.id);
+        else next.delete(steps[i]!.id);
       }
       return next;
     });

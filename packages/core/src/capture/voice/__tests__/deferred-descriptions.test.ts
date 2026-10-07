@@ -39,7 +39,7 @@ describe('takeDeferredDescriptions', () => {
   it('carries the description job captured at the time', () => {
     deferDescription('g1', 's1', ctx('billing'));
 
-    expect(takeDeferredDescriptions('g1', [])[0].describe).toBe(ctx('billing'));
+    expect(takeDeferredDescriptions('g1', [])[0]!.describe).toBe(ctx('billing'));
   });
 
   it('drains, so a second call returns nothing', () => {

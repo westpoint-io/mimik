@@ -176,8 +176,8 @@ export function drawAnnotation(ctx: Ctx, a: Annotation, originX: number, originY
       ctx.lineJoin = 'round';
       ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.moveTo(a.points[0], a.points[1]);
-      for (let i = 2; i < a.points.length; i += 2) ctx.lineTo(a.points[i], a.points[i + 1]);
+      ctx.moveTo(a.points[0]!, a.points[1]!);
+      for (let i = 2; i < a.points.length; i += 2) ctx.lineTo(a.points[i]!, a.points[i + 1]!);
       ctx.stroke();
       break;
     case 'redact':

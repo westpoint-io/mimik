@@ -1,7 +1,8 @@
 import { logger } from '@mimik/core/logger';
+import type { CaptureStateUpdate } from '@/core/capture/capture-state-update';
 import { answerChildFrames } from '@/core/capture/dom/frame-placement';
 import { CaptureState } from '@/core/capture/machine';
-import { type GetStateResponse, sendMessage } from '@/lib/messaging';
+import { sendMessage } from '@/lib/messaging';
 import { type CaptureHandle, startCapture } from './events/handlers';
 
 const FRAME_ANSWER_GRACE_MS = 2000;
@@ -13,7 +14,7 @@ export class CaptureSession {
   private frameAnswersTeardown: (() => void) | null = null;
   private frameAnswerGrace: ReturnType<typeof setTimeout> | undefined;
 
-  constructor(private readonly onSynced?: (state: GetStateResponse) => void) {
+  constructor(private readonly onSynced?: (state: CaptureStateUpdate) => void) {
     this.syncWithBackground();
   }
 

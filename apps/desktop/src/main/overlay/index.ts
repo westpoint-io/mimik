@@ -9,9 +9,10 @@ import {
 } from '@mimik/core/capture/machine';
 import type { VoiceErrorReason } from '@mimik/core/capture/voice/voice-update';
 import type { DescriptionSource } from '@mimik/core/guides/types';
+import type { Rect } from '@mimik/core/rect';
 import { app, BrowserWindow, ipcMain, screen } from 'electron';
 import type { Actor } from 'xstate';
-import { loadRegion, type Region, saveRegion } from '../capture/region';
+import { loadRegion, saveRegion } from '../capture/region';
 import type { CaptureMode } from '../capture/settings';
 
 export type CaptureActor = Actor<typeof captureMachine>;
@@ -73,7 +74,7 @@ export interface OverlayPrint {
 export interface OverlayView {
   state: CaptureStateValue;
   pauseReason: PauseReason | null;
-  region: Region;
+  region: Rect;
   step: OverlayStep | null;
   mode: CaptureMode;
   busy: boolean;
@@ -86,7 +87,7 @@ export interface OverlayView {
 }
 
 export interface OverlayOptions {
-  introFrame?: () => Promise<Region>;
+  introFrame?: () => Promise<Rect>;
   insert?: () => CaptureInsert | null;
   shortcuts?: () => OverlayShortcuts;
 }
@@ -154,7 +155,7 @@ export class CaptureOverlay {
   private intro: BrowserWindow | null = null;
   private introDone: ((finished: boolean) => void) | null = null;
   private editing = false;
-  private rect: Region;
+  private rect: Rect;
   private step: OverlayStep | null = null;
   private size = { width: CONTROLS.width, height: CONTROLS.height };
   private busy = false;
@@ -175,13 +176,13 @@ export class CaptureOverlay {
     this.rect = loadRegion();
     ipcMain.handle('mimik:overlay:region', () => this.rect);
     ipcMain.handle('mimik:overlay:view', () => this.view());
-    ipcMain.on('mimik:overlay:setRegion', (_event, next: Region) => this.setRegion(next));
+    ipcMain.on('mimik:overlay:setRegion', (_event, next: Rect) => this.setRegion(next));
     ipcMain.on('mimik:overlay:command', (_event, command: OverlayCommand) => this.command(command));
     ipcMain.on('mimik:overlay:size', (_event, width: number, height: number) => this.resize(width, height));
     capture.subscribe(() => this.render());
   }
 
-  get region(): Region {
+  get region(): Rect {
     return this.rect;
   }
 
@@ -280,7 +281,7 @@ export class CaptureOverlay {
     this.positionControls();
   }
 
-  private setRegion(next: Region): void {
+  private setRegion(next: Rect): void {
     this.rect = saveRegion(next);
     if (this.boundary && !this.boundary.isDestroyed()) this.boundary.setBounds(this.frameBounds());
     this.positionControls();
@@ -417,11 +418,11 @@ export class CaptureOverlay {
     this.onCommand('start');
   }
 
-  private displayUnderCursor(): Region {
+  private displayUnderCursor(): Rect {
     return screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).bounds;
   }
 
-  private playIntro(frame: Region): Promise<boolean> {
+  private playIntro(frame: Rect): Promise<boolean> {
     return new Promise((resolve) => {
       const win = overlayWindow(frame, 'intro', false);
       this.intro = win;
@@ -512,7 +513,11 @@ export class CaptureOverlay {
     if (this.starting) return;
     if (command === 'pause' && state === CaptureState.RECORDING) {
       const area = this.mode() === 'area';
-      this.capture.send({ type: 'PAUSE_CAPTURE', reason: area ? 'area' : 'manual' });
+      this.capture.send({
+        type: 'PAUSE_CAPTURE',
+        reason: area ? 'area' : 'manual',
+        narrationWasLive: this.narration !== null && !this.narration.reason,
+      });
       this.onCommand(command);
       if (area) this.edit();
     } else if (command === 'resume' && state === CaptureState.PAUSED) {
@@ -520,7 +525,6 @@ export class CaptureOverlay {
       this.capture.send({ type: 'RESUME_CAPTURE' });
       this.onCommand(command);
     } else if ((command === 'stop' || command === 'discard') && state !== CaptureState.IDLE) {
-      this.reset();
       this.onCommand(command);
     }
   }
@@ -564,5 +568,3 @@ export class CaptureOverlay {
     ipcMain.removeAllListeners('mimik:overlay:size');
   }
 }
-
-export type { Region };

@@ -71,7 +71,7 @@ describe('generateGuideMeta', () => {
 
     await generateGuideMeta(steps, 'openai', 'gpt-4o-mini', 'key');
 
-    const { schema } = generateObjectMock.mock.calls[0][0];
+    const { schema } = generateObjectMock.mock.calls[0]![0];
     expect(schema.required.sort()).toEqual(Object.keys(schema.properties).sort());
   });
 
@@ -95,7 +95,7 @@ describe('generateGuideMeta', () => {
 
     await generateGuideMeta(steps, 'openai', 'gpt-4o-mini', 'key');
 
-    const { prompt } = generateObjectMock.mock.calls[0][0];
+    const { prompt } = generateObjectMock.mock.calls[0]![0];
     expect(prompt).toContain('1. [https://admin.okta.com/users] Click Directory');
     expect(prompt).not.toContain('{{steps}}');
   });
@@ -137,7 +137,7 @@ describe('models without structured output support', () => {
 
     await generateGuideMeta(steps, 'openai', 'gpt-3.5-turbo', 'key');
 
-    const { prompt } = generateTextMock.mock.calls[0][0];
+    const { prompt } = generateTextMock.mock.calls[0]![0];
     expect(prompt).toContain('1. [https://admin.okta.com/users] Click Directory');
     expect(prompt).toContain('"title"');
   });
@@ -228,7 +228,7 @@ describe('guide meta prompt', () => {
   async function promptFor(aiLanguage: string): Promise<string> {
     vi.mocked(localStorage.get).mockResolvedValue({ aiLanguage });
     await generateGuideMeta(steps, 'openai', 'gpt-4o-mini', 'key');
-    return generateObjectMock.mock.calls[0][0].prompt as string;
+    return generateObjectMock.mock.calls[0]![0].prompt as string;
   }
 
   it('leaves no placeholder unfilled', async () => {
@@ -249,6 +249,6 @@ describe('guide meta prompt', () => {
   it('does not let step text act as a replacement pattern', async () => {
     vi.mocked(localStorage.get).mockResolvedValue({ aiLanguage: 'en' });
     await generateGuideMeta([{ description: 'Click $& then $`', place: 'https://example.com' }], 'openai', 'm', 'key');
-    expect(generateObjectMock.mock.calls[0][0].prompt).toContain('Click $& then $`');
+    expect(generateObjectMock.mock.calls[0]![0].prompt).toContain('Click $& then $`');
   });
 });

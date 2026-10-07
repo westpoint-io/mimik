@@ -48,6 +48,12 @@ library:
   duplicate: Duplizieren
   copyOfTitle: "Kopie von $1"
   duplicateFailed: Diese Anleitung konnte nicht dupliziert werden
+  collapseSidebar: Seitenleiste einklappen
+  expandSidebar: Seitenleiste ausklappen
+  allGuides: Alle Anleitungen
+  starred: Favoriten
+  trash: Papierkorb
+  searchPlaceholder: Anleitungen durchsuchen…
 
 guideme:
   manualStep: "Bearbeitete Schritte werden nicht erkannt. Klicke auf Weiter, wenn du fertig bist."
@@ -93,6 +99,8 @@ settings:
   cardKeyboardHint: "Was deine Tastatur zu einer Anleitung beiträgt."
   recordKeys: "Kürzel und benannte Tasten aufzeichnen"
   recordKeysHint: "Strg+S, Enter und Ähnliches werden zu Schritten."
+  recordTyping: "Eingaben aufzeichnen"
+  recordTypingHint: "Alles, was du in ein Feld tippst, wird ein Schritt."
   microphoneAccess: "Mikrofonzugriff"
   microphoneAccessAsk: "Dein Browser fragt einmal, bevor Mimik dich hören kann."
   microphoneAccessAllow: "Erlauben"
@@ -207,7 +215,6 @@ desktop:
   hintCapture: "mit $1 nimmst du einen Schritt ohne Klick auf."
   micAccessAsk: "macOS fragt einmal, bevor Mimik dich hören kann."
   micAccessRefused: "Abgelehnt. Aktiviere Mimik unter Datenschutz & Sicherheit."
-  micAccessOpen: "Einstellungen öffnen"
   armed: "Bereit"
   screenshotDelay: "Screenshot-Verzögerung"
   keepClicksBeyondArea: "Klicks außerhalb des Bereichs aufnehmen"
@@ -227,8 +234,6 @@ desktop:
   permissionScreen: "Bildschirmaufnahme"
   permissionScreenHint: "Damit Mimik für jeden Schritt einen Screenshot aufnehmen kann."
   permissionScreenRestart: "Starte Mimik neu, um das Einschalten abzuschließen."
-  permissionGrant: "Erlauben"
-  permissionGranted: "Erlaubt"
   permissionRestart: "Mimik neu starten"
   moreStepsAfter: "Neue Schritte werden nach Schritt $1 eingefügt."
   moreStepsFirst: "Neue Schritte werden vor Schritt 1 eingefügt."
@@ -247,6 +252,10 @@ desktop:
   version: "Version $1"
   versionHint: "Mimik sucht bei jedem Start nach Updates."
   checkUpdates: "Nach Updates suchen"
+  cardGithub: "Mimik auf GitHub"
+  bugTitle: "Einen Fehler gefunden?"
+  bugHint: "Beschreib, was passiert ist, und wir sehen es uns an."
+  reportBug: "Fehler melden"
   trayQuit: "Mimik beenden"
   trayRecording: "Mimik nimmt auf. Zum Beenden klicken."
   cannotRecord: "Mimik kann nicht aufnehmen"
@@ -265,8 +274,6 @@ desktop:
   zoomLevelHint: "Neue Aufzeichnungen starten hier. Automatisch hält alle Schritte gleich groß."
   zoomAuto: "Automatisch"
   zoomGuide: "Zoom"
-  recordTyping: "Eingaben aufzeichnen"
-  recordTypingHint: "Alles, was du in ein Feld tippst, wird ein Schritt."
   typingDebounce: "Eingabeschritt beenden nach"
   typingDebounceHint: "Eine so lange Pause beendet den Eingabeschritt."
   cardScreenshotsHint: "Was der Screenshot jedes Schritts zeigt."
@@ -279,21 +286,17 @@ desktop:
   shortcutPress: "Tasten drücken…"
   shortcutClear: "Löschen"
 
-fullview:
-  collapseSidebar: Seitenleiste einklappen
-  expandSidebar: Seitenleiste ausklappen
-  allGuides: Alle Anleitungen
-  starred: Favoriten
-  trash: Papierkorb
-  searchPlaceholder: Anleitungen durchsuchen…
+guide:
   guideMe: "Anleiten"
-  untitledGuide: Unbenannte Anleitung
+  untitled: Unbenannte Anleitung
   writingTitle: Titel wird aus deinen aufgenommenen Schritten erstellt...
-  guideNotFound: "Anleitung nicht gefunden."
+  notFound: "Anleitung nicht gefunden."
   stepCount: "$1 Schritt"
   stepCountPlural: "$1 Schritte"
   pageOf: "$1 / $2"
   writingDescription: "Beschreibung wird geschrieben…"
+  onDomain: "Anleitung auf $1"
+  newGuide: Neue Anleitung
 
 sort:
   recentFirst: Neueste zuerst
@@ -419,11 +422,11 @@ emptyGuide:
   title: Diese Anleitung ist leer
   subtitle: "Nimm Schritte auf, um sie zu füllen"
 
-
 blurPanel:
   title: Smart Blur
   manualMode: Manueller Modus
   selectElements: "Elemente zum Unkenntlichmachen auswählen"
+  clickToBlur: "Zum Verwischen klicken"
   done: Fertig
   doneResume: "Fertig \xB7 Aufnahme fortsetzen"
   resetAll: Alles zurücksetzen
@@ -598,10 +601,6 @@ export:
   stepsCount: "$1 Schritte"
   createdLabel: "Erstellt am $1"
   sourceLabel: "Quelle: $1"
-
-background:
-  guideOnDomain: "Anleitung auf $1"
-  newGuide: Neue Anleitung
 
 annotationEditor:
   title: "Screenshot bearbeiten"

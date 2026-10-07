@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { CaptureStateUpdate } from '@/core/capture/capture-state-update';
 import { CaptureState } from '@/core/capture/machine';
-import type { GetStateResponse } from '@/lib/messaging';
 
 const sendMessage = vi.fn();
 const startCapture = vi.fn((_guideId: string, _isTopFrame: boolean) => ({ stop: vi.fn() }));
@@ -15,7 +15,7 @@ const answerChildFrames = vi.fn(() => stopAnswering);
 vi.mock('@/core/capture/dom/frame-placement', () => ({ answerChildFrames: () => answerChildFrames() }));
 vi.mock('@mimik/core/logger', () => ({ logger: { info: vi.fn(), debug: vi.fn(), warn: vi.fn(), error: vi.fn() } }));
 
-async function bootFrame(state: GetStateResponse, onSynced?: (s: GetStateResponse) => void) {
+async function bootFrame(state: CaptureStateUpdate, onSynced?: (s: CaptureStateUpdate) => void) {
   sendMessage.mockResolvedValue(state);
   const { CaptureSession } = await import('../session');
   const session = new CaptureSession(onSynced);
@@ -24,14 +24,14 @@ async function bootFrame(state: GetStateResponse, onSynced?: (s: GetStateRespons
   return session;
 }
 
-const recording: GetStateResponse = {
+const recording: CaptureStateUpdate = {
   state: CaptureState.RECORDING,
   stepCount: 2,
   currentGuideId: 'guide-1',
   pauseReason: null,
 };
 
-const pausedForBlur: GetStateResponse = {
+const pausedForBlur: CaptureStateUpdate = {
   state: CaptureState.PAUSED,
   stepCount: 2,
   currentGuideId: 'guide-1',

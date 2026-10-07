@@ -1,7 +1,7 @@
 import { i18n } from '@mimik/core/env';
+import type { Rect } from '@mimik/core/rect';
 import { icon } from '../icons';
 import { el } from './el';
-import type { Region } from './types';
 
 const MIN = { width: 60, height: 30 };
 
@@ -9,7 +9,7 @@ const HANDLES = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'] as const;
 
 type Handle = (typeof HANDLES)[number];
 
-function normalise(a: { x: number; y: number }, b: { x: number; y: number }): Region {
+function normalise(a: { x: number; y: number }, b: { x: number; y: number }): Rect {
   return {
     x: Math.min(a.x, b.x),
     y: Math.min(a.y, b.y),
@@ -52,7 +52,7 @@ export function editor(origin: { x: number; y: number }): void {
   );
   document.body.append(region, bar);
 
-  let rect: Region | null = null;
+  let rect: Rect | null = null;
 
   function paint(): void {
     if (!rect) {
@@ -73,7 +73,7 @@ export function editor(origin: { x: number; y: number }): void {
     size.textContent = `${Math.round(rect.width)} × ${Math.round(rect.height)}`;
   }
 
-  function commit(next: Region): void {
+  function commit(next: Rect): void {
     rect = next;
     paint();
     window.mimikOverlay.setRegion(next);

@@ -1,3 +1,4 @@
+import type { Rect } from '@mimik/core/rect';
 import { screen } from 'electron';
 import { Monitor } from 'node-screenshots';
 
@@ -13,19 +14,12 @@ export interface Capture {
   displayId: number;
 }
 
-export interface Rect {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
 function monitorAt(x: number, y: number): Monitor {
   const found = Monitor.fromPoint(Math.round(x), Math.round(y));
   if (found) return found;
   const all = Monitor.all();
   if (all.length === 0) throw new Error('no monitors available');
-  return all[0];
+  return all[0]!;
 }
 
 export type Frame = (area: Rect) => Promise<Capture>;

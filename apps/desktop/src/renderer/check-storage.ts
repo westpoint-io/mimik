@@ -8,8 +8,8 @@ import { write } from './check-storage/write';
 
 async function run(): Promise<CheckResult[]> {
   const [role, guideId] = (window.location.hash.slice(1) || 'write:unknown').split(':');
-  if (role === 'read') return [await read(guideId)];
-  return [await migration(), await open(), await write(guideId)];
+  if (role === 'read') return [await read(guideId!)];
+  return [await migration(), await open(), await write(guideId!)];
 }
 
 run()

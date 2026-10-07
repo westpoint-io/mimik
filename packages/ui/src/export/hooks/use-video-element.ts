@@ -41,7 +41,7 @@ export function useVideoElement(narrated: boolean) {
       else element.pause();
     },
     cycleRate: () => {
-      if (video.current) video.current.playbackRate = RATES[(RATES.indexOf(rate) + 1) % RATES.length];
+      if (video.current) video.current.playbackRate = RATES[(RATES.indexOf(rate) + 1) % RATES.length]!;
     },
     toggleMute: () => {
       if (video.current) video.current.muted = !video.current.muted;

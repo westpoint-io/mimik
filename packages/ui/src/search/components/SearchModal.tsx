@@ -113,7 +113,7 @@ export function SearchModal() {
         >
           <div
             role="dialog"
-            aria-label={i18n.t('fullview.searchPlaceholder')}
+            aria-label={i18n.t('library.searchPlaceholder')}
             className="w-full max-w-[620px] overflow-hidden rounded-2xl border border-border bg-card shadow-[0_30px_80px_rgba(30,27,75,0.3)]"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={handleKeyDown}
@@ -122,7 +122,7 @@ export function SearchModal() {
               <Search size={19} className="shrink-0 text-foreground" />
               <Input
                 ref={inputRef}
-                placeholder={i18n.t('fullview.searchPlaceholder')}
+                placeholder={i18n.t('library.searchPlaceholder')}
                 value={query}
                 onChange={(e) => {
                   setQuery(e.target.value);

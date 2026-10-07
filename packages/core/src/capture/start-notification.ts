@@ -1,4 +1,5 @@
 import { createOverlayRoot } from '@/core/capture/dom/overlay-root';
+import { svgElement } from './dom/svg-element';
 
 const ANIMATION_DURATION_MS = 4000;
 const FILL_DURATION = '2s';
@@ -103,7 +104,7 @@ export function showStartNotification(): Promise<void> {
 
     const mascotWrap = document.createElement('div');
     mascotWrap.className = 'mascot-wrap';
-    mascotWrap.innerHTML = buildMascotSVG();
+    mascotWrap.append(svgElement(buildMascotSVG()));
 
     wrap.appendChild(mascotWrap);
     shadow.appendChild(wrap);

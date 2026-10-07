@@ -27,7 +27,8 @@ Logic both surfaces share. It reaches the surface through `configureCore` (stora
 - `buildFallbackDescription` names a step without AI. Its precedence (label, placeholder, text,
   alt, name, role) is shared by every element source, so never branch on `source`.
 - `aiPending` is cleared whichever way the request ends.
-- Credentials are read once, through `resolveAiCredentials`. Requests go through `coreFetch`.
+- Credentials are read through `readAiCredentials`, and whether AI is used for steps or guide titles
+  through `readAiUse`. Requests go through `coreFetch`.
 - A rejected key's response body is never repeated in an error, since providers echo the key back.
 
 ## Export

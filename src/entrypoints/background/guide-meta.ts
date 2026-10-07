@@ -5,7 +5,7 @@ import { whenNarrationSettled } from './voice';
 
 async function domainTitle(guideId: string): Promise<string> {
   const domain = await getGuideDomain(guideId);
-  return domain ? i18n.t('background.guideOnDomain', [domain]) : i18n.t('background.newGuide');
+  return domain ? i18n.t('guide.onDomain', [domain]) : i18n.t('guide.newGuide');
 }
 
 export function generateGuideMetaOnStop(guideId: string) {

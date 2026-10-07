@@ -96,7 +96,7 @@ describe('createGuide', () => {
     const guide = await createGuide('g1');
 
     expect(guide.id).toBe('g1');
-    expect(guide.title).toBe('fullview.untitledGuide');
+    expect(guide.title).toBe('guide.untitled');
     expect(guide.stepIds).toEqual([]);
     expect(guide.starred).toBe(false);
     expect(guide.deletedAt).toBeNull();
@@ -123,8 +123,8 @@ describe('getGuide', () => {
     expect(result).not.toBeNull();
     expect(result!.guide.id).toBe('g1');
     expect(result!.steps).toHaveLength(2);
-    expect(result!.steps[0].id).toBe('s1');
-    expect(result!.steps[1].id).toBe('s2');
+    expect(result!.steps[0]!.id).toBe('s1');
+    expect(result!.steps[1]!.id).toBe('s2');
     expect(result!.screenshots.size).toBe(2);
     expect(result!.screenshots.get('s1')).toBeDefined();
     expect(result!.screenshots.get('s2')).toBeDefined();
@@ -172,8 +172,8 @@ describe('deleteStep', () => {
     expect(guide!.stepIds).toEqual(['s2', 's3']);
 
     const remaining = await db.steps.where('guideId').equals('g1').sortBy('index');
-    expect(remaining[0].index).toBe(0);
-    expect(remaining[1].index).toBe(1);
+    expect(remaining[0]!.index).toBe(0);
+    expect(remaining[1]!.index).toBe(1);
   });
 });
 

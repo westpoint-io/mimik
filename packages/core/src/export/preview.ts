@@ -125,7 +125,7 @@ export function paginatePreview(doc: Document): number {
   }
 
   const last = bodies[bodies.length - 1];
-  if (bodies.length > 1 && last.children.length === 0) {
+  if (bodies.length > 1 && last?.children.length === 0) {
     last.parentElement?.remove();
     bodies.pop();
   }

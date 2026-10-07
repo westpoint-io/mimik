@@ -83,7 +83,7 @@ describe('loadBranding', () => {
   it('reaches for the packaged Mimik fallback when no logo is stored', async () => {
     await loadBranding();
     expect(fetch).toHaveBeenCalledTimes(1);
-    expect(String(vi.mocked(fetch).mock.calls[0][0])).toContain('mimik-mark.png');
+    expect(String(vi.mocked(fetch).mock.calls[0]![0])).toContain('mimik-mark.png');
   });
 });
 

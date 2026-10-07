@@ -13,9 +13,9 @@ Guide changes cross contexts on the `mimik-guides` BroadcastChannel. The message
 
 ## Capture lifecycle (xstate in the background)
 
-- `PAUSED` is a real state with a `pauseReason` (`'blur' | 'manual'`). It never handles
-  `USER_ACTION`. Step writes are gated on `RECORDING`, except `finalizeInputStep`, which is gated on
-  "not IDLE".
+- `PAUSED` is a real state with a `pauseReason` (`'blur' | 'manual' | 'area'`, where `area` is
+  desktop only). It never handles `USER_ACTION`. Step writes are gated on `RECORDING`, except
+  `finalizeInputStep`, which is gated on "not IDLE".
 - Read paused-ness from the state value, never from `pauseReason`. A snapshot restored from
   `sessionStorage` may predate any context key, so treat new keys as possibly `undefined` (compare
   with `=== true`).
@@ -45,5 +45,9 @@ Guide changes cross contexts on the `mimik-guides` BroadcastChannel. The message
 - A `vi.mock` path must name the file the function lives in, not its folder. A stale path mocks
   nothing and does not fail.
 - `logger.warn` is compiled out of builds. Use `error` for anything a user could hit.
+- On a fresh Firefox install the background removes the `<all_urls>` grant. Firefox bug 1758306
+  records the grant but `captureVisibleTab` still rejects, and removing it makes the next
+  user-gesture `permissions.request()` grant it properly. Drop the workaround once Mozilla ships
+  the fix.
 - Smart Blur cannot reach iframes, shadow DOM, canvas, pseudo-elements, `<select>` or attribute
   values. The five READMEs say so, and they need updating with any change to the scanner.

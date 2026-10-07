@@ -88,7 +88,7 @@ export function assignSegments(response: TranscriptionResponse, batch: Batch, st
     for (const word of response.words ?? []) {
       if (word.start < segment.start || word.start > segment.end) continue;
       const at = toAbsolute(word.start);
-      const step = steps.find((s) => at >= s.from && at <= s.to) ?? spanned[spanned.length - 1];
+      const step = steps.find((s) => at >= s.from && at <= s.to) ?? spanned[spanned.length - 1]!;
       const existing = grouped.get(step.stepId);
       if (existing) {
         existing.words.push(word.word.trim());

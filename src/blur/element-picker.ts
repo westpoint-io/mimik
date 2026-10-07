@@ -3,6 +3,7 @@ import { REDACT_ATTR } from '@/core/blur/redactor';
 import { PICKED_CLASS } from '@/core/blur/styles';
 import { isMimikElement } from '@/core/capture/dom/element-utils';
 import { createOverlayRoot } from '@/core/capture/dom/overlay-root';
+import { svgElement } from '@/core/capture/dom/svg-element';
 import { HoverRing } from '@/lib/hover-ring';
 
 const RING_COLOR = '#7C3AED';
@@ -92,12 +93,15 @@ export class ElementPicker {
 
     const bar = document.createElement('div');
     bar.className = 'bar';
-    bar.innerHTML = `
-      <div class="bar-left">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>
-        ${i18n.t('blurPanel.selectElements')}
-      </div>
-    `;
+    const left = document.createElement('div');
+    left.className = 'bar-left';
+    left.append(
+      svgElement(
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"/></svg>',
+      ),
+      ` ${i18n.t('blurPanel.selectElements')}`,
+    );
+    bar.append(left);
     const doneBtn = document.createElement('button');
     doneBtn.className = 'bar-done';
     doneBtn.textContent = i18n.t('blurPanel.done');

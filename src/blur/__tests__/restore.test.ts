@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import type { CaptureStateUpdate } from '@/core/capture/capture-state-update';
 import { CaptureState } from '@/core/capture/machine';
-import type { GetStateResponse } from '@/lib/messaging';
 import { shouldReopenBlur } from '../restore';
 
-const state = (over: Partial<GetStateResponse> = {}): GetStateResponse => ({
+const state = (over: Partial<CaptureStateUpdate> = {}): CaptureStateUpdate => ({
   state: CaptureState.PAUSED,
   stepCount: 1,
   currentGuideId: 'guide-1',

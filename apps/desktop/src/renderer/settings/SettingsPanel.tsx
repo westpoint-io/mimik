@@ -35,7 +35,7 @@ import { Row } from './Row';
 import { ShortcutRecorder } from './ShortcutRecorder';
 import { Slider } from './Slider';
 
-type Section = 'general' | 'capture' | 'ai' | 'branding' | 'shortcuts' | 'keys';
+type Section = 'general' | 'capture' | 'ai' | 'branding' | 'shortcuts' | 'api-keys';
 
 const SECTIONS: { id: Section; labelKey: string; Icon: typeof AppWindow }[] = [
   { id: 'general', labelKey: 'desktop.generalSection', Icon: SlidersHorizontal },
@@ -43,7 +43,7 @@ const SECTIONS: { id: Section; labelKey: string; Icon: typeof AppWindow }[] = [
   { id: 'ai', labelKey: 'settings.aiSection', Icon: Sparkles },
   { id: 'branding', labelKey: 'settings.branding', Icon: ImageIcon },
   { id: 'shortcuts', labelKey: 'desktop.shortcutsSection', Icon: Command },
-  { id: 'keys', labelKey: 'settings.apiKeys', Icon: KeyRound },
+  { id: 'api-keys', labelKey: 'settings.apiKeys', Icon: KeyRound },
 ];
 
 const MODES: { id: CaptureSettings['captureMode']; labelKey: string; Icon: typeof AppWindow }[] = [
@@ -104,26 +104,26 @@ export function SettingsPanel({ onSaved }: { onSaved: () => void }) {
         <div className="flex flex-col gap-3.5">
           {section === 'ai' && (
             <>
-              <AiSettings keys={keys} onOpenKeys={() => setSection('keys')} onChange={onSaved} />
+              <AiSettings keys={keys} onOpenKeys={() => setSection('api-keys')} onChange={onSaved} />
               <NarrationSettings
                 keys={keys}
-                onOpenKeys={() => setSection('keys')}
+                onOpenKeys={() => setSection('api-keys')}
                 onChange={onSaved}
                 onRequestAccess={requestMicrophoneAccess}
                 access={microphone.row}
-                microphoneDisabled={microphone.locked}
+                microphoneLocked={microphone.locked}
                 liveMeter
               />
               <VoiceoverSettings
                 keys={keys.keys}
                 listVoices={fetchVoices}
-                onOpenKeys={() => setSection('keys')}
+                onOpenKeys={() => setSection('api-keys')}
                 onChange={onSaved}
               />
             </>
           )}
 
-          {section === 'keys' && <ApiKeysSettings state={keys} validate={validateApiKey} />}
+          {section === 'api-keys' && <ApiKeysSettings state={keys} validate={validateApiKey} />}
 
           {section === 'branding' && <BrandingSettings onChange={onSaved} />}
 
@@ -178,10 +178,10 @@ export function SettingsPanel({ onSaved }: { onSaved: () => void }) {
               </Card>
 
               <Card icon={Keyboard} title={i18n.t('settings.cardKeyboard')} hint={i18n.t('settings.cardKeyboardHint')}>
-                <Row label={i18n.t('desktop.recordTyping')} hint={i18n.t('desktop.recordTypingHint')}>
+                <Row label={i18n.t('settings.recordTyping')} hint={i18n.t('settings.recordTypingHint')}>
                   <Switch
                     checked={settings.recordTyping}
-                    label={i18n.t('desktop.recordTyping')}
+                    label={i18n.t('settings.recordTyping')}
                     onChange={(recordTyping) => save({ recordTyping })}
                   />
                 </Row>

@@ -55,7 +55,7 @@ function makeScreenshot(): Screenshot {
 
 async function unpack(blob: Blob) {
   const entries = unzipSync(new Uint8Array(await blob.arrayBuffer()));
-  return { entries, manifest: parseManifest(JSON.parse(strFromU8(entries[MANIFEST_PATH]))) };
+  return { entries, manifest: parseManifest(JSON.parse(strFromU8(entries[MANIFEST_PATH]!))) };
 }
 
 describe('trimUrl', () => {
@@ -95,9 +95,9 @@ describe('exportGuideAsBundle', () => {
     );
 
     expect(Object.keys(entries).sort()).toEqual([README_PATH, MANIFEST_PATH, 'screenshots/ss-1.webp']);
-    expect(strFromU8(entries[README_PATH])).toContain('# Reset a password');
+    expect(strFromU8(entries[README_PATH]!)).toContain('# Reset a password');
     expect(manifest.guide.title).toBe('Reset a password');
-    expect(manifest.screenshots[0].file).toBe('screenshots/ss-1.webp');
+    expect(manifest.screenshots[0]!.file).toBe('screenshots/ss-1.webp');
   });
 
   it('scrubs the typed value out of the description, not just the inputValue field', async () => {
@@ -106,8 +106,8 @@ describe('exportGuideAsBundle', () => {
     );
 
     expect(JSON.stringify(manifest)).not.toContain('hunter2');
-    expect(manifest.steps[0].description).toBe(`Type "${SCRUB_PLACEHOLDER}" in the password box`);
-    expect(strFromU8(entries[README_PATH])).not.toContain('hunter2');
+    expect(manifest.steps[0]!.description).toBe(`Type "${SCRUB_PLACEHOLDER}" in the password box`);
+    expect(strFromU8(entries[README_PATH]!)).not.toContain('hunter2');
   });
 
   it('scrubs a title that quotes the typed value', async () => {
@@ -126,7 +126,7 @@ describe('exportGuideAsBundle', () => {
       await exportGuideAsBundle(makeGuide(), [makeStep(), later], new Map([['step-1', makeScreenshot()]])),
     );
 
-    expect(manifest.steps[1].description).toBe(`Confirm ${SCRUB_PLACEHOLDER} was saved`);
+    expect(manifest.steps[1]!.description).toBe(`Confirm ${SCRUB_PLACEHOLDER} was saved`);
   });
 
   it('leaves descriptions intact when the author keeps typed text', async () => {
@@ -137,7 +137,7 @@ describe('exportGuideAsBundle', () => {
       }),
     );
 
-    expect(manifest.steps[0].description).toBe('Type "hunter2" in the password box');
+    expect(manifest.steps[0]!.description).toBe('Type "hunter2" in the password box');
   });
 
   it('strips typed text and trims URLs by default', async () => {
@@ -145,8 +145,8 @@ describe('exportGuideAsBundle', () => {
       await exportGuideAsBundle(makeGuide(), [makeStep()], new Map([['step-1', makeScreenshot()]])),
     );
 
-    expect(manifest.steps[0].inputValue).toBeUndefined();
-    expect(manifest.steps[0].url).toBe('https://app.example.com/settings/security');
+    expect(manifest.steps[0]!.inputValue).toBeUndefined();
+    expect(manifest.steps[0]!.url).toBe('https://app.example.com/settings/security');
     expect(manifest.redacted).toEqual({ screenshots: false, inputValues: true, urls: 'path' });
   });
 
@@ -159,8 +159,8 @@ describe('exportGuideAsBundle', () => {
       }),
     );
 
-    expect(manifest.steps[0].inputValue).toBe('hunter2');
-    expect(manifest.steps[0].url).toContain('token=secret');
+    expect(manifest.steps[0]!.inputValue).toBe('hunter2');
+    expect(manifest.steps[0]!.url).toContain('token=secret');
   });
 
   it('leaves capture-local state behind', async () => {
@@ -184,7 +184,7 @@ describe('exportGuideAsBundle', () => {
         }),
       );
 
-      expect(strFromU8(entries[MANIFEST_PATH])).not.toContain('hunter3');
+      expect(strFromU8(entries[MANIFEST_PATH]!)).not.toContain('hunter3');
     }
   });
 
@@ -201,7 +201,7 @@ describe('exportGuideAsBundle', () => {
       }),
     );
 
-    expect(manifest.steps[0].url).not.toContain('jane');
+    expect(manifest.steps[0]!.url).not.toContain('jane');
   });
 
   it('trims the href inside elementMeta too', async () => {
@@ -227,7 +227,7 @@ describe('exportGuideAsBundle', () => {
       await exportGuideAsBundle(makeGuide(), [step], new Map([['step-1', makeScreenshot()]])),
     );
 
-    expect(manifest.steps[0].elementMeta?.href).toBe('https://app.example.com/go');
+    expect(manifest.steps[0]!.elementMeta?.href).toBe('https://app.example.com/go');
   });
 
   it('reports a redaction in the manifest so the import screen can disclose it', async () => {
@@ -282,10 +282,10 @@ describe('exportGuideAsBundle', () => {
       await exportGuideAsBundle(makeGuide(), [step], new Map([['step-1', makeScreenshot()]])),
     );
 
-    expect(manifest.steps[0].elementMeta?.textContent).toBeNull();
+    expect(manifest.steps[0]!.elementMeta?.textContent).toBeNull();
     expect(JSON.stringify(manifest)).not.toContain('xxxxxxxxxx');
-    expect(manifest.steps[0].elementMeta?.ariaLabel).toBe('Message');
-    expect(manifest.steps[0].elementMeta?.cssSelector).toBe('div.editor');
+    expect(manifest.steps[0]!.elementMeta?.ariaLabel).toBe('Message');
+    expect(manifest.steps[0]!.elementMeta?.cssSelector).toBe('div.editor');
   });
 
   it('handles a step with no screenshot', async () => {

@@ -1,6 +1,7 @@
 import { logger } from '@mimik/core/logger';
 import { createActor } from 'xstate';
-import { type CaptureSnapshot, type CaptureStateValue, captureMachine } from '@/core/capture/machine';
+import { captureStateUpdate } from '@/core/capture/capture-state-update';
+import { type CaptureSnapshot, captureMachine } from '@/core/capture/machine';
 import { sessionStorage } from '@/lib/browser-api/session-storage';
 import type { PanelStateUpdate } from '@/lib/port/types';
 import type { ActorRef } from './types';
@@ -47,14 +48,7 @@ export async function initActor(): Promise<void> {
 }
 
 export function getStateUpdate(): PanelStateUpdate {
-  const snap = actor.getSnapshot();
-  return {
-    type: 'STATE_UPDATE',
-    state: snap.value as CaptureStateValue,
-    stepCount: snap.context.stepCount,
-    currentGuideId: snap.context.currentGuideId,
-    pauseReason: snap.context.pauseReason ?? null,
-  };
+  return { type: 'STATE_UPDATE', ...captureStateUpdate(actor.getSnapshot()) };
 }
 
 export function initActorFallback(): void {

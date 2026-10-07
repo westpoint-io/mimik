@@ -56,7 +56,7 @@ describe('applying a narration result', () => {
   });
 
   it('stores a slice that attributed nothing at all', async () => {
-    const orphaned = { epochMs: transcript.epochMs, lines: [transcript.lines[1]] };
+    const orphaned = { epochMs: transcript.epochMs, lines: [transcript.lines[1]!] };
 
     await applyNarration('g1', { descriptions: [], transcript: orphaned, stats }, false);
 

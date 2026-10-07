@@ -25,8 +25,8 @@ describe('groupSnapshots', () => {
     const rows = groupSnapshots([snap('a', 'h1'), snap('b', 'h1'), snap('c', 'h1')]);
 
     expect(rows).toHaveLength(1);
-    expect(rows[0].kind).toBe('group');
-    expect(rows[0].kind === 'group' && rows[0].snapshots).toHaveLength(3);
+    expect(rows[0]!.kind).toBe('group');
+    expect(rows[0]!.kind === 'group' && rows[0]!.snapshots).toHaveLength(3);
   });
 
   it('keeps runs separate and preserves order', () => {
@@ -38,9 +38,9 @@ describe('groupSnapshots', () => {
   it('preserves snapshot identity and order across rows', () => {
     const rows = groupSnapshots([snap('a', 'h1'), snap('b', 'h2'), snap('c', 'h2'), snap('d', 'h3')]);
 
-    expect(rows[0].kind === 'entry' && rows[0].snapshot.id).toBe('a');
-    expect(rows[1].kind === 'group' && rows[1].snapshots.map((s) => s.id)).toEqual(['b', 'c']);
-    expect(rows[2].kind === 'entry' && rows[2].snapshot.id).toBe('d');
+    expect(rows[0]!.kind === 'entry' && rows[0]!.snapshot.id).toBe('a');
+    expect(rows[1]!.kind === 'group' && rows[1]!.snapshots.map((s) => s.id)).toEqual(['b', 'c']);
+    expect(rows[2]!.kind === 'entry' && rows[2]!.snapshot.id).toBe('d');
   });
 
   it('does not merge non-adjacent matching hashes', () => {
@@ -70,9 +70,9 @@ describe('groupSnapshots', () => {
     ]);
 
     expect(rows.map((r) => r.kind)).toEqual(['group', 'entry', 'group']);
-    expect(rows[0].kind === 'group' && rows[0].snapshots.map((s) => s.id)).toEqual(['a', 'b']);
-    expect(rows[1].kind === 'entry' && rows[1].snapshot.id).toBe('c');
-    expect(rows[2].kind === 'group' && rows[2].snapshots.map((s) => s.id)).toEqual(['d', 'e']);
+    expect(rows[0]!.kind === 'group' && rows[0]!.snapshots.map((s) => s.id)).toEqual(['a', 'b']);
+    expect(rows[1]!.kind === 'entry' && rows[1]!.snapshot.id).toBe('c');
+    expect(rows[2]!.kind === 'group' && rows[2]!.snapshots.map((s) => s.id)).toEqual(['d', 'e']);
   });
 
   it('never hides a named snapshot inside a group', () => {
@@ -94,20 +94,20 @@ describe('groupSnapshots', () => {
     const rows = groupSnapshots([snap('a', 'h1', 'named head'), snap('b', 'h1'), snap('c', 'h1')]);
 
     expect(rows.map((r) => r.kind)).toEqual(['entry', 'group']);
-    expect(rows[0].kind === 'entry' && rows[0].snapshot.id).toBe('a');
+    expect(rows[0]!.kind === 'entry' && rows[0]!.snapshot.id).toBe('a');
   });
 
   it('keeps a named snapshot at the tail of the list as an entry', () => {
     const rows = groupSnapshots([snap('a', 'h1'), snap('b', 'h1'), snap('c', 'h1', 'named tail')]);
 
     expect(rows.map((r) => r.kind)).toEqual(['group', 'entry']);
-    expect(rows[1].kind === 'entry' && rows[1].snapshot.id).toBe('c');
+    expect(rows[1]!.kind === 'entry' && rows[1]!.snapshot.id).toBe('c');
   });
 
   it('treats an empty name as unnamed', () => {
     const rows = groupSnapshots([snap('a', 'h1'), snap('b', 'h1', ''), snap('c', 'h1')]);
 
     expect(rows.map((r) => r.kind)).toEqual(['group']);
-    expect(rows[0].kind === 'group' && rows[0].snapshots).toHaveLength(3);
+    expect(rows[0]!.kind === 'group' && rows[0]!.snapshots).toHaveLength(3);
   });
 });

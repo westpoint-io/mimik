@@ -6,7 +6,7 @@ export function blobToBase64(blob: Blob): Promise<string> {
     const reader = new FileReader();
     reader.onload = () => {
       const result = reader.result as string;
-      resolve(result.split(',')[1]);
+      resolve(result.split(',')[1]!);
     };
     reader.onerror = reject;
     reader.readAsDataURL(blob);
@@ -101,7 +101,7 @@ export const MAX_LEAD_LINES = 2;
 export function clampLines(lines: string[], max: number): string[] {
   if (lines.length <= max) return lines;
   const kept = lines.slice(0, max);
-  kept[max - 1] = `${kept[max - 1].replace(/\s+$/, '')}…`;
+  kept[max - 1] = `${kept[max - 1]!.replace(/\s+$/, '')}…`;
   return kept;
 }
 

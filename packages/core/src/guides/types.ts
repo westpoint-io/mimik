@@ -105,6 +105,7 @@ export interface Settings {
   onboardingCompleted: boolean;
   appLanguage: string;
   recordKeys: boolean;
+  recordTyping: boolean;
 }
 
 export type SettingsKey = keyof Settings;

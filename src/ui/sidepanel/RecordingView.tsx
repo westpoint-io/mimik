@@ -66,7 +66,7 @@ export function RecordingView({
     );
 
     if (allSteps.length > 0 && !siteUrl) {
-      setSiteUrl(allSteps[0].url || '');
+      setSiteUrl(allSteps[0]!.url || '');
     }
   }, [guideId, siteUrl]);
 
@@ -128,7 +128,6 @@ export function RecordingView({
 
   return (
     <div className="flex flex-col h-screen bg-card relative">
-      {/* Floating recording pill */}
       <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-sm border border-border shadow-sm">
         <span className={`w-2 h-2 rounded-full ${paused ? 'bg-accent' : 'bg-destructive animate-pulse'}`} />
         <span className="text-xs font-semibold text-foreground">
@@ -140,7 +139,6 @@ export function RecordingView({
         </span>
       </div>
 
-      {/* Feed */}
       <div className="flex-1 overflow-y-auto pt-12">
         {steps.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full gap-3">
@@ -211,7 +209,6 @@ export function RecordingView({
         <div ref={bottomRef} />
       </div>
 
-      {/* Bottom bar */}
       <div className="shrink-0 border-t border-border">
         <AiStatus update={aiFailure} />
         {import.meta.env.BROWSER !== 'firefox' && <VoiceStatus update={voice} enabled={voiceEnabled} paused={paused} />}

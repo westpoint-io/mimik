@@ -48,6 +48,12 @@ library:
   duplicate: Duplicar
   copyOfTitle: "Copia de $1"
   duplicateFailed: No se pudo duplicar esta guía
+  collapseSidebar: Contraer la barra lateral
+  expandSidebar: Expandir la barra lateral
+  allGuides: Todas las guías
+  starred: Favoritos
+  trash: Papelera
+  searchPlaceholder: Buscar guías…
 
 guideme:
   live: En vivo
@@ -93,6 +99,8 @@ settings:
   cardKeyboardHint: "Lo que tu teclado añade a una guía."
   recordKeys: "Registrar atajos y teclas con nombre"
   recordKeysHint: "Ctrl+S, Enter y similares se convierten en pasos."
+  recordTyping: "Registrar lo que escribes"
+  recordTypingHint: "Todo lo que escribes en un campo se convierte en un paso."
   microphoneAccess: "Acceso al micrófono"
   microphoneAccessAsk: "Tu navegador pregunta una vez antes de que Mimik pueda oírte."
   microphoneAccessAllow: "Permitir"
@@ -207,7 +215,6 @@ desktop:
   hintCapture: "pulsa $1 para capturar sin hacer clic."
   micAccessAsk: "macOS pregunta una vez antes de que Mimik pueda oírte."
   micAccessRefused: "Denegado. Activa Mimik en Privacidad y seguridad."
-  micAccessOpen: "Abrir ajustes"
   armed: "Listo"
   screenshotDelay: "Retraso de la captura"
   keepClicksBeyondArea: "Capturar clics fuera del área"
@@ -227,8 +234,6 @@ desktop:
   permissionScreen: "Grabación de pantalla"
   permissionScreenHint: "Permite a Mimik hacer la captura de cada paso."
   permissionScreenRestart: "Reinicia Mimik para terminar de activarlo."
-  permissionGrant: "Permitir"
-  permissionGranted: "Permitido"
   permissionRestart: "Reiniciar Mimik"
   moreStepsAfter: "Los nuevos pasos se insertan después del paso $1."
   moreStepsFirst: "Los nuevos pasos se insertan antes del paso 1."
@@ -247,6 +252,10 @@ desktop:
   version: "Versión $1"
   versionHint: "Mimik busca actualizaciones cada vez que se inicia."
   checkUpdates: "Buscar actualizaciones"
+  cardGithub: "Mimik en GitHub"
+  bugTitle: "¿Encontraste un error?"
+  bugHint: "Cuéntanos qué pasó y lo revisaremos."
+  reportBug: "Informar de un error"
   trayQuit: "Salir de Mimik"
   trayRecording: "Mimik está grabando. Haz clic para terminar."
   cannotRecord: "Mimik no puede grabar"
@@ -265,8 +274,6 @@ desktop:
   zoomLevelHint: "Las grabaciones nuevas empiezan aquí. Automático mantiene todos los pasos del mismo tamaño."
   zoomAuto: "Automático"
   zoomGuide: "Zoom"
-  recordTyping: "Registrar lo que escribes"
-  recordTypingHint: "Todo lo que escribes en un campo se convierte en un paso."
   typingDebounce: "Cerrar el paso de escritura tras"
   typingDebounceHint: "Una pausa así de larga cierra el paso de escritura."
   cardScreenshotsHint: "Lo que muestra la captura de cada paso."
@@ -279,21 +286,17 @@ desktop:
   shortcutPress: "Pulsa las teclas…"
   shortcutClear: "Borrar"
 
-fullview:
-  collapseSidebar: Contraer la barra lateral
-  expandSidebar: Expandir la barra lateral
-  allGuides: Todas las guías
-  starred: Favoritos
-  trash: Papelera
-  searchPlaceholder: Buscar guías…
+guide:
   guideMe: "Guíame"
-  untitledGuide: Guía sin título
+  untitled: Guía sin título
   writingTitle: Escribiendo un título con tus pasos capturados...
   writingDescription: "Escribiendo una descripci\xF3n\u2026"
-  guideNotFound: "No se encontró la guía."
+  notFound: "No se encontró la guía."
   stepCount: "$1 paso"
   stepCountPlural: "$1 pasos"
   pageOf: "$1 / $2"
+  onDomain: "Guía en $1"
+  newGuide: Nueva guía
 
 sort:
   recentFirst: Más recientes
@@ -423,6 +426,7 @@ blurPanel:
   title: Desenfoque inteligente
   manualMode: Modo manual
   selectElements: Selecciona elementos para desenfocar
+  clickToBlur: "Haz clic para difuminar"
   done: Listo
   doneResume: "Listo · Reanudar grabación"
   resetAll: Restablecer todo
@@ -667,10 +671,6 @@ export:
   stepsCount: "$1 pasos"
   createdLabel: "Creado $1"
   sourceLabel: "Fuente: $1"
-
-background:
-  guideOnDomain: "Guía en $1"
-  newGuide: Nueva guía
 
 voice:
   turnOn: "Activar narración por voz"

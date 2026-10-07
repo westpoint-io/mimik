@@ -1,16 +1,8 @@
 import { i18n } from '@mimik/core/env';
+import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@mimik/ui';
 import { Globe } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Button } from '../../components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '../../components/ui/dialog';
-import { type RecordableTab, tabs as tabsApi } from '../../env';
+import { getRecordableTabs, type RecordableTab } from '@/capture/recordable-tabs';
 
 interface CaptureTabDialogProps {
   open: boolean;
@@ -25,7 +17,7 @@ export function CaptureTabDialog({ open, onCancel, onStart }: CaptureTabDialogPr
   useEffect(() => {
     if (!open) return;
     setSelected(null);
-    tabsApi.recordable().then(setTabs);
+    getRecordableTabs().then(setTabs);
   }, [open]);
 
   return (

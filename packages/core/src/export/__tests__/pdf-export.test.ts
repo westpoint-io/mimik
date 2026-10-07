@@ -259,7 +259,7 @@ describe('exportGuideAsPDF screenshots', () => {
     const steps = [makeStep(0)];
     await exportGuideAsPDF(guide, steps, shotsFor(steps), opts({ cover: false }));
 
-    expect(vi.mocked(renderScreenshot).mock.calls[0][1]).toMatchObject({ format: 'image/jpeg' });
+    expect(vi.mocked(renderScreenshot).mock.calls[0]![1]).toMatchObject({ format: 'image/jpeg' });
   });
 
   it('still writes the step when its screenshot fails to render', async () => {

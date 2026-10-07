@@ -57,12 +57,6 @@ const STYLES = `
   }
 `;
 
-function escapeHtml(text: string): string {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
 export class GuideMeOverlay {
   private host: HTMLElement;
   private shadow: ShadowRoot;
@@ -100,7 +94,13 @@ export class GuideMeOverlay {
 
     this.labelEl = document.createElement('div');
     this.labelEl.className = 'label';
-    this.labelEl.innerHTML = `<span class="num">${stepNumber}</span><span class="text">${escapeHtml(description)}</span>`;
+    const num = document.createElement('span');
+    num.className = 'num';
+    num.textContent = String(stepNumber);
+    const text = document.createElement('span');
+    text.className = 'text';
+    text.textContent = description;
+    this.labelEl.append(num, text);
     this.shadow.appendChild(this.labelEl);
     this.positionLabel(rect);
 

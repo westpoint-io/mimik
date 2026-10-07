@@ -1,14 +1,10 @@
 import type { browser } from '#imports';
 import type { AiFailureUpdate } from '@/core/capture/ai/errors';
-import type { CaptureStateValue, PauseReason } from '@/core/capture/machine';
+import type { CaptureStateUpdate } from '@/core/capture/capture-state-update';
 import type { VoiceUpdate } from '@/core/capture/voice/voice-update';
 
-export interface PanelStateUpdate {
+export interface PanelStateUpdate extends CaptureStateUpdate {
   type: 'STATE_UPDATE';
-  state: CaptureStateValue;
-  stepCount: number;
-  currentGuideId: string | null;
-  pauseReason: PauseReason | null;
 }
 
 export interface PanelVoiceUpdate extends VoiceUpdate {

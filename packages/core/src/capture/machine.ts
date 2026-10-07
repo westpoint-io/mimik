@@ -110,7 +110,7 @@ export const captureMachine = setup({
       on: {
         RESUME_CAPTURE: {
           target: CaptureState.RECORDING,
-          actions: assign({ pauseReason: null, narrationWasLive: false }),
+          actions: assign({ pauseReason: null }),
         },
         STEP_REMOVED: { actions: 'removeStep' },
         STOP_RECORDING: {

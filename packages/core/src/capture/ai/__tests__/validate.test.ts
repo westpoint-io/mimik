@@ -69,7 +69,7 @@ describe('validateApiKey', () => {
   it('checks a groq key against groq, not openai', async () => {
     fetchMock.mockResolvedValueOnce(modelsBody('ok-model'));
     expect(await validateApiKey('groq', 'gsk-key')).toEqual({ valid: true, models: ['ok-model'] });
-    const [url, init] = fetchMock.mock.calls[0];
+    const [url, init] = fetchMock.mock.calls[0]!;
     expect(url).toBe('https://api.groq.com/openai/v1/models');
     expect((init!.headers as Record<string, string>).Authorization).toBe('Bearer gsk-key');
   });
@@ -77,7 +77,7 @@ describe('validateApiKey', () => {
   it('checks a deepseek key against deepseek, not openai', async () => {
     fetchMock.mockResolvedValueOnce(modelsBody('deepseek-v4-flash'));
     expect(await validateApiKey('deepseek', 'sk-deepseek')).toEqual({ valid: true, models: ['deepseek-v4-flash'] });
-    const [url, init] = fetchMock.mock.calls[0];
+    const [url, init] = fetchMock.mock.calls[0]!;
     expect(url).toBe('https://api.deepseek.com/models');
     expect((init!.headers as Record<string, string>).Authorization).toBe('Bearer sk-deepseek');
   });
@@ -85,7 +85,7 @@ describe('validateApiKey', () => {
   it('gives up rather than spinning forever when a host never answers', async () => {
     fetchMock.mockResolvedValueOnce(jsonResponse(null));
     await validateApiKey('openai', 'sk-key');
-    const [, init] = fetchMock.mock.calls[0];
+    const [, init] = fetchMock.mock.calls[0]!;
     expect(init!.signal).toBeInstanceOf(AbortSignal);
   });
 
@@ -213,7 +213,7 @@ describe('validateApiKey', () => {
       fetchMock.mockResolvedValueOnce(chatOkBody());
       fetchMock.mockResolvedValueOnce(modelsBody('mock-tiny'));
       await validateApiKey('openai', 'sk-key', 'http://localhost:8787/v1', 'mock-tiny');
-      const [url, init] = fetchMock.mock.calls[0];
+      const [url, init] = fetchMock.mock.calls[0]!;
       expect(url).toBe('http://localhost:8787/v1/chat/completions');
       expect((init!.headers as Record<string, string>).Authorization).toBe('Bearer sk-key');
     });
@@ -225,7 +225,7 @@ describe('validateApiKey', () => {
         valid: true,
         models: ['claude-local'],
       });
-      const [url, init] = fetchMock.mock.calls[0];
+      const [url, init] = fetchMock.mock.calls[0]!;
       expect(url).toBe('http://localhost:4000/messages');
       const headers = init!.headers as Record<string, string>;
       expect(headers['x-api-key']).toBe('ak-key');
@@ -240,7 +240,7 @@ describe('validateApiKey', () => {
         valid: true,
         models: ['local-r1'],
       });
-      expect(fetchMock.mock.calls[0][0]).toBe('http://localhost:1234/v1/chat/completions');
+      expect(fetchMock.mock.calls[0]![0]).toBe('http://localhost:1234/v1/chat/completions');
     });
 
     it('treats a provider default typed in by hand as the default, not a custom server', async () => {
@@ -250,13 +250,13 @@ describe('validateApiKey', () => {
         models: ['deepseek-v4-flash'],
       });
       expect(fetchMock).toHaveBeenCalledTimes(1);
-      expect(fetchMock.mock.calls[0][0]).toBe('https://api.deepseek.com/models');
+      expect(fetchMock.mock.calls[0]![0]).toBe('https://api.deepseek.com/models');
     });
 
     it('checks an anthropic key against anthropic by default', async () => {
       fetchMock.mockResolvedValueOnce(modelsBody('claude-3-5-haiku-20241022'));
       await validateApiKey('anthropic', 'ak-key');
-      const [url, init] = fetchMock.mock.calls[0];
+      const [url, init] = fetchMock.mock.calls[0]!;
       expect(url).toBe('https://api.anthropic.com/v1/models');
       expect((init!.headers as Record<string, string>)['anthropic-version']).toBe('2023-06-01');
     });
@@ -278,15 +278,15 @@ describe('validateApiKey', () => {
         valid: true,
         models: ['openai/gpt-4o-mini', 'anthropic/claude-haiku-4.5'],
       });
-      expect(fetchMock.mock.calls[0][0]).toBe('https://openrouter.ai/api/v1/key');
-      expect(fetchMock.mock.calls[1][0]).toBe('https://openrouter.ai/api/v1/models');
+      expect(fetchMock.mock.calls[0]![0]).toBe('https://openrouter.ai/api/v1/key');
+      expect(fetchMock.mock.calls[1]![0]).toBe('https://openrouter.ai/api/v1/models');
     });
 
     it('rejects a bad key even though the catalogue would answer 200 to anyone', async () => {
       fetchMock.mockResolvedValueOnce(errorResponse(401));
       expect(await validateApiKey('openrouter', 'sk-or-bad')).toEqual({ valid: false, reason: 'rejected' });
       expect(fetchMock).toHaveBeenCalledTimes(1);
-      expect(fetchMock.mock.calls[0][0]).toBe('https://openrouter.ai/api/v1/key');
+      expect(fetchMock.mock.calls[0]![0]).toBe('https://openrouter.ai/api/v1/key');
     });
 
     it('still reports the key as good when the catalogue request fails', async () => {
@@ -299,7 +299,7 @@ describe('validateApiKey', () => {
       fetchMock.mockResolvedValueOnce(jsonResponse({ data: {} }));
       fetchMock.mockResolvedValueOnce(modelsBody('openai/gpt-4o-mini'));
       await validateApiKey('openrouter', 'sk-or-good');
-      const [, init] = fetchMock.mock.calls[0];
+      const [, init] = fetchMock.mock.calls[0]!;
       expect((init!.headers as Record<string, string>).Authorization).toBe('Bearer sk-or-good');
     });
 
@@ -310,14 +310,14 @@ describe('validateApiKey', () => {
         valid: true,
         models: ['local-model'],
       });
-      expect(fetchMock.mock.calls[0][0]).toBe('http://localhost:8787/v1/chat/completions');
+      expect(fetchMock.mock.calls[0]![0]).toBe('http://localhost:8787/v1/chat/completions');
     });
 
     it('leaves providers without an authenticated path checking their catalogue', async () => {
       fetchMock.mockResolvedValueOnce(modelsBody('gpt-4o-mini'));
       await validateApiKey('openai', 'sk-good');
       expect(fetchMock).toHaveBeenCalledTimes(1);
-      expect(fetchMock.mock.calls[0][0]).toBe('https://api.openai.com/v1/models');
+      expect(fetchMock.mock.calls[0]![0]).toBe('https://api.openai.com/v1/models');
     });
   });
 

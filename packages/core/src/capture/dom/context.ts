@@ -87,7 +87,7 @@ function getElementValue(el: Element): string | null {
   if (el instanceof HTMLInputElement && el.value) return `value=${el.value.slice(0, 50)}`;
   if (el instanceof HTMLTextAreaElement && el.value) return `value=${el.value.slice(0, 50)}`;
   if (el instanceof HTMLSelectElement && el.selectedOptions.length)
-    return `selected=${el.selectedOptions[0].text.slice(0, 50)}`;
+    return `selected=${el.selectedOptions[0]!.text.slice(0, 50)}`;
   if (attr(el, 'aria-checked')) return attr(el, 'aria-checked') === 'true' ? 'checked' : 'unchecked';
   if (attr(el, 'aria-selected') === 'true') return 'selected';
   if (attr(el, 'aria-current')) return 'current';

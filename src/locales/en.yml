@@ -48,6 +48,12 @@ library:
   duplicate: Duplicate
   copyOfTitle: "Copy of $1"
   duplicateFailed: Couldn't duplicate this guide
+  collapseSidebar: Collapse sidebar
+  expandSidebar: Expand sidebar
+  allGuides: "All guides"
+  starred: Starred
+  trash: Trash
+  searchPlaceholder: Search guides…
 
 guideme:
   live: Live
@@ -93,6 +99,8 @@ settings:
   cardKeyboardHint: "What your keyboard adds to a guide."
   recordKeys: "Record shortcuts and named keys"
   recordKeysHint: "Ctrl+S, Enter and the like become steps."
+  recordTyping: "Record what you type"
+  recordTypingHint: "Everything you type into one field becomes one step."
   microphoneAccess: "Microphone access"
   microphoneAccessAsk: "Your browser asks once before Mimik can hear you."
   microphoneAccessAllow: "Allow"
@@ -207,7 +215,6 @@ desktop:
   hintCapture: "you can press $1 to capture without clicking."
   micAccessAsk: "macOS asks once before Mimik can hear you."
   micAccessRefused: "Refused. Turn on Mimik in Privacy & Security."
-  micAccessOpen: "Open settings"
   armed: Ready
   screenshotDelay: Screenshot delay
   keepClicksBeyondArea: Capture clicks outside the area
@@ -227,8 +234,6 @@ desktop:
   permissionScreen: "Screen Recording"
   permissionScreenHint: "Lets Mimik take the screenshot for each step."
   permissionScreenRestart: "Restart Mimik to finish turning this on."
-  permissionGrant: "Allow"
-  permissionGranted: "Allowed"
   permissionRestart: "Restart Mimik"
   moreStepsAfter: "New steps are inserted after step $1."
   moreStepsFirst: "New steps are inserted before step 1."
@@ -247,6 +252,10 @@ desktop:
   version: "Version $1"
   versionHint: "Mimik looks for updates each time it starts."
   checkUpdates: "Check for updates"
+  cardGithub: "Mimik on GitHub"
+  bugTitle: "Found a bug?"
+  bugHint: "Tell us what happened and we'll look into it."
+  reportBug: "Report a bug"
   trayQuit: "Quit Mimik"
   trayRecording: "Mimik is recording. Click to finish."
   cannotRecord: "Mimik cannot record"
@@ -265,8 +274,6 @@ desktop:
   zoomLevelHint: "New recordings start here. Automatic keeps every step the same size."
   zoomAuto: "Automatic"
   zoomGuide: "Zoom"
-  recordTyping: "Record what you type"
-  recordTypingHint: "Everything you type into one field becomes one step."
   typingDebounce: "Close a typing step after"
   typingDebounceHint: "A pause this long ends the typing step."
   cardScreenshotsHint: "What each step's screenshot shows."
@@ -279,21 +286,17 @@ desktop:
   shortcutPress: "Press keys…"
   shortcutClear: "Clear"
 
-fullview:
-  collapseSidebar: Collapse sidebar
-  expandSidebar: Expand sidebar
-  allGuides: "All guides"
-  starred: Starred
-  trash: Trash
-  searchPlaceholder: Search guides…
+guide:
   guideMe: "Guide Me"
-  untitledGuide: "Untitled guide"
+  untitled: "Untitled guide"
   writingTitle: Writing a title from your captured steps...
   writingDescription: "Writing a description\u2026"
-  guideNotFound: "Guide not found"
+  notFound: "Guide not found"
   stepCount: "$1 step"
   stepCountPlural: "$1 steps"
   pageOf: "$1 / $2"
+  onDomain: "Guide on $1"
+  newGuide: "New guide"
 
 sort:
   recentFirst: Recent first
@@ -423,6 +426,7 @@ blurPanel:
   title: "Smart blur"
   manualMode: "Manual mode"
   selectElements: Select elements to blur
+  clickToBlur: "Click to blur"
   done: Done
   doneResume: "Done · Resume recording"
   resetAll: "Reset all"
@@ -667,10 +671,6 @@ export:
   stepsCount: "$1 steps"
   createdLabel: "Created $1"
   sourceLabel: "Source: $1"
-
-background:
-  guideOnDomain: "Guide on $1"
-  newGuide: "New guide"
 
 voice:
   turnOn: Turn on voice narration

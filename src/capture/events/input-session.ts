@@ -5,6 +5,7 @@ import { extractElementMeta, type FrozenRect, freezeRect } from '@/core/capture/
 import { getFieldLabel, getFieldValue, isRedactedField, isSensitiveField } from '@/core/capture/dom/element-utils';
 import { locateFrame, placeInTab } from '@/core/capture/dom/frame-placement';
 import type { CaptureSink } from '@/core/capture/sink';
+import { typedTitle } from '@/core/capture/typed-title';
 
 export class InputSession {
   stepId: string | null = null;
@@ -43,7 +44,8 @@ export class InputSession {
   update(target: HTMLElement) {
     if (!this.stepId) return;
     this.atEvent = freezeRect(target);
-    const label = getFieldLabel(target) ?? i18n.t('steps.textField');
+    const field = getFieldLabel(target);
+    const label = field ?? i18n.t('steps.textField');
     if (isSensitiveField(target) || isRedactedField(target)) {
       const description = isSensitiveField(target) ? i18n.t('steps.typeSecret') : i18n.t('steps.typeInto', [label]);
       this.sink
@@ -52,7 +54,7 @@ export class InputSession {
       return;
     }
     const val = getFieldValue(target);
-    const desc = val ? i18n.t('steps.typeValueInto', [val, label]) : i18n.t('steps.clearField', [label]);
+    const desc = val ? typedTitle(val, field) : i18n.t('steps.clearField', [label]);
     this.sink
       .updateInputStep({ stepId: this.stepId, description: desc, inputValue: val || undefined })
       .catch((err) => logger.warn('Failed to update input step', err));

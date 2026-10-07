@@ -20,7 +20,8 @@ apps/desktop/src/         Electron: main, preload, renderer
 scripts/                  repository checks run by pnpm lint
 ```
 
-Each of these has its own `AGENTS.md`. Read it before working there.
+`src/`, `packages/core`, `packages/capture-native` and `apps/desktop` each have their own `AGENTS.md`.
+Read it before working there.
 
 ## Commands
 
@@ -46,13 +47,16 @@ capture code in core, also run the desktop checks (under `xvfb-run` on Linux).
   `@/entrypoints`, `#imports`, `apps/`). Biome enforces this. If you have to ask which surface owns
   a file there, it belongs in that app instead.
 - **Behaviour that differs by surface:** shared code that decides for itself asks `client()` from
-  core. Behaviour only the app can supply comes in as a prop.
+  core. Behaviour only the app can supply comes in as a prop. Services every screen needs (opening a
+  tab, the AI calls, app icons) come from `configureUi` in `@mimik/ui/env`, typed, never as named
+  messages.
 - **Reuse the extension.** A feature both surfaces have uses the extension's component, wording
   and placement, and the desktop gets every branch of it, not a subset.
 - **Same names for the same thing on both surfaces:**
   - the capture states and events from core's machine;
   - `isLive`;
-  - message and IPC names (`captureStep`, `createGuide`, `deleteStep`, `discardRecording`, `getState`);
+  - message and IPC names where both surfaces have the message (`captureStep`, `discardRecording`,
+    `getState`);
   - the insert fields (`insertTargetGuideId`, `insertAtIndex`);
   - the narration phases (`VoicePhase`).
   Different code is fine where the platforms differ; different words for the same concept are not.
@@ -91,8 +95,9 @@ These are platform differences, not drift. Do not "fix" them:
 - **Screenshots:** stored as a `Blob` in the extension and as a PNG file with a `src` on the desktop.
 - **Fallback titles:** "Guide on <site>" in the extension, "Guide in <app>" on the desktop.
 - **Extension only:** Smart Blur and Guide Me need a live page.
-- **Settings:** `recordKeys` is a core setting in the extension and lives in `capture-settings.json`
-  on the desktop, because the desktop's main process reads it.
+- **Settings:** `recordKeys` and `recordTyping` are core settings in the extension and live in
+  `capture-settings.json` on the desktop, because the desktop's main process reads them. The typing
+  delay is desktop only: the extension closes a typing step on Enter or when the field loses focus.
 - **Live updates:** the card hears about step changes from main. The side panel re-reads the database.
 
 ## Commits and PRs

@@ -8,7 +8,7 @@ export function groupSnapshots(snapshots: Snapshot[]): SnapshotRow[] {
 
   const flush = () => {
     if (run.length === 0) return;
-    rows.push(run.length === 1 ? { kind: 'entry', snapshot: run[0] } : { kind: 'group', snapshots: run });
+    rows.push(run.length === 1 ? { kind: 'entry', snapshot: run[0]! } : { kind: 'group', snapshots: run });
     run = [];
   };
 
@@ -18,7 +18,7 @@ export function groupSnapshots(snapshots: Snapshot[]): SnapshotRow[] {
       rows.push({ kind: 'entry', snapshot });
       continue;
     }
-    if (run.length > 0 && run[0].contentHash !== snapshot.contentHash) flush();
+    if (run.length > 0 && run[0]!.contentHash !== snapshot.contentHash) flush();
     run.push(snapshot);
   }
   flush();

@@ -18,7 +18,7 @@ describe('mergeGaps', () => {
   });
 
   it('sorts unordered input before merging', () => {
-    expect(mergeGaps([seg(5, 6), seg(1, 2)])[0].start).toBe(1);
+    expect(mergeGaps([seg(5, 6), seg(1, 2)])[0]!.start).toBe(1);
   });
 
   it('absorbs a segment fully contained in the previous one', () => {
@@ -34,7 +34,7 @@ describe('buildBatches', () => {
   it('groups consecutive segments into one batch when they fit', () => {
     const { batches } = buildBatches([seg(0, 5), seg(6, 10)]);
     expect(batches).toHaveLength(1);
-    expect(batches[0].segments).toHaveLength(2);
+    expect(batches[0]!.segments).toHaveLength(2);
   });
 
   it('starts a new batch when the span would exceed the cap', () => {
@@ -88,9 +88,9 @@ describe('buildBatches with an over-long segment', () => {
 
   it('keeps the forced pieces ordered, contiguous and inside the original span', () => {
     const pieces = buildBatches([seg(0, 60)]).batches.flatMap((b) => b.segments);
-    expect(pieces[0].start).toBe(0);
-    expect(pieces[pieces.length - 1].end).toBe(60);
-    for (let i = 1; i < pieces.length; i += 1) expect(pieces[i].start).toBe(pieces[i - 1].end);
+    expect(pieces[0]!.start).toBe(0);
+    expect(pieces[pieces.length - 1]!.end).toBe(60);
+    for (let i = 1; i < pieces.length; i += 1) expect(pieces[i]!.start).toBe(pieces[i - 1]!.end);
   });
 });
 

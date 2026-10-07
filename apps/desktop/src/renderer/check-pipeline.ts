@@ -1,5 +1,4 @@
 import './core-env';
-import type { CaptureStepData } from '@mimik/core/capture/sink';
 import { assetUrl } from '@mimik/core/env';
 import { exportGuideAsDOCX } from '@mimik/core/export/docx-export';
 import { exportGuideAsHTML } from '@mimik/core/export/html-export';
@@ -21,10 +20,10 @@ interface CheckResult {
 const sink = new DesktopCaptureSink();
 
 window.mimik.onRequest('mimik:capture:createGuide', () => sink.createGuide());
-window.mimik.onRequest('mimik:capture:captureStep', (payload) => sink.captureStep(payload as CaptureStepData));
+window.mimik.onRequest('mimik:capture:captureStep', (payload) => sink.captureStep(payload));
 
 window.mimik.onRequest('mimik:check:screenshotSrc', async (payload) => {
-  const found = await getGuide(payload as string);
+  const found = await getGuide(payload);
   const first = found ? [...found.screenshots.values()][0] : undefined;
   return first?.src ?? null;
 });
@@ -38,27 +37,27 @@ window.mimik.onRequest('mimik:check:defaultLogo', () =>
 );
 
 window.mimik.onRequest('mimik:check:cleanup', async (payload) => {
-  for (const id of payload as string[]) await permanentlyDeleteGuide(id);
+  for (const id of payload) await permanentlyDeleteGuide(id);
   return true;
 });
 
 window.mimik.onRequest('mimik:check:steps', async (payload) => {
-  const found = await getGuide(payload as string);
+  const found = await getGuide(payload);
   return found ? found.steps.map((step) => step.description) : null;
 });
 
 window.mimik.onRequest('mimik:check:trashed', async (payload) => {
-  const found = await getGuide(payload as string);
+  const found = await getGuide(payload);
   return found ? found.guide.deletedAt != null : null;
 });
 
 window.mimik.onRequest('mimik:check:title', async (payload) => {
-  const found = await getGuide(payload as string);
+  const found = await getGuide(payload);
   return found?.guide.title ?? null;
 });
 
 window.mimik.onRequest('mimik:check:verify', async (payload) => {
-  const guideId = payload as string;
+  const guideId = payload;
   const results: CheckResult[] = [];
   const found = await getGuide(guideId);
 

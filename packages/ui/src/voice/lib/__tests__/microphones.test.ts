@@ -47,7 +47,7 @@ function localeKeys(locale: string): Set<string> {
   for (const line of readFileSync(join(process.cwd(), 'src/locales', `${locale}.yml`), 'utf8').split('\n')) {
     const top = /^([\w-]+):/.exec(line);
     if (top) {
-      section = top[1];
+      section = top[1]!;
       continue;
     }
     const nested = /^ {2}([\w-]+):/.exec(line);

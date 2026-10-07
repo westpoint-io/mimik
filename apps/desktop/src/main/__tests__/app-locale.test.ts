@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { appLocale } from '../lib/app-locale';
+import { appLocale } from '../app-locale';
 
 describe('appLocale', () => {
   it('takes the language picked in settings', () => {

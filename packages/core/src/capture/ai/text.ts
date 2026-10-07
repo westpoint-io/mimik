@@ -2,12 +2,12 @@ const SPACE = /\s/u;
 const WORD = /[\p{L}\p{N}]/u;
 
 function opensQuote(inner: string, i: number): boolean | null {
-  const spaceLeft = i === 0 || SPACE.test(inner[i - 1]);
-  const spaceRight = i === inner.length - 1 || SPACE.test(inner[i + 1]);
+  const spaceLeft = i === 0 || SPACE.test(inner[i - 1]!);
+  const spaceRight = i === inner.length - 1 || SPACE.test(inner[i + 1]!);
   if (spaceLeft !== spaceRight) return spaceLeft;
   if (spaceLeft) return null;
-  const wordLeft = WORD.test(inner[i - 1]);
-  const wordRight = WORD.test(inner[i + 1]);
+  const wordLeft = WORD.test(inner[i - 1]!);
+  const wordRight = WORD.test(inner[i + 1]!);
   return wordLeft === wordRight ? null : wordRight;
 }
 

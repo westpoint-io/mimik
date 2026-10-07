@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Toast } from '../../common/components/Toast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
-import { messages } from '../../env';
+import { ai } from '../../env';
 import { rewriteErrorMessage } from '../lib/rewrite-error';
 
 const PRESET_LABEL_KEYS = {
@@ -34,7 +34,7 @@ function readSpan(value: string, start: number, end: number): Span | null {
   const raw = value.slice(start, end);
   const core = raw.trim();
   if (!core) return null;
-  const lead = raw.slice(0, raw.indexOf(core[0]));
+  const lead = raw.slice(0, raw.indexOf(core[0]!));
   return { start, end, lead, core, trail: raw.slice(lead.length + core.length) };
 }
 
@@ -120,7 +120,7 @@ export function useAskAi(value: string, onReplace: (next: string) => void, enabl
       setBusy(true);
       setError(null);
       try {
-        const response = await messages.send('rewriteSelection', { text: target.core, instruction: prompt });
+        const response = await ai.rewriteSelection(target.core, prompt);
         if (response.error) {
           setError(rewriteErrorMessage(response.error));
           return;

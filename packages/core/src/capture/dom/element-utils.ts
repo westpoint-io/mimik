@@ -124,7 +124,7 @@ export function getFieldLabel(el: HTMLElement): string | null {
   if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
     const labels = el.labels;
     if (labels && labels.length > 0) {
-      const labelText = meaningfulLabel(labels[0].innerText);
+      const labelText = meaningfulLabel(labels[0]!.innerText);
       if (labelText) return labelText;
     }
   }

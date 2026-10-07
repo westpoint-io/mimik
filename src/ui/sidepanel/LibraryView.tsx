@@ -174,8 +174,8 @@ export function LibraryView({ onOpen, searchQuery = '' }: LibraryViewProps) {
                 {guide.stepIds.length > 0 && (
                   <span className="text-[9px] font-semibold text-muted-foreground bg-secondary px-2 py-0.5 rounded-full leading-none">
                     {guide.stepIds.length !== 1
-                      ? i18n.t('fullview.stepCountPlural', [String(guide.stepIds.length)])
-                      : i18n.t('fullview.stepCount', [String(guide.stepIds.length)])}
+                      ? i18n.t('guide.stepCountPlural', [String(guide.stepIds.length)])
+                      : i18n.t('guide.stepCount', [String(guide.stepIds.length)])}
                   </span>
                 )}
               </div>

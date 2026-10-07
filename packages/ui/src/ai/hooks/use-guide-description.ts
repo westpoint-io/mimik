@@ -1,6 +1,6 @@
 import { updateGuideDescription } from '@mimik/core/guides/service';
 import { useCallback, useState } from 'react';
-import { messages } from '../../env';
+import { ai } from '../../env';
 import { guideDescriptionErrorMessage } from '../lib/guide-description-error';
 
 export interface GuideDescription {
@@ -34,7 +34,7 @@ export function useGuideDescription(guideId: string, onWritten: (next: string) =
     setGenerating(true);
     setError(null);
     try {
-      const result = await messages.send('generateGuideDescription', { guideId });
+      const result = await ai.describeGuide(guideId);
       if (result.error) {
         setError(guideDescriptionErrorMessage(result.error));
         return;

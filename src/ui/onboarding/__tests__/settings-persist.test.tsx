@@ -30,7 +30,7 @@ const savedKeys = async () =>
   ((await fakeBrowser.storage.local.get('apiKeys')).apiKeys ?? {}) as Record<string, string | undefined>;
 
 function press(label: string) {
-  fireEvent.click(screen.getAllByText(label)[0]);
+  fireEvent.click(screen.getAllByText(label)[0]!);
 }
 
 async function goToStep(title: string) {

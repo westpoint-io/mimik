@@ -10,7 +10,7 @@ export function useMicrophoneGate() {
       <MicrophoneAccessRow
         refused={refused}
         hint={i18n.t(refused ? 'desktop.micAccessRefused' : 'desktop.micAccessAsk')}
-        action={i18n.t(refused ? 'desktop.micAccessOpen' : 'settings.microphoneAccessAllow')}
+        action={i18n.t(refused ? 'voice.openSettings' : 'settings.microphoneAccessAllow')}
         external={refused}
         onRequest={() => void request()}
       />

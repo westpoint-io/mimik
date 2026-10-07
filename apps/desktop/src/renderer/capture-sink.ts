@@ -1,17 +1,12 @@
 import { describeStep } from '@mimik/core/capture/ai/describe-step';
 import { SCREEN_STEP_DESCRIPTION_PROMPT } from '@mimik/core/capture/ai/prompts';
 import { serializeScreenContext } from '@mimik/core/capture/ai/screen-context';
-import type { CaptureStepData } from '@mimik/core/capture/sink';
 import { type StepNarration, writeStep } from '@mimik/core/capture/write-step';
 import { localStorage } from '@mimik/core/env';
 import { clearStepAiPending, createGuide, getStep, getStepsForGuide, saveScreenshot } from '@mimik/core/guides/service';
 import { screenshotForElement } from '@mimik/core/screenshot/record';
+import type { DesktopCaptureStepData } from '../main/ipc';
 import type { DesktopNarration } from './narration';
-
-export type DesktopCaptureStepData = CaptureStepData & {
-  inputValue?: string;
-  zoomLevel?: number;
-};
 
 export class DesktopCaptureSink {
   private readonly narration: StepNarration | null;

@@ -31,7 +31,7 @@ interface LibraryContentProps {
   category: 'all' | 'starred' | 'trash';
 }
 
-const emptyConfig: Record<string, { titleKey: string; subKey: string }> = {
+const emptyConfig: Record<LibraryContentProps['category'], { titleKey: string; subKey: string }> = {
   all: { titleKey: 'library.noGuidesTitle', subKey: 'library.noGuidesSub' },
   starred: { titleKey: 'library.noStarredTitle', subKey: 'library.noStarredSub' },
   trash: { titleKey: 'library.trashEmptyTitle', subKey: 'library.trashEmptySub' },
@@ -263,7 +263,7 @@ export function LibraryContent({ category }: LibraryContentProps) {
             <ChevronLeft size={15} />
           </button>
           <span className="text-xs font-medium text-muted-foreground">
-            {i18n.t('fullview.pageOf', [String(page + 1), String(totalPages)])}
+            {i18n.t('guide.pageOf', [String(page + 1), String(totalPages)])}
           </span>
           <button
             onClick={() => applyPage(page + 1)}

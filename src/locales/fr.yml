@@ -48,6 +48,12 @@ library:
   duplicate: Dupliquer
   copyOfTitle: "Copie de $1"
   duplicateFailed: Impossible de dupliquer ce guide
+  collapseSidebar: Réduire la barre latérale
+  expandSidebar: Développer la barre latérale
+  allGuides: Tous les guides
+  starred: Favoris
+  trash: Corbeille
+  searchPlaceholder: "Rechercher des guides…"
 
 guideme:
   live: En direct
@@ -93,6 +99,8 @@ settings:
   cardKeyboardHint: "Ce que votre clavier ajoute à un guide."
   recordKeys: "Enregistrer les raccourcis et touches nommées"
   recordKeysHint: "Ctrl+S, Entrée et autres deviennent des étapes."
+  recordTyping: "Enregistrer ce que vous tapez"
+  recordTypingHint: "Tout ce que vous tapez dans un champ devient une étape."
   microphoneAccess: "Accès au micro"
   microphoneAccessAsk: "Votre navigateur demande une fois avant que Mimik puisse vous entendre."
   microphoneAccessAllow: "Autoriser"
@@ -207,7 +215,6 @@ desktop:
   hintCapture: "appuyez sur $1 pour capturer sans cliquer."
   micAccessAsk: "macOS demande une fois avant que Mimik puisse vous entendre."
   micAccessRefused: "Refusé. Activez Mimik dans Confidentialité et sécurité."
-  micAccessOpen: "Ouvrir les réglages"
   armed: "Prêt"
   screenshotDelay: "Délai de capture"
   keepClicksBeyondArea: "Capturer les clics hors de la zone"
@@ -227,8 +234,6 @@ desktop:
   permissionScreen: "Enregistrement de l’écran"
   permissionScreenHint: "Permet à Mimik de prendre la capture de chaque étape."
   permissionScreenRestart: "Redémarrez Mimik pour finir de l’activer."
-  permissionGrant: "Autoriser"
-  permissionGranted: "Autorisé"
   permissionRestart: "Redémarrer Mimik"
   moreStepsAfter: "Les nouvelles étapes sont insérées après l'étape $1."
   moreStepsFirst: "Les nouvelles étapes sont insérées avant l'étape 1."
@@ -247,6 +252,10 @@ desktop:
   version: "Version $1"
   versionHint: "Mimik recherche les mises à jour à chaque démarrage."
   checkUpdates: "Rechercher des mises à jour"
+  cardGithub: "Mimik sur GitHub"
+  bugTitle: "Vous avez trouvé un bug ?"
+  bugHint: "Dites-nous ce qui s'est passé et nous regarderons."
+  reportBug: "Signaler un bug"
   trayQuit: "Quitter Mimik"
   trayRecording: "Mimik enregistre. Cliquez pour terminer."
   cannotRecord: "Mimik ne peut pas enregistrer"
@@ -265,8 +274,6 @@ desktop:
   zoomLevelHint: "Les nouveaux enregistrements partent d’ici. Automatique garde toutes les étapes à la même taille."
   zoomAuto: "Automatique"
   zoomGuide: "Zoom"
-  recordTyping: "Enregistrer ce que vous tapez"
-  recordTypingHint: "Tout ce que vous tapez dans un champ devient une étape."
   typingDebounce: "Clôturer l'étape de saisie après"
   typingDebounceHint: "Une pause de cette durée clôt l’étape de saisie."
   cardScreenshotsHint: "Ce que montre la capture de chaque étape."
@@ -279,21 +286,17 @@ desktop:
   shortcutPress: "Appuyez sur les touches…"
   shortcutClear: "Effacer"
 
-fullview:
-  collapseSidebar: Réduire la barre latérale
-  expandSidebar: Développer la barre latérale
-  allGuides: Tous les guides
-  starred: Favoris
-  trash: Corbeille
-  searchPlaceholder: "Rechercher des guides…"
+guide:
   guideMe: "Guidez-moi"
-  untitledGuide: Guide sans titre
+  untitled: Guide sans titre
   writingTitle: "Rédaction du titre à partir de vos étapes..."
   writingDescription: "R\xE9daction d\u2019une description\u2026"
-  guideNotFound: Guide introuvable.
+  notFound: Guide introuvable.
   stepCount: "$1 étape"
   stepCountPlural: "$1 étapes"
   pageOf: "$1 / $2"
+  onDomain: "Guide sur $1"
+  newGuide: Nouveau guide
 
 sort:
   recentFirst: "Plus récents"
@@ -423,6 +426,7 @@ blurPanel:
   title: Flou intelligent
   manualMode: Mode manuel
   selectElements: "Sélectionnez les éléments à flouter"
+  clickToBlur: "Cliquer pour flouter"
   done: Terminé
   doneResume: "Terminé \xB7 Reprendre l'enregistrement"
   resetAll: Tout réinitialiser
@@ -667,10 +671,6 @@ export:
   stepsCount: "$1 étapes"
   createdLabel: "Créé le $1"
   sourceLabel: "Source : $1"
-
-background:
-  guideOnDomain: "Guide sur $1"
-  newGuide: Nouveau guide
 
 voice:
   turnOn: "Activer la narration vocale"

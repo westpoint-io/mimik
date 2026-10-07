@@ -1,7 +1,7 @@
 import { logger } from '@mimik/core/logger';
 import { MicRecorder } from '@/core/capture/voice/mic-recorder';
 import { EMPTY_NARRATION, narrateRecording, type VoiceRecording } from '@/core/capture/voice/narrate-recording';
-import { partialRecording } from '@/core/capture/voice/partial-recording';
+import { NarrationSlicer } from '@/core/capture/voice/narration-slicer';
 import type { TranscriptionSettings } from '@/core/capture/voice/read-transcription-settings';
 import { startFailureReason } from '@/core/capture/voice/start-failure-reason';
 import type { NarrationResult } from '@/core/capture/voice/types';
@@ -44,7 +44,7 @@ function emit(event: VoiceEvent): void {
 export function createVoiceHost(): VoiceHost {
   let pending = 0;
   let retained: VoiceRecording | null = null;
-  let flushedUpToSeconds = 0;
+  const slicer = new NarrationSlicer();
 
   const recorder = new MicRecorder(getExtensionURL('/pcm-processor.js'), {
     onEpoch: (audioEpochMs) =>
@@ -108,7 +108,7 @@ export function createVoiceHost(): VoiceHost {
       return { started: false, reason: 'already-recording', error: 'Microphone capture is already running' };
     }
     try {
-      flushedUpToSeconds = 0;
+      slicer.reset();
       const stream = await recorder.start(request.deviceId);
       logger.info('voice: microphone capture started', stream);
       return { started: true, ...stream };
@@ -140,14 +140,9 @@ export function createVoiceHost(): VoiceHost {
       return { ok: false, reason: 'missing-api-key', error: 'No transcription API key is configured' };
     }
 
-    const full = usableRecording(recorder.snapshot());
-    if (!full) return { ok: true, flushed: false };
-
-    const closesAt = (request.step.timestamp - full.audioEpochMs) / 1000;
-    const slice = partialRecording(full, flushedUpToSeconds, closesAt);
+    const slice = slicer.forStep(usableRecording(recorder.snapshot()), request.step.timestamp);
     if (!slice) return { ok: true, flushed: false };
 
-    flushedUpToSeconds = closesAt;
     pending += 1;
     try {
       const result = await narrateRecording(slice, [request.step], request.settings);
@@ -180,7 +175,7 @@ export function createVoiceHost(): VoiceHost {
       return { ok: false, reason: 'missing-api-key', error: 'No transcription API key is configured' };
     }
 
-    const tail = flushedUpToSeconds > 0 ? partialRecording(audio, flushedUpToSeconds, audio.durationSeconds) : audio;
+    const tail = slicer.tail(audio);
     if (!tail) {
       deliver(request.guideId, EMPTY_NARRATION, true);
       return { ok: true, audioEpochMs, durationSeconds };

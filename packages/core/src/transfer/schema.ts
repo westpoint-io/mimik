@@ -302,7 +302,7 @@ export function parseManifest(raw: unknown): BundleManifest {
     version,
     exportedAt: num(raw.exportedAt) ?? Date.now(),
     guide: {
-      title: str(guide.title)?.trim() || i18n.t('fullview.untitledGuide'),
+      title: str(guide.title)?.trim() || i18n.t('guide.untitled'),
       ...(str(guide.description) ? { description: str(guide.description) } : {}),
       createdAt: num(guide.createdAt) ?? Date.now(),
     },

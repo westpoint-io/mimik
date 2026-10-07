@@ -120,13 +120,13 @@ describe('layout', () => {
   it('steps each baseline by exactly one line height', () => {
     const l = layout(40, 3, lineHeightMm, LATIN_BOX);
     expect(l.baselines).toHaveLength(3);
-    expect(l.baselines[1] - l.baselines[0]).toBeCloseTo(step);
-    expect(l.baselines[2] - l.baselines[1]).toBeCloseTo(step);
+    expect(l.baselines[1]! - l.baselines[0]!).toBeCloseTo(step);
+    expect(l.baselines[2]! - l.baselines[1]!).toBeCloseTo(step);
   });
 
   it('keeps the last descender inside the canvas', () => {
     const l = layout(40, 4, lineHeightMm, CJK_BOX);
-    const lastInk = l.baselines[3] + CJK_BOX.descent;
+    const lastInk = l.baselines[3]! + CJK_BOX.descent;
     expect(l.height / MM_PER_PT).toBeGreaterThanOrEqual(lastInk);
   });
 

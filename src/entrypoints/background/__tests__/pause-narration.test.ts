@@ -80,10 +80,12 @@ describe('remembering that narration was on', () => {
     expect(stopVoiceNarration).not.toHaveBeenCalled();
   });
 
-  it('clears the flag on resume so a later pause starts clean', async () => {
+  it('records the mic afresh at the next pause, so an old value never carries over', async () => {
     voicePhase = 'recording';
     await pauseCapture('manual');
     await resumeCapture(vi.fn().mockResolvedValue(true));
+    voicePhase = 'idle';
+    await pauseCapture('manual');
 
     expect(actor.getSnapshot().context.narrationWasLive).toBe(false);
   });

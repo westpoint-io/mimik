@@ -21,9 +21,10 @@ interface VoiceNoticeProps {
   update: VoiceUpdate;
   seenLive: boolean;
   onOpenSettings: () => void;
+  placement?: 'corner' | 'bottom';
 }
 
-export function VoiceNotice({ update, seenLive, onOpenSettings }: VoiceNoticeProps) {
+export function VoiceNotice({ update, seenLive, onOpenSettings, placement = 'corner' }: VoiceNoticeProps) {
   const [dismissed, setDismissed] = useState<string | null>(null);
   const notice = voiceNotice(update, seenLive);
   const signature = notice?.signature;
@@ -39,7 +40,14 @@ export function VoiceNotice({ update, seenLive, onOpenSettings }: VoiceNoticePro
   const Icon = shown ? TONE_ICONS[shown.tone] : null;
 
   return (
-    <div role="status" className="fixed bottom-5 right-5 z-50 w-[min(23rem,calc(100vw-2.5rem))] pointer-events-none">
+    <div
+      role="status"
+      className={`fixed z-50 pointer-events-none ${
+        placement === 'bottom'
+          ? 'bottom-3 left-1/2 -translate-x-1/2 w-[calc(100%-1.5rem)] max-w-sm'
+          : 'bottom-5 right-5 w-[min(23rem,calc(100vw-2.5rem))]'
+      }`}
+    >
       {shown && Icon && (
         <div className="pointer-events-auto rounded-xl border border-border bg-card shadow-lg px-3.5 py-3 flex items-start gap-2.5">
           <Icon size={15} className={`shrink-0 mt-0.5 ${TONE_CLASSES[shown.tone]}`} />

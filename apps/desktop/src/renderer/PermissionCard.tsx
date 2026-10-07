@@ -28,7 +28,7 @@ export function PermissionCard({
         {state === 'granted' && (
           <span className="inline-flex h-[34px] items-center gap-1.5 rounded-lg bg-success/10 px-3.5 text-[13px] font-semibold text-success">
             <Check size={14} strokeWidth={3} />
-            {i18n.t('desktop.permissionGranted')}
+            {i18n.t('settings.microphoneStatusAllowed')}
           </span>
         )}
         {state === 'restart' && (
@@ -47,7 +47,7 @@ export function PermissionCard({
             onClick={onGrant}
             className="inline-flex h-[34px] items-center rounded-lg bg-primary px-4 text-[13px] font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
-            {i18n.t('desktop.permissionGrant')}
+            {i18n.t('settings.microphoneAccessAllow')}
           </button>
         )}
       </div>

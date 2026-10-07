@@ -59,7 +59,7 @@ async function hydrateAll(rows: StoredScreenshot[]): Promise<Screenshot[]> {
 async function createGuide(guideId: string, staging = false): Promise<Guide> {
   const guide: Guide = {
     id: guideId,
-    title: i18n.t('fullview.untitledGuide'),
+    title: i18n.t('guide.untitled'),
     createdAt: Date.now(),
     updatedAt: Date.now(),
     stepIds: [],
@@ -226,7 +226,7 @@ async function importGuide(bundle: ParsedBundle): Promise<string> {
 async function reorderSteps(guideId: string, orderedStepIds: string[]): Promise<void> {
   await db.transaction('rw', db.steps, db.guides, async () => {
     for (let i = 0; i < orderedStepIds.length; i++) {
-      await db.steps.update(orderedStepIds[i], { index: i });
+      await db.steps.update(orderedStepIds[i]!, { index: i });
     }
     await db.guides.update(guideId, { stepIds: orderedStepIds, updatedAt: Date.now() });
   });
