@@ -1,20 +1,28 @@
 import { i18n } from '@mimik/core/env';
 import type { VideoChapter } from '@mimik/core/export/video-export';
-import { FullscreenButton, MediaProvider, PlayButton, useMediaRemote, useMediaState } from '@vidstack/react';
-import { ChevronLeft, ChevronRight, Maximize, Minimize, Pause, Play } from 'lucide-react';
+import {
+  FullscreenButton,
+  MediaProvider,
+  MuteButton,
+  PlayButton,
+  useMediaRemote,
+  useMediaState,
+} from '@vidstack/react';
+import { ChevronLeft, ChevronRight, Maximize, Minimize, Pause, Play, Volume2, VolumeX } from 'lucide-react';
 import { activeIndex } from '../lib/active-index';
 import { formatClock } from '../lib/format-clock';
 import { StepList } from './StepList';
 
 const RATES = [1, 1.25, 1.5, 2];
 
-export function PlayerBody({ chapters }: { chapters: VideoChapter[] }) {
+export function PlayerBody({ chapters, narrated }: { chapters: VideoChapter[]; narrated: boolean }) {
   const remote = useMediaRemote();
   const time = useMediaState('currentTime');
   const duration = useMediaState('duration');
   const rate = useMediaState('playbackRate');
   const paused = useMediaState('paused');
   const fullscreen = useMediaState('fullscreen');
+  const muted = useMediaState('muted');
 
   const index = activeIndex(chapters, time);
   const seekTo = (seconds: number) => remote.seek(Math.max(0, seconds + 0.01));
@@ -64,13 +72,22 @@ export function PlayerBody({ chapters }: { chapters: VideoChapter[] }) {
             {rate}x
           </button>
 
+          <MuteButton
+            className="rounded-md p-1 hover:bg-white/15"
+            aria-label={muted ? i18n.t('videoPlayer.unmute') : i18n.t('videoPlayer.mute')}
+          >
+            {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+          </MuteButton>
+
           <FullscreenButton className="rounded-md p-1 hover:bg-white/15">
             {fullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
           </FullscreenButton>
         </div>
       </div>
 
-      {chapters.length > 0 && <StepList chapters={chapters} index={index} onJump={jump} />}
+      {chapters.length > 0 && (
+        <StepList chapters={chapters} index={index} narrated={narrated} playing={!paused} onJump={jump} />
+      )}
     </>
   );
 }

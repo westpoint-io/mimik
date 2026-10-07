@@ -1,29 +1,36 @@
-import { i18n } from '@/core/env';
+import { i18n, localStorage } from '@/core/env';
 import type { Branding } from '@/core/export/branding';
 import { dataUrlToBytes, fitLogo, loadBranding } from '@/core/export/branding';
 import type { ExportOptions } from '@/core/export/options';
 import { loadExportOptions } from '@/core/export/options';
 import { extractDomain, formatDate } from '@/core/export/utils';
 import {
+  availableContainers,
+  COVER_SECONDS,
   FPS,
   FRAME_FILL,
   FRAME_HEIGHT,
   FRAME_WIDTH,
-  pickContainer,
   RESOLUTION_SPECS,
   STEP_SECONDS,
   STEP_ZOOM_TRANSITION_SEC,
   STEP_ZOOMED_OUT_SEC,
+  TRANSITION_SECONDS,
+  uniformTimeline,
+  type VideoContainer,
+  type VideoTimeline,
+  VOICE_LEAD_SEC,
+  voiceTimeline,
 } from '@/core/export/video-support';
+import { COVER_SEGMENT, stepNarration } from '@/core/export/voiceover/script';
 import { actionSteps, calloutAccent, isBlock } from '@/core/guides/blocks';
 import type { BlockType, Guide, Screenshot, Step } from '@/core/guides/types';
+import { logger } from '@/core/logger';
 import type { Ctx } from '@/core/screenshot/draw';
 import { drawRoundedRect, TARGET_RADIUS, TARGET_STROKE } from '@/core/screenshot/draw';
 import { clamp, resolveFrameViewport, resolveTarget } from '@/core/screenshot/geometry';
 import { renderScreenshot } from '@/core/screenshot/render';
 
-const TRANSITION_DURATION_SEC = 0.33;
-const COVER_SECONDS = 3;
 const KEY_FRAME_INTERVAL_SEC = 2;
 
 const ZOOM_MIN = 1;
@@ -93,12 +100,35 @@ export function stepFrames(fps = FPS): number {
 }
 
 export function overlapFrames(fps = FPS): number {
-  return toFrames(TRANSITION_DURATION_SEC, fps);
+  return toFrames(TRANSITION_SECONDS, fps);
 }
 
 export function totalStepFrames(stepCount: number, fps = FPS): number {
   if (stepCount <= 0) return 0;
   return stepCount * stepFrames(fps) - (stepCount - 1) * overlapFrames(fps);
+}
+
+export function stepSpans(timeline: VideoTimeline, count: number, fps = FPS): number[] {
+  return Array.from({ length: count }, (_, index) =>
+    Math.max(stepFrames(fps), toFrames(timeline.stepSeconds[index] ?? STEP_SECONDS, fps)),
+  );
+}
+
+export function stepStarts(spans: number[], fps = FPS): number[] {
+  const overlap = overlapFrames(fps);
+  const starts: number[] = [];
+  let at = 0;
+  for (const span of spans) {
+    starts.push(at);
+    at += span - overlap;
+  }
+  return starts;
+}
+
+export function spannedFrames(spans: number[], fps = FPS): number {
+  if (spans.length === 0) return 0;
+  const starts = stepStarts(spans, fps);
+  return starts[spans.length - 1] + spans[spans.length - 1];
 }
 
 export function zoomProgress(frame: number, fps = FPS): number {
@@ -655,12 +685,14 @@ async function drawCardFrame(ctx: Ctx, guide: Guide, steps: Step[], brand: Brand
   }
 }
 
-export type VideoOptions = Pick<ExportOptions, 'cover' | 'stepDescriptions' | 'resolution'>;
+export type VideoOptions = Pick<ExportOptions, 'cover' | 'stepDescriptions' | 'resolution' | 'voiceover'>;
 
-export type FrameOptions = Pick<ExportOptions, 'cover' | 'stepDescriptions'>;
+export type FrameOptions = Pick<ExportOptions, 'cover' | 'stepDescriptions'> & { timeline?: VideoTimeline };
 
 export interface VideoExportControls {
   onProgress?: (done: number, total: number) => void;
+  onVoiceProgress?: (done: number, total: number) => void;
+  onMuxProgress?: (done: number, total: number) => void;
   signal?: AbortSignal;
 }
 
@@ -672,6 +704,7 @@ export interface VideoChapter {
   kind: StepKind;
   start: number;
   end: number;
+  spoken: boolean;
 }
 
 export function stepKind(step: Step): StepKind {
@@ -683,24 +716,35 @@ export function stepKind(step: Step): StepKind {
   return 'click';
 }
 
+export type VoiceoverSkipReason = 'failed' | 'noAudioCodec' | 'noKey' | 'nothingToSay';
+
+export interface VoiceoverSkip {
+  reason: VoiceoverSkipReason;
+  detail?: string;
+}
+
 export interface VideoExportResult {
   blob: Blob;
   extension: string;
   chapters: VideoChapter[];
+  voiceoverError?: VoiceoverSkip;
 }
 
-export function videoChapters(frames: Step[], cover: boolean, fps = FPS): VideoChapter[] {
+export function videoChapters(frames: Step[], cover: boolean, fps = FPS, timeline?: VideoTimeline): VideoChapter[] {
   if (frames.length === 0) return [];
-  const offset = cover ? COVER_SECONDS : 0;
-  const stride = (stepFrames(fps) - overlapFrames(fps)) / fps;
-  const last = offset + totalStepFrames(frames.length, fps) / fps;
+  const plan = timeline ?? uniformTimeline(frames.length);
+  const offset = cover ? plan.coverSeconds : 0;
+  const spans = stepSpans(plan, frames.length, fps);
+  const starts = stepStarts(spans, fps);
+  const last = offset + spannedFrames(spans, fps) / fps;
 
   return frames.map((step, index) => ({
     stepId: step.id,
     title: step.description?.trim() || i18n.t('export.stepLabel', [String(index + 1)]),
     kind: stepKind(step),
-    start: offset + index * stride,
-    end: index === frames.length - 1 ? last : offset + (index + 1) * stride,
+    start: offset + starts[index] / fps,
+    end: index === frames.length - 1 ? last : offset + starts[index + 1] / fps,
+    spoken: stepNarration(step).length > 0,
   }));
 }
 
@@ -718,10 +762,11 @@ export async function composeGuideFrames(
   controls: { onProgress?: (done: number, total: number) => void; signal?: AbortSignal } = {},
   fps = FPS,
 ): Promise<void> {
-  const span = stepFrames(fps);
   const overlap = overlapFrames(fps);
-  const stride = span - overlap;
-  const stepTotal = totalStepFrames(frames.length, fps);
+  const timeline = options.timeline ?? uniformTimeline(frames.length);
+  const spans = stepSpans(timeline, frames.length, fps);
+  const starts = stepStarts(spans, fps);
+  const stepTotal = spannedFrames(spans, fps);
   const total = stepTotal + (options.cover ? 2 : 0);
   const loaded = new Map<number, StepLayer>();
   const { onProgress, signal } = controls;
@@ -766,23 +811,24 @@ export async function composeGuideFrames(
   };
 
   try {
-    const offset = options.cover ? COVER_SECONDS : 0;
+    const offset = options.cover ? timeline.coverSeconds : 0;
 
     const cards = actionSteps(frames);
 
     if (options.cover) {
       abortIfRequested();
       await drawCardFrame(ctx, guide, cards, brand, i18n.t('export.guideLabel'));
-      await sink(0, COVER_SECONDS);
+      await sink(0, timeline.coverSeconds);
       done += 1;
       onProgress?.(done, total);
     }
 
+    let index = 0;
     for (let frame = 0; frame < stepTotal; frame++) {
       abortIfRequested();
 
-      const index = Math.min(Math.floor(frame / stride), frames.length - 1);
-      const local = frame - index * stride;
+      while (index + 1 < starts.length && frame >= starts[index + 1]) index += 1;
+      const local = frame - starts[index];
       const outgoing = index > 0 && local < overlap ? index - 1 : -1;
 
       const current = await layerAt(index);
@@ -794,7 +840,7 @@ export async function composeGuideFrames(
       ctx.fillRect(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
 
       if (previous) {
-        drawStepFrame(ctx, previous, local + stride, device, fps);
+        drawStepFrame(ctx, previous, frame - starts[outgoing], device, fps);
         ctx.globalAlpha = (local + 1) / overlap;
         drawStepFrame(ctx, current, local, device, fps);
         ctx.globalAlpha = 1;
@@ -820,6 +866,98 @@ export async function composeGuideFrames(
   }
 }
 
+interface PreparedVoiceover {
+  container: VideoContainer;
+  codec: 'aac' | 'opus';
+  clips: Map<number, AudioBuffer>;
+  timeline: VideoTimeline;
+}
+
+type NarrationOutcome = { voice: PreparedVoiceover; error?: undefined } | { voice: null; error: VoiceoverSkip };
+
+async function narrateOrSkip(
+  guide: Guide,
+  frames: Step[],
+  cover: boolean,
+  containers: VideoContainer[],
+  controls: VideoExportControls,
+): Promise<NarrationOutcome> {
+  try {
+    return await prepareVoiceover(guide, frames, cover, containers, controls);
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') throw error;
+    logger.error('[voiceover] narration failed, exporting a silent video', error);
+    return { voice: null, error: { reason: 'failed', detail: error instanceof Error ? error.message : String(error) } };
+  }
+}
+
+async function prepareVoiceover(
+  guide: Guide,
+  frames: Step[],
+  cover: boolean,
+  containers: VideoContainer[],
+  controls: VideoExportControls,
+): Promise<NarrationOutcome> {
+  const [
+    { pickVoiceContainer },
+    { resolveVoiceoverConfig, VOICEOVER_SETTINGS },
+    { voiceoverProvider },
+    { voiceoverScript },
+    { renderVoiceover },
+  ] = await Promise.all([
+    import('./voiceover/audio'),
+    import('./voiceover/config'),
+    import('./voiceover/providers'),
+    import('./voiceover/script'),
+    import('./voiceover/render'),
+  ]);
+
+  const config = resolveVoiceoverConfig(await localStorage.get([...VOICEOVER_SETTINGS]));
+  if (!config.apiKey) {
+    logger.error('[voiceover] skipped: no', voiceoverProvider(config.provider).label, 'API key');
+    return { voice: null, error: { reason: 'noKey' } };
+  }
+
+  const segments = voiceoverScript(guide, frames, cover);
+  if (segments.length === 0) {
+    logger.error('[voiceover] skipped: this guide has no text to read aloud');
+    return { voice: null, error: { reason: 'nothingToSay' } };
+  }
+
+  const picked = await pickVoiceContainer(containers);
+  if (!picked) {
+    logger.error('[voiceover] skipped: this browser cannot encode audio for', containers.join('/') || 'any container');
+    return { voice: null, error: { reason: 'noAudioCodec' } };
+  }
+
+  const clips = await renderVoiceover(segments, config, {
+    signal: controls.signal,
+    onProgress: controls.onVoiceProgress,
+  });
+
+  const seconds = new Map(Array.from(clips, ([index, clip]) => [index, clip.duration]));
+  return {
+    voice: {
+      container: picked.container,
+      codec: picked.codec,
+      clips,
+      timeline: voiceTimeline(frames.length, seconds),
+    },
+  };
+}
+
+export function voiceoverPlacement(
+  clips: Map<number, AudioBuffer>,
+  starts: number[],
+  offsetSec: number,
+  fps = FPS,
+): { startSec: number; buffer: AudioBuffer }[] {
+  return Array.from(clips, ([index, buffer]) => ({
+    startSec: (index === COVER_SEGMENT ? 0 : offsetSec + starts[index] / fps) + VOICE_LEAD_SEC,
+    buffer,
+  }));
+}
+
 export async function exportGuideAsVideo(
   guide: Guide,
   steps: Step[],
@@ -830,9 +968,16 @@ export async function exportGuideAsVideo(
   const frames = steps.filter((step) => isBlock(step) || screenshots.has(step.id));
   if (frames.length === 0) throw new Error('This guide has no screenshots to turn into a video');
 
-  const { BufferTarget, CanvasSource, Mp4OutputFormat, Output, QUALITY_HIGH, WebMOutputFormat } = await import(
-    'mediabunny'
-  );
+  const {
+    AudioBufferSource,
+    BufferTarget,
+    CanvasSource,
+    Mp4OutputFormat,
+    Output,
+    QUALITY_HIGH,
+    QUALITY_MEDIUM,
+    WebMOutputFormat,
+  } = await import('mediabunny');
 
   const [brand, options] = await Promise.all([
     loadBranding(),
@@ -840,12 +985,19 @@ export async function exportGuideAsVideo(
   ]);
 
   const requested = RESOLUTION_SPECS[options.resolution] ? options.resolution : '720p';
-  const preferred = await pickContainer(requested);
-  const resolution = preferred ? requested : '720p';
-  const container = preferred ?? (await pickContainer('720p'));
-  if (!container) throw new Error('This browser cannot encode video');
-  const mp4 = container === 'mp4';
+  const preferred = await availableContainers(requested);
+  const resolution = preferred.length > 0 ? requested : '720p';
+  const containers = preferred.length > 0 ? preferred : await availableContainers('720p');
+  if (containers.length === 0) throw new Error('This browser cannot encode video');
   const spec = RESOLUTION_SPECS[resolution];
+
+  const narration: NarrationOutcome | { voice: null; error?: undefined } = options.voiceover
+    ? await narrateOrSkip(guide, frames, Boolean(options.cover), containers, controls)
+    : { voice: null };
+  const voice = narration.voice;
+  const container = voice?.container ?? containers[0];
+  const mp4 = container === 'mp4';
+  const timeline = voice?.timeline ?? uniformTimeline(frames.length);
 
   const canvas = document.createElement('canvas');
   canvas.width = spec.width;
@@ -865,6 +1017,10 @@ export async function exportGuideAsVideo(
     keyFrameInterval: KEY_FRAME_INTERVAL_SEC,
   });
   output.addVideoTrack(source);
+
+  const audio = voice ? new AudioBufferSource({ codec: voice.codec, quality: QUALITY_MEDIUM }) : null;
+  if (audio) output.addAudioTrack(audio);
+
   await output.start();
 
   try {
@@ -872,13 +1028,28 @@ export async function exportGuideAsVideo(
       guide,
       frames,
       screenshots,
-      options,
+      { ...options, timeline },
       brand,
       ctx,
       device,
       (at, dur) => source.add(at, dur),
       controls,
     );
+
+    if (voice && audio) {
+      const { writeVoiceTrack } = await import('./voiceover/audio');
+      const spans = stepSpans(timeline, frames.length);
+      const offset = options.cover ? timeline.coverSeconds : 0;
+      const total = offset + spannedFrames(spans) / FPS + (options.cover ? COVER_SECONDS : 0);
+      await writeVoiceTrack(
+        voiceoverPlacement(voice.clips, stepStarts(spans), offset),
+        total,
+        (buffer) => audio.add(buffer),
+        undefined,
+        controls.onMuxProgress,
+      );
+    }
+
     await output.finalize();
   } catch (error) {
     await output.cancel();
@@ -891,6 +1062,7 @@ export async function exportGuideAsVideo(
   return {
     blob: new Blob([buffer], { type: mp4 ? 'video/mp4' : 'video/webm' }),
     extension: mp4 ? 'mp4' : 'webm',
-    chapters: videoChapters(frames, Boolean(options.cover)),
+    chapters: videoChapters(frames, Boolean(options.cover), FPS, timeline),
+    ...(narration.error ? { voiceoverError: narration.error } : {}),
   };
 }

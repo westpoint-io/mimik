@@ -78,13 +78,14 @@ export function createVoiceHost(): VoiceHost {
     );
   }
 
-  function deliver(guideId: string, result: NarrationResult): void {
+  function deliver(guideId: string, result: NarrationResult, final: boolean): void {
     emit(
       voiceMessage<VoiceResultEvent>({
         type: VoiceMessage.VOICE_RESULT,
         target: VOICE_BACKGROUND_TARGET,
         guideId,
         result,
+        final,
       }),
     );
   }
@@ -128,7 +129,7 @@ export function createVoiceHost(): VoiceHost {
     const result = await narrateRecording(audio, steps, settings);
     pending -= 1;
     retained = null;
-    deliver(guideId, result);
+    deliver(guideId, result, true);
   }
 
   async function handleFlush(request: VoiceFlushRequest): Promise<VoiceFlushResponse> {
@@ -150,8 +151,9 @@ export function createVoiceHost(): VoiceHost {
     pending += 1;
     try {
       const result = await narrateRecording(slice, [request.step], request.settings);
-      if (result.descriptions.length > 0) deliver(request.guideId, result);
-      return { ok: true, flushed: result.descriptions.length > 0 };
+      const attributed = result.descriptions.length > 0;
+      if (attributed || result.transcript.lines.length > 0) deliver(request.guideId, result, false);
+      return { ok: true, flushed: attributed };
     } finally {
       pending -= 1;
     }
@@ -169,7 +171,7 @@ export function createVoiceHost(): VoiceHost {
 
     const { audioEpochMs, durationSeconds } = audio;
     if (request.steps.length === 0) {
-      deliver(request.guideId, EMPTY_NARRATION);
+      deliver(request.guideId, EMPTY_NARRATION, true);
       return { ok: true, audioEpochMs, durationSeconds };
     }
 
@@ -180,7 +182,7 @@ export function createVoiceHost(): VoiceHost {
 
     const tail = flushedUpToSeconds > 0 ? partialRecording(audio, flushedUpToSeconds, audio.durationSeconds) : audio;
     if (!tail) {
-      deliver(request.guideId, EMPTY_NARRATION);
+      deliver(request.guideId, EMPTY_NARRATION, true);
       return { ok: true, audioEpochMs, durationSeconds };
     }
 

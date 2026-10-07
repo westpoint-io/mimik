@@ -26,8 +26,8 @@ export async function migration(): Promise<CheckResult> {
   await Dexie.delete(MIGRATION_DB);
 
   return {
-    name: 'v1 to v2 migration',
-    ok: verno === 2 && survivor?.title === 'Written at v1' && snapshotCount === 0,
+    name: 'v1 to current migration',
+    ok: verno === 5 && survivor?.title === 'Written at v1' && snapshotCount === 0,
     detail: `reopened at v${verno}, v1 row ${survivor ? 'survived' : 'lost'}, snapshots table readable`,
   };
 }

@@ -1,8 +1,10 @@
 import { i18n } from '@mimik/core/env';
-import { ArrowDownWideNarrow, ChevronDown, LayoutGrid, LayoutList } from 'lucide-react';
+import { BUNDLE_EXTENSION } from '@mimik/core/transfer/schema';
+import { ArrowDownWideNarrow, ChevronDown, LayoutGrid, LayoutList, Upload } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
 import { useFullview } from '../../stores/use-fullview';
+import { bundleFrom } from '../lib/bundle-from';
 import type { SortKey } from '../types';
 
 const sortLabelKeys: Record<SortKey, string> = {
@@ -13,14 +15,16 @@ const sortLabelKeys: Record<SortKey, string> = {
 };
 
 export function LibraryTools() {
-  const { sort, setSort, display, setDisplay } = useFullview((s) => ({
+  const { sort, setSort, display, setDisplay, setImportFile } = useFullview((s) => ({
     sort: s.sort,
     setSort: s.setSort,
     display: s.display,
     setDisplay: s.setDisplay,
+    setImportFile: s.setImportFile,
   }));
   const [sortOpen, setSortOpen] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -32,6 +36,23 @@ export function LibraryTools() {
 
   return (
     <div className="flex items-center gap-2">
+      <input
+        ref={fileRef}
+        type="file"
+        accept={`.${BUNDLE_EXTENSION}`}
+        className="hidden"
+        onChange={(e) => {
+          setImportFile(bundleFrom(e.target.files));
+          e.target.value = '';
+        }}
+      />
+      <button
+        onClick={() => fileRef.current?.click()}
+        className="flex items-center gap-1.5 text-[13px] font-medium text-muted-foreground px-3 h-8 rounded-lg border border-border bg-card hover:border-violet hover:text-purple transition-colors"
+      >
+        <Upload size={13} />
+        {i18n.t('import.button')}
+      </button>
       <div ref={sortRef} className="relative">
         <button
           onClick={() => setSortOpen(!sortOpen)}

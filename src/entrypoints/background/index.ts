@@ -25,12 +25,20 @@ import { updateTab } from '@/lib/browser-api/update-tab';
 import { onMessage } from '@/lib/messaging';
 import { broadcastStateToPanel } from '@/lib/port/broadcast-state-to-panel';
 import { setupPortListener } from '@/lib/port/setup-port-listener';
+import { TabMessage } from '@/lib/tab-messages';
 import { recordUpdate } from '@/lib/update-notice/record-update';
 import { getActor, getStateUpdate, initActor, initActorFallback, waitUntilReady } from './actor';
 import { generateGuideMetaOnStop, settlePendingDescriptions } from './guide-meta';
 import { registerNavigationListeners } from './navigation';
+import { pauseCapture, resumeFromPause } from './pause';
 import { handleCaptureStep, handleFinalizeInputStep, handleUpdateInputStep } from './step-pipeline';
-import { broadcastStartCapture, broadcastStopCapture, showNotificationOnTab } from './tab-manager';
+import {
+  broadcastClearBlur,
+  broadcastStartCapture,
+  broadcastStopCapture,
+  isInjectableTab,
+  showNotificationOnTab,
+} from './tab-manager';
 import {
   canStartNarrationNow,
   getVoiceUpdate,
@@ -113,6 +121,8 @@ export default defineBackground(() => {
     getActor().subscribe(() => broadcastStateToPanel(getStateUpdate()));
   });
 
+  const resume = () => resumeFromPause(startNarrationIfPossible);
+
   onMessage('getState', async () => {
     await waitUntilReady();
     return getStateUpdate();
@@ -145,6 +155,7 @@ export default defineBackground(() => {
     const actor = getActor();
     const { currentGuideId: guideId, insertTargetGuideId, insertAtIndex } = actor.getSnapshot().context;
     await broadcastStopCapture();
+    await broadcastClearBlur();
     actor.send({ type: 'STOP_RECORDING' });
 
     if (guideId) void stopVoiceNarration(guideId);
@@ -165,28 +176,43 @@ export default defineBackground(() => {
 
   onMessage('enterBlurMode', async () => {
     await waitUntilReady();
-    await broadcastStopCapture();
     const activeTab = await getActiveTab();
-    if (activeTab?.id) {
-      sendMessageToTab(activeTab.id, { type: 'START_BLUR' }).catch(() => {});
+    if (!activeTab?.id || !isInjectableTab(activeTab)) return { entered: false };
+    if (!(await pauseCapture('blur'))) return { entered: false };
+
+    try {
+      await sendMessageToTab(activeTab.id, { type: TabMessage.START_BLUR });
+    } catch (err) {
+      logger.warn('enterBlurMode: the tab could not open the overlay', err);
+      await resume();
+      return { entered: false };
     }
     return { entered: true };
   });
 
   onMessage('exitBlurMode', async () => {
     await waitUntilReady();
-    await localStorage.set({ mimikBlurMode: false });
-    const actor = getActor();
-    const guideId = actor.getSnapshot().context.currentGuideId;
-    if (guideId) {
-      await broadcastStartCapture(guideId);
-    }
-    return { exited: true };
+    return { exited: await resume() };
+  });
+
+  onMessage('pauseCapture', async () => {
+    await waitUntilReady();
+    return { paused: await pauseCapture('manual') };
+  });
+
+  onMessage('resumeCapture', async () => {
+    await waitUntilReady();
+    return { resumed: await resume() };
   });
 
   onMessage('generateGuideDescription', ({ data }) => generateDescriptionOnDemand(data.guideId));
 
   onMessage('validateApiKey', ({ data }) => validateApiKey(data.provider, data.apiKey, data.baseUrl, data.model));
+
+  onMessage('listVoices', async ({ data }) => {
+    const { fetchVoices } = await import('@/core/export/voiceover/client');
+    return { voices: await fetchVoices(data.provider, data.apiKey).catch(() => []) };
+  });
 
   onMessage('rewriteSelection', ({ data }) => rewriteSelection(data.text, data.instruction));
 

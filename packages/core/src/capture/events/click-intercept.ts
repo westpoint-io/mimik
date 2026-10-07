@@ -1,4 +1,6 @@
-import { isTextField } from '../dom/element-utils';
+import { isTextField, isToggle } from '../dom/element-utils';
+
+const MENU_SELECTOR = '[role="menu"], [role="menubar"]';
 
 const replayed = new WeakSet<Event>();
 
@@ -10,6 +12,7 @@ export function shouldInterceptClick(target: HTMLElement, event: MouseEvent): bo
   if (!event.isTrusted || event.shiftKey) return false;
   if (target instanceof HTMLSelectElement || target instanceof HTMLOptionElement) return false;
   if (target.isContentEditable) return false;
+  if (isToggle(target) && !target.closest(MENU_SELECTOR)) return false;
   return !isTextField(target);
 }
 

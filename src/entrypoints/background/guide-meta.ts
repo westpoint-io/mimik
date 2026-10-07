@@ -1,10 +1,16 @@
 import { logger } from '@mimik/core/logger';
 import { i18n } from '#imports';
 import { resolveGuideMetaInputs } from '@/core/capture/ai/guide-description';
+import { AI_KEY_SETTINGS, resolveAiKey } from '@/core/capture/ai/keys';
 import { generateGuideMeta } from '@/core/capture/ai/meta';
 import { settleDescriptions } from '@/core/capture/ai/settle-descriptions';
+import { localStorage } from '@/core/env';
 import { getGuideDomain, updateGuideDescription, updateGuideTitle } from '@/core/guides/service';
 import { whenNarrationSettled } from './voice';
+
+async function hasAiKey(): Promise<boolean> {
+  return Boolean(resolveAiKey(await localStorage.get([...AI_KEY_SETTINGS])).apiKey);
+}
 
 async function applyFallbackTitle(guideId: string) {
   const domain = await getGuideDomain(guideId);
@@ -19,7 +25,18 @@ export async function settlePendingDescriptions(guideId: string) {
   await settleDescriptions(guideId);
 }
 
+async function applyFallbackTitleThenSettle(guideId: string) {
+  const titled = applyFallbackTitle(guideId).catch((err) => logger.error('Fallback title write failed', err));
+  await settlePendingDescriptions(guideId).catch((err) => logger.error('Settling step descriptions failed', err));
+  await titled;
+}
+
 export async function generateGuideMetaOnStop(guideId: string) {
+  if (!(await hasAiKey().catch(() => false))) {
+    await applyFallbackTitleThenSettle(guideId);
+    return;
+  }
+
   try {
     await settlePendingDescriptions(guideId);
     const inputs = await resolveGuideMetaInputs(guideId);

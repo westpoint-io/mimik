@@ -15,9 +15,17 @@ interface GuideListViewProps {
   onTrash: (e: React.MouseEvent, id: string) => void;
   onRestore: (e: React.MouseEvent, id: string) => void;
   onPermanentDelete: (e: React.MouseEvent, id: string) => void;
+  onDuplicate: (e: React.MouseEvent, id: string) => void;
 }
 
-export function GuideListView({ category, onStar, onTrash, onRestore, onPermanentDelete }: GuideListViewProps) {
+export function GuideListView({
+  category,
+  onStar,
+  onTrash,
+  onRestore,
+  onPermanentDelete,
+  onDuplicate,
+}: GuideListViewProps) {
   const { guides, thumbnails, places } = useFullview((s) => ({
     guides: s.guides,
     thumbnails: s.thumbnails,
@@ -91,6 +99,7 @@ export function GuideListView({ category, onStar, onTrash, onRestore, onPermanen
                 onTrash={onTrash}
                 onRestore={onRestore}
                 onPermanentDelete={onPermanentDelete}
+                onDuplicate={onDuplicate}
               />
             </div>
           </div>

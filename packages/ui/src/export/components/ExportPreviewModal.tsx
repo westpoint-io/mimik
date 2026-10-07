@@ -1,5 +1,6 @@
 import { i18n } from '@mimik/core/env';
 import {
+  BUNDLE_URL_MODES,
   DEFAULT_EXPORT_OPTIONS,
   type ExportOptions,
   GIF_QUALITIES,
@@ -9,20 +10,28 @@ import {
   VIDEO_RESOLUTIONS,
 } from '@mimik/core/export/options';
 import { paginatePreview } from '@mimik/core/export/preview';
+import type { VoiceoverSkip } from '@mimik/core/export/video-export';
 import { STEP_SECONDS } from '@mimik/core/export/video-support';
 import type { Guide, Screenshot, Step } from '@mimik/core/guides/types';
-import { FileCode, FileDown, FileImage, FileText, Loader2, Video } from 'lucide-react';
+import { FileCode, FileDown, FileImage, FileText, Loader2, Package, TriangleAlert, Video, Volume2 } from 'lucide-react';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Switch } from '../../common/components/Switch';
 import { Button } from '../../components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { type ExportFormat, useGuideExport } from '../hooks/use-guide-export';
 import { useVideoPreview } from '../hooks/use-video-preview';
+import { useVoiceoverReady } from '../hooks/use-voiceover-ready';
 
 const VideoStepPlayer = lazy(() => import('./VideoStepPlayer').then((m) => ({ default: m.VideoStepPlayer })));
 
-const _VIDEO_AUTOPLAY_STEP_LIMIT = 25;
 const IMAGE_SCALES: ImageScale[] = ['small', 'medium', 'large'];
+
+const VOICEOVER_SKIP_MESSAGES = {
+  failed: 'exportPreview.voiceoverFailed',
+  noAudioCodec: 'exportPreview.voiceoverNoAudioCodec',
+  noKey: 'exportPreview.voiceoverNoKeySkip',
+  nothingToSay: 'exportPreview.voiceoverNothingToSay',
+} as const satisfies Record<VoiceoverSkip['reason'], string>;
 
 interface ExportPreviewModalProps {
   open: boolean;
@@ -42,8 +51,12 @@ export function ExportPreviewModal({ open, onOpenChange, guide, steps, screensho
     if (open) loadExportOptions().then(setOptions);
   }, [open]);
 
-  const doc = useGuideExport({ active: open && mode === 'document', guide, steps, screenshots, options });
-  const video = useVideoPreview({ active: open && mode === 'video', guide, steps, screenshots, options });
+  const voiceoverReady = useVoiceoverReady(open);
+  const voiceover = options.voiceover && voiceoverReady;
+  const doc = useGuideExport({ active: open && mode === 'document', guide, steps, screenshots, options, voiceover });
+  const video = useVideoPreview({ active: open && mode === 'video', guide, steps, screenshots, options, voiceover });
+  const voiceoverError = video.voiceoverError ?? doc.voiceoverError;
+  const typedStepCount = steps.filter((step) => step.inputValue && screenshots.has(step.id)).length;
 
   const update = (patch: Partial<ExportOptions>) => {
     const next = { ...options, ...patch };
@@ -74,6 +87,7 @@ export function ExportPreviewModal({ open, onOpenChange, guide, steps, screensho
     { key: 'markdown', icon: FileText, label: i18n.t('exportMenu.markdown') },
     { key: 'gif', icon: FileImage, label: i18n.t('exportMenu.gif') },
     ...(video.supported ? [{ key: 'video' as const, icon: Video, label: i18n.t('exportMenu.video') }] : []),
+    { key: 'bundle', icon: Package, label: i18n.t('exportMenu.bundle') },
   ];
 
   return (
@@ -148,6 +162,55 @@ export function ExportPreviewModal({ open, onOpenChange, guide, steps, screensho
               </div>
             )}
 
+            {video.supported && (
+              <div className="pt-3 border-t border-border">
+                <div className="text-[12px] font-semibold text-foreground mb-2">{i18n.t('exportPreview.audio')}</div>
+                <div className="flex gap-1.5">
+                  <button
+                    type="button"
+                    aria-pressed={!voiceover}
+                    onClick={() => update({ voiceover: false })}
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg border text-[11px] leading-none transition-colors ${
+                      voiceover
+                        ? 'border-border text-muted-foreground hover:border-accent hover:text-foreground'
+                        : 'border-accent text-accent'
+                    }`}
+                  >
+                    <span className="leading-none">{i18n.t('exportPreview.audioSilent')}</span>
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={voiceover}
+                    disabled={!voiceoverReady}
+                    onClick={() => update({ voiceover: true })}
+                    className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg border text-[11px] leading-none transition-colors disabled:opacity-45 disabled:cursor-not-allowed disabled:hover:border-border disabled:hover:text-muted-foreground ${
+                      voiceover
+                        ? 'border-accent text-accent'
+                        : 'border-border text-muted-foreground hover:border-accent hover:text-foreground'
+                    }`}
+                  >
+                    <span className="leading-none">{i18n.t('exportPreview.audioNarrated')}</span>
+                    <Volume2 size={11} className="shrink-0 block" />
+                  </button>
+                </div>
+
+                {!voiceoverReady && (
+                  <div className="mt-1.5 px-0.5 text-[10px] text-muted-foreground leading-snug">
+                    {i18n.t('exportPreview.voiceoverNoKey')}
+                  </div>
+                )}
+
+                {voiceover && voiceoverError && (
+                  <div
+                    className="mt-1.5 rounded-lg px-2.5 py-2 text-[10px] leading-snug text-destructive bg-destructive/10"
+                    role="alert"
+                  >
+                    {i18n.t(VOICEOVER_SKIP_MESSAGES[voiceoverError.reason])}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="pt-3 border-t border-border">
               <div className="text-[12px] font-semibold text-foreground mb-2">{i18n.t('exportPreview.gifQuality')}</div>
               <div className="flex gap-1.5">
@@ -166,6 +229,68 @@ export function ExportPreviewModal({ open, onOpenChange, guide, steps, screensho
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div className="pt-3 border-t border-border">
+              <div className="text-[12px] font-semibold text-foreground">{i18n.t('exportPreview.bundle')}</div>
+              <div className="text-[10px] text-muted-foreground leading-snug mt-0.5">
+                {i18n.t('exportPreview.bundleHint')}
+              </div>
+
+              <div className="flex items-start justify-between gap-3 mt-3">
+                <div>
+                  <div className="text-[12px] font-semibold text-foreground">
+                    {i18n.t('exportPreview.bundleStripInputs')}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground leading-snug">
+                    {i18n.t('exportPreview.bundleStripInputsHint')}
+                  </div>
+                </div>
+                <div className="mt-0.5 flex shrink-0">
+                  <Switch
+                    checked={options.bundleStripInputs}
+                    label={i18n.t('exportPreview.bundleStripInputs')}
+                    onChange={(next) => update({ bundleStripInputs: next })}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-3">
+                <div className="text-[12px] font-semibold text-foreground mb-2">
+                  {i18n.t('exportPreview.bundleUrls')}
+                </div>
+                <div className="flex gap-1.5">
+                  {BUNDLE_URL_MODES.map((value) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => update({ bundleUrls: value })}
+                      className={`flex-1 px-2 py-1.5 rounded-lg border text-[11px] transition-colors ${
+                        options.bundleUrls === value
+                          ? 'border-accent text-accent'
+                          : 'border-border text-muted-foreground hover:border-accent hover:text-foreground'
+                      }`}
+                    >
+                      {i18n.t(`exportPreview.url_${value}`)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <p className="text-[10px] text-muted-foreground leading-snug mt-3">
+                {i18n.t('exportPreview.bundleRedactionNote')}
+              </p>
+
+              {typedStepCount > 0 && (
+                <p className="flex items-start gap-1.5 text-[10px] leading-snug mt-2 text-foreground">
+                  <TriangleAlert size={12} className="shrink-0 mt-px text-accent" />
+                  <span>
+                    {typedStepCount === 1
+                      ? i18n.t('exportPreview.bundleTypedWarning', [String(typedStepCount)])
+                      : i18n.t('exportPreview.bundleTypedWarningPlural', [String(typedStepCount)])}
+                  </span>
+                </p>
+              )}
             </div>
 
             <div className="pt-3 border-t border-border space-y-1.5">
@@ -258,11 +383,24 @@ export function ExportPreviewModal({ open, onOpenChange, guide, steps, screensho
                     </div>
                   ) : video.url ? (
                     <Suspense fallback={null}>
-                      <VideoStepPlayer key={video.url} src={video.url} type={video.mime} chapters={video.chapters} />
+                      <VideoStepPlayer
+                        key={video.url}
+                        src={video.url}
+                        type={video.mime}
+                        chapters={video.chapters}
+                        narrated={voiceover && !video.voiceoverError}
+                      />
                     </Suspense>
                   ) : (
                     <div className="flex flex-col items-center gap-2 bg-card border border-border rounded-xl px-4 py-3">
-                      <div className="text-[11px] text-muted-foreground">{i18n.t('exportPreview.encodingVideo')}</div>
+                      <div className="text-[11px] text-muted-foreground">
+                        {video.narrating
+                          ? i18n.t('exportPreview.narrating', [
+                              String(video.narrating.done + 1),
+                              String(video.narrating.total),
+                            ])
+                          : i18n.t('exportPreview.encodingVideo')}
+                      </div>
                       <div className="h-1.5 w-40 overflow-hidden rounded-full bg-border">
                         <div
                           className="h-full rounded-full bg-accent transition-[width] duration-150"

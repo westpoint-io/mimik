@@ -14,6 +14,12 @@ vi.mock('ai', () => ({
 
 vi.mock('../provider', () => ({ createModel: () => ({ id: 'test-model' }) }));
 
+vi.mock('@/core/env', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/core/env')>()),
+  localStorage: { get: vi.fn().mockResolvedValue({ aiLanguage: 'en' }) },
+}));
+
+import { localStorage } from '@/core/env';
 import { generateGuideMeta, guideMetaSteps, parseGuideMeta } from '../meta';
 
 const steps = [{ description: 'Click Directory', place: 'https://admin.okta.com/users' }];
@@ -154,6 +160,10 @@ describe('parseGuideMeta', () => {
     });
   });
 
+  it('collapses a newline the model put inside the title', () => {
+    expect(parseGuideMeta('{"title": "Okta\\nReset"}')?.title).toBe('Okta Reset');
+  });
+
   it('unwraps a fenced code block the model added anyway', () => {
     expect(parseGuideMeta('```json\n{"title": "Okta Reset"}\n```')).toEqual({
       title: 'Okta Reset',
@@ -206,5 +216,39 @@ describe('guideMetaSteps', () => {
         step({ url: 'https://example.com/a' }),
       ]).map((entry) => entry.place),
     ).toEqual(['File Explorer — Downloads', 'https://example.com/a']);
+  });
+});
+
+describe('guide meta prompt', () => {
+  beforeEach(() => {
+    generateObjectMock.mockReset();
+    generateObjectMock.mockResolvedValue({ object: { title: 'A title', description: 'A description.' } });
+  });
+
+  async function promptFor(aiLanguage: string): Promise<string> {
+    vi.mocked(localStorage.get).mockResolvedValue({ aiLanguage });
+    await generateGuideMeta(steps, 'openai', 'gpt-4o-mini', 'key');
+    return generateObjectMock.mock.calls[0][0].prompt as string;
+  }
+
+  it('leaves no placeholder unfilled', async () => {
+    expect(await promptFor('en')).not.toMatch(/\{\{\w+\}\}/);
+  });
+
+  it('gives the model examples in the configured language', async () => {
+    const prompt = await promptFor('fr');
+    expect(prompt).toContain('Configurer les notifications Slack');
+    expect(prompt).not.toContain('Configure Slack Notification Preferences');
+  });
+
+  it('follows the description language, not the UI language', async () => {
+    const prompt = await promptFor('de');
+    expect(prompt).toContain('Spesenabrechnung in Workday einreichen');
+  });
+
+  it('does not let step text act as a replacement pattern', async () => {
+    vi.mocked(localStorage.get).mockResolvedValue({ aiLanguage: 'en' });
+    await generateGuideMeta([{ description: 'Click $& then $`', place: 'https://example.com' }], 'openai', 'm', 'key');
+    expect(generateObjectMock.mock.calls[0][0].prompt).toContain('Click $& then $`');
   });
 });

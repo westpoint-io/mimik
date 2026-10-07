@@ -1,7 +1,9 @@
 import { generateText } from 'ai';
 import { localStorage } from '@/core/env';
+import { formatExamples, resolveExamples } from './examples';
 import { getLanguageSuffix, STEP_DESCRIPTION_PROMPT } from './prompts';
 import { createModel } from './provider';
+import { unwrapQuotes } from './text';
 
 export async function getAIDescription(
   context: string,
@@ -13,10 +15,13 @@ export async function getAIDescription(
 ): Promise<string | null> {
   const settings = await localStorage.get(['aiLanguage']);
   const locale = (settings.aiLanguage as string) || 'en';
+  const prompt = template
+    .replace('{{examples}}', formatExamples(resolveExamples(locale).steps))
+    .replace('{{context}}', () => context);
   const { text } = await generateText({
     model: createModel(provider, model, apiKey, baseUrl),
-    prompt: template.replace('{{context}}', context) + getLanguageSuffix(locale),
+    prompt: prompt + getLanguageSuffix(locale),
     maxOutputTokens: 50,
   });
-  return text.trim().replace(/^"|"$/g, '') || null;
+  return unwrapQuotes(text) || null;
 }

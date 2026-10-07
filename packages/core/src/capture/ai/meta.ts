@@ -1,17 +1,19 @@
 import { generateObject, generateText, jsonSchema } from 'ai';
 import { localStorage } from '@/core/env';
 import { actionSteps } from '@/core/guides/blocks';
+import { MAX_TITLE_LENGTH, sanitizeGuideTitle } from '@/core/guides/title';
 import type { Step } from '@/core/guides/types';
 import { logger } from '@/core/logger';
+import { formatExamples, resolveExamples } from './examples';
 import { GUIDE_META_JSON_SUFFIX, GUIDE_META_PROMPT, getLanguageSuffix } from './prompts';
 import { createModel } from './provider';
+import { unwrapQuotes } from './text';
 
 export interface GuideMeta {
   title: string;
   description?: string;
 }
 
-const MAX_TITLE_LENGTH = 70;
 const MAX_BARE_TITLE_LENGTH = 100;
 const FENCE = /^```(?:json)?\s*|\s*```$/g;
 
@@ -26,12 +28,11 @@ const guideMetaSchema = jsonSchema<{ title: string; description?: string | null 
 });
 
 function toGuideMeta(rawTitle: unknown, rawDescription: unknown): GuideMeta | null {
-  let title = typeof rawTitle === 'string' ? rawTitle.trim().replace(/^"|"$/g, '') : '';
+  let title = typeof rawTitle === 'string' ? unwrapQuotes(sanitizeGuideTitle(rawTitle)) : '';
   if (!title) return null;
   if (title.length > MAX_TITLE_LENGTH) title = `${title.slice(0, MAX_TITLE_LENGTH - 3)}...`;
 
-  const description =
-    typeof rawDescription === 'string' ? rawDescription.trim().replace(/^"|"$/g, '') || undefined : undefined;
+  const description = typeof rawDescription === 'string' ? unwrapQuotes(rawDescription) || undefined : undefined;
   return { title, description };
 }
 
@@ -67,7 +68,11 @@ export async function generateGuideMeta(
   const formatted = steps.map((s, i) => `${i + 1}. [${s.place}] ${s.description}`).join('\n');
   const settings = await localStorage.get(['aiLanguage']);
   const locale = (settings.aiLanguage as string) || 'en';
-  const prompt = GUIDE_META_PROMPT.replace('{{steps}}', formatted) + getLanguageSuffix(locale);
+  const examples = resolveExamples(locale);
+  const prompt =
+    GUIDE_META_PROMPT.replace('{{titleExamples}}', formatExamples(examples.titles))
+      .replace('{{descriptionExamples}}', formatExamples(examples.descriptions))
+      .replace('{{steps}}', () => formatted) + getLanguageSuffix(locale);
   const aiModel = createModel(provider, model, apiKey, baseUrl);
 
   try {

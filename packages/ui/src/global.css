@@ -78,3 +78,19 @@ input[type="checkbox"]:not(:disabled) {
 @utility animate-blink {
   animation: blink 0.7s step-end infinite;
 }
+
+@keyframes talk {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}
+
+@utility animate-talk {
+  animation: talk 0.72s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-talk {
+    animation: none;
+  }
+}

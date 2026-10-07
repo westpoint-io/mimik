@@ -148,6 +148,7 @@ export interface VoiceResultEvent extends VoiceEnvelope {
   target: typeof VOICE_BACKGROUND_TARGET;
   guideId: string;
   result: NarrationResult;
+  final: boolean;
 }
 
 export interface VoiceHandoffEvent extends VoiceEnvelope {

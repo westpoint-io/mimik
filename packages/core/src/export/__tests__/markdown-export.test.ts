@@ -45,6 +45,12 @@ function makeScreenshot(stepId: string, content = 'img'): Screenshot {
 }
 
 describe('exportGuideAsMarkdown', () => {
+  it('keeps a legacy multi-line title inside the H1', async () => {
+    const md = await exportGuideAsMarkdown(makeGuide({ title: 'Set up\nyour profile' }), [], new Map());
+    expect(md).toContain('# Set up your profile');
+    expect(md.split('\n')[0]).toBe('# Set up your profile');
+  });
+
   it('creates valid markdown with H1 title', async () => {
     const guide = makeGuide({ title: 'My Guide' });
     const steps = [makeStep()];

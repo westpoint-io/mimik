@@ -14,10 +14,11 @@ import { microphoneGranted } from './lib/microphone-granted';
 interface MicToggleProps {
   enabled: boolean;
   live: boolean;
+  paused?: boolean;
   onChange: (enabled: boolean) => void;
 }
 
-export function MicToggle({ enabled, live, onChange }: MicToggleProps) {
+export function MicToggle({ enabled, live, paused = false, onChange }: MicToggleProps) {
   const [keyed, setKeyed] = useState(false);
 
   useEffect(() => {
@@ -40,7 +41,7 @@ export function MicToggle({ enabled, live, onChange }: MicToggleProps) {
     };
   }, []);
 
-  const locked = !keyed && !enabled;
+  const locked = (!keyed && !enabled) || paused;
 
   const toggle = useCallback(async () => {
     if (locked) return;
@@ -67,7 +68,11 @@ export function MicToggle({ enabled, live, onChange }: MicToggleProps) {
   }, [enabled, live, locked, onChange]);
 
   const Icon = enabled ? Mic : MicOff;
-  const label = locked ? i18n.t('voice.needsApiKey') : i18n.t(enabled ? 'voice.turnOff' : 'voice.turnOn');
+  const label = paused
+    ? i18n.t('voice.pausedWithCapture')
+    : locked
+      ? i18n.t('voice.needsApiKey')
+      : i18n.t(enabled ? 'voice.turnOff' : 'voice.turnOn');
 
   return (
     <Tooltip>
@@ -77,7 +82,7 @@ export function MicToggle({ enabled, live, onChange }: MicToggleProps) {
           aria-pressed={enabled}
           aria-disabled={locked}
           aria-label={label}
-          className={`w-10 h-10 rounded-full border flex items-center justify-center transition-colors ${
+          className={`w-9 h-9 shrink-0 rounded-full border flex items-center justify-center transition-colors ${
             locked
               ? 'border-dashed border-border text-muted-foreground opacity-60 cursor-not-allowed'
               : enabled

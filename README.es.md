@@ -32,11 +32,12 @@ Le das a grabar, haces lo tuyo, y obtienes una guía pulida con capturas anotada
 - [📺 Demo](#-demo)
 - [👋 Empezar](#-empezar)
 - [✨ Funciones](#-funciones)
-  - [🔒 Smart Blur](#-smart-blur)
+  - [🔒 Desenfoque inteligente](#-desenfoque-inteligente)
   - [🧠 Descripciones con IA (opcional)](#-descripciones-con-ia-opcional)
-  - [▶️ Reproducción Guide Me](#️-reproducción-guide-me)
+  - [▶️ Reproducción con Guíame](#️-reproducción-con-guíame)
   - [🎙️ Narración por voz (opcional)](#️-narración-por-voz-opcional)
   - [✏️ Editor de guías](#️-editor-de-guías)
+  - [🔊 Voz en off del vídeo (opcional)](#-voz-en-off-del-vídeo-opcional)
   - [📤 Exportación multi-formato](#-exportación-multi-formato)
 - [🔐 Privacidad y almacenamiento](#-privacidad-y-almacenamiento)
 - [🤝 Contribuir](#-contribuir)
@@ -62,6 +63,8 @@ Cada acción relevante se convierte en un paso: clics en botones y enlaces, camp
 
 Cada paso lleva una captura con el elemento pulsado resaltado y ampliado. Sin recortar a mano, sin herramientas de anotación que aprender.
 
+¿Necesitas que la grabación mire hacia otro lado un momento? **Pausar** detiene la captura sin terminar la grabación, y **Reanudar** sigue donde lo dejaste. Entrar en Desenfoque inteligente la pausa igual.
+
 | Navegador | Versión | Instalación |
 | --------- | ------- | ----------- |
 | Chrome    | [![Chrome Version][chrome-version-shield]][chrome-link]   | [Chrome Web Store][chrome-link] |
@@ -86,13 +89,38 @@ Disponible en inglés, español, portugués brasileño, francés, alemán y chin
 
 ## ✨ Funciones
 
-### 🔒 Smart Blur
+### 🔒 Desenfoque inteligente
 
-Mimik detecta y difumina datos sensibles automáticamente en tus capturas: correos, teléfonos, números de identificación, tarjetas de crédito, IPs, direcciones MAC. Activa o desactiva cada categoría de forma independiente.
+Desenfoque inteligente es un modo que activas mientras grabas, no un filtro siempre encendido. Pulsa **Desenfoque inteligente** y la captura se pausa, Mimik detecta y enmascara los datos sensibles de la página — correos, teléfonos, números de identificación, tarjetas de crédito, IPs, direcciones MAC — y las capturas de esa página los mantienen ocultos una vez que pulsas **Listo**. Activa o desactiva cada categoría de forma independiente.
 
 ¿Necesitas ocultar algo personalizado? El selector manual te deja elegir cualquier elemento del DOM y enmascararlo en todas las capturas donde aparezca.
 
-<img src="https://github.com/user-attachments/assets/968d2518-c561-4d68-92a6-3d5f569fe38a" alt="Smart Blur" width="800" />
+<details>
+<summary><strong>Lo que Desenfoque inteligente no cubre</strong></summary>
+
+<br/>
+
+Desenfoque inteligente analiza nodos de texto y valores de campos en el marco principal de la página. Eso deja huecos reales, todos estructurales. Si dependes de esto para el RGPD o algo similar, revisa tus capturas en lugar de dar por hecho que una captura limpia es una captura segura:
+
+| Sin cubrir | Por qué |
+|------------|---------|
+| Contenido dentro de iframes | Se omite por completo; los marcos de otro origen son inalcanzables |
+| Shadow DOM | El análisis recorre el documento y no entra en los shadow roots |
+| Texto dibujado en un `<canvas>` y texto dentro de imágenes | Son píxeles, no texto |
+| Contenido CSS `::before` / `::after` | No es un nodo de texto |
+| Texto de `<select>` y `<option>` | Excluido del análisis |
+| Valores que solo viven en atributos, como `title` o `alt` | Solo se analizan nodos de texto y valores de campos |
+| Marcos distintos del principal | El overlay y el análisis corren solo en el marco principal |
+| Cualquier pestaña que no sea la que activaste | Solo se analiza esa pestaña; otra con la misma app no |
+| Texto que aparece después de pulsar **Listo** | El análisis se detiene con el overlay, así que un re-render de la SPA, la página siguiente de una lista o una navegación quedan sin enmascarar — vuelve a entrar en Blur ahí |
+
+Dos cosas que conviene saber sobre lo que sí se maneja: una coincidencia dentro de `<text>` de SVG se elimina del render en vez de difuminarse, porque la máscara es un elemento HTML que SVG no dibuja — el dato no se filtra, pero desaparece en lugar de difuminarse. Y un `<input>` o `<textarea>` que coincide se difumina **como campo completo**, no solo la parte coincidente.
+
+El difuminado aplica desde el momento en que entras al modo. Las capturas tomadas antes no se enmascaran de forma retroactiva — borra esos pasos en el editor.
+
+</details>
+
+<img src="https://github.com/user-attachments/assets/968d2518-c561-4d68-92a6-3d5f569fe38a" alt="Desenfoque inteligente" width="800" />
 
 <div align="right">
 
@@ -114,11 +142,11 @@ Las descripciones se generan a partir de un contexto ligero del DOM (~50-100 tok
 
 </div>
 
-### ▶️ Reproducción Guide Me
+### ▶️ Reproducción con Guíame
 
 Reproduce cualquier guía en vivo sobre una página real. Mimik resalta el siguiente elemento, marca tu progreso paso a paso, y avanza solo conforme vas interactuando. Ideal para formar a un compañero o para guiarte a ti mismo.
 
-<img src="https://github.com/user-attachments/assets/56ffca1d-5074-491f-8571-dd70782d4b05" alt="Reproducción Guide Me" width="800" />
+<img src="https://github.com/user-attachments/assets/56ffca1d-5074-491f-8571-dd70782d4b05" alt="Reproducción con Guíame" width="800" />
 
 <div align="right">
 
@@ -131,6 +159,12 @@ Reproduce cualquier guía en vivo sobre una página real. Mimik resalta el sigui
 Habla en voz alta mientras grabas y Mimik convierte lo que dijiste en las descripciones de los
 pasos. El audio se transcribe con tu propia key (OpenAI o Groq) y se empareja con el paso al que
 corresponde, así narras una vez en lugar de escribir cada paso a mano.
+
+Se guarda la transcripción completa, no solo lo que acabó en un paso. Abre **Transcripción** en una
+guía para ver todo lo que dijiste, incluidas las frases que no se emparejaron con nada, y añade
+cualquiera de ellas a un paso. Editar un paso tampoco destruye el original hablado: el editor
+siempre puede restaurar lo que dijiste. La transcripción se queda en tu dispositivo, nunca forma
+parte de una guía exportada y se elimina junto con la guía.
 
 <img src="https://github.com/user-attachments/assets/061fddc7-da65-4641-8b39-d30b80c36531" alt="Narración por voz" width="800" />
 
@@ -154,11 +188,22 @@ vuelve atrás con el historial de versiones.
 
 </div>
 
+### 🔊 Voz en off del vídeo (opcional)
+
+Actívala en el panel de exportación y cada paso del vídeo se leerá en voz alta, con tu propia clave
+de OpenAI o ElevenLabs. Si ya configuraste una clave de OpenAI para las descripciones con IA, Mimik
+la reutiliza: no hay que registrarse en nada más. Los pasos narrados permanecen en pantalla hasta que
+la voz termina, así que nada se corta, y los clips se guardan en caché local para que volver a
+exportar la misma guía no cueste nada.
+
+Desactivada por defecto: tener una clave nunca activa la narración; lo haces tú.
+
 ### 📤 Exportación multi-formato
 
 Comparte tus guías en el formato que mejor encaje con tu flujo:
 
-- **Video**: recorrido narrado, mp4/H.264, con el cursor moviéndose a cada objetivo
+- **Video**: recorrido narrado, mp4/H.264, con el cursor moviéndose a cada objetivo — opcionalmente con una
+  voz en off de ElevenLabs que lee cada paso, lo que además hace el vídeo apto para la Sección 508
 - **PDF**: listo para imprimir, A4 vertical con saltos automáticos
 - **DOCX**: ábrelo y sigue editando en Word
 - **HTML**: autónomo, comparte donde sea, imágenes embebidas en base64
@@ -178,7 +223,9 @@ Todas las exportaciones se generan del lado del cliente. Nada pasa por un servid
 
 Tus guías, pasos y capturas viven en tu dispositivo. No hay backend, no hay cuenta, no hay telemetría. Tus API keys (si usas alguna) nunca salen del navegador. Se guardan localmente y se usan para llamar directo al proveedor que elegiste.
 
-Dos cosas sí salen del navegador, ambas documentadas en la [política de privacidad](https://mimik.westpoint.io/privacy/): los iconos de los sitios se piden al servicio de favicons de Google, lo que envía el dominio de ese sitio, y las funciones opcionales de IA y voz mandan texto o audio al proveedor que configuraste.
+Si estás enmascarando datos personales antes de compartir una guía, lee primero [lo que Desenfoque inteligente no cubre](#-desenfoque-inteligente): no alcanza iframes, shadow DOM ni texto dibujado dentro de imágenes.
+
+Dos cosas sí salen del navegador, ambas documentadas en la [política de privacidad](https://mimik.westpoint.io/privacy/): los iconos de los sitios se piden al servicio de favicons de Google, lo que envía el dominio de ese sitio, y las funciones opcionales de IA, narración por voz y voz en off mandan texto o audio al proveedor que configuraste: la voz en off envía el texto de cada paso al exportar, y solo si la activas.
 
 <div align="right">
 

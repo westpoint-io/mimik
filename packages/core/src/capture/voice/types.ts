@@ -67,7 +67,22 @@ export interface NarrationStats {
   rejectedSegments: number;
 }
 
+export interface TranscriptLine {
+  start: number;
+  end: number;
+  text: string;
+  stepId: string | null;
+  rejectReason: string | null;
+  addedByHand?: boolean;
+}
+
+export interface NarrationTranscript {
+  epochMs: number;
+  lines: TranscriptLine[];
+}
+
 export interface NarrationResult {
   descriptions: Array<{ stepId: string; text: string }>;
+  transcript: NarrationTranscript;
   stats: NarrationStats;
 }

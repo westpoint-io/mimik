@@ -1,15 +1,20 @@
+import { buildFallbackDescription } from '@/core/capture/step-description';
 import type { NarrationUpdate } from '@/core/capture/voice/narration-updates';
+import type { NarrationTranscript } from '@/core/capture/voice/types';
 import { i18n } from '@/core/env';
 import type { ScreenshotEdits } from '@/core/screenshot/types';
+import type { ParsedBundle } from '@/core/transfer/parse';
 import { db } from './db';
 import { getMostCommonDomain } from './domain';
 import { hashPayload } from './snapshot-hash';
+import { sanitizeGuideTitle } from './title';
 import type {
   BlockType,
   CalloutVariant,
   DescriptionSource,
   ElementMeta,
   Guide,
+  GuideTranscript,
   Screenshot,
   Snapshot,
   Step,
@@ -96,7 +101,7 @@ export async function getTrashedGuides(): Promise<Guide[]> {
 }
 
 export async function updateGuideTitle(id: string, title: string): Promise<void> {
-  await db.guides.update(id, { title, updatedAt: Date.now() });
+  await db.guides.update(id, { title: sanitizeGuideTitle(title), updatedAt: Date.now() });
   notifyGuidesChanged({ type: 'mutated' });
 }
 
@@ -148,9 +153,67 @@ export async function permanentlyDeleteGuide(id: string): Promise<void> {
     .anyOf([...stepIds])
     .delete();
   await db.snapshots.where('guideId').equals(id).delete();
+  await db.transcripts.where('guideId').equals(id).delete();
   await db.steps.where('guideId').equals(id).delete();
+  await db.guideMerges.delete(id);
+  await db.guideMerges.where('targetGuideId').equals(id).delete();
   await db.guides.delete(id);
   notifyGuidesChanged({ type: 'mutated' });
+}
+
+export async function importGuide(bundle: ParsedBundle): Promise<string> {
+  const { manifest, images } = bundle;
+  const guideId = crypto.randomUUID();
+  const now = Date.now();
+
+  const stepIds = new Map<string, string>();
+  for (const step of manifest.steps) stepIds.set(step.id, crypto.randomUUID());
+
+  const screenshotsByStep = new Map(manifest.screenshots.map((shot) => [shot.stepId, shot]));
+
+  const steps: Step[] = [];
+  const screenshots: Screenshot[] = [];
+
+  manifest.steps.forEach((incoming, index) => {
+    const id = stepIds.get(incoming.id)!;
+    const shot = screenshotsByStep.get(incoming.id);
+    const blob = shot ? images.get(shot.file) : undefined;
+    const screenshotId = shot && blob ? crypto.randomUUID() : undefined;
+
+    if (shot && blob && screenshotId) {
+      const { file: _file, ...rest } = shot;
+      screenshots.push({ ...rest, id: screenshotId, stepId: id, blob });
+    }
+
+    steps.push({
+      ...incoming,
+      id,
+      guideId,
+      index,
+      aiPending: undefined,
+      ...(screenshotId ? { screenshotId } : {}),
+    });
+  });
+
+  const guide: Guide = {
+    id: guideId,
+    title: sanitizeGuideTitle(manifest.guide.title),
+    ...(manifest.guide.description ? { description: manifest.guide.description } : {}),
+    createdAt: now,
+    updatedAt: now,
+    stepIds: steps.map((s) => s.id),
+    starred: false,
+    deletedAt: null,
+  };
+
+  await db.transaction('rw', db.guides, db.steps, db.screenshots, async () => {
+    await db.guides.add(guide);
+    await db.steps.bulkAdd(steps);
+    if (screenshots.length > 0) await db.screenshots.bulkAdd(screenshots);
+  });
+
+  notifyGuidesChanged({ type: 'mutated' });
+  return guideId;
 }
 
 export async function reorderSteps(guideId: string, orderedStepIds: string[]): Promise<void> {
@@ -166,8 +229,57 @@ export async function createStep(step: Step): Promise<void> {
   await db.steps.add(step);
 }
 
+export async function duplicateGuide(guideId: string): Promise<string | null> {
+  const copyId = await db.transaction('rw', db.guides, db.steps, db.screenshots, async () => {
+    const guide = await db.guides.get(guideId);
+    if (!guide) return null;
+    const steps = await db.steps.where('guideId').equals(guideId).sortBy('index');
+    const currentScreenshotIds = steps.map((step) => step.screenshotId).filter((id): id is string => !!id);
+
+    const newGuideId = crypto.randomUUID();
+    const stepIdMap = new Map(steps.map((step) => [step.id, crypto.randomUUID()]));
+    const screenshotsBelongingToTheseSteps = (
+      await db.screenshots.where('id').anyOf(currentScreenshotIds).toArray()
+    ).filter((row) => stepIdMap.has(row.stepId));
+    const screenshotIdMap = new Map(screenshotsBelongingToTheseSteps.map((row) => [row.id, crypto.randomUUID()]));
+    const now = Date.now();
+
+    const { staging: _staging, ...rest } = guide;
+    await db.guides.add({
+      ...rest,
+      id: newGuideId,
+      title: i18n.t('library.copyOfTitle', [guide.title]),
+      createdAt: now,
+      updatedAt: now,
+      stepIds: steps.map((step) => stepIdMap.get(step.id)!),
+      starred: false,
+      deletedAt: null,
+    });
+    await db.steps.bulkAdd(
+      steps.map((step, index) => ({
+        ...step,
+        id: stepIdMap.get(step.id)!,
+        guideId: newGuideId,
+        index,
+        aiPending: undefined,
+        screenshotId: step.screenshotId ? screenshotIdMap.get(step.screenshotId) : undefined,
+      })),
+    );
+    await db.screenshots.bulkAdd(
+      screenshotsBelongingToTheseSteps.map((row) => ({
+        ...row,
+        id: screenshotIdMap.get(row.id)!,
+        stepId: stepIdMap.get(row.stepId)!,
+      })),
+    );
+    return newGuideId;
+  });
+  if (copyId) notifyGuidesChanged({ type: 'mutated' });
+  return copyId;
+}
+
 export async function mergeGuideInto(sourceGuideId: string, targetGuideId: string, atIndex: number): Promise<number> {
-  const moved = await db.transaction('rw', db.steps, db.guides, async () => {
+  const moved = await db.transaction('rw', db.steps, db.guides, db.transcripts, db.guideMerges, async () => {
     const incoming = await db.steps.where('guideId').equals(sourceGuideId).sortBy('index');
     const target = await db.steps.where('guideId').equals(targetGuideId).sortBy('index');
     if (incoming.length > 0) {
@@ -182,6 +294,8 @@ export async function mergeGuideInto(sourceGuideId: string, targetGuideId: strin
         updatedAt: Date.now(),
       });
     }
+    await db.transcripts.where('guideId').equals(sourceGuideId).modify({ guideId: targetGuideId });
+    await db.guideMerges.put({ id: sourceGuideId, targetGuideId, mergedAt: Date.now() });
     await db.guides.delete(sourceGuideId);
     return incoming.length;
   });
@@ -232,10 +346,198 @@ export async function applyNarrationToSteps(updates: readonly NarrationUpdate[])
   if (updates.length === 0) return;
   await db.transaction('rw', db.steps, async () => {
     for (const { stepId, description } of updates) {
-      await db.steps.update(stepId, { description, descriptionSource: 'narration', aiPending: false });
+      await db.steps.update(stepId, {
+        description,
+        narratedDescription: description,
+        descriptionSource: 'narration',
+        aiPending: false,
+      });
     }
   });
   notifyGuidesChanged({ type: 'mutated' });
+}
+
+const MERGE_CHAIN_LIMIT = 10;
+
+async function followMergeChain(guideId: string): Promise<string | null> {
+  let current = guideId;
+  for (let hop = 0; hop < MERGE_CHAIN_LIMIT; hop++) {
+    const merge = await db.guideMerges.get(current);
+    if (!merge) return current === guideId ? null : current;
+    current = merge.targetGuideId;
+  }
+  return current;
+}
+
+async function resolveTranscriptOwner(guideId: string, transcript: NarrationTranscript): Promise<string | null> {
+  if (await db.guides.get(guideId)) return guideId;
+  const spokenFor = transcript.lines.map((line) => line.stepId).filter((id): id is string => id !== null);
+  const steps = await db.steps.bulkGet(spokenFor);
+  const owner = steps.find((step) => step !== undefined)?.guideId ?? (await followMergeChain(guideId));
+  return owner && (await db.guides.get(owner)) ? owner : null;
+}
+
+export async function saveTranscript(guideId: string, transcript: NarrationTranscript): Promise<void> {
+  if (transcript.lines.length === 0) return;
+  const owner = await resolveTranscriptOwner(guideId, transcript);
+  if (!owner) return;
+  await db.transcripts.add({
+    id: crypto.randomUUID(),
+    guideId: owner,
+    epochMs: transcript.epochMs,
+    createdAt: Date.now(),
+    lines: transcript.lines,
+  });
+  notifyGuidesChanged({ type: 'mutated' });
+}
+
+export async function getTranscripts(guideId: string): Promise<GuideTranscript[]> {
+  return db.transcripts.where('guideId').equals(guideId).toArray();
+}
+
+export async function hasTranscript(guideId: string): Promise<boolean> {
+  return (await db.transcripts.where('guideId').equals(guideId).count()) > 0;
+}
+
+function rebuiltHeuristicDescription(step: Step): string {
+  if (step.elementMeta) return buildFallbackDescription(step.action, step.elementMeta);
+  return step.action === 'navigate' ? i18n.t('steps.navigate') : '';
+}
+
+function withoutAppendedSentences(description: string, additions: readonly string[]): string {
+  let kept = description.trim();
+  let stripped = true;
+  while (stripped) {
+    stripped = false;
+    for (const addition of additions) {
+      const sentence = addition.trim();
+      if (!sentence) continue;
+      if (kept === sentence) return '';
+      if (!kept.endsWith(` ${sentence}`)) continue;
+      kept = kept.slice(0, -(sentence.length + 1)).trim();
+      stripped = true;
+    }
+  }
+  return kept;
+}
+
+function forgetSpokenWords(step: Step, handAdded: ReadonlyMap<string, string[]>): void {
+  delete step.narratedDescription;
+  if (step.descriptionSource === 'narration') {
+    step.description = rebuiltHeuristicDescription(step);
+    step.descriptionSource = 'heuristic';
+    return;
+  }
+  const additions = handAdded.get(step.id);
+  if (!additions) return;
+  const kept = withoutAppendedSentences(step.description, additions);
+  step.description = kept || rebuiltHeuristicDescription(step);
+}
+
+function handAddedSentences(rows: readonly GuideTranscript[]): Map<string, string[]> {
+  const byStep = new Map<string, string[]>();
+  for (const row of rows) {
+    for (const line of row.lines) {
+      if (!line.stepId || !line.addedByHand) continue;
+      const existing = byStep.get(line.stepId);
+      if (existing) existing.push(line.text);
+      else byStep.set(line.stepId, [line.text]);
+    }
+  }
+  return byStep;
+}
+
+export async function deleteTranscripts(guideId: string): Promise<void> {
+  await db.transaction('rw', db.transcripts, db.steps, db.snapshots, async () => {
+    const rows = await db.transcripts.where('guideId').equals(guideId).toArray();
+    const handAdded = handAddedSentences(rows);
+    await db.transcripts.where('guideId').equals(guideId).delete();
+    await db.steps
+      .where('guideId')
+      .equals(guideId)
+      .modify((step) => forgetSpokenWords(step, handAdded));
+    await db.snapshots
+      .where('guideId')
+      .equals(guideId)
+      .modify((snapshot) => {
+        for (const step of snapshot.steps) forgetSpokenWords(step, handAdded);
+        snapshot.contentHash = hashPayload({
+          title: snapshot.title,
+          stepIds: snapshot.stepIds,
+          steps: snapshot.steps,
+          screenshots: snapshot.screenshots,
+        });
+      });
+  });
+  notifyGuidesChanged({ type: 'mutated' });
+}
+
+async function releaseHandAddedLines(guideId: string, stepId: string): Promise<void> {
+  await db.transcripts
+    .where('guideId')
+    .equals(guideId)
+    .modify((row) => {
+      for (const line of row.lines) {
+        if (line.stepId !== stepId || !line.addedByHand) continue;
+        line.stepId = null;
+        delete line.addedByHand;
+      }
+    });
+}
+
+export async function restoreNarratedDescription(stepId: string): Promise<string | null> {
+  const step = await db.steps.get(stepId);
+  const spoken = step?.narratedDescription?.trim();
+  if (!step || !spoken) return null;
+  await db.steps.update(stepId, { description: spoken, descriptionSource: 'narration', aiPending: false });
+  await releaseHandAddedLines(step.guideId, stepId);
+  notifyGuidesChanged({ type: 'mutated' });
+  return spoken;
+}
+
+async function markLineAttached(rowId: string, lineIndex: number, stepId: string): Promise<void> {
+  await db.transcripts
+    .where('id')
+    .equals(rowId)
+    .modify((row) => {
+      const line = row.lines[lineIndex];
+      if (!line) return;
+      line.stepId = stepId;
+      line.addedByHand = true;
+    });
+}
+
+async function writeAppendedDescription(stepId: string, addition: string): Promise<string | null> {
+  const step = await db.steps.get(stepId);
+  if (!step) return null;
+  const description = step.description.trim() ? `${step.description.trim()} ${addition}` : addition;
+  await db.steps.update(stepId, { description, descriptionSource: 'manual', aiPending: false });
+  return description;
+}
+
+async function isLineStillUnused(rowId: string, lineIndex: number): Promise<boolean> {
+  const row = await db.transcripts.get(rowId);
+  const line = row?.lines[lineIndex];
+  return line !== undefined && !line.stepId;
+}
+
+export async function addTranscriptLineToStep(
+  rowId: string,
+  lineIndex: number,
+  stepId: string,
+  text: string,
+): Promise<string | null> {
+  const addition = text.trim();
+  if (!addition) return null;
+  const description = await db.transaction('rw', db.steps, db.transcripts, async () => {
+    if (!(await isLineStillUnused(rowId, lineIndex))) return null;
+    const written = await writeAppendedDescription(stepId, addition);
+    if (written === null) return null;
+    await markLineAttached(rowId, lineIndex, stepId);
+    return written;
+  });
+  if (description !== null) notifyGuidesChanged({ type: 'mutated' });
+  return description;
 }
 
 export async function applyAiDescription(stepId: string, description: string): Promise<void> {
@@ -326,7 +628,13 @@ export async function getGuideDomain(guideId: string): Promise<string> {
 }
 
 export async function allScreenshotIds(): Promise<string[]> {
-  return (await db.screenshots.toCollection().primaryKeys()) as string[];
+  const ids = new Set<string>();
+  await db.screenshots.each((row) => {
+    ids.add(row.id);
+    const file = row.src ? URL.parse(row.src)?.hostname : undefined;
+    if (file) ids.add(file);
+  });
+  return [...ids];
 }
 
 export async function saveScreenshot(screenshot: StoredScreenshot): Promise<void> {
@@ -427,14 +735,21 @@ export async function revertToSnapshot(snapshotId: string): Promise<Snapshot | n
     const existing = await db.steps.where('guideId').equals(snapshot.guideId).toArray();
     const keep = new Set(snapshot.steps.map((s) => s.id));
     await db.steps.bulkDelete(existing.filter((s) => !keep.has(s.id)).map((s) => s.id));
-    await db.steps.bulkPut(snapshot.steps);
+    const spoken = new Map(existing.map((step) => [step.id, step.narratedDescription]));
+    await db.steps.bulkPut(
+      snapshot.steps.map((step) =>
+        step.narratedDescription === undefined && spoken.get(step.id) !== undefined
+          ? { ...step, narratedDescription: spoken.get(step.id) }
+          : step,
+      ),
+    );
     const live = await db.screenshots.bulkGet(snapshot.screenshots.map((r) => r.id));
     const merged = snapshot.screenshots
       .map((row, i) => (live[i] ? { ...row, blob: live[i]!.blob } : null))
       .filter((r): r is Screenshot => r !== null);
     if (merged.length > 0) await db.screenshots.bulkPut(merged);
     await db.guides.update(snapshot.guideId, {
-      title: snapshot.title,
+      title: sanitizeGuideTitle(snapshot.title),
       stepIds: snapshot.stepIds,
       updatedAt: Date.now(),
     });
@@ -485,4 +800,12 @@ export const dexieStore = {
   getSnapshots,
   renameSnapshot,
   revertToSnapshot,
+  duplicateGuide,
+  importGuide,
+  saveTranscript,
+  getTranscripts,
+  hasTranscript,
+  deleteTranscripts,
+  addTranscriptLineToStep,
+  restoreNarratedDescription,
 };

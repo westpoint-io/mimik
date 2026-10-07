@@ -12,6 +12,7 @@ import {
   isTextField,
   isTooLarge,
 } from '@/core/capture/dom/element-utils';
+import { locateFrame, placeInTab } from '@/core/capture/dom/frame-placement';
 import { isReplayedClick, replayClick, replayInit, shouldInterceptClick } from '@/core/capture/events/click-intercept';
 import type { CaptureSink } from '@/core/capture/sink';
 import { DEFAULT_TARGET_COLOR } from '@/core/screenshot/types';
@@ -51,7 +52,7 @@ let lastClickTarget: Element | null = null;
 let lastClickTime = 0;
 
 export interface CaptureHandle {
-  stop: () => void;
+  stop: () => Promise<void>;
 }
 
 const PASSIVE_CAPTURE = { capture: true, passive: true } as const;
@@ -107,11 +108,12 @@ class CaptureController {
   private capture(action: string, target: HTMLElement, point?: { x: number; y: number }) {
     const atEvent = freezeRect(target);
     return async () => {
+      const placement = locateFrame();
       const elementMeta = extractElementMeta(target, atEvent);
       await this.sink.captureStep({
         guideId: this.guideId,
         action,
-        elementMeta: point ? { ...elementMeta, clickPoint: point } : elementMeta,
+        elementMeta: placeInTab(point ? { ...elementMeta, clickPoint: point } : elementMeta, await placement),
         domContext: extractDOMContext(target, action),
       });
     };
@@ -315,13 +317,14 @@ class CaptureController {
     this.enqueue(this.capture('drag', findFocusableAncestor(target)));
   }
 
-  stop() {
+  stop(): Promise<void> {
     for (const [event, handler, opts] of this.listeners) {
       window.removeEventListener(event, handler, opts);
     }
     this.hovered = null;
     this.ring.dispose();
     this.queue.add(() => this.input.finalize());
+    return this.queue.onIdle();
   }
 }
 
