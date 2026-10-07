@@ -47,6 +47,11 @@ window.mimik.onRequest('mimik:check:steps', async (payload) => {
   return found ? found.steps.map((step) => step.description) : null;
 });
 
+window.mimik.onRequest('mimik:check:trashed', async (payload) => {
+  const found = await getGuide(payload as string);
+  return found ? found.guide.deletedAt != null : null;
+});
+
 window.mimik.onRequest('mimik:check:title', async (payload) => {
   const found = await getGuide(payload as string);
   return found?.guide.title ?? null;

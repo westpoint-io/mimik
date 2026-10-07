@@ -1,9 +1,9 @@
 import { aiFailureNotice } from '@mimik/core/capture/ai/errors';
 import { CaptureState } from '@mimik/core/capture/machine';
 import { splitAtShortcut } from '@mimik/core/capture/split-at-shortcut';
-import { hasVoiceApiKey, VOICE_KEY_SETTINGS } from '@mimik/core/capture/voice/api-key';
+import { readVoiceSettings } from '@mimik/core/capture/voice/read-voice-settings';
 import { voiceErrorKey } from '@mimik/core/capture/voice/voice-error-key';
-import { i18n, localStorage } from '@mimik/core/env';
+import { i18n } from '@mimik/core/env';
 import { STEP_SOURCE_LABELS } from '@mimik/core/guides/step-source-labels';
 import type { OverlayView } from '../../main/overlay';
 import { icon } from '../icons';
@@ -113,7 +113,10 @@ export function controls(): void {
   const secondary = el('button', { id: 'secondary', type: 'button' });
   const primary = el('button', { id: 'primary', type: 'button', className: 'primary' });
   const mic = el('button', { id: 'mic', type: 'button' });
-  const foot = el('div', { id: 'foot' }, primary, mic, secondary);
+  const discard = el('button', { id: 'discard', type: 'button', title: i18n.t('recording.discard') });
+  discard.setAttribute('aria-label', i18n.t('recording.discard'));
+  discard.append(icon('trash', 16));
+  const foot = el('div', { id: 'foot' }, primary, mic, secondary, discard);
 
   document.body.append(head, body, modes, aiNotice, foot);
 
@@ -316,11 +319,12 @@ export function controls(): void {
       secondary.title = secondaryLabel;
       secondary.setAttribute('aria-label', secondaryLabel);
       primary.replaceChildren(icon(armed ? 'video' : 'check'));
-      primary.append(i18n.t(armed ? 'desktop.startButton' : 'recording.finishRecording'));
+      primary.append(el('span', {}, i18n.t(armed ? 'desktop.startButton' : 'recording.finishRecording')));
     }
     secondary.dataset.command = armed ? 'disarm' : recording ? 'pause' : 'resume';
     primary.dataset.command = armed ? 'start' : 'stop';
     primary.disabled = starting || (busy && !armed);
+    discard.hidden = armed;
     foot.hidden = collapsed;
 
     aiNotice.hidden = collapsed || armed || !aiFailure;
@@ -371,13 +375,14 @@ export function controls(): void {
   primary.addEventListener('click', () => window.mimikOverlay.command(primary.dataset.command ?? 'start'));
   secondary.addEventListener('click', () => window.mimikOverlay.command(secondary.dataset.command ?? 'disarm'));
   remove.addEventListener('click', () => window.mimikOverlay.command('deleteStep'));
+  discard.addEventListener('click', () => window.mimikOverlay.command('discard'));
   mic.addEventListener('click', () => {
     if (mic.className !== 'locked') window.mimikOverlay.command(micOn ? 'narration:stop' : 'narration:start');
   });
   const readMic = () =>
-    localStorage.get([...VOICE_KEY_SETTINGS, 'voiceEnabled']).then((stored) => {
-      micOn = stored.voiceEnabled === true;
-      micKeyed = hasVoiceApiKey(stored);
+    readVoiceSettings().then((voice) => {
+      micOn = voice.enabled;
+      micKeyed = voice.hasApiKey;
       paint();
     });
   void readMic();

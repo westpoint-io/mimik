@@ -4,6 +4,7 @@ import type { AiFailureUpdate } from '@mimik/core/capture/ai/errors';
 import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import { isLive } from '@mimik/core/capture/is-live';
 import { CaptureState, captureMachine } from '@mimik/core/capture/machine';
+import { NARRATION_SETTLE_MS } from '@mimik/core/capture/voice/narration-settle-ms';
 import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, protocol, screen, shell, Tray } from 'electron';
 import { createActor } from 'xstate';
 import { shortcutLabel } from '../renderer/lib/shortcut-label';
@@ -27,6 +28,8 @@ import {
 } from './permissions';
 import { bindShortcuts, type ShortcutName, shortcutMap, unbindShortcuts } from './shortcuts';
 import { checkForUpdates } from './updater';
+
+const FINISH_TIMEOUT_MS = NARRATION_SETTLE_MS + 15_000;
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
@@ -366,12 +369,26 @@ async function onOverlayCommand(command: OverlayCommand): Promise<void> {
           insertTargetGuideId: target.insertTargetGuideId,
           insertAtIndex: target.insertAtIndex,
         },
-        45_000,
+        FINISH_TIMEOUT_MS,
       ).catch(() => undefined);
-      if (steps.length > 0) finished = target.insertTargetGuideId;
+      finished = target.insertTargetGuideId;
     } else if (currentGuideId) {
       finished = currentGuideId;
-      void ask(mainWindow?.webContents ?? null, 'mimik:capture:finishGuide', finished, 45_000).catch(() => undefined);
+      void ask(mainWindow?.webContents ?? null, 'mimik:capture:finishGuide', finished, FINISH_TIMEOUT_MS).catch(
+        () => undefined,
+      );
+    }
+    currentGuideId = null;
+  } else if (command === 'discard') {
+    recorder?.stop();
+    await recorder?.drain();
+    const staging = insert !== null;
+    insert = null;
+    if (currentGuideId) {
+      await ask(mainWindow?.webContents ?? null, 'mimik:capture:discardRecording', {
+        guideId: currentGuideId,
+        staging,
+      }).catch(() => undefined);
     }
     currentGuideId = null;
   } else if (command === 'disarm' || command === 'cancelEdit') {
@@ -380,7 +397,9 @@ async function onOverlayCommand(command: OverlayCommand): Promise<void> {
   broadcastState(command, finished ?? currentGuideId);
   applyShortcuts();
   refreshTray();
-  if (command === 'stop' || command === 'disarm' || command === 'cancelEdit') leaveCapture(Boolean(finished));
+  if (command === 'stop' || command === 'discard' || command === 'disarm' || command === 'cancelEdit') {
+    leaveCapture(Boolean(finished));
+  }
 }
 
 let isQuitting = false;

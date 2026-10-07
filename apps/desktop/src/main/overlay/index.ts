@@ -11,7 +11,7 @@ import type { VoiceErrorReason } from '@mimik/core/capture/voice/voice-update';
 import type { DescriptionSource } from '@mimik/core/guides/types';
 import { app, BrowserWindow, ipcMain, screen } from 'electron';
 import type { Actor } from 'xstate';
-import { clampToDisplays, loadRegion, type Region, saveRegion } from '../capture/region';
+import { loadRegion, type Region, saveRegion } from '../capture/region';
 import type { CaptureMode } from '../capture/settings';
 
 export type CaptureActor = Actor<typeof captureMachine>;
@@ -23,6 +23,7 @@ export type OverlayCommand =
   | 'pause'
   | 'resume'
   | 'stop'
+  | 'discard'
   | 'mode:window'
   | 'mode:screen'
   | 'mode:area'
@@ -47,7 +48,7 @@ export interface OverlayProgress {
   ms: number;
 }
 
-export interface OverlayShortcuts {
+interface OverlayShortcuts {
   startStop: string | null;
   capture: string | null;
 }
@@ -58,7 +59,7 @@ export interface OverlayNarration {
   reason?: VoiceErrorReason;
 }
 
-export interface OverlayAim {
+interface OverlayAim {
   x: number;
   y: number;
   aspect: number;
@@ -518,7 +519,7 @@ export class CaptureOverlay {
       this.stopEditing();
       this.capture.send({ type: 'RESUME_CAPTURE' });
       this.onCommand(command);
-    } else if (command === 'stop' && state !== CaptureState.IDLE) {
+    } else if ((command === 'stop' || command === 'discard') && state !== CaptureState.IDLE) {
       this.reset();
       this.onCommand(command);
     }
@@ -564,4 +565,4 @@ export class CaptureOverlay {
   }
 }
 
-export { clampToDisplays, loadRegion, type Region, saveRegion };
+export type { Region };
