@@ -4,7 +4,7 @@
 
 # Mimik
 
-**English** · [Español](./README.es.md) · [Português (BR)](./README.pt-BR.md) · [Français](./README.fr.md) · [简体中文](./README.zh-CN.md)
+**English** · [Español](.github/readme/README.es.md) · [Português (BR)](.github/readme/README.pt-BR.md) · [Français](.github/readme/README.fr.md) · [简体中文](.github/readme/README.zh-CN.md)
 
 **Auto-capture any browser workflow into a step-by-step guide. No account, no cloud, no tracking.**
 
