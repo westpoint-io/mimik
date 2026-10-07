@@ -6,7 +6,7 @@ import { DesktopRecorder, shouldCapture } from '../src/main/capture/recorder';
 import { clampToDisplays } from '../src/main/capture/region';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from '../src/main/capture/screenshot-store';
 import { DEFAULT_CAPTURE_SETTINGS, loadSettings, normaliseSettings, saveSettings } from '../src/main/capture/settings';
-import type { Capture } from '../src/main/capture/screenshot';
+import type { Capture, Rect } from '../src/main/capture/screenshot';
 
 interface CheckResult {
   name: string;
@@ -39,10 +39,10 @@ app.whenReady().then(async () => {
   const region = clampToDisplays({ x: 0, y: 0, width: 800, height: 600 });
   const display = screen.getDisplayMatching(region);
 
-  function syntheticDisplay(displayId: number): Promise<Capture> {
+  function syntheticDisplay(area: Rect): Promise<Capture> {
     const scale = display.scaleFactor;
-    const width = Math.round(display.bounds.width * scale);
-    const height = Math.round(display.bounds.height * scale);
+    const width = Math.round(area.width * scale);
+    const height = Math.round(area.height * scale);
     const pixels = Buffer.alloc(width * height * 4);
     for (let i = 0; i < pixels.length; i += 4) {
       pixels[i] = (i / 4) % 256;
@@ -51,7 +51,7 @@ app.whenReady().then(async () => {
       pixels[i + 3] = 255;
     }
     const image = nativeImage.createFromBuffer(pixels, { width, height });
-    return Promise.resolve({ png: image.toPNG(), width, height, scaleFactor: scale, displayId });
+    return Promise.resolve({ png: image.toPNG(), width, height, scaleFactor: scale, displayId: display.id });
   }
 
   let settings = { ...DEFAULT_CAPTURE_SETTINGS, showCursor: false };
