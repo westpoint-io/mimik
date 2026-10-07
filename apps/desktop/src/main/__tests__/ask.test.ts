@@ -21,11 +21,11 @@ function renderer(reply: unknown): WebContents {
 
 describe('ask', () => {
   it('resolves with what the renderer answered', async () => {
-    await expect(ask(renderer('guide-1'), 'mimik:capture:createGuide')).resolves.toBe('guide-1');
+    await expect(ask(renderer('guide-1'), 'mimik:capture:createGuide', {})).resolves.toBe('guide-1');
   });
 
   it('rejects when the renderer answered with the error its handler threw', async () => {
-    await expect(ask(renderer({ error: 'QuotaExceededError' }), 'mimik:capture:createGuide')).rejects.toThrow(
+    await expect(ask(renderer({ error: 'QuotaExceededError' }), 'mimik:capture:createGuide', {})).rejects.toThrow(
       'mimik:capture:createGuide: QuotaExceededError',
     );
   });

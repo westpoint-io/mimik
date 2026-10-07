@@ -1,7 +1,7 @@
 import { defineExtensionMessaging } from '@webext-core/messaging';
 import type { GenerateGuideDescriptionResponse } from '@/core/capture/ai/guide-description';
 import type { RewriteSelectionResponse } from '@/core/capture/ai/rewrite';
-import type { CaptureStateValue, PauseReason } from '@/core/capture/machine';
+import type { CaptureStateUpdate } from '@/core/capture/capture-state-update';
 import type {
   CaptureStepData,
   CaptureStepResponse,
@@ -11,13 +11,6 @@ import type {
   UpdateInputStepResponse,
 } from '@/core/capture/sink';
 import type { VoiceoverProviderKey } from '@/core/export/voiceover/providers';
-
-export interface GetStateResponse {
-  state: CaptureStateValue;
-  stepCount: number;
-  currentGuideId: string | null;
-  pauseReason: PauseReason | null;
-}
 
 interface StartRecordingData {
   url: string;
@@ -126,7 +119,7 @@ interface ResumeCaptureResponse {
 }
 
 interface MimikProtocol {
-  getState(): GetStateResponse;
+  getState(): CaptureStateUpdate;
   startRecording(data: StartRecordingData): StartRecordingResponse;
   stopRecording(): StopRecordingResponse;
   discardRecording(): DiscardRecordingResponse;

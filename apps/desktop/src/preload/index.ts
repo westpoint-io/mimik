@@ -1,29 +1,16 @@
 import type { AiFailureUpdate } from '@mimik/core/capture/ai/errors';
 import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
+import type { Rect } from '@mimik/core/rect';
 import { contextBridge, ipcRenderer } from 'electron';
 import type { CaptureSettings } from '../main/capture/settings';
-import type { OverlayCommand, OverlayNarration } from '../main/overlay';
+import type { DesktopStateUpdate, RendererRequest, RendererRequests } from '../main/ipc';
+import type { OverlayNarration } from '../main/overlay';
 import type { CapturePermissions, MicrophoneAccess, PermissionKind } from '../main/permissions';
-
-export interface CaptureStateUpdate {
-  command: OverlayCommand | null;
-  state: string;
-  pauseReason: string | null;
-  currentGuideId: string | null;
-  stepCount: number;
-}
-
-interface Region {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
 
 const api = {
   version: (): Promise<string> => ipcRenderer.invoke('mimik:version'),
   capture: {
-    region: (): Promise<Region> => ipcRenderer.invoke('mimik:capture:region'),
+    region: (): Promise<Rect> => ipcRenderer.invoke('mimik:capture:region'),
     edit: (insert?: CaptureInsert): Promise<void> => ipcRenderer.invoke('mimik:capture:edit', insert),
     arm: (insert?: CaptureInsert): Promise<void> => ipcRenderer.invoke('mimik:capture:arm', insert),
     described: (
@@ -41,9 +28,9 @@ const api = {
     onOpenSheet: (handler: () => void): void => {
       ipcRenderer.on('mimik:capture:openSheet', () => handler());
     },
-    getState: (): Promise<CaptureStateUpdate> => ipcRenderer.invoke('mimik:capture:getState'),
-    onStateUpdate: (handler: (update: CaptureStateUpdate) => void): void => {
-      ipcRenderer.on('mimik:capture:stateUpdate', (_event, update: CaptureStateUpdate) => handler(update));
+    getState: (): Promise<DesktopStateUpdate> => ipcRenderer.invoke('mimik:capture:getState'),
+    onStateUpdate: (handler: (update: DesktopStateUpdate) => void): void => {
+      ipcRenderer.on('mimik:capture:stateUpdate', (_event, update: DesktopStateUpdate) => handler(update));
     },
   },
   microphone: {
@@ -64,8 +51,11 @@ const api = {
     fetch: (request: unknown): Promise<unknown> => ipcRenderer.invoke('mimik:ai:fetch', request),
     abort: (id: string): void => ipcRenderer.send('mimik:ai:abort', id),
   },
-  onRequest: (channel: string, handler: (payload: unknown) => Promise<unknown>): void => {
-    ipcRenderer.on(channel, async (_event, replyChannel: string, payload: unknown) => {
+  onRequest: <K extends RendererRequest>(
+    channel: K,
+    handler: (payload: RendererRequests[K][0]) => Promise<RendererRequests[K][1]> | RendererRequests[K][1],
+  ): void => {
+    ipcRenderer.on(channel, async (_event, replyChannel: string, payload: RendererRequests[K][0]) => {
       try {
         ipcRenderer.send(replyChannel, await handler(payload));
       } catch (error) {

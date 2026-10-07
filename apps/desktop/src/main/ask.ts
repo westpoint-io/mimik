@@ -1,8 +1,15 @@
 import { ipcMain, type WebContents } from 'electron';
+import type { RendererRequest, RendererRequests } from './ipc';
 
 let seq = 0;
 
-export function ask<T>(target: WebContents | null, channel: string, payload?: unknown, timeoutMs = 15_000): Promise<T> {
+export function ask<K extends RendererRequest>(
+  target: WebContents | null,
+  channel: K,
+  payload: RendererRequests[K][0],
+  timeoutMs = 15_000,
+): Promise<RendererRequests[K][1]> {
+  type T = RendererRequests[K][1];
   if (!target || target.isDestroyed()) return Promise.reject(new Error(`${channel}: no renderer available`));
 
   const replyChannel = `${channel}:reply:${++seq}`;

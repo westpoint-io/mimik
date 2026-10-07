@@ -1,7 +1,8 @@
 import { join } from 'node:path';
 import { CaptureState, captureMachine } from '@mimik/core/capture/machine';
 import { app, BrowserWindow, globalShortcut, screen, webContents } from 'electron';
-import { clampToDisplays, defaultRegion, loadRegion, type Region, saveRegion } from '../src/main/capture/region';
+import type { Rect } from '@mimik/core/rect';
+import { clampToDisplays, defaultRegion, loadRegion, saveRegion } from '../src/main/capture/region';
 import type { CaptureMode } from '../src/main/capture/settings';
 import { CaptureOverlay } from '../src/main/overlay';
 import { bindShortcuts, sameShortcuts, shortcutMap, unbindShortcuts } from '../src/main/shortcuts';
@@ -62,15 +63,18 @@ app.whenReady().then(async () => {
   const pause = () => capture.send({ type: 'PAUSE_CAPTURE', reason: 'manual' });
   const overlay: CaptureOverlay = new CaptureOverlay(
     capture,
-    (command) => commands.push(command),
+    (command) => {
+      commands.push(command);
+      if (command === 'stop' || command === 'discard') overlay.reset();
+    },
     () => mode,
     {
-      introFrame: async (): Promise<Region> => overlay.region,
+      introFrame: async (): Promise<Rect> => overlay.region,
       shortcuts: () => ({ startStop: 'Alt+Shift+R', capture: 'Alt+Shift+C' }),
     },
   );
 
-  const stored: Region = { x: 120, y: 90, width: 640, height: 400 };
+  const stored: Rect = { x: 120, y: 90, width: 640, height: 400 };
   const written = saveRegion(stored);
   const read = loadRegion();
   check(

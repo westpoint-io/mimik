@@ -1,6 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import type { CaptureImage } from '@mimik/core/capture/sink';
+import type { StepAction } from '@mimik/core/capture/step-action';
 import type { ElementMeta } from '@mimik/core/guides/types';
+import type { Rect } from '@mimik/core/rect';
 import { clipboard, screen } from 'electron';
 import { shortcutLabel } from '../../renderer/lib/shortcut-label';
 import { cursorPoint } from './displays';
@@ -17,8 +19,7 @@ import {
 import { type FocusedWindowResult, focusedWindow, windowAt } from './focused-window';
 import { type InputAction, InputHook, type KeyAction, type PointerAction } from './input-hook';
 import { InputSession } from './input-session';
-import type { Region } from './region';
-import { type Frame, grabDisplay, type Rect } from './screenshot';
+import { type Frame, grabDisplay } from './screenshot';
 import { writeScreenshot } from './screenshot-store';
 import { type CaptureMode, type CaptureSettings, DEFAULT_CAPTURE_SETTINGS } from './settings';
 
@@ -67,7 +68,7 @@ export interface Point {
 }
 
 export interface CaptureRequest {
-  action: string;
+  action: StepAction;
   elementMeta: ElementMeta;
   image?: CaptureImage;
   inputValue?: string;
@@ -89,6 +90,7 @@ export interface RecorderHooks {
   progress?: (fraction: number, ms: number) => void;
   aimed?: (aim: { x: number; y: number; aspect: number }) => void;
   saved?: (src: string) => void;
+  recording?: () => boolean;
 }
 
 export type RecorderStart = { ok: true } | { ok: false; reason: string; detail: string };
@@ -115,7 +117,7 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function inside(region: Region, point: Point): boolean {
+function inside(region: Rect, point: Point): boolean {
   return (
     point.x >= region.x &&
     point.y >= region.y &&
@@ -128,12 +130,12 @@ export function isRepeatClick(previousAt: number | null, at: number): boolean {
   return previousAt !== null && at - previousAt <= REPEAT_CLICK_MS;
 }
 
-export function shouldCapture(settings: CaptureSettings, region: Region, point: Point): boolean {
+export function shouldCapture(settings: CaptureSettings, region: Rect, point: Point): boolean {
   if (settings.captureMode !== 'area') return true;
   return inside(region, point) || settings.keepClicksBeyondArea;
 }
 
-export function frameFor(mode: CaptureMode, point: Point, region: Region, window: Rect | null): Rect {
+export function frameFor(mode: CaptureMode, point: Point, region: Rect, window: Rect | null): Rect {
   const display = screen.getDisplayNearestPoint(point).bounds;
   if (mode === 'screen') return display;
   if (mode === 'window') return window && inside(window, point) ? window : display;
@@ -153,7 +155,7 @@ export function comboLabel(action: KeyAction, key: string, mac = process.platfor
   return mac ? shortcutLabel([...held, key].join('+'), true) : [...held, key].join('+');
 }
 
-export function clickAction(button: number): string {
+export function clickAction(button: number): StepAction {
   return button === 2 ? 'auxclick' : 'click';
 }
 
@@ -219,7 +221,6 @@ function centreOf(element: ScreenElement | null): Point | null {
 export class DesktopRecorder {
   private hook = new InputHook();
   private queue: Promise<unknown> = Promise.resolve();
-  private paused = false;
   private running = false;
   private lastClickAt: number | null = null;
   private lastKey: { keycode: number; at: number } | null = null;
@@ -239,10 +240,11 @@ export class DesktopRecorder {
   private readonly progress: (fraction: number, ms: number) => void;
   private readonly aimed: (aim: { x: number; y: number; aspect: number }) => void;
   private readonly saved: (src: string) => void;
+  private readonly recording: () => boolean;
   private pending = 0;
 
   constructor(
-    private readonly region: () => Region,
+    private readonly region: () => Rect,
     private readonly withHidden: <T>(fn: () => Promise<T>) => Promise<T>,
     private readonly send: (request: CaptureRequest) => Promise<unknown>,
     hooks: RecorderHooks = {},
@@ -262,6 +264,7 @@ export class DesktopRecorder {
     this.progress = hooks.progress ?? (() => {});
     this.aimed = hooks.aimed ?? (() => {});
     this.saved = hooks.saved ?? (() => {});
+    this.recording = hooks.recording ?? (() => true);
   }
 
   async start(): Promise<RecorderStart> {
@@ -271,18 +274,12 @@ export class DesktopRecorder {
     });
     if (!started.ok) return { ok: false, reason: started.reason, detail: started.detail };
     this.running = true;
-    this.paused = false;
     this.lastClickAt = null;
     return { ok: true };
   }
 
   pause(): void {
     this.finalizeInput();
-    this.paused = true;
-  }
-
-  resume(): void {
-    this.paused = false;
   }
 
   stop(): void {
@@ -290,11 +287,10 @@ export class DesktopRecorder {
     this.hook.stop();
     void this.release().catch(() => undefined);
     this.running = false;
-    this.paused = false;
   }
 
   get isRecording(): boolean {
-    return this.running && !this.paused;
+    return this.running && this.recording();
   }
 
   onAction(action: InputAction): void {
@@ -313,7 +309,7 @@ export class DesktopRecorder {
     this.clickAt(clickAction(action.button), point);
   }
 
-  private clickAt(action: string, point: Point): void {
+  private clickAt(action: StepAction, point: Point): void {
     this.finalizeInput();
     this.watchPassword();
     const element = this.lookup(point);
@@ -525,7 +521,7 @@ export class DesktopRecorder {
   }
 
   private async write(
-    action: string,
+    action: StepAction,
     point: Point,
     element: Promise<ScreenElement | null>,
     taken: Promise<Frame>,

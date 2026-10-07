@@ -30,15 +30,10 @@ import {
   normaliseSettings,
   saveSettings,
 } from '../src/main/capture/settings';
-import type { Capture, Rect } from '../src/main/capture/screenshot';
+import type { Rect } from '@mimik/core/rect';
+import type { Capture } from '../src/main/capture/screenshot';
 
 const MAC = process.platform === 'darwin';
-
-interface CheckResult {
-  name: string;
-  ok: boolean;
-  detail: string;
-}
 
 function bail(error: unknown): never {
   process.stdout.write(`FAIL check-pipeline aborted: ${error instanceof Error ? error.stack : String(error)}\n`);
@@ -90,14 +85,14 @@ app.whenReady().then(async () => {
     { grab: async () => syntheticDisplay, settings: () => settings, lookup: () => Promise.resolve(null) },
   );
 
-  activeGuide = await ask<string>(win.webContents, 'mimik:capture:createGuide');
+  activeGuide = await ask(win.webContents, 'mimik:capture:createGuide', {});
   const guideId = activeGuide;
 
   await recorder.capture({ x: region.x + 120, y: region.y + 90 });
   await recorder.capture({ x: region.x + 400, y: region.y + 300 });
-  const results = await ask<CheckResult[]>(win.webContents, 'mimik:check:verify', guideId, 60_000);
+  const results = await ask(win.webContents, 'mimik:check:verify', guideId, 60_000);
 
-  const blindGuide = await ask<string>(win.webContents, 'mimik:capture:createGuide');
+  const blindGuide = await ask(win.webContents, 'mimik:capture:createGuide', {});
   let blindRequest: CaptureRequest | null = null;
   const blind = new DesktopRecorder(
     () => region,
@@ -109,7 +104,7 @@ app.whenReady().then(async () => {
     { grab: () => Promise.reject(new Error('display gone')), settings: () => settings, lookup: () => Promise.resolve(null) },
   );
   await blind.capture({ x: region.x + 60, y: region.y + 60 });
-  const blindSteps = (await ask<string[] | null>(win.webContents, 'mimik:check:steps', blindGuide, 20_000)) ?? [];
+  const blindSteps = (await ask(win.webContents, 'mimik:check:steps', blindGuide, 20_000)) ?? [];
   await ask(win.webContents, 'mimik:check:cleanup', [blindGuide], 20_000).catch(() => undefined);
   results.push({
     name: 'a failed screenshot still writes the step, without a picture',
@@ -637,7 +632,7 @@ app.whenReady().then(async () => {
     detail: 'a real rectangle wins; no element, one covering the frame, or one overflowing it falls back to the click box',
   });
 
-  activeGuide = await ask<string>(win.webContents, 'mimik:capture:createGuide');
+  activeGuide = await ask(win.webContents, 'mimik:capture:createGuide', {});
 
   settings = { ...REGION_MODE, screenshotDelayMs: 400 };
   const before = Date.now();
@@ -649,8 +644,8 @@ app.whenReady().then(async () => {
     detail: `${elapsed} ms for a 400 ms delay`,
   });
 
-  const probeSrc = await ask<string | null>(win.webContents, 'mimik:check:screenshotSrc', activeGuide, 20_000);
-  const defaultLogo = await ask<boolean>(win.webContents, 'mimik:check:defaultLogo', undefined, 10_000);
+  const probeSrc = await ask(win.webContents, 'mimik:check:screenshotSrc', activeGuide, 20_000);
+  const defaultLogo = await ask(win.webContents, 'mimik:check:defaultLogo', undefined, 10_000);
   results.push({
     name: 'exports can load the default logo',
     ok: defaultLogo === true,
@@ -666,7 +661,7 @@ app.whenReady().then(async () => {
   await app_.loadFile(join(__dirname, '../renderer/index.html'));
   let wired = 'no reply';
   try {
-    const id = await ask<string>(app_.webContents, 'mimik:capture:createGuide', {}, 20_000);
+    const id = await ask(app_.webContents, 'mimik:capture:createGuide', {}, 20_000);
     wired = typeof id === 'string' && id.length > 0 ? id : `unexpected reply ${JSON.stringify(id)}`;
     await ask(app_.webContents, 'mimik:check:cleanup', [id], 20_000).catch(() => undefined);
   } catch (error) {
@@ -680,9 +675,9 @@ app.whenReady().then(async () => {
 
   let titled = 'no reply';
   try {
-    const id = await ask<string>(app_.webContents, 'mimik:capture:createGuide', {}, 20_000);
+    const id = await ask(app_.webContents, 'mimik:capture:createGuide', {}, 20_000);
     await ask(app_.webContents, 'mimik:capture:finishGuide', id, 20_000);
-    titled = (await ask<string | null>(win.webContents, 'mimik:check:title', id, 20_000)) ?? 'no guide';
+    titled = (await ask(win.webContents, 'mimik:check:title', id, 20_000)) ?? 'no guide';
     await ask(app_.webContents, 'mimik:check:cleanup', [id], 20_000).catch(() => undefined);
   } catch (error) {
     titled = error instanceof Error ? error.message : String(error);
@@ -705,16 +700,16 @@ app.whenReady().then(async () => {
           devicePixelRatio: 1,
         },
       }, 20_000);
-    const target = await ask<string>(app_.webContents, 'mimik:capture:createGuide', { staging: false }, 20_000);
+    const target = await ask(app_.webContents, 'mimik:capture:createGuide', { staging: false }, 20_000);
     await labelled(target, 'First');
     await labelled(target, 'Third');
-    const before = await ask<string | null>(win.webContents, 'mimik:check:title', target, 20_000);
-    const staging = await ask<string>(app_.webContents, 'mimik:capture:createGuide', { staging: true }, 20_000);
+    const before = await ask(win.webContents, 'mimik:check:title', target, 20_000);
+    const staging = await ask(app_.webContents, 'mimik:capture:createGuide', { staging: true }, 20_000);
     await labelled(staging, 'Second');
     await ask(app_.webContents, 'mimik:capture:mergeGuideInto', { guideId: staging, insertTargetGuideId: target, insertAtIndex: 1 }, 20_000);
-    const order = (await ask<string[] | null>(win.webContents, 'mimik:check:steps', target, 20_000)) ?? [];
-    const left = await ask<string[] | null>(win.webContents, 'mimik:check:steps', staging, 20_000);
-    const after = await ask<string | null>(win.webContents, 'mimik:check:title', target, 20_000);
+    const order = (await ask(win.webContents, 'mimik:check:steps', target, 20_000)) ?? [];
+    const left = await ask(win.webContents, 'mimik:check:steps', staging, 20_000);
+    const after = await ask(win.webContents, 'mimik:check:title', target, 20_000);
     merged = `${order.map((text) => text.match(/First|Second|Third/)?.[0] ?? text).join(', ')}; staging ${left === null ? 'gone' : 'left behind'}; title ${after === before ? 'kept' : `changed to ${after}`}`;
     await ask(app_.webContents, 'mimik:check:cleanup', [target, staging], 20_000).catch(() => undefined);
   } catch (error) {
@@ -728,12 +723,12 @@ app.whenReady().then(async () => {
 
   let discarded = 'no reply';
   try {
-    const kept = await ask<string>(app_.webContents, 'mimik:capture:createGuide', {}, 20_000);
-    const staging = await ask<string>(app_.webContents, 'mimik:capture:createGuide', { staging: true }, 20_000);
+    const kept = await ask(app_.webContents, 'mimik:capture:createGuide', {}, 20_000);
+    const staging = await ask(app_.webContents, 'mimik:capture:createGuide', { staging: true }, 20_000);
     await ask(app_.webContents, 'mimik:capture:discardRecording', { guideId: kept, staging: false }, 20_000);
     await ask(app_.webContents, 'mimik:capture:discardRecording', { guideId: staging, staging: true }, 20_000);
-    const trashed = await ask<boolean | null>(win.webContents, 'mimik:check:trashed', kept, 20_000);
-    const left = await ask<boolean | null>(win.webContents, 'mimik:check:trashed', staging, 20_000);
+    const trashed = await ask(win.webContents, 'mimik:check:trashed', kept, 20_000);
+    const left = await ask(win.webContents, 'mimik:check:trashed', staging, 20_000);
     discarded = `${trashed ? 'in Trash' : 'not in Trash'}; staging ${left === null ? 'gone' : 'left behind'}`;
     await ask(app_.webContents, 'mimik:check:cleanup', [kept, staging], 20_000).catch(() => undefined);
   } catch (error) {
@@ -761,7 +756,7 @@ app.whenReady().then(async () => {
     detail: String(fetched),
   });
 
-  const kept = await ask<string[]>(win.webContents, 'mimik:check:screenshotIds', undefined, 20_000);
+  const kept = await ask(win.webContents, 'mimik:check:screenshotIds', undefined, 20_000);
   const swept = sweepScreenshots(kept);
   results.push({
     name: 'deleted guides leave no files',

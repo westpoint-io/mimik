@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import type { AiFailureUpdate } from '@mimik/core/capture/ai/errors';
 import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
+import { captureStateUpdate } from '@mimik/core/capture/capture-state-update';
 import { isLive } from '@mimik/core/capture/is-live';
 import { CaptureState, captureMachine } from '@mimik/core/capture/machine';
 import { NARRATION_SETTLE_MS } from '@mimik/core/capture/voice/narration-settle-ms';
@@ -16,6 +17,7 @@ import { grabDisplay } from './capture/screenshot';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from './capture/screenshot-store';
 import { type CaptureMode, type CaptureSettings, loadSettings, saveSettings } from './capture/settings';
 import { mainI18n } from './i18n';
+import type { DesktopStateUpdate } from './ipc';
 import { CaptureOverlay, type OverlayCommand, type OverlayNarration, type OverlayStep } from './overlay';
 import {
   askMicrophone,
@@ -36,7 +38,7 @@ let tray: Tray | null = null;
 let overlay: CaptureOverlay | null = null;
 let recorder: DesktopRecorder | null = null;
 const capture = createActor(captureMachine).start();
-let currentGuideId: string | null = null;
+let ending = false;
 let insert: CaptureInsert | null = null;
 let describing = true;
 let captureSettings: CaptureSettings | null = null;
@@ -258,19 +260,12 @@ function createTray(): void {
   refreshTrayMenu();
 }
 
-function captureStateUpdate(command: OverlayCommand | null, guideId: string | null) {
-  const { value, context } = capture.getSnapshot();
-  return {
-    command,
-    state: value,
-    pauseReason: context.pauseReason,
-    currentGuideId: guideId,
-    stepCount: context.stepCount,
-  };
+function stateUpdate(command: OverlayCommand | null, guideId: string | null): DesktopStateUpdate {
+  return { command, ...captureStateUpdate(capture.getSnapshot()), currentGuideId: guideId };
 }
 
 function broadcastState(command: OverlayCommand, guideId: string | null): void {
-  mainWindow?.webContents.send('mimik:capture:stateUpdate', captureStateUpdate(command, guideId));
+  mainWindow?.webContents.send('mimik:capture:stateUpdate', stateUpdate(command, guideId));
 }
 
 function applyShortcuts(): void {
@@ -306,6 +301,37 @@ function onShortcut(name: ShortcutName): void {
   recorder?.captureNow(screen.getCursorScreenPoint());
 }
 
+function recordingGuideId(): string | null {
+  return capture.getSnapshot().context.currentGuideId;
+}
+
+async function endRecording(command: 'stop' | 'discard'): Promise<string | null> {
+  recorder?.stop();
+  await recorder?.drain();
+  const { currentGuideId: guideId, insertTargetGuideId, insertAtIndex } = capture.getSnapshot().context;
+  insert = null;
+  overlay?.reset();
+  if (!guideId) return null;
+  const app = mainWindow?.webContents ?? null;
+  if (command === 'discard') {
+    await ask(app, 'mimik:capture:discardRecording', { guideId, staging: insertTargetGuideId !== null }).catch(
+      () => undefined,
+    );
+    return null;
+  }
+  if (insertTargetGuideId !== null && insertAtIndex !== null) {
+    await ask(
+      app,
+      'mimik:capture:mergeGuideInto',
+      { guideId, insertTargetGuideId, insertAtIndex },
+      FINISH_TIMEOUT_MS,
+    ).catch(() => undefined);
+    return insertTargetGuideId;
+  }
+  void ask(app, 'mimik:capture:finishGuide', guideId, FINISH_TIMEOUT_MS).catch(() => undefined);
+  return guideId;
+}
+
 async function onOverlayCommand(command: OverlayCommand): Promise<void> {
   let finished: string | null = null;
   if (command.startsWith('mode:')) {
@@ -314,87 +340,56 @@ async function onOverlayCommand(command: OverlayCommand): Promise<void> {
     return;
   }
   if (command === 'narration:start' || command === 'narration:stop') {
-    if (command === 'narration:stop' || (await askMicrophone())) broadcastState(command, currentGuideId);
+    if (command === 'narration:stop' || (await askMicrophone())) broadcastState(command, recordingGuideId());
     return;
   }
   if (command === 'deleteStep') {
     const removed = steps.pop();
-    if (removed && currentGuideId) {
+    const guideId = recordingGuideId();
+    if (removed && guideId) {
       capture.send({ type: 'STEP_REMOVED' });
       await ask(mainWindow?.webContents ?? null, 'mimik:capture:deleteStep', {
-        guideId: currentGuideId,
+        guideId,
         stepId: removed.id,
       }).catch(() => undefined);
     }
     overlay?.showStep(steps.at(-1) ?? null);
     return;
   }
-  if (command === 'start') {
+  if (command === 'stop' || command === 'discard') {
+    if (ending) return;
+    ending = true;
+    try {
+      finished = await endRecording(command);
+    } finally {
+      ending = false;
+    }
+  } else if (command === 'start') {
     steps = [];
     overlay?.setAiFailure(null);
-    currentGuideId = capture.getSnapshot().context.currentGuideId;
+    const { currentGuideId: guideId, insertTargetGuideId } = capture.getSnapshot().context;
     try {
       await ask(mainWindow?.webContents ?? null, 'mimik:capture:createGuide', {
-        guideId: currentGuideId,
-        staging: insert !== null,
+        guideId,
+        staging: insertTargetGuideId !== null,
       });
     } catch (error) {
-      currentGuideId = null;
       overlay?.reset();
       dialog.showErrorBox(mainI18n.t('desktop.cannotRecord'), error instanceof Error ? error.message : String(error));
       return;
     }
     const started = await recorder?.start();
     if (started && !started.ok) {
-      currentGuideId = null;
       overlay?.reset();
       dialog.showErrorBox(mainI18n.t('desktop.cannotRecord'), started.detail);
       return;
     }
   } else if (command === 'pause') {
     recorder?.pause();
-  } else if (command === 'resume') {
-    recorder?.resume();
-  } else if (command === 'stop') {
-    recorder?.stop();
-    await recorder?.drain();
-    const target = insert;
-    insert = null;
-    if (currentGuideId && target) {
-      await ask(
-        mainWindow?.webContents ?? null,
-        'mimik:capture:mergeGuideInto',
-        {
-          guideId: currentGuideId,
-          insertTargetGuideId: target.insertTargetGuideId,
-          insertAtIndex: target.insertAtIndex,
-        },
-        FINISH_TIMEOUT_MS,
-      ).catch(() => undefined);
-      finished = target.insertTargetGuideId;
-    } else if (currentGuideId) {
-      finished = currentGuideId;
-      void ask(mainWindow?.webContents ?? null, 'mimik:capture:finishGuide', finished, FINISH_TIMEOUT_MS).catch(
-        () => undefined,
-      );
-    }
-    currentGuideId = null;
-  } else if (command === 'discard') {
-    recorder?.stop();
-    await recorder?.drain();
-    const staging = insert !== null;
-    insert = null;
-    if (currentGuideId) {
-      await ask(mainWindow?.webContents ?? null, 'mimik:capture:discardRecording', {
-        guideId: currentGuideId,
-        staging,
-      }).catch(() => undefined);
-    }
-    currentGuideId = null;
   } else if (command === 'disarm' || command === 'cancelEdit') {
     insert = null;
   }
-  broadcastState(command, finished ?? currentGuideId);
+  broadcastState(command, finished ?? recordingGuideId());
   applyShortcuts();
   refreshTray();
   if (command === 'stop' || command === 'discard' || command === 'disarm' || command === 'cancelEdit') {
@@ -487,11 +482,12 @@ if (!app.requestSingleInstanceLock()) {
         return overlay ? overlay.withHidden(fn) : fn();
       },
       async (request) => {
-        const reply = await ask<{ stepId?: string; title?: string; pending?: boolean }>(
-          mainWindow?.webContents ?? null,
-          'mimik:capture:captureStep',
-          { ...request, guideId: currentGuideId },
-        ).catch(() => undefined);
+        const guideId = recordingGuideId();
+        if (!guideId) return undefined;
+        const reply = await ask(mainWindow?.webContents ?? null, 'mimik:capture:captureStep', {
+          ...request,
+          guideId,
+        }).catch(() => undefined);
         if (reply?.stepId && reply.title) {
           const step: OverlayStep = {
             id: reply.stepId,
@@ -518,6 +514,7 @@ if (!app.requestSingleInstanceLock()) {
         progress: (fraction, ms) => overlay?.setProgress(Math.round(fraction * (describing ? 45 : 100)), ms),
         aimed: (aim) => overlay?.setPrint({ aim }),
         saved: (src) => overlay?.setPrint({ src }),
+        recording: () => capture.getSnapshot().value === CaptureState.RECORDING,
       },
     );
 
@@ -555,7 +552,7 @@ if (!app.requestSingleInstanceLock()) {
       },
     );
     ipcMain.handle('mimik:capture:region', () => overlay?.region);
-    ipcMain.handle('mimik:capture:getState', () => captureStateUpdate(null, currentGuideId));
+    ipcMain.handle('mimik:capture:getState', () => stateUpdate(null, recordingGuideId()));
     ipcMain.handle('mimik:capture:edit', (_event, target?: CaptureInsert) => {
       whenPermitted(() => {
         insert = target ?? null;

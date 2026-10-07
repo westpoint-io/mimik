@@ -1,7 +1,6 @@
 import { finishGuide } from '@mimik/core/capture/ai/finish-guide';
 import { mergeRecording } from '@mimik/core/capture/ai/merge-recording';
 import { CaptureState } from '@mimik/core/capture/machine';
-import type { CaptureStepData } from '@mimik/core/capture/sink';
 import { i18n, localStorage } from '@mimik/core/env';
 import { getMostCommonApp } from '@mimik/core/guides/most-common-app';
 import {
@@ -19,10 +18,8 @@ let narratingBeforePause = false;
 
 allScreenshotIds().then((ids) => window.mimik.screenshots.sweep(ids));
 
-window.mimik.onRequest('mimik:capture:createGuide', (payload) =>
-  sink.createGuide(payload as { guideId?: string; staging?: boolean }),
-);
-window.mimik.onRequest('mimik:capture:captureStep', (payload) => sink.captureStep(payload as CaptureStepData));
+window.mimik.onRequest('mimik:capture:createGuide', (payload) => sink.createGuide(payload));
+window.mimik.onRequest('mimik:capture:captureStep', (payload) => sink.captureStep(payload));
 
 window.mimik.capture.onStateUpdate(async ({ command, state, currentGuideId }) => {
   if (command === 'narration:start' || command === 'narration:stop') {
@@ -39,11 +36,11 @@ window.mimik.capture.onStateUpdate(async ({ command, state, currentGuideId }) =>
   } else if (command === 'pause') {
     narratingBeforePause = narration.update.phase === 'recording';
     narration.stop();
-  } else if (command === 'narration:stop') narration.abort();
+  } else if (command === 'narration:stop') narration.turnOff();
 });
 
 window.mimik.onRequest('mimik:capture:deleteStep', async (payload) => {
-  const { guideId, stepId } = payload as { guideId: string; stepId: string };
+  const { guideId, stepId } = payload;
   await deleteStep(guideId, stepId);
   return true;
 });
@@ -54,29 +51,25 @@ async function appTitle(guideId: string): Promise<string> {
 }
 
 window.mimik.onRequest('mimik:capture:finishGuide', async (payload) => {
-  await finishGuide(payload as string, { fallbackTitle: appTitle, settleNarration: () => narration.settle() });
+  await finishGuide(payload, { fallbackTitle: appTitle, settleNarration: () => narration.settle() });
   return true;
 });
 
 window.mimik.onRequest('mimik:capture:discardRecording', async (payload) => {
-  const { guideId, staging } = payload as { guideId: string; staging: boolean };
-  narration.abort();
+  const { guideId, staging } = payload;
+  narration.turnOff();
   if (staging) await permanentlyDeleteGuide(guideId);
   else await softDeleteGuide(guideId);
   return true;
 });
 
 window.mimik.onRequest('mimik:capture:mergeGuideInto', async (payload) => {
-  const { guideId, insertTargetGuideId, insertAtIndex } = payload as {
-    guideId: string;
-    insertTargetGuideId: string;
-    insertAtIndex: number;
-  };
+  const { guideId, insertTargetGuideId, insertAtIndex } = payload;
   await mergeRecording(guideId, { insertTargetGuideId, insertAtIndex }, () => narration.settle());
   return true;
 });
 
 window.mimik.onRequest('mimik:check:cleanup', async (payload) => {
-  for (const id of payload as string[]) await permanentlyDeleteGuide(id);
+  for (const id of payload) await permanentlyDeleteGuide(id);
   return true;
 });
