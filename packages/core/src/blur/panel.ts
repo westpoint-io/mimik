@@ -1,4 +1,5 @@
 import { createOverlayRoot } from '@/core/capture/dom/overlay-root';
+import { svgElement } from '@/core/capture/dom/svg-element';
 import { i18n } from '@/core/env';
 import type { PresetKey } from './patterns';
 import { PRESET_LABELS } from './patterns';
@@ -300,12 +301,12 @@ export class BlurPanel {
 
     const title = document.createElement('div');
     title.className = 'header-title';
-    title.innerHTML = `${icon('blur')} ${i18n.t('blurPanel.title')}`;
+    title.append(svgElement(icon('blur')), ` ${i18n.t('blurPanel.title')}`);
     header.appendChild(title);
 
     const closeBtn = document.createElement('button');
     closeBtn.className = 'close-btn';
-    closeBtn.innerHTML = icon('close');
+    closeBtn.append(svgElement(icon('close')));
     closeBtn.addEventListener('click', () => {
       document.dispatchEvent(new CustomEvent('mimik-blur:done'));
     });
@@ -386,7 +387,7 @@ export class BlurPanel {
   private buildPickerButton(): HTMLElement {
     const btn = document.createElement('button');
     btn.className = 'btn-picker';
-    btn.innerHTML = `${icon('cursor')} Click to Blur`;
+    btn.append(svgElement(icon('cursor')), ` ${i18n.t('blurPanel.clickToBlur')}`);
     btn.addEventListener('click', () => {
       document.dispatchEvent(new CustomEvent('mimik-blur:start-picker'));
     });
