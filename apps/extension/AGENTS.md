@@ -1,7 +1,7 @@
 # The extension
 
-A WXT Manifest V3 extension: `entrypoints/` (background, content, sidepanel, fullview, onboarding,
-options, offscreen, mic-permission), `capture/`, `blur/`, `guideme/`, `lib/` and `ui/`.
+A WXT Manifest V3 extension. Under `src/`: `entrypoints/` (background, content, sidepanel, fullview,
+onboarding, options, offscreen, mic-permission), `capture/`, `blur/`, `guideme/`, `lib/` and `ui/`.
 
 ## Flow
 

@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
-const ROOTS = ['src', 'packages', 'apps/desktop/src', 'apps/desktop/scripts'];
+const ROOTS = ['apps/extension/src', 'packages', 'apps/desktop/src', 'apps/desktop/scripts'];
 const UNDERSCORE_KEY = /\bi18n\.t\(\s*['"`][A-Za-z][A-Za-z0-9]*_/;
 
 const walk = (dir) =>

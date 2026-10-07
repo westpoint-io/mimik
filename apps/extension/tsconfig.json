@@ -1,0 +1,22 @@
+{
+  "extends": "./.wxt/tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "allowImportingTsExtensions": true,
+    "paths": {
+      "@/core/*": ["../../packages/core/src/*"],
+      "@/*": ["./src/*"],
+      "@mimik/ui": ["../../packages/ui/src/index.ts"],
+      "@mimik/ui/*": ["../../packages/ui/src/*"],
+      "@mimik/core/*": ["../../packages/core/src/*"]
+    },
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noUncheckedIndexedAccess": true
+  },
+  "include": ["src/**/*", "../../packages/core/src/**/*", "../../packages/ui/src/**/*", "wxt.config.ts", ".wxt/wxt.d.ts"]
+}

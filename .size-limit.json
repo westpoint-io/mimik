@@ -1,5 +1,0 @@
-[
-  { "name": "background", "path": ".output/chrome-mv3/background.js", "limit": "170 kB" },
-  { "name": "content script", "path": ".output/chrome-mv3/content-scripts/*.js", "limit": "40 kB" },
-  { "name": "pages", "path": ".output/chrome-mv3/chunks/*.js", "limit": "600 kB" }
-]

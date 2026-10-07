@@ -109,7 +109,7 @@ describe('importGuide', () => {
   it('points each step at its own newly minted screenshot', async () => {
     const guideId = await importGuide(makeBundle());
     const loaded = await getGuide(guideId);
-    const [first, second] = loaded?.steps as Step[];
+    const [first, second] = loaded!.steps as Step[];
     const screenshot = loaded?.screenshots.get(first!.id);
 
     expect(screenshot?.id).toBe(first!.screenshotId);

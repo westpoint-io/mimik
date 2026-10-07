@@ -1,83 +1,133 @@
 {
-  "name": "mimik",
-  "version": "1.3.0",
-  "description": "",
+  "name": "mimik-monorepo",
+  "private": true,
   "packageManager": "pnpm@10.32.1",
+  "license": "MIT",
   "scripts": {
-    "dev": "wxt",
-    "dev:firefox": "wxt -b firefox --mv3",
-    "build": "wxt build",
-    "build:firefox": "wxt build -b firefox --mv3",
-    "zip": "wxt zip",
-    "zip:firefox": "wxt zip -b firefox --mv3",
-    "zip:all": "pnpm zip && pnpm zip:firefox",
-    "typecheck": "tsc --noEmit && pnpm --filter @mimik/desktop typecheck",
+    "dev": "pnpm --filter mimik dev",
+    "dev:firefox": "pnpm --filter mimik dev:firefox",
+    "build": "pnpm --filter mimik build",
+    "build:firefox": "pnpm --filter mimik build:firefox",
+    "zip": "pnpm --filter mimik zip",
+    "zip:firefox": "pnpm --filter mimik zip:firefox",
+    "zip:all": "pnpm --filter mimik zip:all",
+    "size": "pnpm --filter mimik size",
+    "dev:desktop": "pnpm --filter @mimik/desktop dev",
+    "build:desktop": "pnpm --filter @mimik/desktop build",
+    "pack:desktop": "pnpm --filter @mimik/desktop run pack",
+    "typecheck": "pnpm --filter mimik typecheck && pnpm --filter @mimik/desktop typecheck",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage",
     "lint": "biome check . && node scripts/check-exports.mjs && node scripts/check-locale-keys.mjs && node scripts/check-capture-states.mjs && jscpd && knip --no-progress",
-    "size": "size-limit",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
-    "prepare": "husky",
-    "postinstall": "wxt prepare",
-    "dev:desktop": "pnpm --filter @mimik/desktop dev",
-    "build:desktop": "pnpm --filter @mimik/desktop build",
-    "pack:desktop": "pnpm --filter @mimik/desktop run pack"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "MIT",
-  "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.64",
-    "@ai-sdk/openai": "^3.0.49",
-    "@fontsource/poppins": "^5.2.7",
-    "@mimik/core": "workspace:*",
-    "@mimik/ui": "workspace:*",
-    "@tailwindcss/vite": "^4.2.2",
-    "@webext-core/messaging": "^2.3.0",
-    "@wxt-dev/module-react": "^1.2.2",
-    "ai": "^6.0.142",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "css-selector-generator": "^3.8.1",
-    "dayjs": "^1.11.20",
-    "dexie": "^4.3.0",
-    "docx": "^9.6.1",
-    "fflate": "^0.8.2",
-    "gifenc": "^1.0.3",
-    "jspdf": "^4.2.1",
-    "lucide-react": "^0.577.0",
-    "mediabunny": "^1.52.3",
-    "p-queue": "^9.1.1",
-    "radix-ui": "^1.4.3",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "react-type-animation": "^3.2.0",
-    "tailwind-merge": "^3.5.0",
-    "tailwindcss": "^4.2.2",
-    "wxt": "^0.20.20",
-    "xstate": "^5.28.0",
-    "zustand": "^5.0.12"
+    "prepare": "husky .github/husky"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.10",
-    "@size-limit/file": "^14.1.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "@vitest/coverage-istanbul": "^4.1.3",
-    "@wxt-dev/i18n": "^0.2.5",
     "fake-indexeddb": "^6.2.5",
     "happy-dom": "^20.8.4",
     "husky": "^9.1.7",
     "jscpd": "^4.3.0",
     "jsdom": "^29.0.1",
     "knip": "^6.39.0",
-    "size-limit": "^14.1.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.0",
+    "wxt": "^0.20.20"
+  },
+  "knip": {
+    "ignoreUnresolved": [
+      "#imports"
+    ],
+    "ignoreDependencies": [
+      "@mimik/locales"
+    ],
+    "workspaces": {
+      ".": {
+        "entry": [
+          "scripts/*.mjs"
+        ],
+        "project": [
+          "scripts/**"
+        ]
+      },
+      "apps/extension": {
+        "entry": [
+          "src/entrypoints/*.ts",
+          "src/entrypoints/*/index.{ts,tsx}"
+        ],
+        "project": [
+          "src/**/*.{ts,tsx}"
+        ]
+      },
+      "apps/desktop": {
+        "entry": [
+          "src/preload/*.ts",
+          "src/renderer/*.html",
+          "scripts/*.{ts,mjs,cjs}"
+        ],
+        "project": [
+          "src/**/*.{ts,tsx}",
+          "scripts/**"
+        ],
+        "ignoreDependencies": [
+          "@fontsource/poppins",
+          "tailwindcss"
+        ]
+      },
+      "packages/core": {
+        "includeEntryExports": true,
+        "project": [
+          "src/**/*.ts"
+        ],
+        "ignore": [
+          "src/export/empty.ts"
+        ]
+      },
+      "packages/ui": {
+        "includeEntryExports": true,
+        "project": [
+          "src/**/*.{ts,tsx}"
+        ],
+        "ignore": [
+          "src/components/ui/**"
+        ]
+      },
+      "packages/capture-native": {
+        "ignore": [
+          "index.js"
+        ]
+      }
+    }
+  },
+  "jscpd": {
+    "path": [
+      "apps/extension/src",
+      "apps/desktop/src",
+      "packages/core/src",
+      "packages/ui/src"
+    ],
+    "format": [
+      "typescript",
+      "tsx"
+    ],
+    "minLines": 12,
+    "minTokens": 80,
+    "threshold": 0.5,
+    "ignore": [
+      "**/__tests__/**",
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "**/components/ui/**"
+    ],
+    "reporters": [
+      "console"
+    ],
+    "silent": true
   }
 }

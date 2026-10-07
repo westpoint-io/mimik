@@ -21,6 +21,7 @@ export function ProviderKeyRow({ provider, value, onChange, validate, bare = fal
   const keyCheck = useKeyCheck(validate);
   const { check, reset } = keyCheck;
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: checks the saved key once, when the screen opens
   useEffect(() => {
     if (value.trim()) void check(provider, value.trim());
   }, []);

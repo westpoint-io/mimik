@@ -16,12 +16,14 @@
     "check:pipeline": "electron-vite build && electron out/main/check-pipeline.js"
   },
   "dependencies": {
+    "@fontsource/poppins": "^5.2.7",
     "@mimik/capture-native": "workspace:*",
     "@mimik/core": "workspace:*",
     "@mimik/ui": "workspace:*",
     "dexie": "^4.3.0",
     "electron-updater": "^6.6.2",
     "get-windows": "^9.3.0",
+    "lucide-react": "^0.577.0",
     "node-screenshots": "^0.2.8",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
@@ -32,6 +34,8 @@
     "@electron/fuses": "^2.1.3",
     "@tailwindcss/vite": "^4.2.2",
     "@types/js-yaml": "^4.0.9",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^4.3.4",
     "electron": "^33.2.1",
     "electron-builder": "^25.1.8",

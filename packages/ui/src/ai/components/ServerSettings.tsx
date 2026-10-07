@@ -25,6 +25,7 @@ export function ServerSettings({ server, onChange, validate }: ServerSettingsPro
     if (next.url.trim()) void check(next.protocol, next.apiKey.trim(), next.url.trim());
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: checks the saved key once, when the screen opens
   useEffect(() => {
     probe(server);
   }, []);

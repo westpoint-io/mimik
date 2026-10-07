@@ -117,7 +117,7 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
       .catch((err) => logger.error(' Transcript lookup failed', err));
     setDataVersion((version) => version + 1);
     setLoading(false);
-  }, [guideId, setGuideTitle, setGuideStepCount, setHasTranscript]);
+  }, [guideId, setGuideTitle, setGuideStepCount, setHasTranscript, desc.set]);
 
   useEffect(() => {
     loadGuide();
@@ -130,7 +130,7 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
 
   useEffect(() => {
     readAiCredentials().then((keys) => desc.setHasApiKey(keys !== null));
-  }, []);
+  }, [desc.setHasApiKey]);
 
   const handleTitleBlur = useCallback(async () => {
     const next = sanitizeGuideTitle(title);

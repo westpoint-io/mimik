@@ -10,5 +10,23 @@
   "sideEffects": [
     "**/*.css",
     "./src/common/lib/dayjs-locale.ts"
-  ]
+  ],
+  "dependencies": {
+    "@fontsource/poppins": "^5.2.7",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "dayjs": "^1.11.20",
+    "lucide-react": "^0.577.0",
+    "radix-ui": "^1.4.3",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-type-animation": "^3.2.0",
+    "tailwind-merge": "^3.5.0",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "tailwindcss": "^4.2.2"
+  }
 }

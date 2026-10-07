@@ -18,7 +18,7 @@ const MODEL_KEYS = ['settings.model', 'settings.modelCustom'];
 function localeKeys(locale: string): Set<string> {
   const keys = new Set<string>();
   let section = '';
-  for (const line of readFileSync(join(process.cwd(), 'src/locales', `${locale}.yml`), 'utf8').split('\n')) {
+  for (const line of readFileSync(join(process.cwd(), 'packages/locales', `${locale}.yml`), 'utf8').split('\n')) {
     const top = /^([\w-]+):/.exec(line);
     if (top) {
       section = top[1]!;
