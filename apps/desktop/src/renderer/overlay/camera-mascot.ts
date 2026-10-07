@@ -6,7 +6,7 @@ import {
   MASCOT_CROWN,
   MASCOT_FACES,
   MASCOT_SEAM,
-} from '@mimik/ui';
+} from '@mimik/ui/common/lib/mascot-shapes';
 import { svg } from './svg';
 
 export function cameraMascot(size: number): SVGSVGElement {

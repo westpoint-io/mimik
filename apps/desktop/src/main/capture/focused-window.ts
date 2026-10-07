@@ -1,4 +1,6 @@
+import type { ActiveWindow } from '@mimik/capture-native';
 import { screen } from 'electron';
+import { loadNative } from './native';
 
 export interface FocusedWindow {
   title: string | null;
@@ -27,6 +29,28 @@ export function toDip(bounds: FocusedWindow['bounds']): FocusedWindow['bounds'] 
   }
 }
 
+function fromNative(found: ActiveWindow): FocusedWindowResult {
+  return {
+    ok: true,
+    window: {
+      title: found.title ?? null,
+      app: { name: found.appName, id: found.appPath },
+      bounds: toDip({ x: found.x, y: found.y, width: found.width, height: found.height }),
+    },
+  };
+}
+
+export async function windowAt(point: { x: number; y: number }): Promise<FocusedWindowResult> {
+  if (process.platform === 'win32') {
+    const physical = typeof screen.dipToScreenPoint === 'function' ? screen.dipToScreenPoint(point) : point;
+    const found = await loadNative()
+      .then((native) => native?.windowAt(Math.round(physical.x), Math.round(physical.y)) ?? null)
+      .catch(() => null);
+    if (found) return fromNative(found);
+  }
+  return focusedWindow();
+}
+
 export async function focusedWindow(): Promise<FocusedWindowResult> {
   if (process.platform === 'linux' && process.env.XDG_SESSION_TYPE === 'wayland') {
     return {
@@ -34,6 +58,13 @@ export async function focusedWindow(): Promise<FocusedWindowResult> {
       reason: 'unsupported-session',
       detail: 'Active-window lookup needs an X11 session; Wayland is not supported yet.',
     };
+  }
+
+  if (process.platform === 'win32') {
+    const found = await loadNative()
+      .then((native) => native?.activeWindow() ?? null)
+      .catch(() => null);
+    if (found) return fromNative(found);
   }
 
   try {

@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { app, BrowserWindow, globalShortcut, screen, webContents } from 'electron';
 import { clampToDisplays, defaultRegion, loadRegion, type Region, saveRegion } from '../src/main/capture/region';
 import type { CaptureMode } from '../src/main/capture/settings';
@@ -83,7 +84,7 @@ app.whenReady().then(async () => {
   );
 
   const tiny = clampToDisplays({ x: 0, y: 0, width: 10, height: 10 });
-  check('honours the minimum size', tiny.width >= 240 && tiny.height >= 160, `${tiny.width} × ${tiny.height}`);
+  check('honours the minimum size', tiny.width >= 60 && tiny.height >= 30, `${tiny.width} × ${tiny.height}`);
   overlay.edit();
   await settle();
   const editors = overlayWindows();
@@ -201,6 +202,24 @@ app.whenReady().then(async () => {
     idle.tip === 'Your first click will show up here.' && idle.hint === 'Tip: you can press Alt+Shift+C to capture without clicking.',
     `tip: ${idle.tip}, hint: ${idle.hint}`,
   );
+  const badgeWhileRecording = await card("badge: !document.querySelector('#badge').hidden && document.querySelector('#badge').textContent");
+  overlay.pause();
+  await settle();
+  const resting = await card(
+    "tip: document.querySelector('#tip').textContent, intro: !document.querySelector('#intro').hidden, resting: document.body.classList.contains('resting'), hint: document.querySelector('#keyHint').hidden",
+  );
+  overlay.record();
+  await settle();
+  check(
+    'recording names its mode, and an empty pause is not a blank card',
+    typeof badgeWhileRecording.badge === 'string' &&
+      badgeWhileRecording.badge.length > 0 &&
+      resting.tip === 'Nothing is recorded while paused.' &&
+      resting.intro === true &&
+      resting.resting === true &&
+      resting.hint === true,
+    `badge ${badgeWhileRecording.badge}, paused tip ${resting.tip}, mascot shown ${resting.intro}`,
+  );
 
   overlay.showStep({ id: 'one', index: 1, title: 'Click "Save"', src, source: 'heuristic', pending: false, app: 'Explorer' });
   await settle();
@@ -234,14 +253,27 @@ app.whenReady().then(async () => {
   const whileBusy = await windowWithHash('controls')?.webContents.executeJavaScript(
     "document.querySelector('#primary').disabled",
   );
-  const veil = await card("text: document.querySelector('#veilText').textContent, remove: document.querySelector('#remove').hidden");
+  const veil = await card(
+    "text: document.querySelector('#veilText').textContent, remove: document.querySelector('#remove').hidden, shot: document.querySelector('#shot').hidden, height: document.body.scrollHeight",
+  );
   check(
-    'a capture in flight shows the mascot over the last screenshot',
-    veil.text === 'Capturing step 2…' && veil.remove === true,
-    `veil: ${veil.text}, remove hidden: ${veil.remove}`,
+    'a capture in flight shows the mascot instead of the last screenshot',
+    veil.text === 'Capturing step 2…' && veil.remove === true && veil.shot === true,
+    `veil: ${veil.text}, remove hidden: ${veil.remove}, last screenshot hidden: ${veil.shot}`,
   );
   overlay.setBusy(false);
   await settle();
+  const shortTitle = await card("height: document.body.scrollHeight, preview: document.querySelector('#preview').offsetHeight");
+  overlay.showStep({ id: 'one', index: 1, title: 'Click '.repeat(40), src, source: 'ai', pending: false, app: 'Explorer' });
+  await settle();
+  const longTitle = await card("height: document.body.scrollHeight, preview: document.querySelector('#preview').offsetHeight");
+  overlay.showStep({ id: 'one', index: 1, title: 'Save the file', src, source: 'ai', pending: false, app: 'Explorer' });
+  await settle();
+  check(
+    'the card keeps its height when a step lands, and a long title takes it from the screenshot',
+    shortTitle.height === veil.height && longTitle.height === veil.height && longTitle.preview < shortTitle.preview,
+    `${veil.height} px while capturing, ${shortTitle.height} px with a short title, ${longTitle.height} px with a long one, preview ${shortTitle.preview} → ${longTitle.preview} px`,
+  );
   const whenIdle = await windowWithHash('controls')?.webContents.executeJavaScript(
     "document.querySelector('#primary').disabled",
   );
@@ -270,6 +302,49 @@ app.whenReady().then(async () => {
     'whole-screen mode drops the boundary',
     framed.length === 1 && windowWithHash('boundary') === null && active === 'screen',
     `${framed.length} overlay window(s), active mode button is ${active}`,
+  );
+
+  const editorWindows = () => webContents.getAllWebContents().filter((wc) => wc.getURL().includes('#editor'));
+  const inEditor = (script: string) => editorWindows()[0]?.executeJavaScript(script);
+  const pickArea = () =>
+    windowWithHash('controls')?.webContents.executeJavaScript("document.querySelector('button.mode[data-mode=\"area\"]').click()");
+  overlay.pause();
+  await settle();
+  await pickArea();
+  await settle();
+  const opened = { state: overlay.state, editors: editorWindows().length, sent: commands.at(-1) };
+  const look = JSON.parse(
+    String(
+      (await inEditor(
+        "JSON.stringify({ buttons: [...document.querySelectorAll('#bar button')].map((b) => b.textContent.trim()), edge: getComputedStyle(document.querySelector('#region'), '::after').borderTopStyle, corner: getComputedStyle(document.querySelector('.handle[data-handle=\"nw\"]')).borderTopColor })",
+      )) ?? '{}',
+    ),
+  ) as { buttons?: string[]; edge?: string; corner?: string };
+  await inEditor("document.querySelector('#bar button.secondary').click()");
+  await settle();
+  const cancelled = { state: overlay.state, editors: editorWindows().length, sent: commands.at(-1) };
+  await pickArea();
+  await settle();
+  await inEditor("document.querySelector('#bar button.primary').click()");
+  await settle();
+  const confirmed = { state: overlay.state, editors: editorWindows().length, sent: commands.at(-1) };
+  check(
+    'picking Area while paused opens the editor, Done resumes and Cancel stays paused',
+    opened.state === 'editing' &&
+      opened.editors === displays.length &&
+      opened.sent === 'mode:region' &&
+      cancelled.state === 'paused' &&
+      cancelled.editors === 0 &&
+      cancelled.sent === 'mode:screen' &&
+      confirmed.state === 'recording' &&
+      confirmed.editors === 0 &&
+      confirmed.sent === 'resume',
+    `opened ${JSON.stringify(opened)}, cancel ${JSON.stringify(cancelled)}, done ${JSON.stringify(confirmed)}`,
+  );
+  check(
+    'the area editor uses the action bar and the crop frame',
+    look.buttons?.join('|') === 'CancelEsc|DoneEnter' && look.edge === 'dashed' && look.corner === 'rgb(79, 70, 229)',
+    `buttons ${look.buttons?.join(', ')}, edge ${look.edge}, corner ${look.corner}`,
   );
 
   const outside = { x: overlay.region.x - 5000, y: overlay.region.y - 5000 };
@@ -324,6 +399,22 @@ app.whenReady().then(async () => {
   overlay.hide();
   overlay.destroy();
   saveRegion(defaultRegion());
+
+  const splash = new BrowserWindow({ width: 400, height: 300, show: false, frame: false });
+  await splash.loadFile(join(__dirname, '../renderer/splash.html'));
+  const splashed = JSON.parse(
+    String(
+      await splash.webContents.executeJavaScript(
+        "JSON.stringify({ word: document.querySelector('#wordmark')?.textContent, paths: document.querySelectorAll('#mascot svg path').length, meter: Boolean(document.querySelector('#meter span')) })",
+      ),
+    ),
+  ) as { word?: string; paths?: number; meter?: boolean };
+  splash.destroy();
+  check(
+    'the loading screen draws the mascot, the name and the bar',
+    splashed.word === 'Mimik' && (splashed.paths ?? 0) >= 5 && splashed.meter === true,
+    `wordmark ${splashed.word}, ${splashed.paths} mascot paths, bar ${splashed.meter}`,
+  );
 
   for (const result of results) {
     process.stdout.write(`${result.ok ? 'ok  ' : 'FAIL'} ${result.name.padEnd(32)} ${result.detail}\n`);

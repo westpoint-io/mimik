@@ -1,16 +1,26 @@
 import type { Command } from 'lucide-react';
 import type { ReactNode } from 'react';
 
-export function Card({ icon: Icon, title, children }: { icon: typeof Command; title: string; children: ReactNode }) {
+interface CardProps {
+  icon: typeof Command;
+  title: string;
+  hint?: string;
+  children: ReactNode;
+}
+
+export function Card({ icon: Icon, title, hint, children }: CardProps) {
   return (
-    <div className="space-y-3.5 rounded-[10px] border border-border bg-card p-3.5">
-      <div className="flex items-center gap-2.5">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-secondary">
+    <div className="rounded-[10px] border border-border bg-card px-3.5 pt-3.5 pb-1">
+      <div className="flex items-center gap-2.5 pb-1">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-secondary">
           <Icon size={14} className="text-accent" />
         </div>
-        <span className="text-xs font-bold text-foreground">{title}</span>
+        <span className="flex flex-col">
+          <span className="text-xs font-bold text-foreground">{title}</span>
+          {hint && <span className="text-[11px] text-muted-foreground">{hint}</span>}
+        </span>
       </div>
-      {children}
+      <div className="divide-y divide-secondary">{children}</div>
     </div>
   );
 }

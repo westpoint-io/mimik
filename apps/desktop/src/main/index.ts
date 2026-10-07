@@ -31,6 +31,37 @@ function setOpenAtLogin(enabled: boolean): void {
   refreshTrayMenu();
 }
 
+let restoreAfterCapture = false;
+
+function enterCapture(): void {
+  mainWindow?.webContents.setBackgroundThrottling(false);
+  if (!mainWindow?.isVisible()) return;
+  restoreAfterCapture = true;
+  mainWindow.hide();
+}
+
+function leaveCapture(finished: boolean): void {
+  mainWindow?.webContents.setBackgroundThrottling(true);
+  if (finished || restoreAfterCapture) showWindow();
+  restoreAfterCapture = false;
+}
+
+function trayIcon(recording: boolean): Electron.NativeImage {
+  const icon = nativeImage.createFromPath(resource(recording ? 'tray-recording32.png' : 'icon32.png'));
+  return process.platform === 'darwin' ? icon.resize({ width: 16, height: 16 }) : icon;
+}
+
+function isCapturing(): boolean {
+  return overlay?.state === 'recording' || overlay?.state === 'paused';
+}
+
+function refreshTray(): void {
+  if (!tray) return;
+  const recording = isCapturing();
+  tray.setImage(trayIcon(recording));
+  tray.setToolTip(recording ? 'Mimik is recording. Click to finish.' : 'Mimik');
+}
+
 function showWindow(): void {
   if (!mainWindow) {
     createWindow();
@@ -39,6 +70,55 @@ function showWindow(): void {
   if (mainWindow.isMinimized()) mainWindow.restore();
   mainWindow.show();
   mainWindow.focus();
+}
+
+const SPLASH_MIN_MS = 1500;
+const SPLASH_MAX_WAIT_MS = 3000;
+let splash: BrowserWindow | null = null;
+let splashShownAt: number | null = null;
+
+function openSplash(): void {
+  splash = new BrowserWindow({
+    width: 400,
+    height: 300,
+    frame: false,
+    transparent: true,
+    resizable: false,
+    movable: false,
+    skipTaskbar: true,
+    alwaysOnTop: true,
+    show: false,
+    center: true,
+  });
+  splash.once('ready-to-show', () => {
+    splash?.show();
+    splashShownAt = Date.now();
+  });
+  splash.on('closed', () => {
+    splash = null;
+  });
+  if (process.env.ELECTRON_RENDERER_URL) splash.loadURL(`${process.env.ELECTRON_RENDERER_URL}/splash.html`);
+  else splash.loadFile(join(__dirname, '../renderer/splash.html'));
+}
+
+function closeSplash(then: () => void): void {
+  const close = () => {
+    if (splash && !splash.isDestroyed()) splash.close();
+    then();
+  };
+  if (!splash || splash.isDestroyed()) {
+    then();
+    return;
+  }
+  if (splashShownAt === null) {
+    const giveUp = setTimeout(close, SPLASH_MAX_WAIT_MS);
+    splash.once('show', () => {
+      clearTimeout(giveUp);
+      setTimeout(close, SPLASH_MIN_MS);
+    });
+    return;
+  }
+  setTimeout(close, Math.max(0, SPLASH_MIN_MS - (Date.now() - splashShownAt)));
 }
 
 function createWindow(): void {
@@ -59,7 +139,9 @@ function createWindow(): void {
   });
 
   mainWindow.once('ready-to-show', () => {
-    if (!app.getLoginItemSettings().wasOpenedAsHidden) mainWindow?.show();
+    closeSplash(() => {
+      if (!app.getLoginItemSettings().wasOpenedAsHidden) mainWindow?.show();
+    });
   });
 
   mainWindow.on('close', (event) => {
@@ -89,7 +171,13 @@ function refreshTrayMenu(): void {
   tray.setContextMenu(
     Menu.buildFromTemplate([
       { label: 'Open Mimik', click: () => showWindow() },
-      { label: 'Set capture area', click: () => overlay?.edit() },
+      {
+        label: 'Set capture area',
+        click: () => {
+          if (!isCapturing()) enterCapture();
+          overlay?.edit();
+        },
+      },
       { type: 'separator' },
       {
         label: 'Start at login',
@@ -105,10 +193,12 @@ function refreshTrayMenu(): void {
 }
 
 function createTray(): void {
-  const icon = nativeImage.createFromPath(resource('icon32.png'));
-  tray = new Tray(process.platform === 'darwin' ? icon.resize({ width: 16, height: 16 }) : icon);
+  tray = new Tray(trayIcon(false));
   tray.setToolTip('Mimik');
-  tray.on('click', () => showWindow());
+  tray.on('click', () => {
+    if (isCapturing()) overlay?.run('stop');
+    else showWindow();
+  });
   refreshTrayMenu();
 }
 
@@ -127,6 +217,7 @@ function applyShortcuts(): void {
 function onShortcut(name: ShortcutName): void {
   if (!overlay) return;
   if (name === 'startStop') {
+    if (overlay.state === 'hidden') enterCapture();
     overlay.run(overlay.state === 'hidden' || overlay.state === 'armed' ? 'start' : 'stop');
     return;
   }
@@ -186,7 +277,8 @@ async function onOverlayCommand(command: OverlayCommand): Promise<void> {
   }
   broadcastOverlay(command, finished ?? guideId);
   applyShortcuts();
-  if (finished) showWindow();
+  refreshTray();
+  if (command === 'stop' || command === 'cancel') leaveCapture(Boolean(finished));
 }
 
 let isQuitting = false;
@@ -206,6 +298,7 @@ if (!app.requestSingleInstanceLock()) {
   app.on('second-instance', () => showWindow());
 
   app.whenReady().then(() => {
+    if (!app.getLoginItemSettings().wasOpenedAsHidden) openSplash();
     registerScreenshotProtocol();
     registerAiFetch();
     ipcMain.handle('mimik:openAtLogin:get', () => opensAtLogin());
@@ -247,33 +340,30 @@ if (!app.requestSingleInstanceLock()) {
         return overlay ? overlay.withHidden(fn) : fn();
       },
       async (request) => {
-        try {
-          const reply = await ask<{ stepId?: string; title?: string; pending?: boolean }>(
-            mainWindow?.webContents ?? null,
-            'mimik:capture:step',
-            { ...request, guideId },
-          ).catch(() => undefined);
-          if (reply?.stepId && reply.title) {
-            const step: OverlayStep = {
-              id: reply.stepId,
-              index: steps.length + 1,
-              title: reply.title,
-              src: request.image.src,
-              source: 'heuristic',
-              pending: reply.pending === true,
-              app: request.elementMeta.app?.name ?? null,
-            };
-            steps.push(step);
-            overlay?.showStep(step);
-          }
-          return reply;
-        } finally {
-          overlay?.setBusy(false);
+        const reply = await ask<{ stepId?: string; title?: string; pending?: boolean }>(
+          mainWindow?.webContents ?? null,
+          'mimik:capture:step',
+          { ...request, guideId },
+        ).catch(() => undefined);
+        if (reply?.stepId && reply.title) {
+          const step: OverlayStep = {
+            id: reply.stepId,
+            index: steps.length + 1,
+            title: reply.title,
+            src: request.image.src,
+            source: 'heuristic',
+            pending: reply.pending === true,
+            app: request.elementMeta.app?.name ?? null,
+          };
+          steps.push(step);
+          overlay?.showStep(step);
         }
+        return reply;
       },
       {
         settings: () => captureSettings ?? loadSettings(),
         ignores: (point) => overlay?.ignores(point) ?? false,
+        drained: () => overlay?.setBusy(false),
       },
     );
 
@@ -295,8 +385,14 @@ if (!app.requestSingleInstanceLock()) {
       if (step === steps.at(-1)) overlay?.showStep(step);
     });
     ipcMain.handle('mimik:capture:region', () => overlay?.region);
-    ipcMain.handle('mimik:capture:edit', () => overlay?.edit());
-    ipcMain.handle('mimik:capture:arm', () => overlay?.arm());
+    ipcMain.handle('mimik:capture:edit', () => {
+      enterCapture();
+      overlay?.edit();
+    });
+    ipcMain.handle('mimik:capture:arm', () => {
+      enterCapture();
+      overlay?.arm();
+    });
 
     applyShortcuts();
     createWindow();

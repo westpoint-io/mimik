@@ -1,7 +1,8 @@
+import { icon } from '../icons';
 import { el } from './el';
 import type { Region } from './types';
 
-const MIN = { width: 240, height: 160 };
+const MIN = { width: 60, height: 30 };
 
 const HANDLES = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'] as const;
 
@@ -27,16 +28,23 @@ export function editor(origin: { x: number; y: number }): void {
     region.append(node);
   }
 
-  const hint = el(
-    'div',
-    { id: 'hint' },
-    'Drag to set the capture area — ',
-    el('b', {}, 'Enter'),
-    ' to confirm, ',
-    el('b', {}, 'Esc'),
-    ' to cancel',
+  const cancel = el('button', { type: 'button', className: 'secondary' }, 'Cancel', el('kbd', {}, 'Esc'));
+  const done = el(
+    'button',
+    { type: 'button', className: 'primary' },
+    icon('check', 15),
+    'Done',
+    el('kbd', {}, 'Enter'),
   );
-  document.body.append(region, hint);
+  cancel.addEventListener('click', () => window.mimikOverlay.command('cancel'));
+  done.addEventListener('click', () => window.mimikOverlay.command('arm'));
+  const bar = el(
+    'div',
+    { id: 'bar' },
+    el('span', { id: 'barText' }, icon('area', 15), 'Drag to draw the capture area'),
+    el('span', { id: 'barActions' }, cancel, done),
+  );
+  document.body.append(region, bar);
 
   let rect: Region | null = null;
 
@@ -67,6 +75,7 @@ export function editor(origin: { x: number; y: number }): void {
 
   document.body.addEventListener('pointerdown', (event) => {
     const target = event.target as HTMLElement;
+    if (bar.contains(target)) return;
     const handle = target.dataset.handle as Handle | undefined;
     const moving = !handle && region.contains(target) && rect !== null;
     const start = { x: event.clientX + origin.x, y: event.clientY + origin.y };

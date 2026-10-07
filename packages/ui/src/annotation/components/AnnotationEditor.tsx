@@ -703,6 +703,7 @@ export function AnnotationEditor({ screenshot, tool, onDone, onCancel }: Annotat
     if (viewport && viewport !== screenshot.edits?.viewport) {
       nextEdits.viewport = viewport;
       nextEdits.zoomLevel = undefined;
+      nextEdits.zoomAuto = undefined;
     } else if (viewport) {
       nextEdits.viewport = viewport;
     }

@@ -2,6 +2,7 @@ import { AI_PROVIDERS, type AIProviderKey, CUSTOM_MODEL_VALUE } from '@mimik/cor
 import { AI_LANGUAGES, type AILanguageCode } from '@mimik/core/capture/ai/prompts';
 import { i18n } from '@mimik/core/env';
 import { Globe, Sparkles, TriangleAlert } from 'lucide-react';
+import { Switch } from '../../common/components/Switch';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
@@ -136,22 +137,7 @@ export function AiSettings({ keyCheck: aiKeyCheck, onChange }: AiSettingsProps) 
             <Globe size={11} className="-mt-px" />
             {i18n.t('settings.useOwnServer')}
           </span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={ownServer}
-            aria-label={i18n.t('settings.useOwnServer')}
-            onClick={handleOwnServerToggle}
-            className={`w-9 h-5 rounded-full transition-colors relative shrink-0 ${
-              ownServer ? 'bg-accent' : 'bg-border'
-            }`}
-          >
-            <span
-              className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
-                ownServer ? 'translate-x-4' : 'translate-x-0'
-              }`}
-            />
-          </button>
+          <Switch checked={ownServer} label={i18n.t('settings.useOwnServer')} onChange={handleOwnServerToggle} />
         </div>
         {ownServer && (
           <div className="mt-2 space-y-1.5">

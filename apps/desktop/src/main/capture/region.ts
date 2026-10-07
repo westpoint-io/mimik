@@ -9,7 +9,7 @@ export interface Region {
   height: number;
 }
 
-export const MIN_REGION = { width: 240, height: 160 };
+export const MIN_REGION = { width: 60, height: 30 };
 
 function file(): string {
   return join(app.getPath('userData'), 'capture-region.json');

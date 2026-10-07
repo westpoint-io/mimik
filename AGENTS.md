@@ -199,6 +199,28 @@ Closing the window hides it; the app keeps running in the tray and only exits th
 settings file to keep in sync, and `openAsHidden` pairs with the `wasOpenedAsHidden` check in
 `ready-to-show` so a login launch does not steal focus.
 
+A loading screen covers the gap between launch and the window being ready: a 400 × 300 frameless,
+transparent window, centred and above everything, with the mascot winking, the name and a sweeping
+bar. It opens first thing in `whenReady`, and the main window's `ready-to-show` closes it and shows
+the window — but only once the splash has been on screen for 1.5 s, one sweep of the bar, and never
+later than 3 s if the splash itself fails to paint. The floor is counted from the splash appearing,
+not from it being created: in dev its page took as long to load as the app's, so a floor counted
+from creation had expired before the splash painted and it was closed unseen.
+
+That load time was the shapes import. `mascot()` took the geometry from `@mimik/ui`, and in dev,
+where nothing is bundled, importing the package entry loads every module in the package — the same
+work the app window does. The splash and the overlay therefore import
+`@mimik/ui/common/lib/mascot-shapes` directly, the one deep import besides `env` and `global.css`
+that the lint allows; it is plain data, so it cannot drag the package in with it. A launch at login skips it, for the same reason `openAsHidden`
+exists — that launch must not put anything on screen. `splash.html` draws the mascot with the
+overlay's `mascot()` builder, so the drawing still comes from the one set of shapes.
+
+The window also hides the moment a capture begins — Start in the sheet, the tray's area editor, or the
+start shortcut — so Mimik never records itself, and it comes back when the guide is finished, or on
+Cancel when it was open beforehand. Its renderer keeps full speed while hidden, because it is the
+one writing every step. The tray icon carries a red dot for as long as a recording runs, and clicking
+it then finishes the recording rather than opening the window.
+
 `pnpm dev:desktop` runs it, `pnpm build:desktop` compiles, `pnpm pack:desktop` produces an unpacked
 app in `apps/desktop/dist`. `electron-builder.yml` targets dmg/zip, nsis and AppImage/deb, and
 `executableName` must stay set or the binary inherits the scoped package name.
@@ -212,7 +234,7 @@ Electron, three are prebuilt npm packages, and only the last is a crate we maint
 |---|---|---|
 | Displays, DPI, cursor | Electron `screen` | no |
 | Screenshot of a display | `node-screenshots` | prebuilt |
-| Focused foreign window | `get-windows` | prebuilt |
+| Focused foreign window | `@mimik/capture-native` on Windows, `get-windows` elsewhere | ours / prebuilt |
 | Global clicks and keys | `uiohook-napi` | prebuilt |
 | Control under a point | `@mimik/capture-native` | ours |
 
@@ -252,6 +274,25 @@ Rust rather than C++ because `node-gyp` cannot cross-compile and `cargo` can. `p
 @mimik/capture-native build:windows` produces `capture-native.win32-x64-msvc.node` on a Linux
 machine through `cargo-xwin`, which downloads the Windows SDK headers and import libraries itself.
 
+`activeWindow()` is the focused window on Windows and `windowAt(x, y)` the top-level window under a
+point, and they replaced `get-windows` there. That package
+downloads its Windows binary in an install script, pnpm only runs the scripts `onlyBuiltDependencies`
+names, and without the binary `activeWindow()` returns nothing and throws nothing — so every Window
+mode capture quietly fell back to the whole screen and no guide was ever named after its app.
+`get-windows` still serves macOS, where the binary is in the package, and Linux, where it shells out
+to `xprop`, and it stays the Windows fallback when the addon is missing.
+
+The lookup is the foreground window with its visible frame, `DWMWA_EXTENDED_FRAME_BOUNDS`, rather
+than `GetWindowRect`, whose rectangle includes the invisible resize border and would put a strip of
+whatever is behind the window into every crop. A popup is framed as the application it belongs to:
+when the foreground window covers no more than 80% of the largest monitor and of the whole desktop by
+area, and it is a menu, dialog, dropdown, tooltip, owned, tool or captionless popup window, the
+largest visible, uncloaked, unowned window of the same process that has a system menu and any caption
+style is used instead. The app
+name is the executable's `FileDescription`, falling back to its file name, which is what
+`get-windows` reported, so guide names do not change between the two paths. `window.rs` holds the
+popup and screen-coverage rules without COM or user32, so they are tested on Linux beside `hit.rs`.
+
 Windows only. `is_supported()` answers false everywhere else and `elementAtPoint` resolves to null,
 so the app, the checks and the recording pipeline all behave the same as when the binary is simply
 missing. macOS is the same shape of work against `AXUIElementCopyAttributeValue` and is not done.
@@ -265,7 +306,8 @@ point, and some providers answer with a layer rather than a control: the Windows
 reports a pane called "CoreInput" covering every result, so each click on a result was named after
 it. Whenever the hit has children, its whole subtree is fetched with `FindAllBuildCache`, the
 rectangles cached so the lookup is one cross-process call rather than one per element, and the
-smallest element whose rectangle holds the point is used instead. A tie keeps the outer element,
+smallest element whose rectangle holds the point is used instead, skipping Chrome's tab-drag layer
+(`TabDragContextImpl`), which covers the tab strip and would otherwise win every click there. A tie keeps the outer element,
 since `FindAll` lists a parent before its children and the parent is the control. A text field is
 left alone, because narrowing it would land on the text run inside and turn "Enter" into "Click".
 `smallest_under` in `hit.rs` is that rule with no COM in it, which is why it is the one part of the
@@ -352,8 +394,9 @@ differently at every import site; a named one is found by the same search everyw
 entrypoints and the config files keep their defaults because the framework reads them, and the one
 `React.lazy` maps a named export onto the `default` it needs.
 
-The apps import from `'@mimik/ui'` and nowhere deeper, except `@mimik/ui/env` and
-`@mimik/ui/global.css`. `src/index.ts` is the one file allowed to re-export. Inside the package every
+The apps import from `'@mimik/ui'` and nowhere deeper, except `@mimik/ui/env`,
+`@mimik/ui/global.css` and `@mimik/ui/common/lib/mascot-shapes`, the mascot's geometry, which pages
+that must load instantly take without the rest of the package. `src/index.ts` is the one file allowed to re-export. Inside the package every
 import is relative — it never names itself, through the entry or otherwise, so it cannot cycle
 through its own index. The extension build was diffed against the baseline from before the entry
 existed: the content script came out byte-identical, and the whole build within a few hundred bytes.
@@ -426,7 +469,8 @@ are separate origins with separate stores; moving a guide between them is the po
 The capture region is a screen-coordinate rectangle that survives restarts in
 `capture-region.json` under `app.getPath('userData')`. `clampToDisplays` runs on every load and save,
 so a region stored against a monitor that is no longer attached lands back inside a real work area
-instead of off-screen, and nothing smaller than 240 × 160 is storable.
+instead of off-screen, and nothing smaller than 60 × 30 is storable, so a single toolbar or a narrow
+sidebar can be the whole area.
 
 `CaptureOverlay` owns three kinds of window, all frameless, transparent and `alwaysOnTop` at
 `screen-saver` level. The controls are a card docked to the bottom-right of the work area, not a bar
@@ -447,18 +491,34 @@ state, step count, the screenshot just taken, its title, and two actions. Showin
 point — it is the only way to tell mid-recording that a step landed on the right thing, and without it
 a wrong capture mode is discovered after twenty steps rather than after one. Main already holds that
 screenshot's URL when it tells the overlay a step was captured, so the card reads it over the same
-`mimik-screenshot://` scheme the app window uses and no image data crosses IPC.
+`mimik-screenshot://` scheme the app window uses and no image data crosses IPC. The preview shows the
+whole capture, letterboxed, rather than filling its box: a tall area cropped to fill a wide box showed
+only its top, magnified, which looked like the wrong screenshot when it was the right one.
 
 Under the title the card says where the words came from, with the same Basic and AI badges the guide
 uses, and while a description is still being written it shows that instead of a title that is about
 to change. The heuristic text is known the moment the step is written; the AI rewrite arrives later
 in the renderer, which sends `mimik:capture:described` so main can update the step it is holding and
-the badge flips without a reload. A capture in flight lays the camera mascot over the last
-screenshot with the number of the step being taken, which is the card's loader. A Remove button on the
+the badge flips without a reload. A capture in flight shows the camera mascot with the number of the
+step being taken, which is the card's loader, and hides the last screenshot while it does: with a
+screenshot delay set the loader stays up for as long as the delay, and the previous step showing
+through it read as the new step having been captured with the old picture. The shimmer rows under it
+are built as the title and the badge row are, with the same margin, size and line height, and a
+title that wraps onto its second line takes that line from the screenshot rather than from the
+screen: the preview is 150 px less whatever the title adds beyond one line, which the card measures
+after every render. The card is therefore one height while capturing, while the description is being
+written and once any step lands, and the order stays the extension's — screenshot, title, badge row.
+With hand-sized bars it came out 11 px shorter and a wrapped title made it 19 px taller, so the top
+edge jumped on every step; reserving two lines for every title fixed the jump but left an empty line
+under most of them. A Remove button on the
 preview drops the step just taken: main keeps the recording's steps in order, asks the renderer to
 delete the last one and puts the card back on the one before, so a wrong capture is undone where it
 was noticed. The Ready and waiting states name the start/stop and capture-now shortcuts, read from the
-settings, because the card is the one place someone looks while deciding how to begin.
+settings, because the card is the one place someone looks while deciding how to begin. The header
+names the capture mode while arming and recording, since a wrong mode is what spoils a whole guide;
+while paused the mode picker says it instead. A pause before the first step shows the camera mascot
+resting, with "Nothing is recorded while paused.", rather than a card that is only a header and
+buttons.
 
 Everything the card draws arrives as one `OverlayView` — state, region, step, mode, busy, starting
 and the shortcut labels — through `view()` and `onUpdate`, rather than five positional arguments that
@@ -482,7 +542,23 @@ Editing puts a full-display window on **every** display rather than only the one
 which is what makes moving the region to another monitor work: each editor converts client to screen
 coordinates with its own display origin, and whichever one you draw on wins. Outside editing the
 boundary shrinks to the region itself and takes `setIgnoreMouseEvents`, so recording never swallows a
-click. The boundary is solid and pulses while recording, dashed and grey while paused.
+click. The boundary is solid and steady while recording, dashed and grey while paused. It used to pulse,
+which read as something wrong with the area rather than as "recording" — the card already says that.
+
+The editor draws the area the way the screenshot crop tool draws its frame, so one rectangle means
+one thing across the app: the outside dimmed with the same navy, purple corner brackets as the
+resize grips, and invisible grips along the four edges. The edge itself is a white line with a purple
+dash over it, because the area sits over whatever is on screen and a single colour disappears
+against half of it — white on a light app, purple on a dark one. Its Cancel and Done live in the
+standard action bar at the top, with Esc and Enter doing the same.
+
+Where editing returns depends on where it began. From the Ready state or the tray it arms as before.
+From a recording, Done carries on recording: picking Area on the paused card and pressing Enter
+resumes straight away, because drawing the area is the last thing between the person and the next
+step. Cancel goes back to the pause after restoring the mode that was active before Area was picked,
+and the tray's editor during a recording returns to that recording either way. Picking Area mid-recording used to only save the setting, so the next steps were
+cropped to whatever area was stored last with no way to draw one, and the editor's Esc sent `cancel`,
+which ends a recording.
 
 Overlays must not appear in their own capture. `setContentProtection(true)` is what keeps them out,
 and **it is applied after the window is shown, never at creation**: on Windows it sets a display
@@ -528,9 +604,13 @@ not already show. Close then Start while armed, Pause then Finish while
 recording, Resume then Finish while paused. Finish keeps the right-hand slot for the whole recording
 so it never moves under the cursor.
 
-A capture is in flight from the moment the grab starts until the step is written, and `overlay.setBusy`
-spans exactly that. Finish is disabled while it holds, so a recording cannot be finalised between the
-screenshot and the row that points at it.
+A capture is in flight from the moment the grab starts until the capture queue is empty again, and
+`overlay.setBusy` spans exactly that: the grab sets it and the recorder's `drained` hook clears it.
+Finish is disabled while it holds, so a recording cannot be finalised between the screenshot and the
+row that points at it. It is cleared on the queue emptying rather than on a step being written because
+not every grab ends in a step — a typing session whose field turns out to hold no text is grabbed at
+the moment it closes and then dropped, and clearing only on a write left the card saying "Capturing
+step 4…" with Finish disabled for the rest of the recording.
 
 `pnpm --filter @mimik/desktop check:overlay` asserts persistence, clamping, one editor per display,
 controls clearing the region, whole-screen mode dropping the boundary, clicks on the bar being
@@ -605,18 +685,21 @@ The display is grabbed first and cropped last. `grabDisplay` takes the whole dis
 and hands back a function that crops it, and the frame is chosen only afterwards, so neither a
 window lookup nor a delay sits between the press and the picture.
 
-Which window is focused is read **after** the grab and at least the settle delay after the click,
-never when the click arrives, because the operating system has not necessarily moved the foreground
-window yet — asking first frames whatever was in front a moment ago, the recording card included if
-that was the last thing touched. The settle delay runs beside the grab rather than before it, so it
-costs the screenshot nothing.
+A click frames the window **under the pointer**, looked up at the press through `windowAt`, not the
+window in front. The foreground moves only once the clicked application has handled the press, so a
+foreground read soon after it still names the application clicked before — with two windows side by
+side, every switch between them read the other one, whose rectangle does not hold the click, and the
+step fell back to the whole screen. The window under the pointer is the one being clicked by
+definition. Typing and key steps have no pointer to go by, so they still read the focused window,
+after the grab and at least the settle delay after the key, which runs beside the grab and costs the
+screenshot nothing.
 
 The card itself is not focusable, so clicking Pause or Finish never makes the app frontmost and never
 changes what active-window mode will frame next. The region editors stay focusable because they read
 Enter and Escape; the card has no keyboard of its own to lose.
 
-What a capture frames is `captureMode`'s decision, and `frameFor` owns it: the focused window's
-bounds, the whole display under the cursor, or the drawn region. The window rectangle is resolved on
+What a capture frames is `captureMode`'s decision, and `frameFor` owns it: the window's bounds, the
+whole display under the cursor, or the drawn region. The window rectangle is resolved on
 every click rather than once at Start, so a window that moves or is resized between steps is followed
 with no extra work, and it falls back to the whole display whenever the lookup fails or reports a
 rectangle that does not contain the click. Active-window mode therefore degrades to whole-screen
@@ -674,6 +757,15 @@ Which steps it may touch is `edits.zoomLevel` itself: present means the app chos
 means a person did. `AnnotationEditor` clears it whenever the crop tool writes a new viewport, so a
 hand-cropped step survives every later re-zoom. `rezoomEdits` returns null for those, and for a step
 already at the wanted level, so the pass writes only what changes.
+
+`edits.zoomAuto` says whether that level came from Automatic or was picked, because the number alone
+cannot: a 1200 px window on Automatic and the same window at a picked 1.5× store the same level. The
+guide's Zoom control reads it back through `currentZoom` and names the choice on its button and tick
+— Automatic, a level, or nothing when the steps disagree — where it used to say only "Zoom" and open
+on Automatic whatever the guide held, which read as the setting having been ignored. A step saved
+before the flag existed counts as Automatic when its level equals the automatic one for its width,
+and picking a level equal to that is still written, so the flag follows the choice. The crop tool
+clears it along with the level.
 
 `guideActions` on `TopNav` is the slot it mounts into, beside Edit and Export and under the same
 `exportData` guard, so the control appears exactly when the rest of the guide toolbar does. The
@@ -919,12 +1011,7 @@ news. It went, along with the second bar under it, which halved the chrome from 
 `TopNav` takes only a `Route` and reads the rest from `useFullview`, which `GuideContent` already
 fills, so the guide title, the step count and the export data arrive with no desktop wiring at all.
 Its one desktop-only prop is `onSettings`: the extension has a browser options page and the desktop
-does not, so the gear exists here and only on the library route. `onNavigate` is its counterpart and
-exists for one reason: settings is a boolean laid over the route rather than a route of its own, so
-the header could navigate underneath an open settings pane — the pill moved to Trash and the pane
-stayed. Firing it on the click rather than watching the route is deliberate, because clicking the
-already-active item produces no hash change and that is exactly the click that means "get me out of
-here". Moving it brought `SearchModal`,
+does not, so the gear exists here and only on the library route. Moving it brought `SearchModal`,
 `ExportPreviewModal`, `VideoStepPlayer` and two search components with it — each needed exactly two
 import rewrites, `#imports` to `@mimik/core/env` and `@/core/*` to `@mimik/core/*`, because nothing
 in them was ever extension-specific beyond how WXT resolves a module.
@@ -942,7 +1029,9 @@ the app's to decide, because the two actions have nothing in common: the desktop
 Filling that gap was an improvement to the extension in its own right — browsing the library in a
 tab and wanting to record used to mean going to find the side panel yourself.
 
-Pressing Start Capture opens `CaptureSheet` rather than arming immediately. The sheet is where the
+Pressing Start Capture opens `CaptureSheet` rather than arming immediately. Esc closes it, as it does
+every dialog; the sheet is a panel of its own rather than the shared dialog, so it listens for the key
+itself. The sheet is where the
 capture mode is chosen, because the mode decides what every screenshot in the guide will frame and
 that is worth one deliberate choice before recording rather than a control discovered afterwards.
 Picking a mode writes `captureMode` straight through to `capture-settings.json`, so the sheet reopens
@@ -971,14 +1060,13 @@ screen you land on and nowhere else.
 
 ## Capture Settings
 
-Five settings that only a desktop capture needs live in `capture-settings.json` beside the region,
+The settings that only a desktop capture needs live in `capture-settings.json` beside the region,
 read by main rather than by core, because none of them mean anything to the extension.
 
 | Setting | Default | Effect |
 |---|---|---|
 | `captureMode` | `window` | What each screenshot frames: the focused window, the whole screen, or a drawn area |
 | `showCursor` | on | A pointer is drawn into the screenshot at the click point |
-| `cursorStyle` | `arrow`, `dot` on Linux | Which pointer shape gets drawn |
 | `screenshotDelayMs` | 0, capped at 2000 | Extra wait between the click and the grab |
 | `keepClicksBeyondArea` | off | Whether clicks beyond the capture area are recorded at all, in `region` mode only |
 | `recordKeys` | on | Whether a shortcut or a named key becomes a step |
@@ -989,16 +1077,20 @@ read by main rather than by core, because none of them mean anything to the exte
 | `shortcuts` | three accelerators | Global keys for start/stop, pause/resume and capture now |
 
 `normaliseSettings` runs on every read and write, so an out-of-range delay clamps and an unknown
-cursor style falls back to the platform default rather than reaching the recorder. It also reads four
+mode falls back rather than reaching the recorder, and a key it no longer knows is dropped. It also reads four
 settings under the names an earlier build saved them as, so a file written before the rename keeps
 its choices; the next save writes only the current names.
 
-`CursorStyle` and `CursorMark` are core's, not main's. The mark is written in main, crosses IPC, and
-is stored as `edits.cursor`, which the renderer reads through core's type — so two declarations had to
-agree by hand, and did only by luck. Main cannot value-import core, so the runtime list of styles
-still lives there, but `Record<CursorStyle, true>` makes the compiler reject it the moment core's
-union grows. That is the general shape of the fix wherever main needs one of core's closed sets: take
-the type, keep the value, let the type check the value.
+The pointer drawn is always the arrow. A choice of arrow, hand or dot used to sit under "Show the
+cursor", and it only changed anything with that switch on and only on left clicks, so it was a
+setting nobody could see working. `CursorMark` stays core's type, and `drawCursor` still draws all
+three shapes, because steps recorded while the choice existed carry the other two in `edits.cursor`.
+
+The marker colour is not in that file. It is `targetColor` in the renderer's settings storage, the
+same key the extension's brand colour uses, because the renderer is where both readers are: the
+capture sink stamps it on each step's dashed target, and `branding.ts` takes it as the accent of
+every export. Setting it on the desktop therefore recolours exports too, which is what it does in
+the extension. The two surfaces keep separate stores, so neither one's choice reaches the other.
 
 Electron exposes no way to read the real system cursor bitmap and a screen grab never includes the
 pointer, so the shapes are drawn as canvas paths. The cursor is an entry in `edits` beside the click
@@ -1022,8 +1114,10 @@ Matching on position as well would separate them, and that was tried and dropped
 needs a distance tolerance, and one that fits a 1× display is wrong on a 2× one, while time alone
 needs no tuning.
 
-A click outside the capture area cannot be framed by a region that does not contain it, so those
-captures fall back to the whole display the click landed on. `shouldCapture` is exported for that
+A click outside the capture area, when that setting keeps it, is still framed by the area: the area is
+what the guide is about, and a step that suddenly shows the whole screen reads as a mistake. The grab
+comes from the display the area is on rather than the one the click landed on, so the crop is right
+across monitors. `shouldCapture` is exported for that
 decision rather than being inline in the hook handler, so the rule is testable on its own. It only
 filters in `region` mode; the other two modes frame every click by construction.
 
@@ -1043,26 +1137,34 @@ identical on both surfaces, so `AiSettings` lives in `packages/ui` and each app 
 through its background messaging, which is the only part that differs.
 
 All three sections are cards with one shell: the same border, radius, padding and 28px icon header
-`AiSettings` already had. Rows inside a desktop card stay label-left, control-right, which is right
-at this width, while the AI card keeps the stacked 11px labels it needs in 400px of side panel — the
-two are never on screen at once, and matching them would mean branching that shared component on
-`client()`. The shell alone is what makes the three read as siblings. Capturing is two cards,
-Screenshots and Keyboard, because the divider that separated those groups was already doing a card
-boundary's job.
+`AiSettings` already had, with a line under the title saying what the card is for. Rows inside a
+desktop card are `Row`: label and a one-line hint on the left, the control on the right, divided
+from the next row, or the control underneath with `stack` when it is too wide to sit beside the
+label. The AI card keeps the stacked 11px labels it needs in 400px of side panel — the two are never
+on screen at once, and matching them would mean branching that shared component on `client()`.
+Capturing is three cards: Screenshots, Click marks and Typing and keys.
 
-Every control in there is the shared component — `Select`, `Input`, and a checkbox carrying
-`accent-accent` — never a bare `<select>` or `<input>`. That is the difference the card shell alone
-did not fix: a native select draws the platform's own chevron and popup, a native number field draws
-spinner arrows on Windows, and a native checkbox is the browser's blue, so the section read as a form
-bolted into the app rather than part of it. `styles.css` also kills the number spinners outright,
-because `Input` is a text field's styling wrapped around a control the platform still decorates.
+Each kind of value has one control, and it shows the value rather than hiding it behind a click. A
+choice among a few is `Segmented`, a row of buttons with the chosen one filled; that is the capture
+mode and the zoom, which offers Automatic, 1×, 1.5×, 2×, 3×, 4× and 5× and adds the stored level as one more
+button when an older build saved one in between. An on/off is `Switch`, the same switch the AI card's
+own-server toggle is, moved into `packages/ui` so the two cannot drift. A duration is `Slider`, a
+native range input tinted with `accent-accent` beside a chip reading the value in ms or seconds,
+because a number field hid what the default was and drew spinner arrows on Windows. The marker colour
+is the extension's control, a swatch and hex code that opens the shared `ColorPicker` with core's
+`TARGET_COLORS` as presets. A setting that cannot apply is disabled rather than hidden, so the rows
+do not jump: outside clicks without Area mode, the field read and the typing pause without typing.
+Every change is applied to the page before main answers, or a slider dragged across its range would
+lag a round trip behind the pointer.
 
-The pane carries no heading and no close button. The left nav already names the section, so a title
-repeating the highlighted item is the same word twice on one screen; and `TopNav` stays visible and
-mounted the whole time settings is open, so All Guides, Starred, Trash and the wordmark are all exits
-already. Both were tried and removed — first a "Close" entry under the three sections, styled like
-them, which read as a fourth section that happens to quit, then an X in the pane corner, which by
-then duplicated the header it sat beneath.
+Settings opens as a dialog over the library, not as a page. It is the shared `Dialog` laid out the
+way the export preview lays out its own: a title bar with the close button, the section list down
+the left and the section scrolling beside it, 880 px wide and at most 650 px tall. As a page it
+replaced the library, and on a wide window its content, which tops out around 620 px, sat in a field
+of empty space. The dialog also covers the header, which retired `TopNav`'s `onNavigate`: that prop
+existed only to close the old pane when All Guides, Starred or Trash navigated underneath it.
+`SettingsPanel`, the body, mounts only while the dialog is open, so it reads the settings each time it
+opens and shows a mode the capture sheet or the recording card changed in the meantime.
 
 `AiSettings` is the extension's own AI card, lifted out of `SettingsView` rather than rewritten. A
 parallel implementation was tried first and the wording immediately drifted — the extension said

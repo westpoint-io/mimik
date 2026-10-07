@@ -1,9 +1,9 @@
 import { i18n } from '@mimik/core/env';
 import { getGuide, updateScreenshotEdits } from '@mimik/core/guides/service';
-import { MAX_ZOOM, MIN_ZOOM, rezoomEdits, ZOOM_STEP } from '@mimik/core/screenshot/record';
+import { currentZoom, MAX_ZOOM, MIN_ZOOM, rezoomEdits, ZOOM_STEP } from '@mimik/core/screenshot/record';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@mimik/ui';
 import { ZoomIn } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 const LEVELS = Array.from(
   { length: Math.round((MAX_ZOOM - MIN_ZOOM) / ZOOM_STEP) + 1 },
@@ -12,6 +12,16 @@ const LEVELS = Array.from(
 
 export function GuideZoom({ guideId, onDone }: { guideId: string; onDone: () => void }) {
   const [busy, setBusy] = useState(false);
+  const [current, setCurrent] = useState<number | 'auto' | null>(null);
+
+  const refresh = useCallback(async () => {
+    const found = await getGuide(guideId);
+    setCurrent(found ? currentZoom(found.screenshots.values()) : null);
+  }, [guideId]);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   const apply = async (value: string) => {
     setBusy(true);
@@ -23,6 +33,7 @@ export function GuideZoom({ guideId, onDone }: { guideId: string; onDone: () => 
         const next = rezoomEdits(shot, level);
         if (next) await updateScreenshotEdits(shot.id, next);
       }
+      await refresh();
       onDone();
     } finally {
       setBusy(false);
@@ -30,13 +41,23 @@ export function GuideZoom({ guideId, onDone }: { guideId: string; onDone: () => 
   };
 
   return (
-    <Select disabled={busy} onValueChange={apply}>
+    <Select
+      disabled={busy}
+      value={current === null ? '' : String(current)}
+      onValueChange={apply}
+      onOpenChange={(open) => open && refresh()}
+    >
       <SelectTrigger
         aria-label={i18n.t('desktop_zoomLevel')}
         className="h-8 w-auto gap-1.5 rounded-lg border-border bg-card px-3 text-[13px] font-medium text-foreground hover:bg-secondary hover:text-accent"
       >
         <ZoomIn size={14} />
         {i18n.t('desktop_zoomGuide')}
+        {current !== null && (
+          <span className="text-muted-foreground">
+            · {current === 'auto' ? i18n.t('desktop_zoomAuto') : `${current}×`}
+          </span>
+        )}
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="auto">{i18n.t('desktop_zoomAuto')}</SelectItem>

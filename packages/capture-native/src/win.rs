@@ -1,10 +1,18 @@
 use std::cell::RefCell;
+use std::ffi::c_void;
+use std::path::Path;
 
 use napi::Result;
-use windows::core::{Interface, BSTR};
-use windows::Win32::Foundation::POINT;
+use windows::core::{Interface, BOOL, BSTR, PCWSTR, PWSTR};
+use windows::Win32::Foundation::{CloseHandle, HWND, LPARAM, POINT, RECT};
+use windows::Win32::Graphics::Dwm::{DwmGetWindowAttribute, DWMWA_CLOAKED, DWMWA_EXTENDED_FRAME_BOUNDS};
+use windows::Win32::Graphics::Gdi::{EnumDisplayMonitors, GetMonitorInfoW, HDC, HMONITOR, MONITORINFO};
+use windows::Win32::Storage::FileSystem::{GetFileVersionInfoSizeW, GetFileVersionInfoW, VerQueryValueW};
 use windows::Win32::System::Com::{
   CoCreateInstance, CoInitializeEx, CLSCTX_INPROC_SERVER, COINIT_MULTITHREADED,
+};
+use windows::Win32::System::Threading::{
+  OpenProcess, QueryFullProcessImageNameW, PROCESS_NAME_WIN32, PROCESS_QUERY_LIMITED_INFORMATION,
 };
 use windows::Win32::UI::Accessibility::*;
 use windows::Win32::UI::Input::KeyboardAndMouse::{
@@ -12,10 +20,15 @@ use windows::Win32::UI::Input::KeyboardAndMouse::{
   VK_BACK, VK_CAPITAL, VK_CONTROL, VK_DELETE, VK_DOWN, VK_END, VK_ESCAPE, VK_F1, VK_F24, VK_HOME, VK_INSERT,
   VK_LEFT, VK_MENU, VK_NEXT, VK_PRIOR, VK_RETURN, VK_RIGHT, VK_SHIFT, VK_SPACE, VK_TAB, VK_UP,
 };
-use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId};
+use windows::Win32::UI::WindowsAndMessaging::{
+  EnumWindows, GetAncestor, GetClassNameW, GetForegroundWindow, GetWindow, GetWindowLongPtrW, GetWindowRect,
+  GetWindowTextW, GetWindowThreadProcessId, IsWindowVisible, WindowFromPoint, GA_ROOT, GWL_EXSTYLE,
+  GWL_STYLE, GW_OWNER, WS_CAPTION, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_POPUP, WS_SYSMENU,
+};
 
 use crate::hit::smallest_under;
-use crate::{ElementNode, ElementRect, UiElement};
+use crate::window::{covers_most_of_the_screen, is_popup, Traits};
+use crate::{ActiveWindow, ElementNode, ElementRect, UiElement};
 
 const ROLES: &[(UIA_CONTROLTYPE_ID, &str)] = &[
   (UIA_ButtonControlTypeId, "button"),
@@ -135,6 +148,7 @@ fn describe(found: &IUIAutomationElement) -> UiElement {
 }
 
 const MAX_ANCESTORS: usize = 4;
+const TAB_DRAG_LAYER: &str = "TabDragContextImpl";
 const MAX_CHILDREN: usize = 12;
 
 fn node(element: &IUIAutomationElement) -> ElementNode {
@@ -182,6 +196,7 @@ fn narrowest(
   unsafe { walker.GetFirstChildElement(hit) }.ok()?;
   let request = unsafe { uia.CreateCacheRequest() }.ok()?;
   unsafe { request.AddProperty(UIA_BoundingRectanglePropertyId) }.ok()?;
+  unsafe { request.AddProperty(UIA_ClassNamePropertyId) }.ok()?;
   let everything = unsafe { uia.CreateTrueCondition() }.ok()?;
   let found = unsafe { hit.FindAllBuildCache(TreeScope_Subtree, &everything, &request) }.ok()?;
   let elements: Vec<IUIAutomationElement> = (0..unsafe { found.Length() }.ok()?)
@@ -190,6 +205,12 @@ fn narrowest(
   let boxes: Vec<_> = elements
     .iter()
     .map(|element| {
+      let class = unsafe { element.CachedClassName() }
+        .map(|name| name.to_string())
+        .unwrap_or_default();
+      if class.contains(TAB_DRAG_LAYER) {
+        return Default::default();
+      }
       unsafe { element.CachedBoundingRectangle() }
         .map(|rect| (rect.left, rect.top, rect.right, rect.bottom))
         .unwrap_or_default()
@@ -325,4 +346,240 @@ pub fn clear_dead_key() {
       break;
     }
   }
+}
+
+fn area(rect: &RECT) -> f64 {
+  f64::from((rect.right - rect.left).max(0)) * f64::from((rect.bottom - rect.top).max(0))
+}
+
+fn window_rect(window: HWND) -> Option<RECT> {
+  let mut rect = RECT::default();
+  unsafe { GetWindowRect(window, &mut rect) }.ok()?;
+  Some(rect)
+}
+
+fn frame_rect(window: HWND) -> Option<RECT> {
+  let mut rect = RECT::default();
+  let framed = unsafe {
+    DwmGetWindowAttribute(
+      window,
+      DWMWA_EXTENDED_FRAME_BOUNDS,
+      (&mut rect as *mut RECT).cast::<c_void>(),
+      size_of::<RECT>() as u32,
+    )
+  };
+  if framed.is_ok() && area(&rect) > 0.0 {
+    Some(rect)
+  } else {
+    window_rect(window)
+  }
+}
+
+fn monitor_areas() -> Vec<f64> {
+  unsafe extern "system" fn collect(monitor: HMONITOR, _: HDC, _: *mut RECT, data: LPARAM) -> BOOL {
+    let areas = unsafe { &mut *(data.0 as *mut Vec<f64>) };
+    let mut info = MONITORINFO {
+      cbSize: size_of::<MONITORINFO>() as u32,
+      ..Default::default()
+    };
+    if unsafe { GetMonitorInfoW(monitor, &mut info) }.as_bool() {
+      areas.push(area(&info.rcMonitor));
+    }
+    true.into()
+  }
+  let mut areas: Vec<f64> = Vec::new();
+  let _ = unsafe {
+    EnumDisplayMonitors(
+      None,
+      None,
+      Some(collect),
+      LPARAM(&mut areas as *mut Vec<f64> as isize),
+    )
+  };
+  areas
+}
+
+fn text_of(read: impl FnOnce(&mut [u16]) -> i32) -> Option<String> {
+  let mut buffer = [0u16; 512];
+  let length = read(&mut buffer);
+  if length <= 0 {
+    return None;
+  }
+  clean(String::from_utf16_lossy(&buffer[..length as usize]))
+}
+
+fn style(window: HWND) -> u32 {
+  unsafe { GetWindowLongPtrW(window, GWL_STYLE) as u32 }
+}
+
+fn owned(window: HWND) -> bool {
+  unsafe { GetWindow(window, GW_OWNER) }.is_ok_and(|owner| !owner.is_invalid())
+}
+
+fn cloaked(window: HWND) -> bool {
+  let mut flag = 0u32;
+  let read = unsafe {
+    DwmGetWindowAttribute(
+      window,
+      DWMWA_CLOAKED,
+      (&mut flag as *mut u32).cast::<c_void>(),
+      size_of::<u32>() as u32,
+    )
+  };
+  read.is_ok() && flag != 0
+}
+
+fn popup(window: HWND) -> bool {
+  let class = text_of(|buffer| unsafe { GetClassNameW(window, buffer) }).unwrap_or_default();
+  let style = style(window);
+  let extended = unsafe { GetWindowLongPtrW(window, GWL_EXSTYLE) as u32 };
+  is_popup(&Traits {
+    class: &class,
+    owned: owned(window),
+    no_activate: extended & WS_EX_NOACTIVATE.0 != 0,
+    tool_window: extended & WS_EX_TOOLWINDOW.0 != 0,
+    captionless_popup: style & WS_POPUP.0 != 0 && style & WS_CAPTION.0 != WS_CAPTION.0,
+  })
+}
+
+fn process_of(window: HWND) -> u32 {
+  let mut process = 0u32;
+  unsafe { GetWindowThreadProcessId(window, Some(&mut process)) };
+  process
+}
+
+fn main_window_of(process: u32) -> Option<HWND> {
+  struct Search {
+    process: u32,
+    best: Option<(f64, HWND)>,
+  }
+  unsafe extern "system" fn visit(window: HWND, data: LPARAM) -> BOOL {
+    let search = unsafe { &mut *(data.0 as *mut Search) };
+    let style = style(window);
+    let candidate = process_of(window) == search.process
+      && unsafe { IsWindowVisible(window) }.as_bool()
+      && !cloaked(window)
+      && !owned(window)
+      && style & WS_CAPTION.0 != 0
+      && style & WS_SYSMENU.0 != 0;
+    if let Some(rect) = window_rect(window).filter(|_| candidate) {
+      let size = area(&rect);
+      if search.best.is_none_or(|(largest, _)| size > largest) {
+        search.best = Some((size, window));
+      }
+    }
+    true.into()
+  }
+  let mut search = Search { process, best: None };
+  let _ = unsafe { EnumWindows(Some(visit), LPARAM(&mut search as *mut Search as isize)) };
+  search.best.map(|(_, window)| window)
+}
+
+fn process_path(process: u32) -> Option<String> {
+  let handle = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, process) }.ok()?;
+  let mut buffer = [0u16; 1024];
+  let mut length = buffer.len() as u32;
+  let named = unsafe {
+    QueryFullProcessImageNameW(
+      handle,
+      PROCESS_NAME_WIN32,
+      PWSTR(buffer.as_mut_ptr()),
+      &mut length,
+    )
+  };
+  let _ = unsafe { CloseHandle(handle) };
+  named.ok()?;
+  clean(String::from_utf16_lossy(&buffer[..length as usize]))
+}
+
+fn wide(text: &str) -> Vec<u16> {
+  text.encode_utf16().chain(Some(0)).collect()
+}
+
+fn file_description(path: &str) -> Option<String> {
+  let file = wide(path);
+  let size = unsafe { GetFileVersionInfoSizeW(PCWSTR(file.as_ptr()), None) };
+  if size == 0 {
+    return None;
+  }
+  let mut data = vec![0u8; size as usize];
+  unsafe { GetFileVersionInfoW(PCWSTR(file.as_ptr()), None, size, data.as_mut_ptr().cast()) }.ok()?;
+  let query = |key: &str| -> Option<(*const u16, usize)> {
+    let key = wide(key);
+    let mut found: *mut c_void = std::ptr::null_mut();
+    let mut length = 0u32;
+    let hit = unsafe {
+      VerQueryValueW(
+        data.as_ptr().cast(),
+        PCWSTR(key.as_ptr()),
+        &mut found,
+        &mut length,
+      )
+    };
+    (hit.as_bool() && length > 0 && !found.is_null()).then_some((found as *const u16, length as usize))
+  };
+  let (translation, _) = query("\\VarFileInfo\\Translation")?;
+  let (language, codepage) = unsafe { (*translation, *translation.add(1)) };
+  let (text, length) = query(&format!(
+    "\\StringFileInfo\\{language:04x}{codepage:04x}\\FileDescription"
+  ))?;
+  let characters = unsafe { std::slice::from_raw_parts(text, length) };
+  clean(
+    String::from_utf16_lossy(characters)
+      .trim_end_matches('\0')
+      .to_string(),
+  )
+}
+
+pub fn active_window() -> Option<ActiveWindow> {
+  framed(unsafe { GetForegroundWindow() })
+}
+
+pub fn window_at(x: i32, y: i32) -> Option<ActiveWindow> {
+  let hit = unsafe { WindowFromPoint(POINT { x, y }) };
+  if hit.is_invalid() {
+    return None;
+  }
+  framed(unsafe { GetAncestor(hit, GA_ROOT) })
+}
+
+fn framed(front: HWND) -> Option<ActiveWindow> {
+  if front.is_invalid() {
+    return None;
+  }
+  let process = process_of(front);
+  let bounds = frame_rect(front)?;
+  let monitors = monitor_areas();
+  let largest = monitors.iter().copied().fold(0.0, f64::max);
+  let desktop: f64 = monitors.iter().sum();
+  let window = if !covers_most_of_the_screen(area(&bounds), largest, desktop) && popup(front) {
+    main_window_of(process).unwrap_or(front)
+  } else {
+    front
+  };
+  let rect = if window == front {
+    bounds
+  } else {
+    frame_rect(window)?
+  };
+  let path = process_path(process);
+  let app_name = path
+    .as_deref()
+    .and_then(file_description)
+    .or_else(|| {
+      path
+        .as_deref()
+        .and_then(|found| Path::new(found).file_stem())
+        .map(|stem| stem.to_string_lossy().into_owned())
+    })
+    .unwrap_or_default();
+  Some(ActiveWindow {
+    title: text_of(|buffer| unsafe { GetWindowTextW(window, buffer) }),
+    app_name,
+    app_path: path,
+    x: f64::from(rect.left),
+    y: f64::from(rect.top),
+    width: f64::from(rect.right - rect.left),
+    height: f64::from(rect.bottom - rect.top),
+  })
 }

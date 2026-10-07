@@ -34,10 +34,17 @@ body.editor {
 
 #region {
   position: absolute;
-  box-shadow: 0 0 0 100vmax rgba(30, 27, 75, 0.38);
-  outline: 2px dashed var(--accent);
-  outline-offset: -1px;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 100vmax rgba(30, 27, 75, 0.55);
   cursor: move;
+}
+
+#region::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 2px dashed var(--accent);
+  pointer-events: none;
 }
 
 #region.empty {
@@ -46,77 +53,159 @@ body.editor {
 
 #size {
   position: absolute;
-  top: -26px;
-  left: 0;
-  padding: 2px 8px;
+  top: 12px;
+  left: 12px;
+  padding: 3px 9px;
   border-radius: 6px;
   background: var(--deep);
-  color: var(--lavender);
-  font-size: 11px;
+  color: #fff;
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-size: 11.5px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 
 .handle {
   position: absolute;
-  width: 12px;
-  height: 12px;
-  border: 2px solid var(--accent);
-  border-radius: 3px;
-  background: #fff;
+  z-index: 1;
 }
 
-.handle[data-handle^='n'] {
-  top: -6px;
-}
-.handle[data-handle^='s'] {
-  bottom: -6px;
-}
-.handle[data-handle$='w'] {
-  left: -6px;
-}
-.handle[data-handle$='e'] {
-  right: -6px;
-}
 .handle[data-handle='n'],
 .handle[data-handle='s'] {
-  left: calc(50% - 6px);
-}
-.handle[data-handle='w'],
-.handle[data-handle='e'] {
-  top: calc(50% - 6px);
-}
-.handle[data-handle='n'],
-.handle[data-handle='s'] {
+  left: 26px;
+  right: 26px;
+  height: 12px;
   cursor: ns-resize;
 }
+.handle[data-handle='n'] {
+  top: -8px;
+}
+.handle[data-handle='s'] {
+  bottom: -8px;
+}
 .handle[data-handle='w'],
 .handle[data-handle='e'] {
+  top: 26px;
+  bottom: 26px;
+  width: 12px;
   cursor: ew-resize;
 }
+.handle[data-handle='w'] {
+  left: -8px;
+}
+.handle[data-handle='e'] {
+  right: -8px;
+}
+
 .handle[data-handle='nw'],
-.handle[data-handle='se'] {
+.handle[data-handle='ne'],
+.handle[data-handle='se'],
+.handle[data-handle='sw'] {
+  width: 26px;
+  height: 26px;
+  border: 0 solid var(--accent);
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.5));
+}
+.handle[data-handle='nw'] {
+  top: -2px;
+  left: -2px;
+  border-width: 4px 0 0 4px;
   cursor: nwse-resize;
 }
-.handle[data-handle='ne'],
+.handle[data-handle='ne'] {
+  top: -2px;
+  right: -2px;
+  border-width: 4px 4px 0 0;
+  cursor: nesw-resize;
+}
+.handle[data-handle='se'] {
+  bottom: -2px;
+  right: -2px;
+  border-width: 0 4px 4px 0;
+  cursor: nwse-resize;
+}
 .handle[data-handle='sw'] {
+  bottom: -2px;
+  left: -2px;
+  border-width: 0 0 4px 4px;
   cursor: nesw-resize;
 }
 
-#hint {
+#bar {
   position: absolute;
+  top: 20px;
   left: 50%;
-  bottom: 40px;
   transform: translateX(-50%);
-  padding: 10px 16px;
-  border-radius: 10px;
-  background: var(--deep);
-  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--lavender);
+  background: #fff;
+  box-shadow: 0 12px 30px rgba(15, 14, 40, 0.28);
+  font-family: 'Poppins', system-ui, sans-serif;
+  cursor: default;
+}
+
+#barText {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--deep);
   white-space: nowrap;
 }
 
-#hint b {
-  color: #fff;
+#barText svg {
+  color: var(--accent);
+}
+
+#barActions {
+  display: flex;
+  gap: 8px;
+}
+
+#bar button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 12.5px;
   font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+#bar button.secondary {
+  border: 1px solid var(--lavender);
+  background: #fff;
+  color: var(--deep);
+}
+
+#bar button.primary {
+  border: 0;
+  background: var(--deep);
+  color: var(--lavender);
+}
+
+#bar kbd {
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 10.5px;
+  font-weight: 600;
+  background: #eef2ff;
+  color: var(--deep);
+}
+
+#bar button.primary kbd {
+  background: rgba(199, 210, 254, 0.18);
+  color: var(--lavender);
 }
 
 body.boundary #frame {
@@ -126,29 +215,15 @@ body.boundary #frame {
   border-radius: 2px;
 }
 
-body.boundary[data-state='recording'] #frame {
-  animation: pulse 1.8s ease-in-out infinite;
-}
-
 body.boundary[data-state='paused'] #frame {
   border-style: dashed;
   border-color: var(--muted);
-  animation: none;
 }
 
 body.boundary[data-state='armed'] #frame {
   border-style: dashed;
 }
 
-@keyframes pulse {
-  0%,
-  100% {
-    border-color: var(--accent);
-  }
-  50% {
-    border-color: var(--lavender);
-  }
-}
 
 body.controls [hidden] {
   display: none !important;
@@ -283,7 +358,7 @@ body.controls #body {
 
 body.controls #preview {
   position: relative;
-  height: 150px;
+  height: calc(150px - var(--title-extra, 0px));
   border: 1px solid #e0e7ff;
   border-radius: 10px;
   background: #eef2ff;
@@ -294,8 +369,7 @@ body.controls #shot {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  object-position: top center;
+  object-fit: contain;
 }
 
 body.controls #veil {
@@ -347,7 +421,8 @@ body.controls #remove svg {
 }
 
 body.controls #stepTitle,
-body.controls #writing {
+body.controls #writing,
+body.controls #skeleton .line {
   margin: 11px 0 0;
   font-size: 13px;
   line-height: 1.45;
@@ -385,15 +460,9 @@ body.controls #pillWriting svg {
   }
 }
 
-body.controls #skeleton {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 13px;
-}
-
 body.controls #skeleton span {
-  display: block;
+  display: inline-block;
+  vertical-align: middle;
   height: 10px;
   width: 78%;
   border-radius: 5px;
@@ -402,7 +471,7 @@ body.controls #skeleton span {
   animation: shimmer 1.4s linear infinite;
 }
 
-body.controls #skeleton span + span {
+body.controls #skeleton .meta span {
   width: 38%;
 }
 
@@ -415,7 +484,8 @@ body.controls #skeleton span + span {
   }
 }
 
-body.controls #stepMeta {
+body.controls #stepMeta,
+body.controls #skeleton .meta {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -470,6 +540,27 @@ body.controls.waiting #mascot svg {
 
 body.controls .flash {
   animation: camflash 3s ease infinite;
+}
+
+body.controls.resting #mascot svg {
+  animation: rest 3.2s ease-in-out infinite;
+}
+
+body.controls.resting .flash {
+  animation: none;
+  opacity: 0;
+}
+
+@keyframes rest {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+  50% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
 }
 
 @keyframes camflash {

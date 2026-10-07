@@ -8,6 +8,8 @@ use napi_derive::napi;
 mod hit;
 #[cfg(windows)]
 mod win;
+#[cfg(any(windows, test))]
+mod window;
 
 #[napi(object)]
 pub struct ElementRect {
@@ -34,6 +36,17 @@ pub struct UiElement {
   pub rect: Option<ElementRect>,
   pub ancestors: Vec<ElementNode>,
   pub children: Vec<ElementNode>,
+}
+
+#[napi(object)]
+pub struct ActiveWindow {
+  pub title: Option<String>,
+  pub app_name: String,
+  pub app_path: Option<String>,
+  pub x: f64,
+  pub y: f64,
+  pub width: f64,
+  pub height: f64,
 }
 
 pub struct ElementLookup {
@@ -90,6 +103,25 @@ pub fn resolve_key(keycode: u32, shift: bool, ctrl: bool, alt: bool) -> Option<S
   #[cfg(not(windows))]
   {
     let _ = (keycode, shift, ctrl, alt);
+    None
+  }
+}
+
+#[napi]
+pub fn active_window() -> Option<ActiveWindow> {
+  #[cfg(windows)]
+  return win::active_window();
+  #[cfg(not(windows))]
+  None
+}
+
+#[napi]
+pub fn window_at(x: i32, y: i32) -> Option<ActiveWindow> {
+  #[cfg(windows)]
+  return win::window_at(x, y);
+  #[cfg(not(windows))]
+  {
+    let _ = (x, y);
     None
   }
 }

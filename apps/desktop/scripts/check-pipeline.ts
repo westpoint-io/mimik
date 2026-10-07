@@ -94,18 +94,17 @@ app.whenReady().then(async () => {
   const results = await ask<CheckResult[]>(win.webContents, 'mimik:check:verify', guideId, 60_000);
 
   const userSettings = loadSettings();
-  const clamped = normaliseSettings({ screenshotDelayMs: 5000, cursorStyle: 'wobble' as never });
+  const clamped = normaliseSettings({ screenshotDelayMs: 5000 });
   const stored = saveSettings({ screenshotDelayMs: 750, keepClicksBeyondArea: true });
   const reloaded = loadSettings();
   results.push({
     name: 'settings clamp and persist',
     ok:
       clamped.screenshotDelayMs === 2000 &&
-      clamped.cursorStyle === DEFAULT_CAPTURE_SETTINGS.cursorStyle &&
       normaliseSettings({ captureMode: 'sideways' as never }).captureMode === DEFAULT_CAPTURE_SETTINGS.captureMode &&
       reloaded.screenshotDelayMs === 750 &&
       reloaded.keepClicksBeyondArea === stored.keepClicksBeyondArea,
-    detail: `5000 ms clamped to ${clamped.screenshotDelayMs}, unknown style fell back to ${clamped.cursorStyle}, 750 ms reloaded as ${reloaded.screenshotDelayMs}`,
+    detail: `5000 ms clamped to ${clamped.screenshotDelayMs}, 750 ms reloaded as ${reloaded.screenshotDelayMs}`,
   });
 
   const knobs = normaliseSettings({
@@ -186,8 +185,33 @@ app.whenReady().then(async () => {
       sameRect(frameFor('window', insidePoint, region, elsewhere), display.bounds) &&
       sameRect(frameFor('window', insidePoint, region, null), display.bounds) &&
       sameRect(frameFor('region', insidePoint, region, windowRect), region) &&
-      sameRect(frameFor('region', outsidePoint, region, windowRect), display.bounds),
-    detail: 'screen takes the display, window takes the window and falls back twice, region takes the region',
+      sameRect(frameFor('region', outsidePoint, region, windowRect), region),
+    detail: 'screen takes the display, window takes the window and falls back twice, region always takes the region',
+  });
+
+  let framedBy: CaptureRequest | null = null;
+  const clickedWindow = { x: region.x + 40, y: region.y + 30, width: 300, height: 200 };
+  const windowed = new DesktopRecorder(
+    () => region,
+    (fn) => fn(),
+    (request) => {
+      framedBy = request;
+      return Promise.resolve(null);
+    },
+    {
+      grab: async () => syntheticDisplay,
+      settings: () => ({ ...DEFAULT_CAPTURE_SETTINGS, captureMode: 'window', showCursor: false }),
+      lookup: () => Promise.resolve(null),
+      windowAt: () =>
+        Promise.resolve({ ok: true, window: { title: 'Left pane', app: { name: 'Explorer' }, bounds: clickedWindow } }),
+    },
+  );
+  await windowed.capture({ x: clickedWindow.x + 20, y: clickedWindow.y + 20 });
+  const windowShot = (framedBy as CaptureRequest | null)?.image;
+  results.push({
+    name: 'window mode crops to the window that was clicked',
+    ok: windowShot?.width === Math.round(clickedWindow.width * display.scaleFactor),
+    detail: `${windowShot?.width ?? 0} px wide for a ${clickedWindow.width} px window`,
   });
 
   const control: ScreenElement = {
@@ -491,6 +515,35 @@ app.whenReady().then(async () => {
     detail: `with the first step still being written: ${count('lookup')} lookups, ${count('grab')} grabs, ${count('focused')} field reads`,
   });
 
+  let busyNow = false;
+  const stepless = new DesktopRecorder(
+    () => region,
+    (fn) => {
+      busyNow = true;
+      return fn();
+    },
+    () => Promise.resolve(null),
+    {
+      grab: async () => syntheticDisplay,
+      settings: () => REGION_MODE,
+      focused: () => Promise.resolve({ ...control }),
+      resolve: () => Promise.resolve('x'),
+      reset: () => Promise.resolve(),
+      drained: () => {
+        busyNow = false;
+      },
+    },
+  );
+  for (let i = 0; i < 3; i++) stepless.onAction(pressed(30));
+  stepless.onAction(pressed(28));
+  await stepless.drain();
+  await wait(50);
+  results.push({
+    name: 'typing that writes no step leaves the card idle',
+    ok: !busyNow,
+    detail: busyNow ? 'still marked as capturing after the queue emptied' : 'capturing cleared once the queue emptied',
+  });
+
   const page = { x: 0, y: 0, width: 800, height: 600 };
   const click = { x: 160, y: 66 };
   const boxed = (rect: ScreenElement['rect']) => targetRect({ ...control, rect }, page, click).width;
@@ -516,7 +569,7 @@ app.whenReady().then(async () => {
     detail: `${elapsed} ms for a 400 ms delay`,
   });
 
-  settings = { ...REGION_MODE, showCursor: true, cursorStyle: 'arrow', screenshotDelayMs: 0 };
+  settings = { ...REGION_MODE, showCursor: true, screenshotDelayMs: 0 };
   await recorder.capture({ x: region.x + 200, y: region.y + 150 });
   const cursorSizes = await ask<number[]>(win.webContents, 'mimik:check:renderedSizes', activeGuide, 30_000);
   const bare = cursorSizes[cursorSizes.length - 2] ?? 0;

@@ -104,7 +104,12 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["@mimik/ui/**", "!@mimik/ui/env", "!@mimik/ui/global.css"],
+                    "group": [
+                      "@mimik/ui/**",
+                      "!@mimik/ui/env",
+                      "!@mimik/ui/global.css",
+                      "!@mimik/ui/common/lib/mascot-shapes"
+                    ],
                     "message": "Import from '@mimik/ui'. Add the export to packages/ui/src/index.ts if it is missing."
                   }
                 ]

@@ -8,6 +8,7 @@ export { useKeyCheck } from './ai/hooks/use-key-check';
 export { ColorPicker } from './annotation/components/ColorPicker';
 export { CameraMascot } from './common/components/CameraMascot';
 export { FaviconImg } from './common/components/FaviconImg';
+export { Switch } from './common/components/Switch';
 export { getDomainInitial } from './common/lib/domain-initial';
 export { formatRelativeTime } from './common/lib/format-relative-time';
 export {
@@ -23,6 +24,7 @@ export {
   MASCOT_VIEW_BOX,
 } from './common/lib/mascot-shapes';
 export { Button } from './components/ui/button';
+export { Dialog, DialogContent, DialogHeader, DialogTitle } from './components/ui/dialog';
 export { Input } from './components/ui/input';
 export { Popover, PopoverContent, PopoverTrigger } from './components/ui/popover';
 export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
