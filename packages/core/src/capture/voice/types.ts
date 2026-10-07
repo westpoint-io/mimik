@@ -38,17 +38,10 @@ export interface ScoredTranscriptSegment extends TranscriptSegment {
   compression_ratio: number;
 }
 
-export interface TranscriptWord {
+interface TranscriptWord {
   word: string;
   start: number;
   end: number;
-}
-
-export interface PositionedWord {
-  text: string;
-  batchStart: number;
-  start: AbsoluteSeconds;
-  end: AbsoluteSeconds;
 }
 
 export interface TranscriptionResponse {

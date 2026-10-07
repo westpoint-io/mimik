@@ -3,7 +3,7 @@ import { blobToDataUrl } from '@/core/export/utils';
 import { normalizeHex } from '@/core/screenshot/color';
 import { DEFAULT_TARGET_COLOR } from '@/core/screenshot/types';
 
-export const BRAND_LOGO_MAX_WIDTH = 320;
+const BRAND_LOGO_MAX_WIDTH = 320;
 const FALLBACK_LOGO_PATH = '/mimik-mark.png';
 
 export const defaultFooterLine = () => `© ${new Date().getFullYear()}`;

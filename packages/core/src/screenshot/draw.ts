@@ -63,9 +63,9 @@ function drawArrowEnd(ctx: Ctx, x1: number, y1: number, x2: number, y2: number, 
   ctx.restore();
 }
 
-export const BLUR_RADIUS = 12;
+const BLUR_RADIUS = 12;
 export const BLUR_MARGIN = BLUR_RADIUS * 2;
-export const BLUR_CELL = 8;
+const BLUR_CELL = 8;
 
 type Rect = { x: number; y: number; w: number; h: number };
 

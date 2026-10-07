@@ -1,4 +1,4 @@
-export interface VoiceoverModelOption {
+interface VoiceoverModelOption {
   id: string;
   label: string;
 }
@@ -73,7 +73,7 @@ export const DEFAULT_VOICEOVER_PROVIDER: VoiceoverProviderKey = 'openai';
 
 export const VOICEOVER_PROVIDER_KEYS = Object.keys(VOICEOVER_PROVIDERS) as VoiceoverProviderKey[];
 
-export function isVoiceoverProvider(value: unknown): value is VoiceoverProviderKey {
+function isVoiceoverProvider(value: unknown): value is VoiceoverProviderKey {
   return typeof value === 'string' && value in VOICEOVER_PROVIDERS;
 }
 

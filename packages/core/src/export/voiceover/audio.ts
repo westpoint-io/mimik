@@ -1,12 +1,12 @@
 import type { VideoContainer } from '@/core/export/video-support';
 
-export const VOICE_SAMPLE_RATE = 44100;
+const VOICE_SAMPLE_RATE = 44100;
 
 export type VoiceCodec = 'aac' | 'opus';
 
 let context: OfflineAudioContext | null = null;
 
-export function audioContext(): OfflineAudioContext {
+function audioContext(): OfflineAudioContext {
   if (!context) context = new OfflineAudioContext(1, 1, VOICE_SAMPLE_RATE);
   return context;
 }
@@ -15,7 +15,7 @@ export async function decodeClip(bytes: ArrayBuffer): Promise<AudioBuffer> {
   return toMono(await audioContext().decodeAudioData(bytes.slice(0)));
 }
 
-export function toMono(buffer: AudioBuffer): AudioBuffer {
+function toMono(buffer: AudioBuffer): AudioBuffer {
   if (buffer.numberOfChannels === 1) return buffer;
   const mono = audioContext().createBuffer(1, buffer.length, buffer.sampleRate);
   const mixed = mono.getChannelData(0);
@@ -26,7 +26,7 @@ export function toMono(buffer: AudioBuffer): AudioBuffer {
   return mono;
 }
 
-export function silence(samples: number, sampleRate = VOICE_SAMPLE_RATE): AudioBuffer {
+function silence(samples: number, sampleRate = VOICE_SAMPLE_RATE): AudioBuffer {
   return audioContext().createBuffer(1, Math.max(1, samples), sampleRate);
 }
 
@@ -80,7 +80,7 @@ export async function writeVoiceTrack(
   }
 }
 
-export async function pickVoiceCodec(container: VideoContainer): Promise<VoiceCodec | null> {
+async function pickVoiceCodec(container: VideoContainer): Promise<VoiceCodec | null> {
   const { canEncodeAudio } = await import('mediabunny');
   const codec: VoiceCodec = container === 'mp4' ? 'aac' : 'opus';
   return (await canEncodeAudio(codec, { numberOfChannels: 1, sampleRate: VOICE_SAMPLE_RATE })) ? codec : null;

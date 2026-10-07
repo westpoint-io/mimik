@@ -45,7 +45,3 @@ export async function deleteClip(id: string): Promise<void> {
     logger.error('[voiceover] cache delete failed', error);
   }
 }
-
-export async function clearClips(): Promise<void> {
-  await db.voiceClips.clear();
-}

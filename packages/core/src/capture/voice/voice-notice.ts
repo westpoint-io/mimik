@@ -5,7 +5,7 @@ import type { VoiceUpdate } from './voice-update';
 
 export const VOICE_CONFIRM_MS = 7000;
 
-export type VoiceNoticeTone = 'progress' | 'done' | 'failed';
+type VoiceNoticeTone = 'progress' | 'done' | 'failed';
 
 export interface VoiceNotice {
   tone: VoiceNoticeTone;

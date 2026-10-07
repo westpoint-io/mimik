@@ -60,7 +60,7 @@ export async function grabDisplay(point: { x: number; y: number }): Promise<Fram
   };
 }
 
-export async function captureDisplay(displayId: number): Promise<Capture> {
+async function captureDisplay(displayId: number): Promise<Capture> {
   const display = screen.getAllDisplays().find((d) => d.id === displayId);
   if (!display) throw new Error(`no display with id ${displayId}`);
   const frame = await grabDisplay({

@@ -716,7 +716,7 @@ export function stepKind(step: Step): StepKind {
   return 'click';
 }
 
-export type VoiceoverSkipReason = 'failed' | 'noAudioCodec' | 'noKey' | 'nothingToSay';
+type VoiceoverSkipReason = 'failed' | 'noAudioCodec' | 'noKey' | 'nothingToSay';
 
 export interface VoiceoverSkip {
   reason: VoiceoverSkipReason;
@@ -946,7 +946,7 @@ async function prepareVoiceover(
   };
 }
 
-export function voiceoverPlacement(
+function voiceoverPlacement(
   clips: Map<number, AudioBuffer>,
   starts: number[],
   offsetSec: number,

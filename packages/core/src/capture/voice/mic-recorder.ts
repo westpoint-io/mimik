@@ -2,8 +2,8 @@ import { concat } from './concat';
 import { SPEECH_RMS_THRESHOLD } from './energy-gate';
 import { openStream } from './open-stream';
 
-export const TARGET_SAMPLE_RATE = 16000;
-export const PCM_WORKLET_NAME = 'pcm-processor';
+const TARGET_SAMPLE_RATE = 16000;
+const PCM_WORKLET_NAME = 'pcm-processor';
 
 const ANALYSER_FFT_SIZE = 2048;
 const LEVEL_FLOOR_DB = -60;

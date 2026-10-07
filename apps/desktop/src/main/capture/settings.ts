@@ -4,8 +4,8 @@ import { app } from 'electron';
 
 export type CaptureMode = 'window' | 'screen' | 'area';
 
-export const CAPTURE_MODES: CaptureMode[] = ['window', 'screen', 'area'];
-export const MAX_SCREENSHOT_DELAY_MS = 2000;
+const CAPTURE_MODES: CaptureMode[] = ['window', 'screen', 'area'];
+const MAX_SCREENSHOT_DELAY_MS = 2000;
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 5;
 const ZOOM_STEP = 0.25;

@@ -10,7 +10,7 @@ export const SPLIT_SEARCH_S = 3;
 const MS_PER_S = 1000;
 const INT16_SCALE = 32768;
 
-export function frameRms(pcm: Int16Array, from: number, to: number): number {
+function frameRms(pcm: Int16Array, from: number, to: number): number {
   if (to <= from) return 0;
   let sum = 0;
   for (let i = from; i < to; i += 1) {

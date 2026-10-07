@@ -6,7 +6,6 @@ import { browser } from '#imports';
 import { BlurManager } from '@/blur/manager';
 import { shouldReopenBlur } from '@/blur/restore';
 import { CaptureSession } from '@/capture/session';
-import { updateUrl } from '@/core/capture/spa-nav';
 import { showStartNotification } from '@/core/capture/start-notification';
 import { GuideMeController } from '@/guideme/content';
 import { sendMessage } from '@/lib/messaging';
@@ -39,10 +38,7 @@ function createTabMessageHandler(session: CaptureSession, guideMe: GuideMeContro
         return true;
 
       case TabMessage.URL_CHANGED:
-        if (msg.url) {
-          updateUrl(msg.url as string);
-          sendResponse({ updated: true });
-        }
+        if (msg.url) sendResponse({ updated: true });
         return true;
 
       case TabMessage.SHOW_NOTIFICATION:

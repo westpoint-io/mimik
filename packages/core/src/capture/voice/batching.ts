@@ -1,6 +1,6 @@
 import { absoluteSeconds, type Batch, type SpeechSegment } from './types';
 
-export const MERGE_GAP_S = 0.5;
+const MERGE_GAP_S = 0.5;
 export const MAX_BATCH_S = 25;
 export const MIN_SPEECH_S = 1;
 

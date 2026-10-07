@@ -6,9 +6,9 @@ import { logger } from '@/core/logger';
 import { composeGuideFrames, totalStepFrames } from './video-export';
 import { FRAME_HEIGHT, FRAME_WIDTH } from './video-support';
 
-export const GIF_MAX_COLORS = 128;
-export const GIF_MIN_DELAY_MS = 20;
-export const GIF_YIELD_EVERY = 8;
+const GIF_MAX_COLORS = 128;
+const GIF_MIN_DELAY_MS = 20;
+const GIF_YIELD_EVERY = 8;
 
 export type GifOptions = Pick<ExportOptions, 'cover' | 'stepDescriptions' | 'gifQuality'>;
 
@@ -26,12 +26,7 @@ export function gifDelayMs(durationSec: number): number {
   return Math.max(GIF_MIN_DELAY_MS, Math.round(durationSec * 100) * 10);
 }
 
-export function gifFrameCount(
-  steps: Step[],
-  screenshots: Map<string, Screenshot>,
-  cover: boolean,
-  spec: GifSpec,
-): number {
+function gifFrameCount(steps: Step[], screenshots: Map<string, Screenshot>, cover: boolean, spec: GifSpec): number {
   const frames = steps.filter((step) => isBlock(step) || screenshots.has(step.id));
   return frames.length === 0 ? 0 : totalStepFrames(frames.length, spec.fps) + (cover ? 2 : 0);
 }
