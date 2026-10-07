@@ -35,6 +35,7 @@ interface GuideContentProps {
   guideId: string;
   initialStepId?: string;
   initialTool?: 'annotate' | 'redact' | 'crop' | 'target';
+  onCaptureMore?: (target: { guideId: string; atIndex: number; afterStep: number }) => void;
 }
 
 interface GuideData {
@@ -43,7 +44,7 @@ interface GuideData {
   screenshots: Map<string, Screenshot>;
 }
 
-export function GuideContent({ guideId, initialStepId, initialTool }: GuideContentProps) {
+export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMore }: GuideContentProps) {
   const {
     setGuideTitle,
     setGuideStepCount,
@@ -441,6 +442,7 @@ export function GuideContent({ guideId, initialStepId, initialTool }: GuideConte
               panel.open();
               void tabs.startInsertRecording(targetGuideId, insertAtIndex, tabId);
             }}
+            onCaptureMore={onCaptureMore && ((atIndex, afterStep) => onCaptureMore({ guideId, atIndex, afterStep }))}
           />
         </div>
 

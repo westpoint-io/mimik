@@ -167,6 +167,8 @@ desktop:
   modeScreen: Bildschirm
   modeRegion: Bereich
   startSheetTitle: Aufnahme starten
+  moreStepsAfter: "Neue Schritte werden nach Schritt $1 eingefügt."
+  moreStepsFirst: "Neue Schritte werden vor Schritt 1 eingefügt."
   startButton: Starten
   shortcutsSection: "Tastenkürzel"
   generalSection: "Allgemein"
@@ -181,6 +183,17 @@ desktop:
   version: "Version $1"
   versionHint: "Mimik sucht bei jedem Start nach Updates."
   checkUpdates: "Nach Updates suchen"
+  traySetArea: "Aufnahmebereich festlegen"
+  trayQuit: "Mimik beenden"
+  trayRecording: "Mimik nimmt auf. Zum Beenden klicken."
+  cannotRecord: "Mimik kann nicht aufnehmen"
+  updateReady: "Update bereit"
+  updateReadyMessage: "Mimik $1 kann installiert werden."
+  restartNow: "Jetzt neu starten"
+  later: "Später"
+  updateFailed: "Suche nach Updates fehlgeschlagen"
+  upToDate: "Auf dem neuesten Stand"
+  upToDateMessage: "Mimik $1 ist aktuell."
   cardScreenshots: "Screenshots"
   cardKeyboard: "Tippen und Tasten"
   cardGlobalKeys: "Globale Tasten"
@@ -196,7 +209,6 @@ desktop:
   cardKeyboardHint: "Was die Tastatur zur Anleitung beiträgt"
   captureModeHint: "Fenster folgt der App, die du anklickst."
   screenshotDelayHint: "Wartezeit vor dem Screenshot, für Menüs mit Animation."
-  typingDebounceHint: "Eine so lange Pause beendet den Schritt."
   recordKeysHint: "Strg+S, Enter und Ähnliches werden zu Schritten."
   seconds: "s"
   shortcutStartStop: "Aufnahme starten oder beenden"
@@ -206,6 +218,8 @@ desktop:
   shortcutClear: "Löschen"
 
 fullview:
+  collapseSidebar: Seitenleiste einklappen
+  expandSidebar: Seitenleiste ausklappen
   allGuides: Alle Anleitungen
   starred: Favoriten
   trash: Papierkorb

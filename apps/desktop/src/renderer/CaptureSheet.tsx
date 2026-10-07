@@ -2,6 +2,7 @@ import { i18n } from '@mimik/core/env';
 import { Button } from '@mimik/ui';
 import { AppWindow, Crop, Monitor, Video, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import type { CaptureInsert } from '../main/capture/insert';
 import type { CaptureSettings } from '../main/capture/settings';
 
 type Mode = CaptureSettings['captureMode'];
@@ -12,7 +13,7 @@ const MODES: { id: Mode; label: string; Icon: typeof AppWindow }[] = [
   { id: 'region', label: 'desktop_modeRegion', Icon: Crop },
 ];
 
-export function CaptureSheet({ onClose }: { onClose(): void }) {
+export function CaptureSheet({ insert, onClose }: { insert?: CaptureInsert; onClose(): void }) {
   const [settings, setSettings] = useState<CaptureSettings | null>(null);
 
   useEffect(() => {
@@ -33,8 +34,8 @@ export function CaptureSheet({ onClose }: { onClose(): void }) {
 
   const start = async () => {
     onClose();
-    if (settings?.captureMode === 'region') await window.mimik.capture.edit();
-    else await window.mimik.capture.arm();
+    if (settings?.captureMode === 'region') await window.mimik.capture.edit(insert);
+    else await window.mimik.capture.arm(insert);
   };
 
   return (
@@ -47,8 +48,19 @@ export function CaptureSheet({ onClose }: { onClose(): void }) {
       />
 
       <aside className="relative flex h-full w-[416px] flex-col border-l border-border bg-card shadow-2xl">
-        <div className="flex items-center border-b border-secondary px-6 pb-4 pt-5">
-          <h2 className="mr-auto text-base font-semibold text-foreground">{i18n.t('desktop_startSheetTitle')}</h2>
+        <div className={`flex border-b border-secondary px-6 pb-4 pt-5 ${insert ? 'items-start' : 'items-center'}`}>
+          <div className="mr-auto flex flex-col gap-1">
+            <h2 className="text-base font-semibold text-foreground">
+              {i18n.t(insert ? 'capture_moreStepsTitle' : 'desktop_startSheetTitle')}
+            </h2>
+            {insert && (
+              <p className="text-[12.5px] text-muted-foreground">
+                {insert.afterStep === 0
+                  ? i18n.t('desktop_moreStepsFirst')
+                  : i18n.t('desktop_moreStepsAfter', [String(insert.afterStep)])}
+              </p>
+            )}
+          </div>
           <button
             type="button"
             aria-label={i18n.t('common_close')}

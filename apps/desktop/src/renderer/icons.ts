@@ -8,6 +8,7 @@ import {
   Keyboard,
   LoaderCircle,
   Monitor,
+  MousePointer2,
   Pause,
   Play,
   Trash2,
@@ -28,6 +29,7 @@ const ICONS = {
   monitor: Monitor,
   area: Crop,
   keyboard: Keyboard,
+  pointer: MousePointer2,
   alert: TriangleAlert,
 };
 

@@ -1,5 +1,6 @@
 import { app, dialog } from 'electron';
 import electronUpdater from 'electron-updater';
+import { mainI18n } from './i18n';
 
 const { autoUpdater } = electronUpdater;
 
@@ -14,17 +15,21 @@ export function checkForUpdates(opts: { notifyWhenUpToDate: boolean }): void {
     autoUpdater.on('update-downloaded', async (info) => {
       const { response } = await dialog.showMessageBox({
         type: 'info',
-        buttons: ['Restart now', 'Later'],
+        buttons: [mainI18n.t('desktop.restartNow'), mainI18n.t('desktop.later')],
         defaultId: 0,
         cancelId: 1,
-        title: 'Update ready',
-        message: `Mimik ${info.version} is ready to install.`,
+        title: mainI18n.t('desktop.updateReady'),
+        message: mainI18n.t('desktop.updateReadyMessage', [info.version]),
       });
       if (response === 0) autoUpdater.quitAndInstall();
     });
     autoUpdater.on('error', (err) => {
       if (opts.notifyWhenUpToDate) {
-        dialog.showMessageBox({ type: 'error', title: 'Update check failed', message: String(err?.message ?? err) });
+        dialog.showMessageBox({
+          type: 'error',
+          title: mainI18n.t('desktop.updateFailed'),
+          message: String(err?.message ?? err),
+        });
       }
     });
   }
@@ -33,7 +38,11 @@ export function checkForUpdates(opts: { notifyWhenUpToDate: boolean }): void {
     .checkForUpdates()
     .then((result) => {
       if (opts.notifyWhenUpToDate && !result?.updateInfo) {
-        dialog.showMessageBox({ type: 'info', title: 'Up to date', message: `Mimik ${app.getVersion()} is current.` });
+        dialog.showMessageBox({
+          type: 'info',
+          title: mainI18n.t('desktop.upToDate'),
+          message: mainI18n.t('desktop.upToDateMessage', [app.getVersion()]),
+        });
       }
     })
     .catch(() => {});

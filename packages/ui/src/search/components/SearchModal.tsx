@@ -16,9 +16,14 @@ interface GuideResult {
 }
 
 export function SearchModal() {
-  const { searchOpen: open, setSearchOpen } = useFullview((s) => ({
+  const {
+    searchOpen: open,
+    setSearchOpen,
+    toggleSearch,
+  } = useFullview((s) => ({
     searchOpen: s.searchOpen,
     setSearchOpen: s.setSearchOpen,
+    toggleSearch: s.toggleSearch,
   }));
 
   const [query, setQuery] = useState('');
@@ -36,6 +41,17 @@ export function SearchModal() {
     );
     setResults(withFavicons);
   }, []);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        toggleSearch();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [toggleSearch]);
 
   useEffect(() => {
     if (open) {

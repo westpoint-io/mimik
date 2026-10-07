@@ -29,6 +29,11 @@ export interface OverlayStep {
   app: string | null;
 }
 
+export interface OverlayProgress {
+  percent: number;
+  ms: number;
+}
+
 export interface OverlayShortcuts {
   startStop: string | null;
   capture: string | null;
@@ -39,12 +44,25 @@ export interface OverlayAiFailure {
   provider: string;
 }
 
+export interface OverlayAim {
+  x: number;
+  y: number;
+  aspect: number;
+}
+
+export interface OverlayPrint {
+  src: string | null;
+  aim: OverlayAim | null;
+}
+
 export interface OverlayView {
   state: OverlayState;
   region: Region;
   step: OverlayStep | null;
   mode: CaptureMode;
   busy: boolean;
+  progress: OverlayProgress;
+  print: OverlayPrint;
   starting: boolean;
   shortcuts: OverlayShortcuts;
   aiFailure: OverlayAiFailure | null;
@@ -119,6 +137,8 @@ export class CaptureOverlay {
   private step: OverlayStep | null = null;
   private size = { width: CONTROLS.width, height: CONTROLS.height };
   private busy = false;
+  private progress: OverlayProgress = { percent: 0, ms: 0 };
+  private print: OverlayPrint = { src: null, aim: null };
   private aiFailure: OverlayAiFailure | null = null;
   private editingFrom: OverlayState = 'hidden';
   private modeBeforeEdit: CaptureMode | null = null;
@@ -163,6 +183,8 @@ export class CaptureOverlay {
       step: this.step,
       mode: this.mode(),
       busy: this.busy,
+      progress: this.progress,
+      print: this.print,
       starting: this.starting,
       shortcuts: this.options.shortcuts?.() ?? NO_SHORTCUTS,
       aiFailure: this.aiFailure,
@@ -200,6 +222,20 @@ export class CaptureOverlay {
   setBusy(busy: boolean): void {
     if (this.busy === busy) return;
     this.busy = busy;
+    if (busy) {
+      this.progress = { percent: 0, ms: 0 };
+      this.print = { src: null, aim: null };
+    }
+    this.broadcast();
+  }
+
+  setPrint(patch: Partial<OverlayPrint>): void {
+    this.print = { ...this.print, ...patch };
+    this.broadcast();
+  }
+
+  setProgress(percent: number, ms: number): void {
+    this.progress = { percent, ms };
     this.broadcast();
   }
 

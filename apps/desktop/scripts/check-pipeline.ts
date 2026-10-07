@@ -93,6 +93,26 @@ app.whenReady().then(async () => {
   await recorder.capture({ x: region.x + 400, y: region.y + 300 });
   const results = await ask<CheckResult[]>(win.webContents, 'mimik:check:verify', guideId, 60_000);
 
+  const blindGuide = await ask<string>(win.webContents, 'mimik:capture:startGuide');
+  let blindRequest: CaptureRequest | null = null;
+  const blind = new DesktopRecorder(
+    () => region,
+    (fn) => fn(),
+    (request) => {
+      blindRequest = request;
+      return ask(win.webContents, 'mimik:capture:step', { ...request, guideId: blindGuide });
+    },
+    { grab: () => Promise.reject(new Error('display gone')), settings: () => settings, lookup: () => Promise.resolve(null) },
+  );
+  await blind.capture({ x: region.x + 60, y: region.y + 60 });
+  const blindSteps = (await ask<string[] | null>(win.webContents, 'mimik:check:steps', blindGuide, 20_000)) ?? [];
+  await ask(win.webContents, 'mimik:check:cleanup', [blindGuide], 20_000).catch(() => undefined);
+  results.push({
+    name: 'a failed screenshot still writes the step, without a picture',
+    ok: blindSteps.length === 1 && blindRequest !== null && (blindRequest as CaptureRequest).image === undefined,
+    detail: `${blindSteps.length} step written, image ${(blindRequest as CaptureRequest | null)?.image ? 'sent' : 'absent'}`,
+  });
+
   const userSettings = loadSettings();
   const clamped = normaliseSettings({ screenshotDelayMs: 5000 });
   const stored = saveSettings({ screenshotDelayMs: 750, keepClicksBeyondArea: true });
@@ -602,6 +622,45 @@ app.whenReady().then(async () => {
   } catch (error) {
     titled = error instanceof Error ? error.message : String(error);
   }
+  let merged = 'no reply';
+  try {
+    const labelled = (guide: string, ariaLabel: string) =>
+      ask(app_.webContents, 'mimik:capture:step', {
+        guideId: guide,
+        action: 'click',
+        elementMeta: {
+          source: 'screen',
+          textContent: null,
+          ariaLabel,
+          placeholder: null,
+          altText: null,
+          name: null,
+          role: 'button',
+          rect: { x: 0, y: 0, width: 10, height: 10 },
+          devicePixelRatio: 1,
+        },
+      }, 20_000);
+    const target = await ask<string>(app_.webContents, 'mimik:capture:startGuide', false, 20_000);
+    await labelled(target, 'First');
+    await labelled(target, 'Third');
+    const before = await ask<string | null>(win.webContents, 'mimik:check:title', target, 20_000);
+    const staging = await ask<string>(app_.webContents, 'mimik:capture:startGuide', true, 20_000);
+    await labelled(staging, 'Second');
+    await ask(app_.webContents, 'mimik:capture:insertGuide', { guideId: staging, targetGuideId: target, atIndex: 1 }, 20_000);
+    const order = (await ask<string[] | null>(win.webContents, 'mimik:check:steps', target, 20_000)) ?? [];
+    const left = await ask<string[] | null>(win.webContents, 'mimik:check:steps', staging, 20_000);
+    const after = await ask<string | null>(win.webContents, 'mimik:check:title', target, 20_000);
+    merged = `${order.map((text) => text.match(/First|Second|Third/)?.[0] ?? text).join(', ')}; staging ${left === null ? 'gone' : 'left behind'}; title ${after === before ? 'kept' : `changed to ${after}`}`;
+    await ask(app_.webContents, 'mimik:check:cleanup', [target, staging], 20_000).catch(() => undefined);
+  } catch (error) {
+    merged = error instanceof Error ? error.message : String(error);
+  }
+  results.push({
+    name: 'more steps land where the + was',
+    ok: merged === 'First, Second, Third; staging gone; title kept',
+    detail: merged,
+  });
+
   results.push({
     name: 'stopping names the guide',
     ok: titled.length > 0 && titled !== 'Untitled Guide' && !titled.includes('untitledGuide'),

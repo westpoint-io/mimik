@@ -31,10 +31,14 @@ vi.mock('@/core/guides/service', () => ({
   updateGuideTitle: updateGuideTitleMock,
 }));
 
-vi.mock('@/lib/browser-api/local-storage', () => ({ localStorage: { get: localStorageGetMock } }));
+vi.mock('@/core/env', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/core/env')>()),
+  localStorage: { get: localStorageGetMock },
+}));
 
+import { generateDescriptionOnDemand } from '@/core/capture/ai/guide-description';
 import { AI_PROVIDERS } from '@/core/capture/ai/models';
-import { generateDescriptionOnDemand, generateGuideMetaOnStop } from '../guide-meta';
+import { generateGuideMetaOnStop } from '../guide-meta';
 
 const GUIDE_ID = 'guide-1';
 
@@ -91,7 +95,7 @@ describe('background guide-meta', () => {
 
       await run(GUIDE_ID);
 
-      expect(generateGuideMetaMock.mock.calls[0][0]).toEqual([{ description: 'kept', url: 'https://example.com/a' }]);
+      expect(generateGuideMetaMock.mock.calls[0][0]).toEqual([{ description: 'kept', place: 'https://example.com/a' }]);
     });
 
     it.each(entryPoints)("%s defaults the model to the provider's own default", async (_name, run) => {

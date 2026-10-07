@@ -6,13 +6,14 @@ interface FaviconImgProps {
   domain: string;
   size?: number;
   className?: string;
+  letterOnly?: boolean;
 }
 
-export function FaviconImg({ domain, size = 20, className = '' }: FaviconImgProps) {
+export function FaviconImg({ domain, size = 20, className = '', letterOnly = false }: FaviconImgProps) {
   const [failed, setFailed] = useState(false);
-  const src = domain ? getFaviconUrl(domain, size > 32 ? 64 : 32) : '';
+  const src = domain && !letterOnly ? getFaviconUrl(domain, size > 32 ? 64 : 32) : '';
 
-  if (!domain || failed) {
+  if (!src || failed) {
     const { letter, gradient } = getDomainInitial(domain || '?');
     const fontSize = Math.max(Math.round(size * 0.55), 6);
     return (

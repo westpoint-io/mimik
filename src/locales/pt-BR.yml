@@ -167,6 +167,8 @@ desktop:
   modeScreen: Tela
   modeRegion: Área
   startSheetTitle: Iniciar uma captura
+  moreStepsAfter: "As novas etapas entram depois da etapa $1."
+  moreStepsFirst: "As novas etapas entram antes da etapa 1."
   startButton: Iniciar
   shortcutsSection: "Atalhos"
   generalSection: "Geral"
@@ -181,6 +183,17 @@ desktop:
   version: "Versão $1"
   versionHint: "O Mimik procura atualizações sempre que é iniciado."
   checkUpdates: "Procurar atualizações"
+  traySetArea: "Definir a área de captura"
+  trayQuit: "Sair do Mimik"
+  trayRecording: "O Mimik está gravando. Clique para terminar."
+  cannotRecord: "O Mimik não consegue gravar"
+  updateReady: "Atualização pronta"
+  updateReadyMessage: "O Mimik $1 está pronto para instalar."
+  restartNow: "Reiniciar agora"
+  later: "Mais tarde"
+  updateFailed: "Não foi possível procurar atualizações"
+  upToDate: "Atualizado"
+  upToDateMessage: "O Mimik $1 é a versão mais recente."
   cardScreenshots: "Capturas de tela"
   cardKeyboard: "Digitação e teclas"
   cardGlobalKeys: "Teclas globais"
@@ -196,7 +209,6 @@ desktop:
   cardKeyboardHint: "O que o teclado adiciona ao guia"
   captureModeHint: "Janela acompanha o app em que você clica."
   screenshotDelayHint: "Espera antes da captura, para menus com animação."
-  typingDebounceHint: "Uma pausa desse tamanho encerra o passo."
   recordKeysHint: "Ctrl+S, Enter e afins viram passos."
   seconds: "s"
   shortcutStartStop: "Iniciar ou finalizar uma gravação"
@@ -206,6 +218,8 @@ desktop:
   shortcutClear: "Limpar"
 
 fullview:
+  collapseSidebar: Recolher a barra lateral
+  expandSidebar: Expandir a barra lateral
   allGuides: Todos os guias
   starred: Favoritos
   trash: Lixeira

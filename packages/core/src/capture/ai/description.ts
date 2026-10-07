@@ -9,12 +9,13 @@ export async function getAIDescription(
   model: string,
   apiKey: string,
   baseUrl?: string,
+  template = STEP_DESCRIPTION_PROMPT,
 ): Promise<string | null> {
   const settings = await localStorage.get(['aiLanguage']);
   const locale = (settings.aiLanguage as string) || 'en';
   const { text } = await generateText({
     model: createModel(provider, model, apiKey, baseUrl),
-    prompt: STEP_DESCRIPTION_PROMPT.replace('{{context}}', context) + getLanguageSuffix(locale),
+    prompt: template.replace('{{context}}', context) + getLanguageSuffix(locale),
     maxOutputTokens: 50,
   });
   return text.trim().replace(/^"|"$/g, '') || null;

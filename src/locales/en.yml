@@ -167,6 +167,8 @@ desktop:
   modeScreen: Screen
   modeRegion: Area
   startSheetTitle: Start a capture
+  moreStepsAfter: "New steps are inserted after step $1."
+  moreStepsFirst: "New steps are inserted before step 1."
   startButton: Start
   shortcutsSection: "Shortcuts"
   generalSection: "General"
@@ -181,6 +183,17 @@ desktop:
   version: "Version $1"
   versionHint: "Mimik looks for updates each time it starts."
   checkUpdates: "Check for updates"
+  traySetArea: "Set capture area"
+  trayQuit: "Quit Mimik"
+  trayRecording: "Mimik is recording. Click to finish."
+  cannotRecord: "Mimik cannot record"
+  updateReady: "Update ready"
+  updateReadyMessage: "Mimik $1 is ready to install."
+  restartNow: "Restart now"
+  later: "Later"
+  updateFailed: "Update check failed"
+  upToDate: "Up to date"
+  upToDateMessage: "Mimik $1 is current."
   cardScreenshots: "Screenshots"
   cardKeyboard: "Typing and keys"
   cardGlobalKeys: "Global keys"
@@ -196,7 +209,6 @@ desktop:
   cardKeyboardHint: "What the keyboard adds to a guide"
   captureModeHint: "Window follows the app you click."
   screenshotDelayHint: "Wait before taking the screenshot, for menus that animate."
-  typingDebounceHint: "A pause this long ends the step."
   recordKeysHint: "Ctrl+S, Enter and the like become steps."
   seconds: "s"
   shortcutStartStop: "Start or finish a recording"
@@ -206,6 +218,8 @@ desktop:
   shortcutClear: "Clear"
 
 fullview:
+  collapseSidebar: Collapse sidebar
+  expandSidebar: Expand sidebar
   allGuides: All Guides
   starred: Starred
   trash: Trash

@@ -40,6 +40,12 @@ describe('serializeScreenContext', () => {
     expect(key).toContain('Key: Ctrl+S');
   });
 
+  it('reads the control type as words and carries the step before', () => {
+    const text = serializeScreenContext('click', meta({ role: 'treeitem', ariaLabel: 'Downloads' }), 'Click "Home"');
+    expect(text).toContain('→ Target: tree item "Downloads" (click)');
+    expect(text).toContain('Previous step: "Click "Home""');
+  });
+
   it('says what it does not know rather than inventing it', () => {
     const text = serializeScreenContext('click', meta());
     expect(text).toContain('Application: unknown');

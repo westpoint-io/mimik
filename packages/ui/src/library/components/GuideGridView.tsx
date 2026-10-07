@@ -1,5 +1,7 @@
 import { i18n } from '@mimik/core/env';
 import { formatDate } from '@mimik/core/export/utils';
+import { Star } from 'lucide-react';
+import { FaviconImg } from '../../common/components/FaviconImg';
 import { ScreenshotView } from '../../guide/components/ScreenshotView';
 import { navigate } from '../../navigation/lib/navigate';
 import { useFullview } from '../../stores/use-fullview';
@@ -7,6 +9,7 @@ import { CardMenu } from './CardMenu';
 import { MimikEyes } from './MimikEyes';
 
 interface GuideGridViewProps {
+  columns: number;
   category: 'all' | 'starred' | 'trash';
   onStar: (e: React.MouseEvent, id: string) => void;
   onTrash: (e: React.MouseEvent, id: string) => void;
@@ -14,51 +17,80 @@ interface GuideGridViewProps {
   onPermanentDelete: (e: React.MouseEvent, id: string) => void;
 }
 
-export function GuideGridView({ category, onStar, onTrash, onRestore, onPermanentDelete }: GuideGridViewProps) {
-  const { guides, thumbnails } = useFullview((s) => ({
+export function GuideGridView({
+  columns,
+  category,
+  onStar,
+  onTrash,
+  onRestore,
+  onPermanentDelete,
+}: GuideGridViewProps) {
+  const { guides, thumbnails, places } = useFullview((s) => ({
     guides: s.guides,
     thumbnails: s.thumbnails,
+    places: s.places,
   }));
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid gap-[18px]" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
       {guides.map((guide) => {
         const thumb = thumbnails.get(guide.id);
+        const place = places.get(guide.id);
         return (
           <div
             key={guide.id}
             onClick={() => navigate({ page: 'guide', guideId: guide.id })}
             className="group rounded-xl bg-card cursor-pointer hover:shadow-md transition-shadow border border-border relative"
           >
-            <div className="h-36 overflow-hidden rounded-t-xl">
+            <div className="relative aspect-video overflow-hidden rounded-t-xl border-b border-secondary">
               {thumb ? (
-                <ScreenshotView screenshot={thumb} alt={guide.title} className="!rounded-none !border-0" readOnly />
+                <ScreenshotView
+                  screenshot={thumb}
+                  alt={guide.title}
+                  crop
+                  cache
+                  frameRatio={16 / 9}
+                  className="!rounded-none !border-0"
+                  readOnly
+                />
               ) : (
                 <MimikEyes />
               )}
+              {guide.starred && (
+                <span className="absolute right-2 top-2 flex items-center justify-center w-[26px] h-[26px] rounded-lg bg-card/90 shadow-sm text-foreground">
+                  <Star size={13} fill="currentColor" />
+                </span>
+              )}
             </div>
-            <div className="p-3 flex items-start justify-between">
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium truncate text-foreground">{guide.title}</p>
-                {guide.description && (
-                  <p className="text-xs mt-0.5 text-muted-foreground line-clamp-2">{guide.description}</p>
+            <div className="px-3.5 pt-3 pb-3.5 flex flex-col gap-1.5">
+              <span className="flex items-center gap-1.5 min-w-0 h-4 text-[11.5px] text-muted-foreground">
+                {place && (
+                  <>
+                    <FaviconImg domain={place.name} size={16} letterOnly={place.kind === 'app'} />
+                    <span className="truncate">{place.name}</span>
+                  </>
                 )}
-                <p className="text-xs mt-0.5 text-muted-foreground">
-                  {guide.stepIds.length !== 1
-                    ? i18n.t('fullview_stepCountPlural', [String(guide.stepIds.length)])
-                    : i18n.t('fullview_stepCount', [String(guide.stepIds.length)])}{' '}
-                  &middot; {formatDate(guide.updatedAt)}
+              </span>
+              <div className="flex items-start gap-2">
+                <p className="flex-1 min-w-0 min-h-10 text-sm font-semibold leading-5 text-foreground line-clamp-2">
+                  {guide.title}
                 </p>
+                <CardMenu
+                  guideId={guide.id}
+                  starred={guide.starred}
+                  category={category}
+                  onStar={onStar}
+                  onTrash={onTrash}
+                  onRestore={onRestore}
+                  onPermanentDelete={onPermanentDelete}
+                />
               </div>
-              <CardMenu
-                guideId={guide.id}
-                starred={guide.starred}
-                category={category}
-                onStar={onStar}
-                onTrash={onTrash}
-                onRestore={onRestore}
-                onPermanentDelete={onPermanentDelete}
-              />
+              <p className="text-xs text-muted-foreground">
+                {guide.stepIds.length !== 1
+                  ? i18n.t('fullview_stepCountPlural', [String(guide.stepIds.length)])
+                  : i18n.t('fullview_stepCount', [String(guide.stepIds.length)])}{' '}
+                &middot; {formatDate(guide.updatedAt)}
+              </p>
             </div>
           </div>
         );

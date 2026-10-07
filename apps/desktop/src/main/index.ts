@@ -3,9 +3,11 @@ import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, protocol, scree
 import { registerAiFetch } from './ai-fetch';
 import { ask } from './ask';
 import { focusedWindow } from './capture/focused-window';
+import type { CaptureInsert } from './capture/insert';
 import { DesktopRecorder, frameFor } from './capture/recorder';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from './capture/screenshot-store';
 import { type CaptureMode, type CaptureSettings, loadSettings, saveSettings } from './capture/settings';
+import { mainI18n } from './i18n';
 import { CaptureOverlay, type OverlayAiFailure, type OverlayCommand, type OverlayStep } from './overlay';
 import { bindShortcuts, type ShortcutName, shortcutMap, unbindShortcuts } from './shortcuts';
 import { checkForUpdates } from './updater';
@@ -15,6 +17,8 @@ let tray: Tray | null = null;
 let overlay: CaptureOverlay | null = null;
 let recorder: DesktopRecorder | null = null;
 let guideId: string | null = null;
+let insert: CaptureInsert | null = null;
+let describing = true;
 let captureSettings: CaptureSettings | null = null;
 let steps: OverlayStep[] = [];
 
@@ -59,7 +63,7 @@ function refreshTray(): void {
   if (!tray) return;
   const recording = isCapturing();
   tray.setImage(trayIcon(recording));
-  tray.setToolTip(recording ? 'Mimik is recording. Click to finish.' : 'Mimik');
+  tray.setToolTip(recording ? mainI18n.t('desktop.trayRecording') : 'Mimik');
 }
 
 function showWindow(): void {
@@ -129,6 +133,7 @@ function createWindow(): void {
     minHeight: 480,
     show: false,
     autoHideMenuBar: true,
+    icon: resource(process.platform === 'win32' ? 'icon.ico' : 'icon.png'),
     backgroundColor: '#EEF2FF',
     webPreferences: {
       preload: join(__dirname, '../preload/index.cjs'),
@@ -170,24 +175,27 @@ function refreshTrayMenu(): void {
   if (!tray) return;
   tray.setContextMenu(
     Menu.buildFromTemplate([
-      { label: 'Open Mimik', click: () => showWindow() },
+      { label: mainI18n.t('onboarding.openMimik'), click: () => showWindow() },
       {
-        label: 'Set capture area',
+        label: mainI18n.t('desktop.traySetArea'),
         click: () => {
-          if (!isCapturing()) enterCapture();
+          if (!isCapturing()) {
+            insert = null;
+            enterCapture();
+          }
           overlay?.edit();
         },
       },
       { type: 'separator' },
       {
-        label: 'Start at login',
+        label: mainI18n.t('desktop.startAtLogin'),
         type: 'checkbox',
         checked: opensAtLogin(),
         click: (item) => setOpenAtLogin(item.checked),
       },
-      { label: 'Check for updates', click: () => checkForUpdates({ notifyWhenUpToDate: true }) },
+      { label: mainI18n.t('desktop.checkUpdates'), click: () => checkForUpdates({ notifyWhenUpToDate: true }) },
       { type: 'separator' },
-      { label: 'Quit Mimik', click: () => quit() },
+      { label: mainI18n.t('desktop.trayQuit'), click: () => quit() },
     ]),
   );
 }
@@ -217,7 +225,10 @@ function applyShortcuts(): void {
 function onShortcut(name: ShortcutName): void {
   if (!overlay) return;
   if (name === 'startStop') {
-    if (overlay.state === 'hidden') enterCapture();
+    if (overlay.state === 'hidden') {
+      insert = null;
+      enterCapture();
+    }
     overlay.run(overlay.state === 'hidden' || overlay.state === 'armed' ? 'start' : 'stop');
     return;
   }
@@ -250,17 +261,17 @@ async function onOverlayCommand(command: OverlayCommand): Promise<void> {
     steps = [];
     overlay?.setAiFailure(null);
     try {
-      guideId = await ask<string>(mainWindow?.webContents ?? null, 'mimik:capture:startGuide');
+      guideId = await ask<string>(mainWindow?.webContents ?? null, 'mimik:capture:startGuide', insert !== null);
     } catch (error) {
       overlay?.hide();
-      dialog.showErrorBox('Mimik cannot record', error instanceof Error ? error.message : String(error));
+      dialog.showErrorBox(mainI18n.t('desktop.cannotRecord'), error instanceof Error ? error.message : String(error));
       return;
     }
     const started = await recorder?.start();
     if (started && !started.ok) {
       guideId = null;
       overlay?.hide();
-      dialog.showErrorBox('Mimik cannot record', started.detail);
+      dialog.showErrorBox(mainI18n.t('desktop.cannotRecord'), started.detail);
       return;
     }
   } else if (command === 'pause') {
@@ -270,9 +281,23 @@ async function onOverlayCommand(command: OverlayCommand): Promise<void> {
   } else if (command === 'stop' || command === 'cancel') {
     recorder?.stop();
     await recorder?.drain();
-    if (command === 'stop' && steps.length > 0) finished = guideId;
-    if (finished) {
-      await ask(mainWindow?.webContents ?? null, 'mimik:capture:finishGuide', finished).catch(() => undefined);
+    const target = insert;
+    insert = null;
+    if (guideId && target) {
+      await ask(
+        mainWindow?.webContents ?? null,
+        'mimik:capture:insertGuide',
+        { guideId, targetGuideId: target.guideId, atIndex: target.atIndex },
+        45_000,
+      ).catch(() => undefined);
+      if (command === 'stop' && steps.length > 0) finished = target.guideId;
+    } else {
+      if (command === 'stop' && steps.length > 0) finished = guideId;
+      if (finished) {
+        await ask(mainWindow?.webContents ?? null, 'mimik:capture:finishGuide', finished, 45_000).catch(
+          () => undefined,
+        );
+      }
     }
     guideId = null;
   }
@@ -299,6 +324,7 @@ if (!app.requestSingleInstanceLock()) {
   app.on('second-instance', () => showWindow());
 
   app.whenReady().then(() => {
+    mainI18n.setLocale(app.getLocale());
     if (!app.getLoginItemSettings().wasOpenedAsHidden) openSplash();
     registerScreenshotProtocol();
     registerAiFetch();
@@ -312,6 +338,11 @@ if (!app.requestSingleInstanceLock()) {
     ipcMain.handle('mimik:screenshots:sweep', (_event, keep: string[]) => sweepScreenshots(keep));
     ipcMain.on('mimik:app:relocalise', () => {
       for (const win of BrowserWindow.getAllWindows()) win.webContents.reload();
+    });
+    ipcMain.on('mimik:app:locale', (_event, code: string) => {
+      mainI18n.setLocale(code);
+      refreshTrayMenu();
+      refreshTray();
     });
 
     captureSettings = loadSettings();
@@ -353,15 +384,17 @@ if (!app.requestSingleInstanceLock()) {
         if (reply?.stepId && reply.title) {
           const step: OverlayStep = {
             id: reply.stepId,
-            index: steps.length + 1,
+            index: steps.length + 1 + (insert?.afterStep ?? 0),
             title: reply.title,
-            src: request.image.src,
+            src: request.image?.src ?? '',
             source: 'heuristic',
             pending: reply.pending === true,
             app: request.elementMeta.app?.name ?? null,
           };
           steps.push(step);
+          describing = step.pending;
           overlay?.showStep(step);
+          if (step.pending) overlay?.setProgress(95, 3500);
         }
         return reply;
       },
@@ -369,6 +402,9 @@ if (!app.requestSingleInstanceLock()) {
         settings: () => captureSettings ?? loadSettings(),
         ignores: (point) => overlay?.ignores(point) ?? false,
         drained: () => overlay?.setBusy(false),
+        progress: (fraction, ms) => overlay?.setProgress(Math.round(fraction * (describing ? 45 : 100)), ms),
+        aimed: (aim) => overlay?.setPrint({ aim }),
+        saved: (src) => overlay?.setPrint({ src }),
       },
     );
 
@@ -390,15 +426,20 @@ if (!app.requestSingleInstanceLock()) {
           step.source = 'ai';
         }
         step.pending = false;
-        if (step === steps.at(-1)) overlay?.showStep(step);
+        if (step === steps.at(-1)) {
+          overlay?.setProgress(100, 200);
+          overlay?.showStep(step);
+        }
       },
     );
     ipcMain.handle('mimik:capture:region', () => overlay?.region);
-    ipcMain.handle('mimik:capture:edit', () => {
+    ipcMain.handle('mimik:capture:edit', (_event, target?: CaptureInsert) => {
+      insert = target ?? null;
       enterCapture();
       overlay?.edit();
     });
-    ipcMain.handle('mimik:capture:arm', () => {
+    ipcMain.handle('mimik:capture:arm', (_event, target?: CaptureInsert) => {
+      insert = target ?? null;
       enterCapture();
       overlay?.arm();
     });

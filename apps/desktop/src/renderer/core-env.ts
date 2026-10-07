@@ -34,6 +34,7 @@ const MESSAGES: Record<AppLocale, Messages> = {
 };
 
 const locale = appLocale(window.localStorage.getItem('appLanguage')?.replace(/^"|"$/g, ''), navigator.language);
+window.mimik?.locale(locale);
 
 configureCore({
   client: 'desktop',

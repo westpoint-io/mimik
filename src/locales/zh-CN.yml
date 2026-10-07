@@ -167,6 +167,8 @@ desktop:
   modeScreen: 屏幕
   modeRegion: 区域
   startSheetTitle: 开始捕获
+  moreStepsAfter: "新步骤会插入到第 $1 步之后。"
+  moreStepsFirst: "新步骤会插入到第 1 步之前。"
   startButton: 开始
   shortcutsSection: "快捷键"
   generalSection: "通用"
@@ -181,6 +183,17 @@ desktop:
   version: "版本 $1"
   versionHint: "Mimik 每次启动时都会检查更新。"
   checkUpdates: "检查更新"
+  traySetArea: "设置捕获区域"
+  trayQuit: "退出 Mimik"
+  trayRecording: "Mimik 正在录制。点击即可完成。"
+  cannotRecord: "Mimik 无法录制"
+  updateReady: "更新已就绪"
+  updateReadyMessage: "Mimik $1 已可安装。"
+  restartNow: "立即重启"
+  later: "稍后"
+  updateFailed: "检查更新失败"
+  upToDate: "已是最新版本"
+  upToDateMessage: "Mimik $1 已是最新版本。"
   cardScreenshots: "屏幕截图"
   cardKeyboard: "输入与按键"
   cardGlobalKeys: "全局快捷键"
@@ -196,7 +209,6 @@ desktop:
   cardKeyboardHint: "键盘为指南添加的内容"
   captureModeHint: "窗口模式跟随你点击的应用。"
   screenshotDelayHint: "截图前等待，适用于带动画的菜单。"
-  typingDebounceHint: "停顿这么久即结束该步骤。"
   recordKeysHint: "Ctrl+S、Enter 等会成为步骤。"
   seconds: "秒"
   shortcutStartStop: "开始或结束录制"
@@ -206,6 +218,8 @@ desktop:
   shortcutClear: "清除"
 
 fullview:
+  collapseSidebar: 收起侧边栏
+  expandSidebar: 展开侧边栏
   allGuides: 全部指南
   starred: 已收藏
   trash: 回收站

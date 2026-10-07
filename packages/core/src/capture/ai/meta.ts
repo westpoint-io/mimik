@@ -56,7 +56,7 @@ export function parseGuideMeta(raw: string): GuideMeta | null {
 }
 
 export async function generateGuideMeta(
-  steps: { description: string; url: string }[],
+  steps: { description: string; place: string }[],
   provider: string,
   model: string,
   apiKey: string,
@@ -64,7 +64,7 @@ export async function generateGuideMeta(
 ): Promise<GuideMeta | null> {
   if (steps.length === 0) return null;
 
-  const formatted = steps.map((s, i) => `${i + 1}. [${s.url}] ${s.description}`).join('\n');
+  const formatted = steps.map((s, i) => `${i + 1}. [${s.place}] ${s.description}`).join('\n');
   const settings = await localStorage.get(['aiLanguage']);
   const locale = (settings.aiLanguage as string) || 'en';
   const prompt = GUIDE_META_PROMPT.replace('{{steps}}', formatted) + getLanguageSuffix(locale);
@@ -95,9 +95,12 @@ export async function generateGuideMeta(
   }
 }
 
-export function guideMetaSteps(steps: Step[]): { description: string; url: string }[] {
+export function guideMetaSteps(steps: Step[]): { description: string; place: string }[] {
   const described = actionSteps(steps)
     .filter((step) => step.description)
-    .map((step) => ({ description: step.description, url: step.url }));
+    .map((step) => ({
+      description: step.description,
+      place: step.url || [step.app?.name, step.window?.title].filter(Boolean).join(' — '),
+    }));
   return described.length > 15 ? [...described.slice(0, 10), ...described.slice(-5)] : described;
 }
