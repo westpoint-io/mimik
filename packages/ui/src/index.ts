@@ -12,7 +12,6 @@ export { Segmented } from './common/components/Segmented';
 export { SettingsCard } from './common/components/SettingsCard';
 export { Switch } from './common/components/Switch';
 export { useSavedFlash } from './common/hooks/use-saved-flash';
-export { getDomainInitial } from './common/lib/domain-initial';
 export { formatRelativeTime } from './common/lib/format-relative-time';
 export { Button } from './components/ui/button';
 export {
@@ -26,7 +25,6 @@ export {
 export { Input } from './components/ui/input';
 export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './components/ui/select';
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './components/ui/tooltip';
-export { ExportPreviewModal } from './export/components/ExportPreviewModal';
 export { VoiceoverSettings } from './export/components/VoiceoverSettings';
 export { BlockCard } from './guide/components/BlockCard';
 export { EmptyGuideState } from './guide/components/EmptyGuideState';

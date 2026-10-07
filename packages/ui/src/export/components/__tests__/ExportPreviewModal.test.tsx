@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
+
+import { DEFAULT_EXPORT_OPTIONS } from '@mimik/core/export/options';
+import type { Guide, Screenshot, Step } from '@mimik/core/guides/types';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DEFAULT_EXPORT_OPTIONS } from '@/core/export/options';
-import type { Guide, Screenshot, Step } from '@/core/guides/types';
 
 const exportGuideAsVideo = vi.hoisted(() => vi.fn());
 const exportGuideAsHTML = vi.hoisted(() => vi.fn());
@@ -10,32 +11,32 @@ const canExportVideo = vi.hoisted(() => vi.fn());
 const stored = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
 const downloadBlob = vi.hoisted(() => vi.fn());
 
-vi.mock('@/core/export/download', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/core/export/download')>()),
+vi.mock('@mimik/core/export/download', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@mimik/core/export/download')>()),
   downloadBlob,
 }));
 
-vi.mock('@/core/env', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/core/env')>()),
+vi.mock('@mimik/core/env', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@mimik/core/env')>()),
   localStorage: { get: async () => stored.value, set: async () => {} },
 }));
 
-vi.mock('@/core/export/video-export', () => ({ exportGuideAsVideo }));
-vi.mock('@mimik/ui/export/components/VideoStepPlayer', () => ({
+vi.mock('@mimik/core/export/video-export', () => ({ exportGuideAsVideo }));
+vi.mock('../VideoStepPlayer', () => ({
   VideoStepPlayer: () => <div data-testid="video-player" />,
 }));
-vi.mock('@/core/export/html-export', () => ({ exportGuideAsHTML }));
-vi.mock('@/core/export/video-support', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/core/export/video-support')>()),
+vi.mock('@mimik/core/export/html-export', () => ({ exportGuideAsHTML }));
+vi.mock('@mimik/core/export/video-support', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@mimik/core/export/video-support')>()),
   canExportVideo,
 }));
-vi.mock('@/core/export/options', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/core/export/options')>()),
+vi.mock('@mimik/core/export/options', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@mimik/core/export/options')>()),
   loadExportOptions: async () => DEFAULT_EXPORT_OPTIONS,
   saveExportOptions: async () => {},
 }));
 
-import { ExportPreviewModal } from '@mimik/ui';
+import { ExportPreviewModal } from '../ExportPreviewModal';
 
 const guide: Guide = {
   id: 'guide-1',

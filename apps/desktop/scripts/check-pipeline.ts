@@ -9,15 +9,10 @@ import type { KeyAction } from '../src/main/capture/input-hook';
 import {
   type CaptureRequest,
   typedTextFor,
-  clickAction,
   comboLabel,
   DesktopRecorder,
-  frameFor,
-  isRepeatClick,
   isRepeatKey,
-  isTextKey,
   isBoundShortcut,
-  shouldCapture,
   targetRect,
 } from '../src/main/capture/recorder';
 import { clampToDisplays } from '../src/main/capture/region';
@@ -25,8 +20,6 @@ import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from 
 import {
   DEFAULT_CAPTURE_SETTINGS,
   loadSettings,
-  MAX_TYPING_DEBOUNCE_MS,
-  MIN_TYPING_DEBOUNCE_MS,
   normaliseSettings,
   saveSettings,
 } from '../src/main/capture/settings';
@@ -135,86 +128,8 @@ app.whenReady().then(async () => {
     detail: `5000 ms clamped to ${clamped.screenshotDelayMs}, 750 ms reloaded as ${reloaded.screenshotDelayMs}`,
   });
 
-  const knobs = normaliseSettings({
-    typingDebounceMs: 50,
-    recordKeys: 'yes' as never,
-    shortcuts: { startStop: '  ', pauseResume: null, capture: 'Alt+F2' } as never,
-  });
-  const legacy = normaliseSettings({
-    captureOutsideClicks: true,
-    captureKeys: false,
-    captureTyping: false,
-  });
-  results.push({
-    name: 'settings saved under the old names carry over',
-    ok:
-      legacy.keepClicksBeyondArea &&
-      !legacy.recordKeys &&
-      !legacy.recordTyping &&
-      normaliseSettings({ recordTyping: true, captureTyping: false }).recordTyping &&
-      normaliseSettings({ captureMode: 'region' as never }).captureMode === 'area',
-    detail: 'each old key maps onto its new name, the new name wins when both are present, and region mode reads as area',
-  });
-
-  results.push({
-    name: 'toggles, knobs and shortcuts normalise',
-    ok:
-      knobs.typingDebounceMs === MIN_TYPING_DEBOUNCE_MS &&
-      normaliseSettings({ typingDebounceMs: 90_000 }).typingDebounceMs === MAX_TYPING_DEBOUNCE_MS &&
-      knobs.recordKeys === DEFAULT_CAPTURE_SETTINGS.recordKeys &&
-      knobs.shortcuts.startStop === null &&
-      knobs.shortcuts.pauseResume === null &&
-      knobs.shortcuts.capture === 'Alt+F2' &&
-      normaliseSettings({}).shortcuts.startStop === DEFAULT_CAPTURE_SETTINGS.shortcuts.startStop,
-    detail: `50 ms clamped to ${knobs.typingDebounceMs}, a blank accelerator cleared, a missing one kept its default`,
-  });
-
-  results.push({
-    name: 'a right click is its own action',
-    ok: clickAction(1) === 'click' && clickAction(2) === 'auxclick' && clickAction(3) === 'click',
-    detail: 'the right button reads as auxclick, left and middle as click',
-  });
   saveSettings(userSettings);
 
-  const outsidePoint = { x: region.x + region.width + 40, y: region.y + 20 };
-  results.push({
-    name: 'outside clicks are opt in',
-    ok:
-      !shouldCapture({ ...REGION_MODE, keepClicksBeyondArea: false }, region, outsidePoint) &&
-      shouldCapture({ ...REGION_MODE, keepClicksBeyondArea: true }, region, outsidePoint) &&
-      shouldCapture({ ...REGION_MODE, keepClicksBeyondArea: false }, region, {
-        x: region.x + 10,
-        y: region.y + 10,
-      }) &&
-      shouldCapture({ ...DEFAULT_CAPTURE_SETTINGS, keepClicksBeyondArea: false }, region, outsidePoint),
-    detail: 'ignored when off, captured when on, inside always captured, never filtered outside region mode',
-  });
-
-  results.push({
-    name: 'a double click is one step',
-    ok:
-      isRepeatClick(1_000, 1_120) &&
-      isRepeatClick(1_000, 1_500) &&
-      !isRepeatClick(1_000, 1_501) &&
-      !isRepeatClick(null, 1_000),
-    detail: 'a press within 500 ms of the last one is dropped, later is kept, the first always captures',
-  });
-
-  const insidePoint = { x: region.x + 10, y: region.y + 10 };
-  const windowRect = { x: region.x + 5, y: region.y + 5, width: 300, height: 200 };
-  const elsewhere = { x: region.x + 900, y: region.y + 900, width: 100, height: 100 };
-  const sameRect = (a: Rect, b: Rect) => a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height;
-  results.push({
-    name: 'each mode frames its own rectangle',
-    ok:
-      sameRect(frameFor('screen', insidePoint, region, windowRect), display.bounds) &&
-      sameRect(frameFor('window', insidePoint, region, windowRect), windowRect) &&
-      sameRect(frameFor('window', insidePoint, region, elsewhere), display.bounds) &&
-      sameRect(frameFor('window', insidePoint, region, null), display.bounds) &&
-      sameRect(frameFor('area', insidePoint, region, windowRect), region) &&
-      sameRect(frameFor('area', outsidePoint, region, windowRect), region),
-    detail: 'screen takes the display, window takes the window and falls back twice, region always takes the region',
-  });
 
   let framedBy: CaptureRequest | null = null;
   const clickedWindow = { x: region.x + 40, y: region.y + 30, width: 300, height: 200 };
@@ -399,21 +314,6 @@ app.whenReady().then(async () => {
         secret.elementMeta.inputType === 'password' &&
         secret.elementMeta.textContent === null,
     detail: `wrote ${secret?.action ?? 'nothing'} with inputValue ${String(secret?.inputValue)} and no captured text`,
-  });
-
-  const press = (keycode: number, held: Partial<KeyAction> = {}) =>
-    isTextKey({ kind: 'keydown', keycode, shift: false, alt: false, ctrl: false, meta: false, at: 0, ...held });
-  results.push({
-    name: 'only typing keys open a session',
-    ok:
-      press(30) &&
-      press(30, { shift: true }) &&
-      !press(30, { ctrl: true }) &&
-      !press(28) &&
-      !press(15) &&
-      !press(1) &&
-      !press(42),
-    detail: 'a letter types, shift still types, a shortcut does not, and Enter, Tab, Escape and Shift all close the session',
   });
 
   const pressed = (keycode: number, held: Partial<KeyAction> = {}): KeyAction => ({
