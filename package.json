@@ -22,7 +22,7 @@
     "lint": "biome check . && node scripts/check-exports.mjs && node scripts/check-locale-keys.mjs && node scripts/check-capture-states.mjs && jscpd && knip --no-progress",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
-    "prepare": "husky"
+    "prepare": "husky .github/husky"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.10",
