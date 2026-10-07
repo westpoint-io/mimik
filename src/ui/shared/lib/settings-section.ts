@@ -1,9 +1,7 @@
-import { AudioLines, EyeOff, ImageIcon, Keyboard, KeyRound, Mic, Sparkles } from 'lucide-react';
+import { EyeOff, ImageIcon, Keyboard, KeyRound, Sparkles } from 'lucide-react';
 
 export const SETTINGS_SECTIONS = [
-  { id: 'ai', label: 'settings.aiDescriptions', Icon: Sparkles },
-  { id: 'narration', label: 'settings.voiceNarration', Icon: Mic },
-  { id: 'voice-over', label: 'settings.voiceover', Icon: AudioLines },
+  { id: 'ai', label: 'settings.aiSection', Icon: Sparkles },
   { id: 'branding', label: 'settings.branding', Icon: ImageIcon },
   { id: 'smart-blur', label: 'settings.smartBlur', Icon: EyeOff },
   { id: 'keys', label: 'settings.cardKeyboard', Icon: Keyboard },
