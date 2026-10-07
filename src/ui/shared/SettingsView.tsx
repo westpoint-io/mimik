@@ -6,13 +6,23 @@ import type { VoiceProvider } from '@mimik/core/capture/voice/transcribe';
 import { i18n } from '@mimik/core/env';
 import { type BrandLogo, defaultFooterLine, makeBrandLogo } from '@mimik/core/export/branding';
 import { DEFAULT_TARGET_COLOR, TARGET_COLORS } from '@mimik/core/screenshot/types';
-import { Button } from '@mimik/ui/components/ui/button';
-import { Input } from '@mimik/ui/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@mimik/ui/components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui/components/ui/select';
-import { useSettingsAutosave } from '@mimik/ui/lib/use-settings-autosave';
-import AiSettings from '@mimik/ui/shared/AiSettings';
-import ColorPicker from '@mimik/ui/shared/ColorPicker';
+import {
+  AiSettings,
+  Button,
+  ColorPicker,
+  Input,
+  KeyStatusNote,
+  ModelList,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  SecretInput,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@mimik/ui';
 import {
   ArrowLeft,
   Bug,
@@ -30,21 +40,17 @@ import {
   TriangleAlert,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { localStorage } from '@/lib/browser-api';
-import { KeyStatusNote, ModelList, SecretInput, useKeyCheck } from '@/ui/shared/key-check';
-import MicrophonePicker from '@/ui/shared/MicrophonePicker';
+import { localStorage } from '@/lib/browser-api/local-storage';
+import { useKeyCheck } from '@/ui/shared/hooks/use-key-check';
+import { useSettingsAutosave } from '@/ui/shared/hooks/use-settings-autosave';
+import { MicrophonePicker } from '@/ui/shared/MicrophonePicker';
+import { footerPresets } from './lib/footer-presets';
 
 interface SettingsViewProps {
   onBack?: () => void;
 }
 
-const FOOTER_PRESETS = () => [
-  defaultFooterLine(),
-  i18n.t('settings.footerPresetConfidential'),
-  i18n.t('settings.footerPresetNoDistribute'),
-];
-
-export default function SettingsView({ onBack }: SettingsViewProps) {
+export function SettingsView({ onBack }: SettingsViewProps) {
   const [provider, setProvider] = useState<AIProviderKey>('openai');
   const [apiKey, setApiKey] = useState('');
   const aiKeyCheck = useKeyCheck();
@@ -250,7 +256,7 @@ export default function SettingsView({ onBack }: SettingsViewProps) {
               className="h-8 text-[13px] rounded-lg border-border"
             />
             <div className="flex flex-wrap gap-1.5 mt-2">
-              {FOOTER_PRESETS().map((preset) => (
+              {footerPresets().map((preset) => (
                 <button
                   key={preset}
                   type="button"

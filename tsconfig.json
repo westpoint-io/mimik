@@ -7,6 +7,7 @@
     "paths": {
       "@/core/*": ["./packages/core/src/*"],
       "@/*": ["./src/*"],
+      "@mimik/ui": ["./packages/ui/src/index.ts"],
       "@mimik/ui/*": ["./packages/ui/src/*"],
       "@mimik/core/*": ["./packages/core/src/*"]
     }

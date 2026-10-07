@@ -1,19 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { browser, i18n } from '#imports';
-import { isVoiceMessageFor, VOICE_SIDEPANEL_TARGET, type VoiceLevelEvent, VoiceMessage } from '@/lib/voice-messages';
-import {
-  LEVEL_STALE_MS,
-  MIC_BAR_MIN_SCALE,
-  MIC_BARS,
-  type MicActivity,
-  micActivity,
-  micActivityKey,
-  micBarScale,
-} from './voice-status';
+import { isVoiceMessageFor } from '@/lib/voice/is-voice-message-for';
+import { VOICE_SIDEPANEL_TARGET, type VoiceLevelEvent, VoiceMessage } from '@/lib/voice/voice-message';
+import { LEVEL_STALE_MS, type MicActivity, micActivity } from './lib/mic-activity';
+import { micActivityKey } from './lib/mic-activity-key';
+import { MIC_BAR_MIN_SCALE, MIC_BARS, micBarScale } from './lib/mic-bar-scale';
 
 const SWEEP_MS = 300;
 
-export default function MicMeter() {
+export function MicMeter() {
   const bars = useRef<Array<HTMLSpanElement | null>>([]);
   const levelAt = useRef<number | null>(null);
   const speakingAt = useRef<number | null>(null);

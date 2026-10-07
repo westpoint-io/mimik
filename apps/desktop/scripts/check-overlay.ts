@@ -20,6 +20,12 @@ function settle(): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, 400));
 }
 
+async function until(done: () => boolean, ms: number): Promise<boolean> {
+  const deadline = Date.now() + ms;
+  while (!done() && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 100));
+  return done();
+}
+
 function overlayWindows(): BrowserWindow[] {
   return BrowserWindow.getAllWindows();
 }
@@ -43,9 +49,13 @@ setTimeout(() => bail(new Error('check did not finish within 60s')), 60_000).unr
 app.whenReady().then(async () => {
   const commands: string[] = [];
   let mode: CaptureMode = 'region';
-  const overlay = new CaptureOverlay(
+  const overlay: CaptureOverlay = new CaptureOverlay(
     (command) => commands.push(command),
     () => mode,
+    {
+      introFrame: async (): Promise<Region> => overlay.region,
+      shortcuts: () => ({ startStop: 'Alt+Shift+R', capture: 'Alt+Shift+C' }),
+    },
   );
 
   const stored: Region = { x: 120, y: 90, width: 640, height: 400 };
@@ -99,13 +109,13 @@ app.whenReady().then(async () => {
     bar ? `controls at ${bar.x}, ${bar.y} (${bar.width} × ${bar.height}) in a ${workArea.width} × ${workArea.height} work area` : 'no controls window',
   );
   const layout = await controls?.webContents.executeJavaScript(
-    "JSON.stringify({ tip: getComputedStyle(document.querySelector('#tip')).position, body: document.body.scrollHeight, win: window.innerHeight })",
+    "JSON.stringify({ tip: getComputedStyle(document.querySelector('#tip')).position, hint: getComputedStyle(document.querySelector('#keyHint')).position, body: document.body.scrollHeight, win: window.innerHeight })",
   );
-  const parsed = JSON.parse(String(layout ?? '{}')) as { tip?: string; body?: number; win?: number };
+  const parsed = JSON.parse(String(layout ?? '{}')) as { tip?: string; hint?: string; body?: number; win?: number };
   check(
     'the card measures itself and owns its own styles',
-    parsed.tip === 'static' && typeof parsed.body === 'number' && parsed.body > 0 && parsed.body <= (parsed.win ?? 0) + 4,
-    `hint is ${parsed.tip}, content ${parsed.body}px in a ${parsed.win}px window`,
+    parsed.tip === 'static' && parsed.hint === 'static' && typeof parsed.body === 'number' && parsed.body > 0 && parsed.body <= (parsed.win ?? 0) + 4,
+    `tip is ${parsed.tip}, key hint is ${parsed.hint}, content ${parsed.body}px in a ${parsed.win}px window`,
   );
 
   check(
@@ -116,10 +126,28 @@ app.whenReady().then(async () => {
 
   await controls?.webContents.executeJavaScript("document.querySelector('#primary').click()");
   await settle();
+  const starting = await windowWithHash('controls')?.webContents.executeJavaScript(
+    "JSON.stringify({ label: document.querySelector('#label').textContent, start: document.querySelector('#primary').disabled })",
+  );
+  const intro = overlay.introWindow;
+  const introBounds = intro?.getBounds();
+  const startCard = JSON.parse(String(starting ?? '{}')) as { label?: string; start?: boolean };
   check(
-    'Start reaches the host and records',
-    commands.includes('start') && overlay.state === 'recording',
-    `commands: ${commands.join(', ') || 'none'}; state is ${overlay.state}`,
+    'Start plays the intro over the capture area before recording',
+    intro !== null &&
+      !commands.includes('start') &&
+      overlay.state === 'armed' &&
+      startCard.label === 'Starting…' &&
+      startCard.start === true &&
+      introBounds?.width === overlay.region.width &&
+      introBounds?.height === overlay.region.height,
+    `intro ${introBounds ? `${introBounds.width} × ${introBounds.height}` : 'missing'}, card says ${startCard.label}, commands: ${commands.join(', ') || 'none'}`,
+  );
+  const recorded = await until(() => overlay.state === 'recording', 7_000);
+  check(
+    'Start reaches the host and records once the intro ends',
+    recorded && commands.includes('start') && overlay.introWindow === null,
+    `commands: ${commands.join(', ') || 'none'}; state is ${overlay.state}; intro ${overlay.introWindow ? 'still open' : 'closed'}`,
   );
   await windowWithHash('controls')?.webContents.executeJavaScript("document.querySelector('#secondary').click()");
   await settle();
@@ -153,33 +181,64 @@ app.whenReady().then(async () => {
       : 'content protection applied after show, so no hide is needed',
   );
   const drawn = await windowWithHash('controls')?.webContents.executeJavaScript(
-    "JSON.stringify({ paths: document.querySelectorAll('#mascot svg path').length, visible: !document.querySelector('#intro').hidden })",
+    "JSON.stringify({ paths: document.querySelectorAll('#mascot svg path').length, flash: document.querySelectorAll('#mascot svg .flash').length, visible: !document.querySelector('#intro').hidden, hint: document.querySelector('#keyHint').textContent })",
   );
-  const mascot = JSON.parse(String(drawn ?? '{}')) as { paths?: number; visible?: boolean };
+  const mascot = JSON.parse(String(drawn ?? '{}')) as { paths?: number; flash?: number; visible?: boolean; hint?: string };
   check(
-    'the armed card draws the shared mascot',
-    mascot.paths === 6 && mascot.visible === true,
-    `${mascot.paths} mascot paths, intro visible: ${mascot.visible}`,
+    'the armed card draws the camera mascot and the start shortcut',
+    mascot.paths === 4 && mascot.flash === 1 && mascot.visible === true && mascot.hint === 'Tip: you can press Alt+Shift+R to start and stop.',
+    `${mascot.paths} mascot paths, ${mascot.flash} flash, intro visible: ${mascot.visible}, hint: ${mascot.hint}`,
   );
 
+  const evaluate = (script: string) => windowWithHash('controls')?.webContents.executeJavaScript(script);
+  const card = async (fields: string) => JSON.parse(String((await evaluate(`JSON.stringify({ ${fields} })`)) ?? '{}'));
+  const src = 'mimik-screenshot://00000000-0000-4000-8000-000000000000';
   overlay.record();
   await settle();
-  overlay.stepCaptured(1, 'Click "Save"', 'mimik-screenshot://00000000-0000-4000-8000-000000000000');
-  await settle();
-  const afterStep = await windowWithHash('controls')?.webContents.executeJavaScript(
-    "JSON.stringify({ intro: getComputedStyle(document.querySelector('#intro')).display, title: document.querySelector('#stepTitle').textContent })",
-  );
-  const step = JSON.parse(String(afterStep ?? '{}')) as { intro?: string; title?: string };
+  const idle = await card("tip: document.querySelector('#tip').textContent, hint: document.querySelector('#keyHint').textContent");
   check(
-    'the first step replaces the instructions',
-    step.intro === 'none' && step.title === 'Click "Save"',
-    `intro display: ${step.intro}, title: ${step.title}`,
+    'recording with no steps waits for the first click',
+    idle.tip === 'Your first click will show up here.' && idle.hint === 'Tip: you can press Alt+Shift+C to capture without clicking.',
+    `tip: ${idle.tip}, hint: ${idle.hint}`,
   );
+
+  overlay.showStep({ id: 'one', index: 1, title: 'Click "Save"', src, source: 'heuristic', pending: false, app: 'Explorer' });
+  await settle();
+  const step = await card(
+    "intro: getComputedStyle(document.querySelector('#intro')).display, title: document.querySelector('#stepTitle').textContent, source: document.querySelector('#source').textContent, meta: document.querySelector('#metaText').textContent",
+  );
+  check(
+    'the first step replaces the instructions, with its source and app',
+    step.intro === 'none' && step.title === 'Click "Save"' && step.source === 'Basic' && step.meta === 'Step 1 · Explorer',
+    `intro display: ${step.intro}, title: ${step.title}, source: ${step.source}, meta: ${step.meta}`,
+  );
+
+  overlay.showStep({ id: 'one', index: 1, title: 'Click "Save"', src, source: 'heuristic', pending: true, app: 'Explorer' });
+  await settle();
+  const writing = await card("writing: !document.querySelector('#writing').hidden, title: !document.querySelector('#stepTitle').hidden");
+  overlay.showStep({ id: 'one', index: 1, title: 'Save the file', src, source: 'ai', pending: false, app: 'Explorer' });
+  await settle();
+  const rewritten = await card("source: document.querySelector('#source').textContent, title: document.querySelector('#stepTitle').textContent");
+  check(
+    'a pending description shows as being written, then carries the AI badge',
+    writing.writing === true && writing.title === false && rewritten.source === 'AI' && rewritten.title === 'Save the file',
+    `writing shown: ${writing.writing}, title shown: ${writing.title}; then ${rewritten.source} "${rewritten.title}"`,
+  );
+
+  await evaluate("document.querySelector('#remove').click()");
+  await settle();
+  check('removing the step reaches the host', commands.includes('remove'), `commands: ${commands.join(', ')}`);
 
   overlay.setBusy(true);
   await settle();
   const whileBusy = await windowWithHash('controls')?.webContents.executeJavaScript(
     "document.querySelector('#primary').disabled",
+  );
+  const veil = await card("text: document.querySelector('#veilText').textContent, remove: document.querySelector('#remove').hidden");
+  check(
+    'a capture in flight shows the mascot over the last screenshot',
+    veil.text === 'Capturing step 2…' && veil.remove === true,
+    `veil: ${veil.text}, remove hidden: ${veil.remove}`,
   );
   overlay.setBusy(false);
   await settle();

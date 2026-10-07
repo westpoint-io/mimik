@@ -20,7 +20,8 @@ import {
 } from '@mimik/core/guides/service';
 import { screenshotForElement } from '@mimik/core/screenshot/record';
 import type { CursorMark } from '@mimik/core/screenshot/types';
-import { describeStep } from './ai';
+import { credentials } from './ai/credentials';
+import { describeStep } from './ai/describe-step';
 
 export type DesktopCaptureStepData = CaptureStepData & {
   cursor?: CursorMark;
@@ -34,7 +35,9 @@ export class DesktopCaptureSink implements CaptureSink {
     return guide.id;
   }
 
-  async captureStep(data: DesktopCaptureStepData): Promise<CaptureStepResponse & { title?: string }> {
+  async captureStep(
+    data: DesktopCaptureStepData,
+  ): Promise<CaptureStepResponse & { title?: string; pending?: boolean }> {
     const stepId = crypto.randomUUID();
     const meta = data.elementMeta;
     const index = (await getStepsForGuide(data.guideId)).length;
@@ -61,7 +64,8 @@ export class DesktopCaptureSink implements CaptureSink {
       screenshotId = screenshot.id;
     }
 
-    const description = buildFallbackDescription(data.action, meta);
+    const description = buildFallbackDescription(data.action, meta, data.inputValue);
+    const pending = (await credentials()) !== null;
 
     await createStep({
       id: stepId,
@@ -76,17 +80,20 @@ export class DesktopCaptureSink implements CaptureSink {
       screenshotId,
       elementMeta: meta,
       descriptionSource: 'heuristic',
-      aiPending: true,
+      aiPending: pending,
       ...(data.inputValue === undefined ? {} : { inputValue: data.inputValue }),
     });
     await addStepToGuide(data.guideId, stepId);
 
-    void describeStep(data.action, meta).then(async (written) => {
-      if (written) await updateStepDescription(stepId, written);
-      await clearStepAiPending(stepId);
-    });
+    if (pending) {
+      void describeStep(data.action, meta).then(async (written) => {
+        if (written) await updateStepDescription(stepId, written, 'ai');
+        await clearStepAiPending(stepId);
+        window.mimik.capture.described(stepId, written);
+      });
+    }
 
-    return { stepId, title: description };
+    return { stepId, title: description, pending };
   }
 
   async updateInputStep(data: UpdateInputStepData): Promise<UpdateInputStepResponse> {

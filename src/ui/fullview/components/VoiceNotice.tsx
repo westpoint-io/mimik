@@ -1,10 +1,11 @@
-import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui';
 import { Check, Loader2, TriangleAlert, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';
-import { getVoiceStatus } from '@/lib/offscreen';
-import { observeVoiceFromBackground, type PanelVoiceUpdate } from '@/lib/port';
-import { voiceNotice } from '../voice-notice';
+import { getVoiceStatus } from '@/lib/offscreen/get-voice-status';
+import { observeVoiceFromBackground } from '@/lib/port/observe-voice-from-background';
+import type { PanelVoiceUpdate } from '@/lib/port/types';
+import { voiceNotice } from '../lib/voice-notice';
 
 const IDLE: PanelVoiceUpdate = { type: 'VOICE_UPDATE', phase: 'idle' };
 
@@ -20,7 +21,7 @@ const TONE_CLASSES = {
   failed: 'text-destructive',
 };
 
-export default function VoiceNotice() {
+export function VoiceNotice() {
   const [update, setUpdate] = useState<PanelVoiceUpdate>(IDLE);
   const [seenLive, setSeenLive] = useState(false);
   const [dismissed, setDismissed] = useState<string | null>(null);

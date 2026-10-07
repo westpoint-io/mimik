@@ -166,15 +166,15 @@ desktop:
   showCursor: Show the cursor in screenshots
   pointerStyle: Pointer style
   screenshotDelay: Screenshot delay
-  captureOutside: Capture clicks outside the capture area
+  keepClicksBeyondArea: Capture clicks outside the capture area
   guideInApp: "Guide in $1"
   newGuide: New Guide
   capturingSection: Capturing
   milliseconds: ms
   captureMode: What to capture
-  modeWindow: Active Window
-  modeScreen: Full Screen
-  modeRegion: Selected Region
+  modeWindow: Window
+  modeScreen: Screen
+  modeRegion: Area
   readyToRecord: Ready to record
   startSheetTitle: Start a capture
   startButton: Start
@@ -189,11 +189,11 @@ desktop:
   zoomLevelHint: "New recordings start here. Automatic keeps every step the same size."
   zoomAuto: "Automatic"
   zoomGuide: "Zoom"
-  captureKeys: "Record shortcuts and named keys"
-  captureTyping: "Record what you type"
+  recordKeys: "Record shortcuts and named keys"
+  recordTyping: "Record what you type"
   typingDebounce: "Close a typing step after"
-  typingSmart: "Read the field's own text when it can"
-  typingSmartHint: "Off means the guide records your keystrokes instead"
+  readFieldText: "Read the field's own text when it can"
+  readFieldTextHint: "Off means the guide records your keystrokes instead"
   shortcutStartStop: "Start or finish a recording"
   shortcutPauseResume: "Pause or resume"
   shortcutCapture: "Capture a step now"
@@ -512,20 +512,24 @@ onboarding:
   openMimik: Open Mimik
 
 steps:
-  pressKey: "Press $1 on $2"
-  toggleCheckbox: "Toggle $1"
-  selectRadio: "Select $1"
-  toggleSwitch: "Toggle $1"
+  pressKey: 'Press $1 on "$2"'
+  toggleCheckbox: 'Toggle "$1"'
+  select: 'Select "$1"'
+  enter: 'Enter "$1"'
+  toggleSwitch: 'Toggle "$1"'
   clickLink: 'Click link "$1"'
-  click: "Click $1"
-  rightClick: "Right-click $1"
-  typeIntoField: "Type into $1 field $2"
-  typeInto: "Type into $1"
+  click: 'Click "$1"'
+  clickHere: "Click here"
+  rightClick: 'Right-click "$1"'
+  rightClickHere: "Right-click here"
+  typeIntoField: 'Type into $1 field "$2"'
+  typeInto: 'Type into "$1"'
+  type: 'Type "$1"'
   typeSecret: "Type password"
-  copyFrom: "Copy from $1"
-  pasteInto: "Paste into $1"
-  cutFrom: "Cut from $1"
-  drag: "Drag $1"
+  copyFrom: 'Copy from "$1"'
+  pasteInto: 'Paste into "$1"'
+  cutFrom: 'Cut from "$1"'
+  drag: 'Drag "$1"'
   navigate: Navigate to page
   defaultAction: "$1 $2"
 

@@ -1,11 +1,12 @@
 import { i18n } from '@mimik/core/env';
 import { Sparkles, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { dismissUpdateNotice, readUpdateNotice } from '@/lib/update-notice';
+import { dismissUpdateNotice } from '@/lib/update-notice/dismiss-update-notice';
+import { readUpdateNotice } from '@/lib/update-notice/read-update-notice';
 
 const RELEASES_URL = 'https://github.com/westpoint-io/mimik/releases';
 
-export default function UpdateNotice({ className = '' }: { className?: string }) {
+export function UpdateNotice({ className = '' }: { className?: string }) {
   const [version, setVersion] = useState<string>();
 
   useEffect(() => {

@@ -166,15 +166,15 @@ desktop:
   showCursor: Show the cursor in screenshots
   pointerStyle: Pointer style
   screenshotDelay: Screenshot delay
-  captureOutside: Capture clicks outside the capture area
+  keepClicksBeyondArea: Capture clicks outside the capture area
   guideInApp: "Guide in $1"
   newGuide: New Guide
   capturingSection: Capturing
   milliseconds: ms
   captureMode: Quoi capturer
-  modeWindow: Fenêtre active
-  modeScreen: Plein écran
-  modeRegion: Région sélectionnée
+  modeWindow: Fenêtre
+  modeScreen: Écran
+  modeRegion: Zone
   readyToRecord: Prêt à enregistrer
   startSheetTitle: Démarrer une capture
   startButton: Démarrer
@@ -189,11 +189,11 @@ desktop:
   zoomLevelHint: "Les nouveaux enregistrements partent d’ici. Automatique garde toutes les étapes à la même taille."
   zoomAuto: "Automatique"
   zoomGuide: "Zoom"
-  captureKeys: "Enregistrer les raccourcis et touches nommées"
-  captureTyping: "Enregistrer ce que vous tapez"
+  recordKeys: "Enregistrer les raccourcis et touches nommées"
+  recordTyping: "Enregistrer ce que vous tapez"
   typingDebounce: "Clôturer l'étape de saisie après"
-  typingSmart: "Lire le texte du champ lorsque c’est possible"
-  typingSmartHint: "Sinon, le guide enregistre vos frappes"
+  readFieldText: "Lire le texte du champ lorsque c’est possible"
+  readFieldTextHint: "Sinon, le guide enregistre vos frappes"
   shortcutStartStop: "Démarrer ou terminer un enregistrement"
   shortcutPauseResume: "Mettre en pause ou reprendre"
   shortcutCapture: "Capturer une étape maintenant"
@@ -512,20 +512,24 @@ onboarding:
   openMimik: Ouvrir Mimik
 
 steps:
-  pressKey: "Appuyer sur $1 dans $2"
-  toggleCheckbox: "Cocher $1"
-  selectRadio: "Sélectionner $1"
-  toggleSwitch: "Activer/désactiver $1"
+  pressKey: 'Appuyer sur $1 dans "$2"'
+  toggleCheckbox: 'Cocher "$1"'
+  select: 'Sélectionner "$1"'
+  enter: 'Saisir dans "$1"'
+  toggleSwitch: 'Activer/désactiver "$1"'
   clickLink: 'Cliquer sur le lien "$1"'
-  click: "Cliquer sur $1"
-  rightClick: "Clic droit sur $1"
-  typeIntoField: "Saisir dans le champ $1 $2"
-  typeInto: "Saisir dans $1"
+  click: 'Cliquer sur "$1"'
+  clickHere: "Cliquer ici"
+  rightClick: 'Clic droit sur "$1"'
+  rightClickHere: "Clic droit ici"
+  typeIntoField: 'Saisir dans le champ $1 "$2"'
+  typeInto: 'Saisir dans "$1"'
+  type: 'Saisir "$1"'
   typeSecret: "Saisir le mot de passe"
-  copyFrom: "Copier depuis $1"
-  pasteInto: "Coller dans $1"
-  cutFrom: "Couper depuis $1"
-  drag: "Glisser $1"
+  copyFrom: 'Copier depuis "$1"'
+  pasteInto: 'Coller dans "$1"'
+  cutFrom: 'Couper depuis "$1"'
+  drag: 'Glisser "$1"'
   navigate: "Aller à la page"
   defaultAction: "$1 $2"
 

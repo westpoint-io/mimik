@@ -1,19 +1,26 @@
-import { Button } from '@mimik/ui/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
-import { extractDomain } from '@mimik/ui/lib/utils';
-import ScreenshotView from '@mimik/ui/shared/ScreenshotView';
-import StepSourceBadge from '@mimik/ui/shared/StepSourceBadge';
+import { extractDomain } from '@mimik/core/guides/domain';
+import {
+  Button,
+  CameraMascot,
+  ScreenshotView,
+  StepSourceBadge,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@mimik/ui';
 import { Check, EyeOff, Loader2, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { browser, i18n } from '#imports';
 import { deleteStep, getScreenshotsForSteps, getStepsForGuide } from '@/core/guides/service';
 import type { Screenshot, Step } from '@/core/guides/types';
-import { getActiveTab, localStorage } from '@/lib/browser-api';
+import { getActiveTab } from '@/lib/browser-api/get-active-tab';
+import { localStorage } from '@/lib/browser-api/local-storage';
 import { sendMessage } from '@/lib/messaging';
-import type { PanelAiUpdate, PanelVoiceUpdate } from '@/lib/port';
-import AiStatus from './AiStatus';
-import MicToggle from './MicToggle';
-import VoiceStatus from './VoiceStatus';
+import type { PanelAiUpdate, PanelVoiceUpdate } from '@/lib/port/types';
+import { AiStatus } from './AiStatus';
+import { timeAgo } from './lib/time-ago';
+import { MicToggle } from './MicToggle';
+import { VoiceStatus } from './VoiceStatus';
 
 interface RecordingViewProps {
   guideId: string;
@@ -22,19 +29,12 @@ interface RecordingViewProps {
   aiFailure: PanelAiUpdate | null;
 }
 
-function timeAgo(createdAt: number): string {
-  const diff = Math.floor((Date.now() - createdAt) / 1000);
-  if (diff < 3) return i18n.t('recording.justNow');
-  if (diff < 60) return i18n.t('recording.secondsAgo', [String(diff)]);
-  return i18n.t('recording.minutesAgo', [String(Math.floor(diff / 60))]);
-}
-
 interface LiveStep {
   step: Step;
   screenshot?: Screenshot;
 }
 
-export default function RecordingView({ guideId, onStop, voice, aiFailure }: RecordingViewProps) {
+export function RecordingView({ guideId, onStop, voice, aiFailure }: RecordingViewProps) {
   const [steps, setSteps] = useState<LiveStep[]>([]);
   const [siteUrl, setSiteUrl] = useState('');
   const [isBlurring, setIsBlurring] = useState(false);
@@ -137,23 +137,7 @@ export default function RecordingView({ guideId, onStop, voice, aiFailure }: Rec
       <div className="flex-1 overflow-y-auto pt-12">
         {steps.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full gap-3">
-            <svg width="64" height="64" viewBox="0 0 200 200" fill="none">
-              <rect x="30" y="105" width="140" height="68" rx="5" fill="#1E1B4B" />
-              <path d="M30 105 L30 90 Q30 70, 100 70 Q170 70, 170 90 L170 105 Z" fill="#3730A3" />
-              <rect x="30" y="103" width="140" height="3" fill="#C7D2FE" />
-              <path d="M68 132 Q76 122 84 132" stroke="#C7D2FE" strokeWidth="5" fill="none" strokeLinecap="round" />
-              <path d="M116 132 Q124 122 132 132" stroke="#C7D2FE" strokeWidth="5" fill="none" strokeLinecap="round" />
-              <path d="M84 148 Q100 158 116 148" stroke="#C7D2FE" strokeWidth="3.5" fill="none" strokeLinecap="round" />
-              <rect x="60" y="38" width="80" height="50" rx="8" fill="#3730A3" stroke="#3730A3" strokeWidth="2" />
-              <circle cx="100" cy="62" r="16" fill="#1E1B4B" stroke="#3730A3" strokeWidth="2" />
-              <circle cx="100" cy="62" r="9" fill="#080818" />
-              <circle cx="100" cy="62" r="4" fill="#C7D2FE" opacity="0.4" />
-              <rect x="112" y="42" width="18" height="8" rx="3" fill="#C7D2FE" opacity="0.7" />
-              <circle cx="121" cy="38" r="20" fill="#C7D2FE" className="animate-[cam-flash_3s_ease_infinite]" />
-              <circle cx="80" cy="42" r="5" fill="#4F46E5" />
-              <ellipse cx="54" cy="64" rx="10" ry="8" fill="#1E1B4B" />
-              <ellipse cx="146" cy="64" rx="10" ry="8" fill="#1E1B4B" />
-            </svg>
+            <CameraMascot size={64} />
             <div className="text-center">
               <p className="text-sm font-semibold text-foreground">{i18n.t('recording.readyTitle')}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{i18n.t('recording.readySub')}</p>

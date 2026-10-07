@@ -1,4 +1,18 @@
-import { Check, ChevronDown, ChevronUp, createElement, Pause, Play, Video } from 'lucide';
+import {
+  AppWindow,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Crop,
+  createElement,
+  Keyboard,
+  LoaderCircle,
+  Monitor,
+  Pause,
+  Play,
+  Trash2,
+  Video,
+} from 'lucide';
 
 const ICONS = {
   video: Video,
@@ -7,6 +21,12 @@ const ICONS = {
   check: Check,
   chevronDown: ChevronDown,
   chevronUp: ChevronUp,
+  trash: Trash2,
+  loader: LoaderCircle,
+  window: AppWindow,
+  monitor: Monitor,
+  area: Crop,
+  keyboard: Keyboard,
 };
 
 export type IconName = keyof typeof ICONS;

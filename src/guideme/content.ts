@@ -1,4 +1,4 @@
-import { logger } from '@mimik/ui/lib/logger';
+import { logger } from '@mimik/core/logger';
 import { browser } from '#imports';
 import { findElement } from '@/core/guideme/finder';
 import { GuideMeOverlay } from '@/core/guideme/overlay';

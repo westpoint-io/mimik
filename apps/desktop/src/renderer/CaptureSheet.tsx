@@ -1,5 +1,5 @@
 import { i18n } from '@mimik/core/env';
-import { Button } from '@mimik/ui/components/ui/button';
+import { Button } from '@mimik/ui';
 import { AppWindow, Crop, Monitor, Video, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { CaptureSettings } from '../main/capture/settings';
@@ -12,7 +12,7 @@ const MODES: { id: Mode; label: string; Icon: typeof AppWindow }[] = [
   { id: 'region', label: 'desktop_modeRegion', Icon: Crop },
 ];
 
-export default function CaptureSheet({ onClose }: { onClose(): void }) {
+export function CaptureSheet({ onClose }: { onClose(): void }) {
   const [settings, setSettings] = useState<CaptureSettings | null>(null);
 
   useEffect(() => {

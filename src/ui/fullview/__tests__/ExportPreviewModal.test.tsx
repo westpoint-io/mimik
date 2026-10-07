@@ -9,7 +9,9 @@ const exportGuideAsHTML = vi.hoisted(() => vi.fn());
 const canExportVideo = vi.hoisted(() => vi.fn());
 
 vi.mock('@/core/export/video-export', () => ({ exportGuideAsVideo }));
-vi.mock('@mimik/ui/fullview/VideoStepPlayer', () => ({ default: () => <div data-testid="video-player" /> }));
+vi.mock('@mimik/ui/export/components/VideoStepPlayer', () => ({
+  VideoStepPlayer: () => <div data-testid="video-player" />,
+}));
 vi.mock('@/core/export/html-export', () => ({ exportGuideAsHTML }));
 vi.mock('@/core/export/video-support', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/core/export/video-support')>()),
@@ -21,7 +23,7 @@ vi.mock('@/core/export/options', async (importOriginal) => ({
   saveExportOptions: async () => {},
 }));
 
-import ExportPreviewModal from '@mimik/ui/fullview/ExportPreviewModal';
+import { ExportPreviewModal } from '@mimik/ui';
 
 const guide: Guide = {
   id: 'guide-1',

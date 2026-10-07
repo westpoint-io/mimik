@@ -1,15 +1,10 @@
-import { TooltipProvider } from '@mimik/ui/components/ui/tooltip';
-import GuideContent from '@mimik/ui/fullview/GuideContent';
-import LibraryContent from '@mimik/ui/fullview/LibraryContent';
-import { navigate, useRoute } from '@mimik/ui/fullview/router';
-import SearchModal from '@mimik/ui/fullview/SearchModal';
-import TopNav from '@mimik/ui/fullview/TopNav';
+import { GuideContent, LibraryContent, navigate, SearchModal, TooltipProvider, TopNav, useRoute } from '@mimik/ui';
 import { useEffect, useState } from 'react';
-import CaptureSheet from './CaptureSheet';
-import GuideZoom from './GuideZoom';
-import SettingsPanel from './SettingsPanel';
+import { CaptureSheet } from './CaptureSheet';
+import { GuideZoom } from './GuideZoom';
+import { SettingsPanel } from './settings/SettingsPanel';
 
-export default function App() {
+export function App() {
   const route = useRoute();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);

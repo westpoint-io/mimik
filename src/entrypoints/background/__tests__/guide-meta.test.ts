@@ -28,7 +28,7 @@ vi.mock('@/core/guides/service', () => ({
   updateGuideTitle: updateGuideTitleMock,
 }));
 
-vi.mock('@/lib/browser-api', () => ({ localStorage: { get: localStorageGetMock } }));
+vi.mock('@/lib/browser-api/local-storage', () => ({ localStorage: { get: localStorageGetMock } }));
 
 import { AI_PROVIDERS } from '@/core/capture/ai/models';
 import { generateDescriptionOnDemand, generateGuideMetaOnStop } from '../guide-meta';

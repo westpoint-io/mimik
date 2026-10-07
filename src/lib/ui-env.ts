@@ -1,16 +1,14 @@
 import { configureUi } from '@mimik/ui/env';
 import { getRecordableTabs } from '@/capture/recordable-tabs';
 import { startInsertRecording } from '@/capture/start-insert-recording';
-import {
-  createTab,
-  focusWindow,
-  getActiveTab,
-  getTab,
-  openSidebar,
-  queryTabs,
-  requestHostPermissions,
-  updateTab,
-} from '@/lib/browser-api';
+import { createTab } from '@/lib/browser-api/create-tab';
+import { focusWindow } from '@/lib/browser-api/focus-window';
+import { getActiveTab } from '@/lib/browser-api/get-active-tab';
+import { getTab } from '@/lib/browser-api/get-tab';
+import { openSidebar } from '@/lib/browser-api/open-sidebar';
+import { queryTabs } from '@/lib/browser-api/query-tabs';
+import { requestHostPermissions } from '@/lib/browser-api/request-host-permissions';
+import { updateTab } from '@/lib/browser-api/update-tab';
 import { sendMessage } from '@/lib/messaging';
 
 configureUi({

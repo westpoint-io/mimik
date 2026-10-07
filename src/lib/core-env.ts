@@ -1,6 +1,7 @@
 import { i18n } from '#imports';
 import { configureCore } from '@/core/env';
-import { getExtensionURL, localStorage } from '@/lib/browser-api';
+import { getExtensionURL } from '@/lib/browser-api/get-extension-url';
+import { localStorage } from '@/lib/browser-api/local-storage';
 
 configureCore({
   client: 'extension',

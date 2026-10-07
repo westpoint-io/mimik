@@ -60,6 +60,6 @@ export const panel: UiEnv['panel'] = {
   requestHostPermissions: () => env().panel.requestHostPermissions(),
 };
 
-export function send<T = any>(name: string, payload?: unknown): Promise<T> {
-  return env().send<T>(name, payload);
-}
+export const messages: Pick<UiEnv, 'send'> = {
+  send: (name, payload) => env().send(name, payload),
+};

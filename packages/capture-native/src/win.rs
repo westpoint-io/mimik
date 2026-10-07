@@ -14,7 +14,8 @@ use windows::Win32::UI::Input::KeyboardAndMouse::{
 };
 use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, GetWindowThreadProcessId};
 
-use crate::{ElementRect, UiElement};
+use crate::hit::smallest_under;
+use crate::{ElementNode, ElementRect, UiElement};
 
 const ROLES: &[(UIA_CONTROLTYPE_ID, &str)] = &[
   (UIA_ButtonControlTypeId, "button"),
@@ -128,14 +129,93 @@ fn describe(found: &IUIAutomationElement) -> UiElement {
       .map(|flag| flag.as_bool())
       .unwrap_or(false),
     rect: rect_of(found),
+    ancestors: Vec::new(),
+    children: Vec::new(),
   }
 }
 
+const MAX_ANCESTORS: usize = 4;
+const MAX_CHILDREN: usize = 12;
+
+fn node(element: &IUIAutomationElement) -> ElementNode {
+  ElementNode {
+    role: role(unsafe { element.CurrentControlType() }.unwrap_or_default()),
+    name: text(unsafe { element.CurrentName() }),
+  }
+}
+
+fn ancestors(walker: &IUIAutomationTreeWalker, element: &IUIAutomationElement) -> Vec<ElementNode> {
+  let mut out = Vec::new();
+  let mut current = element.clone();
+  while out.len() < MAX_ANCESTORS {
+    let Ok(parent) = (unsafe { walker.GetParentElement(&current) }) else {
+      break;
+    };
+    out.push(node(&parent));
+    current = parent;
+  }
+  out
+}
+
+fn children(walker: &IUIAutomationTreeWalker, element: &IUIAutomationElement) -> Vec<ElementNode> {
+  let mut out = Vec::new();
+  let mut next = unsafe { walker.GetFirstChildElement(element) };
+  while let Ok(child) = next {
+    if out.len() == MAX_CHILDREN {
+      break;
+    }
+    out.push(node(&child));
+    next = unsafe { walker.GetNextSiblingElement(&child) };
+  }
+  out
+}
+
+fn narrowest(
+  uia: &IUIAutomation,
+  walker: &IUIAutomationTreeWalker,
+  hit: &IUIAutomationElement,
+  point: POINT,
+) -> Option<IUIAutomationElement> {
+  if unsafe { hit.CurrentControlType() }.ok()? == UIA_EditControlTypeId {
+    return None;
+  }
+  unsafe { walker.GetFirstChildElement(hit) }.ok()?;
+  let request = unsafe { uia.CreateCacheRequest() }.ok()?;
+  unsafe { request.AddProperty(UIA_BoundingRectanglePropertyId) }.ok()?;
+  let everything = unsafe { uia.CreateTrueCondition() }.ok()?;
+  let found = unsafe { hit.FindAllBuildCache(TreeScope_Subtree, &everything, &request) }.ok()?;
+  let elements: Vec<IUIAutomationElement> = (0..unsafe { found.Length() }.ok()?)
+    .filter_map(|index| unsafe { found.GetElement(index) }.ok())
+    .collect();
+  let boxes: Vec<_> = elements
+    .iter()
+    .map(|element| {
+      unsafe { element.CachedBoundingRectangle() }
+        .map(|rect| (rect.left, rect.top, rect.right, rect.bottom))
+        .unwrap_or_default()
+    })
+    .collect();
+  smallest_under(&boxes, point.x, point.y).map(|index| elements[index].clone())
+}
+
 pub fn element_at_point(x: i32, y: i32) -> Result<Option<UiElement>> {
-  let found = automation()
-    .and_then(|uia| unsafe { uia.ElementFromPoint(POINT { x, y }) })
-    .map_err(|error| napi::Error::from_reason(error.message()))?;
-  Ok(Some(describe(&found)))
+  let uia = automation().map_err(|error| napi::Error::from_reason(error.message()))?;
+  let point = POINT { x, y };
+  let hit =
+    unsafe { uia.ElementFromPoint(point) }.map_err(|error| napi::Error::from_reason(error.message()))?;
+  let walker = unsafe { uia.ControlViewWalker() }.ok();
+  let found = walker
+    .as_ref()
+    .and_then(|walker| narrowest(&uia, walker, &hit, point))
+    .unwrap_or(hit);
+  let mut element = describe(&found);
+  if element.name.is_none() {
+    if let Some(walker) = &walker {
+      element.ancestors = ancestors(walker, &found);
+      element.children = children(walker, &found);
+    }
+  }
+  Ok(Some(element))
 }
 
 pub fn focused_element() -> Result<Option<UiElement>> {
@@ -234,7 +314,7 @@ pub fn resolve_key(keycode: u32, shift: bool, ctrl: bool, alt: bool) -> Option<S
     .filter(|found| !found.is_empty())
 }
 
-pub fn reset_dead_key_state() {
+pub fn clear_dead_key() {
   let layout = foreground_layout();
   let vk = VK_SPACE.0 as u32;
   let scancode = unsafe { MapVirtualKeyExW(vk, MAPVK_VK_TO_VSC, Some(layout)) };

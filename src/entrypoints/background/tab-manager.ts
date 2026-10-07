@@ -1,5 +1,7 @@
-import { logger } from '@mimik/ui/lib/logger';
-import { executeScript, queryTabs, sendMessageToTab } from '@/lib/browser-api';
+import { logger } from '@mimik/core/logger';
+import { executeScript } from '@/lib/browser-api/execute-script';
+import { queryTabs } from '@/lib/browser-api/query-tabs';
+import { sendMessageToTab } from '@/lib/browser-api/send-message-to-tab';
 import { TabMessage } from '@/lib/tab-messages';
 
 export function isInjectableTab(tab: { url?: string; pendingUrl?: string }): boolean {

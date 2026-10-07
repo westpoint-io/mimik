@@ -1,6 +1,6 @@
 import '@/lib/core-env';
 import '@/lib/ui-env';
-import { logger } from '@mimik/ui/lib/logger';
+import { logger } from '@mimik/core/logger';
 import { defineContentScript } from 'wxt/utils/define-content-script';
 import { browser } from '#imports';
 import { BlurManager } from '@/blur/manager';

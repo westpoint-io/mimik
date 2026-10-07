@@ -5,26 +5,28 @@ import type { CursorMark } from '@mimik/core/screenshot/types';
 import { screen } from 'electron';
 import { cursorPoint } from './displays';
 import {
+  clearDeadKey,
   elementAt,
   focusedField,
   isTextField,
   keyLabel,
-  resetDeadKeyState,
   resolveKey,
   type ScreenElement,
 } from './element';
 import { focusedWindow } from './focused-window';
 import { type InputAction, InputHook, type KeyAction, type PointerAction } from './input-hook';
 import type { Region } from './region';
-import { type Capture, captureArea, type Rect } from './screenshot';
+import { type Frame, grabDisplay, type Rect } from './screenshot';
 import { writeScreenshot } from './screenshot-store';
 import { type CaptureMode, type CaptureSettings, DEFAULT_CAPTURE_SETTINGS } from './settings';
 
 const TARGET_SIZE = 28;
 const SETTLE_MS = 60;
+const SNAPSHOT_MS = 400;
 const REPEAT_CLICK_MS = 500;
-const TEXT_MARKERS = /[\uFFF9-\uFFFD\uFEFF\u200B]/g;
-const LONG_FIELD_CHARS = 80;
+const MARKER_CODE_POINTS = new Set([0x200b, 0xfeff, 0xfff9, 0xfffa, 0xfffb, 0xfffc, 0xfffd]);
+const FIELD_SLACK: Record<string, number> = { document: 24 };
+const DEFAULT_FIELD_SLACK = 120;
 
 const KEY = {
   escape: 1,
@@ -72,7 +74,7 @@ export interface CaptureRequest {
 }
 
 export interface RecorderHooks {
-  grab?: (area: Rect) => Promise<Capture>;
+  grab?: (point: Point) => Promise<Frame>;
   settings?: () => CaptureSettings;
   ignores?: (point: Point) => boolean;
   lookup?: (point: Point) => Promise<ScreenElement | null>;
@@ -103,7 +105,7 @@ export function isRepeatClick(previousAt: number | null, at: number): boolean {
 
 export function shouldCapture(settings: CaptureSettings, region: Region, point: Point): boolean {
   if (settings.captureMode !== 'region') return true;
-  return inside(region, point) || settings.captureOutsideClicks;
+  return inside(region, point) || settings.keepClicksBeyondArea;
 }
 
 export function frameFor(mode: CaptureMode, point: Point, region: Region, window: Rect | null): Rect {
@@ -130,17 +132,17 @@ export function clickAction(button: number): string {
   return button === 2 ? 'auxclick' : 'click';
 }
 
-export function chooseTypedText(field: ScreenElement | null, buffer: string, smart = true): string | null {
-  if (!isTextField(field)) return null;
-  if (!smart) return buffer || null;
-  const value = (field?.textContent ?? '').replace(TEXT_MARKERS, '');
-  if (!value.trim()) return buffer || null;
+export function typedTextFor(field: ScreenElement | null, buffer: string, readField = true): string | null {
+  if (!field || !isTextField(field)) return null;
+  if (!readField) return buffer || null;
+  const shown = [...(field.textContent ?? '')].filter((char) => !MARKER_CODE_POINTS.has(char.codePointAt(0) ?? 0));
+  if (!shown.join('').trim()) return buffer || null;
   const typed = [...buffer].length;
-  if (typed > 0 && [...value].length > Math.max(2 * typed, LONG_FIELD_CHARS)) return buffer;
-  return value;
+  const slack = FIELD_SLACK[field.role ?? ''] ?? DEFAULT_FIELD_SLACK;
+  return typed > 0 && shown.length > typed + slack ? buffer : shown.join('');
 }
 
-export function matchesShortcut(accelerator: string | null, action: KeyAction, key: string): boolean {
+export function isBoundShortcut(accelerator: string | null, action: KeyAction, key: string): boolean {
   if (!accelerator) return false;
   const parts = accelerator
     .split('+')
@@ -161,7 +163,7 @@ export function matchesShortcut(accelerator: string | null, action: KeyAction, k
   );
 }
 
-export function isTypingKey(action: KeyAction): boolean {
+export function isTextKey(action: KeyAction): boolean {
   if (MODIFIER_KEYS.has(action.keycode)) return false;
   if (action.ctrl || action.alt || action.meta) return false;
   return !COMMIT_KEYS.has(action.keycode);
@@ -199,9 +201,12 @@ export class DesktopRecorder {
   private lastKey: { keycode: number; at: number } | null = null;
   private typing = false;
   private buffer = '';
+  private keys = 0;
+  private snapshot: { field: Promise<ScreenElement | null>; keys: number } | null = null;
+  private snapshotTimer: NodeJS.Timeout | null = null;
   private appending: Promise<unknown> = Promise.resolve();
   private idle: NodeJS.Timeout | null = null;
-  private readonly grab: (area: Rect) => Promise<Capture>;
+  private readonly grab: (point: Point) => Promise<Frame>;
   private readonly settings: () => CaptureSettings;
   private readonly ignores: (point: Point) => boolean;
   private readonly lookup: (point: Point) => Promise<ScreenElement | null>;
@@ -216,19 +221,21 @@ export class DesktopRecorder {
     private readonly send: (request: CaptureRequest) => Promise<unknown>,
     hooks: RecorderHooks = {},
   ) {
-    this.grab = hooks.grab ?? captureArea;
+    this.grab = hooks.grab ?? grabDisplay;
     this.settings = hooks.settings ?? (() => DEFAULT_CAPTURE_SETTINGS);
     this.ignores = hooks.ignores ?? (() => false);
     this.lookup = hooks.lookup ?? elementAt;
     this.focused = hooks.focused ?? focusedField;
     this.label = hooks.label ?? keyLabel;
     this.resolve = hooks.resolve ?? resolveKey;
-    this.reset = hooks.reset ?? resetDeadKeyState;
+    this.reset = hooks.reset ?? clearDeadKey;
   }
 
   async start(): Promise<RecorderStart> {
     if (this.running) return { ok: true };
-    const started = await this.hook.start((action) => this.onAction(action));
+    const started = await this.hook.start((action) => {
+      if (this.isRecording) this.onAction(action);
+    });
     if (!started.ok) return { ok: false, reason: started.reason, detail: started.detail };
     this.running = true;
     this.paused = false;
@@ -256,8 +263,7 @@ export class DesktopRecorder {
     return this.running && !this.paused;
   }
 
-  private onAction(action: InputAction): void {
-    if (!this.isRecording) return;
+  onAction(action: InputAction): void {
     if (action.kind === 'click') this.onClick(action);
     else this.onKey(action);
   }
@@ -270,33 +276,44 @@ export class DesktopRecorder {
     const repeat = isRepeatClick(this.lastClickAt, at);
     this.lastClickAt = at;
     if (repeat) return;
+    this.clickAt(clickAction(action.button), point);
+  }
+
+  private clickAt(action: string, point: Point): void {
     this.commitTyping();
-    const named = clickAction(action.button);
-    this.enqueue(() => this.write(named, point, this.lookup(point)));
+    const element = this.lookup(point);
+    const frame = this.shoot(point);
+    this.enqueue(() => this.write(action, point, element, frame));
   }
 
   private onKey(action: KeyAction): void {
     if (MODIFIER_KEYS.has(action.keycode)) return;
     const settings = this.settings();
-    if (isTypingKey(action)) {
-      if (!settings.captureTyping) return;
+    if (isTextKey(action)) {
+      if (!settings.recordTyping) return;
       this.typing = true;
+      this.keys += 1;
       this.buffered(action);
       if (this.idle) clearTimeout(this.idle);
-      this.idle = setTimeout(() => this.commitTyping(), settings.typingDebounceMs);
+      this.idle = setTimeout(() => this.commitTyping(true), settings.typingDebounceMs);
       this.idle.unref?.();
+      if (this.snapshotTimer) clearTimeout(this.snapshotTimer);
+      this.snapshotTimer = setTimeout(() => {
+        this.snapshot = { field: this.focused().catch(() => null), keys: this.keys };
+      }, SNAPSHOT_MS);
+      this.snapshotTimer.unref?.();
       return;
     }
 
     const submitted = this.typing;
-    this.commitTyping();
+    this.commitTyping(true);
 
     const at = Date.now();
     const repeat = isRepeatKey(this.lastKey, action.keycode, at);
     this.lastKey = { keycode: action.keycode, at };
     if (repeat) return;
     if (submitted && !action.ctrl && !action.alt && !action.meta) return;
-    if (!settings.captureKeys) return;
+    if (!settings.recordKeys) return;
     this.enqueue(() => this.captureKey(action));
   }
 
@@ -304,9 +321,10 @@ export class DesktopRecorder {
     const key = await this.label(action.keycode);
     if (!key) return;
     const { shortcuts } = this.settings();
-    if (Object.values(shortcuts).some((accelerator) => matchesShortcut(accelerator, action, key))) return;
+    if (Object.values(shortcuts).some((accelerator) => isBoundShortcut(accelerator, action, key))) return;
     const field = await this.focused();
-    await this.write(`keydown:${comboLabel(action, key)}`, centreOf(field) ?? cursorPoint(), Promise.resolve(field));
+    const where = centreOf(field) ?? cursorPoint();
+    await this.write(`keydown:${comboLabel(action, key)}`, where, Promise.resolve(field), this.shoot(where));
   }
 
   private buffered(action: KeyAction): void {
@@ -320,20 +338,37 @@ export class DesktopRecorder {
     });
   }
 
-  private commitTyping(): void {
-    if (this.idle) {
-      clearTimeout(this.idle);
-      this.idle = null;
-    }
+  private commitTyping(live = false): void {
+    if (this.idle) clearTimeout(this.idle);
+    if (this.snapshotTimer) clearTimeout(this.snapshotTimer);
+    this.idle = null;
+    this.snapshotTimer = null;
+    const snapshot = live ? null : this.snapshot;
+    this.snapshot = null;
     if (!this.typing) return;
     this.typing = false;
+    const fresh = !snapshot || snapshot.keys === this.keys;
+    const field = snapshot ? snapshot.field : this.focused().catch(() => null);
+    const frame = field.then((found) => this.shoot(centreOf(found) ?? cursorPoint()));
+    frame.catch(() => undefined);
     this.enqueue(async () => {
       await this.appending;
       const buffer = this.buffer;
       this.buffer = '';
       await this.reset();
-      await this.captureTyping(buffer);
+      await this.writeTyping(buffer, { field: await field, fresh }, frame);
     });
+  }
+
+  private shoot(point: Point): Promise<Frame> {
+    const { screenshotDelayMs } = this.settings();
+    const grabbed = this.withHidden(async () => {
+      await delay(screenshotDelayMs);
+      return this.grab(point);
+    });
+    const frame = Promise.all([grabbed, delay(SETTLE_MS + screenshotDelayMs)]).then(([taken]) => taken);
+    frame.catch(() => undefined);
+    return frame;
   }
 
   private enqueue(job: () => Promise<void>): void {
@@ -344,42 +379,44 @@ export class DesktopRecorder {
 
   captureNow(point: Point): void {
     if (!this.isRecording) return;
-    this.commitTyping();
-    this.enqueue(() => this.write('click', point, this.lookup(point)));
+    this.clickAt('click', point);
   }
 
   async capture(point: Point): Promise<void> {
-    await this.write('click', point, this.lookup(point));
+    await this.write('click', point, this.lookup(point), this.shoot(point));
   }
 
-  async captureTyping(buffer = ''): Promise<void> {
-    const field = await this.focused();
+  async writeTyping(
+    buffer = '',
+    seen: { field: ScreenElement | null; fresh: boolean } | null = null,
+    frame?: Promise<Frame>,
+  ): Promise<void> {
+    const field = seen ? seen.field : await this.focused();
     const where = centreOf(field) ?? cursorPoint();
+    const shot = frame ?? this.shoot(where);
     if (field?.password) {
-      await this.write('input', where, Promise.resolve(field));
+      await this.write('input', where, Promise.resolve(field), shot);
       return;
     }
-    const typed = chooseTypedText(field, buffer, this.settings().typingSmartDetection);
+    const typed = typedTextFor(field, buffer, this.settings().readFieldText && (seen?.fresh ?? true));
     if (!typed) return;
-    await this.write('input', where, Promise.resolve(field), typed);
+    await this.write('input', where, Promise.resolve(field), shot, typed);
   }
 
   private async write(
     action: string,
     point: Point,
     element: Promise<ScreenElement | null>,
+    taken: Promise<Frame>,
     inputValue?: string,
   ): Promise<void> {
     const settings = this.settings();
     const region = this.region();
 
-    const taken = await this.withHidden(async () => {
-      await delay(SETTLE_MS + settings.screenshotDelayMs);
-      const focused = await focusedWindow();
-      const rect = frameFor(settings.captureMode, point, region, focused.ok ? focused.window.bounds : null);
-      return { found: focused, framed: rect, shot: await this.grab(rect) };
-    });
-    const { found, framed, shot } = taken;
+    const frame = await taken;
+    const found = await focusedWindow();
+    const framed = frameFor(settings.captureMode, point, region, found.ok ? found.window.bounds : null);
+    const shot = await frame(framed);
     const scale = shot.scaleFactor;
 
     const screenshotId = randomUUID();
@@ -400,6 +437,8 @@ export class DesktopRecorder {
         ...(target?.password ? { inputType: 'password' } : {}),
         devicePixelRatio: scale,
         clickPoint: local,
+        ...(target?.ancestors.length ? { ancestors: target.ancestors } : {}),
+        ...(target?.children.length ? { children: target.children } : {}),
         ...(found.ok ? { app: found.window.app, window: { title: found.window.title } } : {}),
       },
       image: {

@@ -1,7 +1,5 @@
-import { Button } from '@mimik/ui/components/ui/button';
-import { Input } from '@mimik/ui/components/ui/input';
-import { TooltipProvider } from '@mimik/ui/components/ui/tooltip';
-import { logger } from '@mimik/ui/lib/logger';
+import { logger } from '@mimik/core/logger';
+import { Button, Input, TooltipProvider } from '@mimik/ui';
 import { Globe, Search, Settings, Video } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';
@@ -9,26 +7,26 @@ import { isRecordableUrl } from '@/capture/recordable-tabs';
 import { CaptureState } from '@/core/capture/machine';
 import type { GuideMeSession } from '@/core/guideme/session';
 import { SESSION_KEY } from '@/core/guideme/session';
-import {
-  createTab,
-  focusWindow,
-  getActiveTab,
-  getExtensionURL,
-  queryTabs,
-  requestHostPermissions,
-  updateTab,
-} from '@/lib/browser-api';
+import { createTab } from '@/lib/browser-api/create-tab';
+import { focusWindow } from '@/lib/browser-api/focus-window';
+import { getActiveTab } from '@/lib/browser-api/get-active-tab';
+import { getExtensionURL } from '@/lib/browser-api/get-extension-url';
+import { queryTabs } from '@/lib/browser-api/query-tabs';
+import { requestHostPermissions } from '@/lib/browser-api/request-host-permissions';
+import { updateTab } from '@/lib/browser-api/update-tab';
 import { sendMessage } from '@/lib/messaging';
-import { getVoiceStatus } from '@/lib/offscreen';
-import { connectToBackground, type PanelAiUpdate, type PanelVoiceUpdate } from '@/lib/port';
-import SettingsView from '@/ui/shared/SettingsView';
-import UpdateNotice from '@/ui/shared/UpdateNotice';
-import GuideEditor from './GuideEditor';
-import GuideMeCompletion from './GuideMeCompletion';
-import GuideMeView from './GuideMeView';
-import LibraryView from './LibraryView';
-import RecordingView from './RecordingView';
-import VoiceToast from './VoiceToast';
+import { getVoiceStatus } from '@/lib/offscreen/get-voice-status';
+import { connectToBackground } from '@/lib/port/connect-to-background';
+import type { PanelAiUpdate, PanelVoiceUpdate } from '@/lib/port/types';
+import { SettingsView } from '@/ui/shared/SettingsView';
+import { UpdateNotice } from '@/ui/shared/UpdateNotice';
+import { GuideEditor } from './GuideEditor';
+import { GuideMeCompletion } from './GuideMeCompletion';
+import { GuideMeView } from './GuideMeView';
+import { LibraryView } from './LibraryView';
+import { MascotIcon } from './MascotIcon';
+import { RecordingView } from './RecordingView';
+import { VoiceToast } from './VoiceToast';
 
 type View =
   | { name: 'library' }
@@ -38,56 +36,7 @@ type View =
   | { name: 'guideme'; guideId: string }
   | { name: 'guideme-done'; guideId: string };
 
-function MascotIcon({ size = 44 }: { size?: number }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width={size} height={size}>
-      <defs>
-        <clipPath id="cc">
-          <circle cx="100" cy="100" r="95" />
-        </clipPath>
-        <clipPath id="ds">
-          <path d="M30 95 L170 60 L170 95 Z" />
-        </clipPath>
-      </defs>
-      <g clipPath="url(#cc)">
-        <rect x="-50" y="-50" width="300" height="300" className="fill-lavender" />
-        <rect
-          x="30"
-          y="-80"
-          width="50"
-          height="400"
-          className="fill-accent"
-          transform="rotate(45, 100, 100)"
-          opacity="0.15"
-        />
-        <rect x="90" y="-80" width="50" height="400" fill="#818CF8" transform="rotate(45, 100, 100)" opacity="0.12" />
-        <rect x="-30" y="-80" width="50" height="400" fill="#93C5FD" transform="rotate(45, 100, 100)" opacity="0.15" />
-        <rect x="150" y="-80" width="50" height="400" fill="#A5B4FC" transform="rotate(45, 100, 100)" opacity="0.1" />
-      </g>
-      <rect x="30" y="95" width="140" height="68" rx="5" className="fill-primary" />
-      <path d="M30 95 L30 80 Q30 60, 100 60 Q170 60, 170 80 L170 95 Z" className="fill-violet-mid" />
-      <path d="M30 95 L30 80 Q30 60, 100 60 Q170 60, 170 80 L170 95 Z" className="fill-accent" clipPath="url(#ds)" />
-      <rect x="30" y="93" width="140" height="3" className="fill-lavender" />
-      <path d="M68 122 Q76 112 84 122" className="stroke-lavender" strokeWidth="5" fill="none" strokeLinecap="round" />
-      <path
-        d="M116 122 Q124 112 132 122"
-        className="stroke-lavender"
-        strokeWidth="5"
-        fill="none"
-        strokeLinecap="round"
-      />
-      <path
-        d="M84 138 Q100 148 116 138"
-        className="stroke-lavender"
-        strokeWidth="3.5"
-        fill="none"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-export default function App() {
+export function App() {
   const [isAlive, setIsAlive] = useState(false);
   const [_isRecording, setIsRecording] = useState(false);
   const [view, setView] = useState<View>({ name: 'library' });

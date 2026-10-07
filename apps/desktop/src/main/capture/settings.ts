@@ -27,11 +27,11 @@ export interface CaptureSettings {
   showCursor: boolean;
   cursorStyle: CursorStyle;
   screenshotDelayMs: number;
-  captureOutsideClicks: boolean;
-  captureKeys: boolean;
-  captureTyping: boolean;
+  keepClicksBeyondArea: boolean;
+  recordKeys: boolean;
+  recordTyping: boolean;
   typingDebounceMs: number;
-  typingSmartDetection: boolean;
+  readFieldText: boolean;
   zoomLevel: number | null;
   shortcuts: CaptureShortcuts;
 }
@@ -41,11 +41,11 @@ export const DEFAULT_CAPTURE_SETTINGS: CaptureSettings = {
   showCursor: true,
   cursorStyle: process.platform === 'darwin' ? 'arrow' : process.platform === 'win32' ? 'arrow' : 'dot',
   screenshotDelayMs: 0,
-  captureOutsideClicks: false,
-  captureKeys: true,
-  captureTyping: true,
+  keepClicksBeyondArea: false,
+  recordKeys: true,
+  recordTyping: true,
   typingDebounceMs: 1200,
-  typingSmartDetection: true,
+  readFieldText: true,
   zoomLevel: null,
   shortcuts: {
     startStop: 'Alt+Shift+R',
@@ -83,7 +83,11 @@ function snapZoom(zoom: number): number {
   return Math.min(Math.max(Math.round(zoom / ZOOM_STEP) * ZOOM_STEP, MIN_ZOOM), MAX_ZOOM);
 }
 
-export function normaliseSettings(input: Partial<CaptureSettings>): CaptureSettings {
+type LegacySettings = Partial<
+  Record<'captureOutsideClicks' | 'captureKeys' | 'captureTyping' | 'typingSmartDetection', unknown>
+>;
+
+export function normaliseSettings(input: Partial<CaptureSettings> & LegacySettings): CaptureSettings {
   const delay = Number(input.screenshotDelayMs);
   const debounce = input.typingDebounceMs === undefined ? Number.NaN : Number(input.typingDebounceMs);
   return {
@@ -95,13 +99,16 @@ export function normaliseSettings(input: Partial<CaptureSettings>): CaptureSetti
       ? (input.cursorStyle as CursorStyle)
       : DEFAULT_CAPTURE_SETTINGS.cursorStyle,
     screenshotDelayMs: Number.isFinite(delay) ? Math.min(Math.max(Math.round(delay), 0), MAX_SCREENSHOT_DELAY_MS) : 0,
-    captureOutsideClicks: flag(input.captureOutsideClicks, DEFAULT_CAPTURE_SETTINGS.captureOutsideClicks),
-    captureKeys: flag(input.captureKeys, DEFAULT_CAPTURE_SETTINGS.captureKeys),
-    captureTyping: flag(input.captureTyping, DEFAULT_CAPTURE_SETTINGS.captureTyping),
+    keepClicksBeyondArea: flag(
+      input.keepClicksBeyondArea ?? input.captureOutsideClicks,
+      DEFAULT_CAPTURE_SETTINGS.keepClicksBeyondArea,
+    ),
+    recordKeys: flag(input.recordKeys ?? input.captureKeys, DEFAULT_CAPTURE_SETTINGS.recordKeys),
+    recordTyping: flag(input.recordTyping ?? input.captureTyping, DEFAULT_CAPTURE_SETTINGS.recordTyping),
     typingDebounceMs: Number.isFinite(debounce)
       ? Math.min(Math.max(Math.round(debounce), MIN_TYPING_DEBOUNCE_MS), MAX_TYPING_DEBOUNCE_MS)
       : DEFAULT_CAPTURE_SETTINGS.typingDebounceMs,
-    typingSmartDetection: flag(input.typingSmartDetection, DEFAULT_CAPTURE_SETTINGS.typingSmartDetection),
+    readFieldText: flag(input.readFieldText ?? input.typingSmartDetection, DEFAULT_CAPTURE_SETTINGS.readFieldText),
     zoomLevel: Number.isFinite(Number(input.zoomLevel)) ? snapZoom(Number(input.zoomLevel)) : null,
     shortcuts: shortcuts(input.shortcuts),
   };

@@ -166,15 +166,15 @@ desktop:
   showCursor: Show the cursor in screenshots
   pointerStyle: Pointer style
   screenshotDelay: Screenshot delay
-  captureOutside: Capture clicks outside the capture area
+  keepClicksBeyondArea: Capture clicks outside the capture area
   guideInApp: "Guide in $1"
   newGuide: New Guide
   capturingSection: Capturing
   milliseconds: ms
   captureMode: Was aufnehmen
-  modeWindow: Aktives Fenster
-  modeScreen: Vollbild
-  modeRegion: Ausgewählter Bereich
+  modeWindow: Fenster
+  modeScreen: Bildschirm
+  modeRegion: Bereich
   readyToRecord: Bereit zur Aufnahme
   startSheetTitle: Aufnahme starten
   startButton: Starten
@@ -189,11 +189,11 @@ desktop:
   zoomLevelHint: "Neue Aufzeichnungen starten hier. Automatisch hält alle Schritte gleich groß."
   zoomAuto: "Automatisch"
   zoomGuide: "Zoom"
-  captureKeys: "Kürzel und benannte Tasten aufzeichnen"
-  captureTyping: "Eingaben aufzeichnen"
+  recordKeys: "Kürzel und benannte Tasten aufzeichnen"
+  recordTyping: "Eingaben aufzeichnen"
   typingDebounce: "Eingabeschritt beenden nach"
-  typingSmart: "Den Feldtext lesen, wenn möglich"
-  typingSmartHint: "Andernfalls werden die Tastenanschläge aufgezeichnet"
+  readFieldText: "Den Feldtext lesen, wenn möglich"
+  readFieldTextHint: "Andernfalls werden die Tastenanschläge aufgezeichnet"
   shortcutStartStop: "Aufnahme starten oder beenden"
   shortcutPauseResume: "Pausieren oder fortsetzen"
   shortcutCapture: "Jetzt einen Schritt aufnehmen"
@@ -443,20 +443,24 @@ onboarding:
   openMimik: Mimik öffnen
 
 steps:
-  pressKey: "$1 auf $2 drücken"
-  toggleCheckbox: "$1 umschalten"
-  selectRadio: "$1 auswählen"
-  toggleSwitch: "$1 umschalten"
+  pressKey: '$1 auf "$2" drücken'
+  toggleCheckbox: '"$1" umschalten'
+  select: '"$1" auswählen'
+  enter: 'In "$1" eingeben'
+  toggleSwitch: '"$1" umschalten'
   clickLink: 'Link "$1" anklicken'
-  click: "$1 anklicken"
-  rightClick: "$1 rechtsklicken"
-  typeIntoField: "In Feld $1 eingeben $2"
-  typeInto: "In $1 eingeben"
+  click: '"$1" anklicken'
+  clickHere: "Hier klicken"
+  rightClick: '"$1" rechtsklicken'
+  rightClickHere: "Hier rechtsklicken"
+  typeIntoField: 'In Feld $1 eingeben "$2"'
+  typeInto: 'In "$1" eingeben'
+  type: '"$1" eingeben'
   typeSecret: "Passwort eingeben"
-  copyFrom: "Aus $1 kopieren"
-  pasteInto: "In $1 einfügen"
-  cutFrom: "Aus $1 ausschneiden"
-  drag: "$1 ziehen"
+  copyFrom: 'Aus "$1" kopieren'
+  pasteInto: 'In "$1" einfügen'
+  cutFrom: 'Aus "$1" ausschneiden'
+  drag: '"$1" ziehen'
   navigate: Zur Seite navigieren
   defaultAction: "$1 $2"
 

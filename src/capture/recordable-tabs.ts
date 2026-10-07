@@ -1,4 +1,4 @@
-import { queryTabs } from '@/lib/browser-api';
+import { queryTabs } from '@/lib/browser-api/query-tabs';
 
 const WEBSTORE_PREFIXES = ['https://chrome.google.com/webstore', 'https://chromewebstore.google.com'];
 

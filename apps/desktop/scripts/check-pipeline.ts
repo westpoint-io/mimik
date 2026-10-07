@@ -6,15 +6,15 @@ import type { ScreenElement } from '../src/main/capture/element';
 import type { KeyAction } from '../src/main/capture/input-hook';
 import {
   type CaptureRequest,
-  chooseTypedText,
+  typedTextFor,
   clickAction,
   comboLabel,
   DesktopRecorder,
   frameFor,
   isRepeatClick,
   isRepeatKey,
-  isTypingKey,
-  matchesShortcut,
+  isTextKey,
+  isBoundShortcut,
   shouldCapture,
   targetRect,
 } from '../src/main/capture/recorder';
@@ -83,7 +83,7 @@ app.whenReady().then(async () => {
     () => region,
     (fn) => fn(),
     (request) => ask(win.webContents, 'mimik:capture:step', { ...request, guideId: activeGuide }),
-    { grab: syntheticDisplay, settings: () => settings },
+    { grab: async () => syntheticDisplay, settings: () => settings },
   );
 
   activeGuide = await ask<string>(win.webContents, 'mimik:capture:startGuide');
@@ -95,7 +95,7 @@ app.whenReady().then(async () => {
 
   const userSettings = loadSettings();
   const clamped = normaliseSettings({ screenshotDelayMs: 5000, cursorStyle: 'wobble' as never });
-  const stored = saveSettings({ screenshotDelayMs: 750, captureOutsideClicks: true });
+  const stored = saveSettings({ screenshotDelayMs: 750, keepClicksBeyondArea: true });
   const reloaded = loadSettings();
   results.push({
     name: 'settings clamp and persist',
@@ -104,21 +104,38 @@ app.whenReady().then(async () => {
       clamped.cursorStyle === DEFAULT_CAPTURE_SETTINGS.cursorStyle &&
       normaliseSettings({ captureMode: 'sideways' as never }).captureMode === DEFAULT_CAPTURE_SETTINGS.captureMode &&
       reloaded.screenshotDelayMs === 750 &&
-      reloaded.captureOutsideClicks === stored.captureOutsideClicks,
+      reloaded.keepClicksBeyondArea === stored.keepClicksBeyondArea,
     detail: `5000 ms clamped to ${clamped.screenshotDelayMs}, unknown style fell back to ${clamped.cursorStyle}, 750 ms reloaded as ${reloaded.screenshotDelayMs}`,
   });
 
   const knobs = normaliseSettings({
     typingDebounceMs: 50,
-    captureKeys: 'yes' as never,
+    recordKeys: 'yes' as never,
     shortcuts: { startStop: '  ', pauseResume: null, capture: 'Alt+F2' } as never,
   });
+  const legacy = normaliseSettings({
+    captureOutsideClicks: true,
+    captureKeys: false,
+    captureTyping: false,
+    typingSmartDetection: false,
+  });
+  results.push({
+    name: 'settings saved under the old names carry over',
+    ok:
+      legacy.keepClicksBeyondArea &&
+      !legacy.recordKeys &&
+      !legacy.recordTyping &&
+      !legacy.readFieldText &&
+      normaliseSettings({ recordTyping: true, captureTyping: false }).recordTyping,
+    detail: 'each old key maps onto its new name, and the new name wins when both are present',
+  });
+
   results.push({
     name: 'toggles, knobs and shortcuts normalise',
     ok:
       knobs.typingDebounceMs === MIN_TYPING_DEBOUNCE_MS &&
       normaliseSettings({ typingDebounceMs: 90_000 }).typingDebounceMs === MAX_TYPING_DEBOUNCE_MS &&
-      knobs.captureKeys === DEFAULT_CAPTURE_SETTINGS.captureKeys &&
+      knobs.recordKeys === DEFAULT_CAPTURE_SETTINGS.recordKeys &&
       knobs.shortcuts.startStop === null &&
       knobs.shortcuts.pauseResume === null &&
       knobs.shortcuts.capture === 'Alt+F2' &&
@@ -137,13 +154,13 @@ app.whenReady().then(async () => {
   results.push({
     name: 'outside clicks are opt in',
     ok:
-      !shouldCapture({ ...REGION_MODE, captureOutsideClicks: false }, region, outsidePoint) &&
-      shouldCapture({ ...REGION_MODE, captureOutsideClicks: true }, region, outsidePoint) &&
-      shouldCapture({ ...REGION_MODE, captureOutsideClicks: false }, region, {
+      !shouldCapture({ ...REGION_MODE, keepClicksBeyondArea: false }, region, outsidePoint) &&
+      shouldCapture({ ...REGION_MODE, keepClicksBeyondArea: true }, region, outsidePoint) &&
+      shouldCapture({ ...REGION_MODE, keepClicksBeyondArea: false }, region, {
         x: region.x + 10,
         y: region.y + 10,
       }) &&
-      shouldCapture({ ...DEFAULT_CAPTURE_SETTINGS, captureOutsideClicks: false }, region, outsidePoint),
+      shouldCapture({ ...DEFAULT_CAPTURE_SETTINGS, keepClicksBeyondArea: false }, region, outsidePoint),
     detail: 'ignored when off, captured when on, inside always captured, never filtered outside region mode',
   });
 
@@ -180,6 +197,8 @@ app.whenReady().then(async () => {
     ariaLabel: 'Save',
     altText: null,
     password: false,
+    ancestors: [],
+    children: [],
     rect: { x: region.x + 40, y: region.y + 30, width: 120, height: 32 },
   };
   let field: ScreenElement | null = {
@@ -189,6 +208,8 @@ app.whenReady().then(async () => {
     ariaLabel: 'Search',
     altText: null,
     password: false,
+    ancestors: [],
+    children: [],
     rect: { x: region.x + 20, y: region.y + 20, width: 200, height: 24 },
   };
   let seen: CaptureRequest | null = null;
@@ -200,7 +221,7 @@ app.whenReady().then(async () => {
       return Promise.resolve(null);
     },
     {
-      grab: syntheticDisplay,
+      grab: async () => syntheticDisplay,
       settings: () => ({
         ...REGION_MODE,
         showCursor: true,
@@ -227,12 +248,12 @@ app.whenReady().then(async () => {
   });
 
   seen = null;
-  await metaRecorder.captureTyping();
+  await metaRecorder.writeTyping();
   const typed = seen as CaptureRequest | null;
 
   seen = null;
   field = { ...control };
-  await metaRecorder.captureTyping();
+  await metaRecorder.writeTyping();
   const onAButton = seen as CaptureRequest | null;
 
   seen = null;
@@ -243,9 +264,11 @@ app.whenReady().then(async () => {
     ariaLabel: 'Search',
     altText: null,
     password: false,
+    ancestors: [],
+    children: [],
     rect: null,
   };
-  await metaRecorder.captureTyping();
+  await metaRecorder.writeTyping();
   const empty = seen as CaptureRequest | null;
 
   seen = null;
@@ -256,9 +279,11 @@ app.whenReady().then(async () => {
     ariaLabel: 'Password',
     altText: null,
     password: true,
+    ancestors: [],
+    children: [],
     rect: { x: region.x + 20, y: region.y + 60, width: 200, height: 24 },
   };
-  await metaRecorder.captureTyping();
+  await metaRecorder.writeTyping();
   const secret = seen as CaptureRequest | null;
 
   results.push({
@@ -285,7 +310,7 @@ app.whenReady().then(async () => {
   });
 
   const press = (keycode: number, held: Partial<KeyAction> = {}) =>
-    isTypingKey({ kind: 'keydown', keycode, shift: false, alt: false, ctrl: false, meta: false, at: 0, ...held });
+    isTextKey({ kind: 'keydown', keycode, shift: false, alt: false, ctrl: false, meta: false, at: 0, ...held });
   results.push({
     name: 'only typing keys open a session',
     ok:
@@ -327,12 +352,12 @@ app.whenReady().then(async () => {
     name: 'our own hotkey never becomes a step',
     ok:
       ownHotkey === null &&
-      matchesShortcut('Alt+Shift+S', pressed(31, { alt: true, shift: true }), 'S') &&
-      matchesShortcut('shift+ALT+s', pressed(31, { alt: true, shift: true }), 'S') &&
-      !matchesShortcut('Alt+Shift+S', pressed(31, { alt: true }), 'S') &&
-      !matchesShortcut('Alt+Shift+S', pressed(31, { alt: true, shift: true, ctrl: true }), 'S') &&
-      !matchesShortcut('Alt+Shift+S', pressed(31, { alt: true, shift: true }), 'R') &&
-      !matchesShortcut(null, pressed(31, { alt: true, shift: true }), 'S'),
+      isBoundShortcut('Alt+Shift+S', pressed(31, { alt: true, shift: true }), 'S') &&
+      isBoundShortcut('shift+ALT+s', pressed(31, { alt: true, shift: true }), 'S') &&
+      !isBoundShortcut('Alt+Shift+S', pressed(31, { alt: true }), 'S') &&
+      !isBoundShortcut('Alt+Shift+S', pressed(31, { alt: true, shift: true, ctrl: true }), 'S') &&
+      !isBoundShortcut('Alt+Shift+S', pressed(31, { alt: true, shift: true }), 'R') &&
+      !isBoundShortcut(null, pressed(31, { alt: true, shift: true }), 'S'),
     detail: 'the configured accelerator is dropped whatever order it is written in, a near miss is not',
   });
 
@@ -355,24 +380,115 @@ app.whenReady().then(async () => {
     ariaLabel: 'Document',
     altText: null,
     password: false,
+    ancestors: [],
+    children: [],
     rect: { x: region.x + 10, y: region.y + 10, width: 400, height: 300 },
   });
 
   seen = null;
   field = editor('x'.repeat(500));
-  await metaRecorder.captureTyping('hello');
+  await metaRecorder.writeTyping('hello');
   const rich = seen as CaptureRequest | null;
 
   results.push({
     name: 'rich text falls back to the keystrokes',
     ok:
       rich?.inputValue === 'hello' &&
-      chooseTypedText(editor('a short note'), 'a sho', false) === 'a sho' &&
-      chooseTypedText(editor('a short note'), 'a sho') === 'a short note' &&
-      chooseTypedText(editor(null), 'typed') === 'typed' &&
-      chooseTypedText({ ...editor('\uFEFFhi\u200B'), role: 'textbox' }, '') === 'hi' &&
-      chooseTypedText(control, 'typed') === null,
+      typedTextFor(editor('a short note'), 'a sho', false) === 'a sho' &&
+      typedTextFor(editor('a short note'), 'a sho') === 'a short note' &&
+      typedTextFor(editor(null), 'typed') === 'typed' &&
+      typedTextFor({ ...editor('\uFEFFhi\u200B'), role: 'textbox' }, '') === 'hi' &&
+      typedTextFor(control, 'typed') === null,
     detail: 'a document far longer than the buffer yields the buffer, a short one yields the field, markers are stripped, a button yields nothing',
+  });
+
+  const typedThenClicked = async (keysAfterSnapshot: number) => {
+    const sent: CaptureRequest[] = [];
+    let focus: ScreenElement | null = { ...editor('whats is my ip'), role: 'textbox', ariaLabel: 'Address' };
+    const typist = new DesktopRecorder(
+      () => region,
+      (fn) => fn(),
+      (request) => {
+        sent.push(request);
+        return Promise.resolve(null);
+      },
+      {
+        grab: async () => syntheticDisplay,
+        settings: () => REGION_MODE,
+        lookup: () => Promise.resolve(control),
+        focused: () => Promise.resolve(focus),
+        resolve: () => Promise.resolve('x'),
+        reset: () => Promise.resolve(),
+      },
+    );
+    const key = () => typist.onAction(pressed(30));
+    for (let i = 0; i < 3; i++) key();
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    for (let i = 0; i < keysAfterSnapshot; i++) key();
+    focus = { ...control };
+    typist.onAction({ kind: 'click', button: 1, x: region.x + 60, y: region.y + 40, clicks: 1, at: Date.now() });
+    await typist.drain();
+    return sent.find((request) => request.action === 'input');
+  };
+  const settledTyping = await typedThenClicked(0);
+  const hurriedTyping = await typedThenClicked(1);
+  results.push({
+    name: 'typing survives a click that moves the focus',
+    ok:
+      settledTyping?.inputValue === 'whats is my ip' &&
+      settledTyping.elementMeta.ariaLabel === 'Address' &&
+      hurriedTyping?.inputValue === 'xxxx' &&
+      hurriedTyping.elementMeta.ariaLabel === 'Address',
+    detail: `a settled field gave "${settledTyping?.inputValue ?? ''}", a key after the snapshot gave "${hurriedTyping?.inputValue ?? ''}"`,
+  });
+
+  const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  const calls: string[] = [];
+  let release = () => {};
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const busy = new DesktopRecorder(
+    () => region,
+    (fn) => fn(),
+    async () => {
+      await gate;
+      return null;
+    },
+    {
+      grab: async () => {
+        calls.push('grab');
+        return syntheticDisplay;
+      },
+      settings: () => REGION_MODE,
+      lookup: () => {
+        calls.push('lookup');
+        return Promise.resolve(control);
+      },
+      focused: () => {
+        calls.push('focused');
+        return Promise.resolve(field);
+      },
+      resolve: () => Promise.resolve('x'),
+      reset: () => Promise.resolve(),
+    },
+  );
+  const tap = (x: number) =>
+    busy.onAction({ kind: 'click', button: 1, x: region.x + x, y: region.y + 40, clicks: 1, at: Date.now() });
+  tap(60);
+  await wait(600);
+  tap(200);
+  for (let i = 0; i < 3; i++) busy.onAction(pressed(30));
+  busy.onAction(pressed(28));
+  await wait(50);
+  const early = [...calls];
+  release();
+  await busy.drain();
+  const count = (name: string) => early.filter((call) => call === name).length;
+  results.push({
+    name: 'a press is read when it happens, not when the queue gets to it',
+    ok: count('lookup') === 2 && count('grab') === 3 && count('focused') === 1,
+    detail: `with the first step still being written: ${count('lookup')} lookups, ${count('grab')} grabs, ${count('focused')} field reads`,
   });
 
   const page = { x: 0, y: 0, width: 800, height: 600 };

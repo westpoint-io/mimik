@@ -1,5 +1,8 @@
-import { logger } from '@mimik/ui/lib/logger';
-import { focusWindow, getTab, requestHostPermissions, updateTab } from '@/lib/browser-api';
+import { logger } from '@mimik/core/logger';
+import { focusWindow } from '@/lib/browser-api/focus-window';
+import { getTab } from '@/lib/browser-api/get-tab';
+import { requestHostPermissions } from '@/lib/browser-api/request-host-permissions';
+import { updateTab } from '@/lib/browser-api/update-tab';
 import { sendMessage } from '@/lib/messaging';
 import { isRecordableUrl } from './recordable-tabs';
 

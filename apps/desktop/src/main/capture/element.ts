@@ -1,4 +1,4 @@
-import type { UiElement } from '@mimik/capture-native';
+import type { ElementNode, UiElement } from '@mimik/capture-native';
 import { screen } from 'electron';
 import { toDip } from './focused-window';
 
@@ -12,6 +12,8 @@ export interface ScreenElement {
   altText: string | null;
   password: boolean;
   rect: { x: number; y: number; width: number; height: number } | null;
+  ancestors: { role: string | null; name: string | null }[];
+  children: { role: string | null; name: string | null }[];
 }
 
 const TEXT_ROLES = new Set(['textbox', 'combobox', 'document']);
@@ -21,7 +23,7 @@ type Addon = {
   focusedElement(): Promise<UiElement | null>;
   keyLabel(keycode: number): string | null;
   resolveKey(keycode: number, shift: boolean, ctrl: boolean, alt: boolean): string | null;
-  resetDeadKeyState(): void;
+  clearDeadKey(): void;
   isSupported(): boolean;
 };
 
@@ -59,6 +61,8 @@ function toPhysical(point: { x: number; y: number }): { x: number; y: number } {
   }
 }
 
+const node = (found: ElementNode) => ({ role: found.role ?? null, name: found.name ?? null });
+
 function describe(found: UiElement): ScreenElement {
   return {
     role: found.role ?? null,
@@ -68,6 +72,8 @@ function describe(found: UiElement): ScreenElement {
     altText: found.helpText ?? null,
     password: found.isPassword,
     rect: toDip(found.rect ?? null),
+    ancestors: (found.ancestors ?? []).map(node),
+    children: (found.children ?? []).map(node),
   };
 }
 
@@ -101,9 +107,9 @@ export async function resolveKey(keycode: number, shift: boolean, ctrl: boolean,
   return native?.resolveKey(keycode, shift, ctrl, alt) ?? null;
 }
 
-export async function resetDeadKeyState(): Promise<void> {
+export async function clearDeadKey(): Promise<void> {
   const native = await load();
-  native?.resetDeadKeyState();
+  native?.clearDeadKey();
 }
 
 export async function elementLookupAvailable(): Promise<boolean> {

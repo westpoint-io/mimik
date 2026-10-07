@@ -1,6 +1,6 @@
 import '@/lib/core-env';
 import '@/lib/ui-env';
-import { logger } from '@mimik/ui/lib/logger';
+import { logger } from '@mimik/core/logger';
 import { browser, defineBackground } from '#imports';
 import { rewriteSelection } from '@/core/capture/ai/rewrite';
 import { validateApiKey } from '@/core/capture/ai/validate';
@@ -15,17 +15,16 @@ import {
   mergeGuideInto,
 } from '@/core/guides/service';
 import type { Step } from '@/core/guides/types';
-import {
-  getActiveTab,
-  localStorage,
-  sendMessageToTab,
-  setSidePanelBehavior,
-  toggleSidebar,
-  updateTab,
-} from '@/lib/browser-api';
+import { getActiveTab } from '@/lib/browser-api/get-active-tab';
+import { localStorage } from '@/lib/browser-api/local-storage';
+import { sendMessageToTab } from '@/lib/browser-api/send-message-to-tab';
+import { setSidePanelBehavior } from '@/lib/browser-api/set-side-panel-behavior';
+import { toggleSidebar } from '@/lib/browser-api/toggle-sidebar';
+import { updateTab } from '@/lib/browser-api/update-tab';
 import { onMessage } from '@/lib/messaging';
-import { broadcastStateToPanel, setupPortListener } from '@/lib/port';
-import { recordUpdate } from '@/lib/update-notice';
+import { broadcastStateToPanel } from '@/lib/port/broadcast-state-to-panel';
+import { setupPortListener } from '@/lib/port/setup-port-listener';
+import { recordUpdate } from '@/lib/update-notice/record-update';
 import { getActor, getStateUpdate, initActor, initActorFallback, waitUntilReady } from './actor';
 import { generateDescriptionOnDemand, generateGuideMetaOnStop, settlePendingDescriptions } from './guide-meta';
 import { registerNavigationListeners } from './navigation';

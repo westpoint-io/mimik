@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { handedOffPcm, isVoiceStatus, voiceStopAction } from '../voice-recovery';
+import { handedOffPcm } from '../voice/handed-off-pcm';
+import { isVoiceStatus } from '../voice/is-voice-status';
+import { voiceStopAction } from '../voice/voice-stop-action';
 
 describe('isVoiceStatus', () => {
   it('accepts a status response from a live microphone host', () => {

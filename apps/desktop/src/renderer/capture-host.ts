@@ -2,12 +2,13 @@ import type { CaptureStepData } from '@mimik/core/capture/sink';
 import { i18n } from '@mimik/core/env';
 import {
   allScreenshotIds,
+  deleteStep,
   getStepsForGuide,
   permanentlyDeleteGuide,
   updateGuideDescription,
   updateGuideTitle,
 } from '@mimik/core/guides/service';
-import { nameGuide } from './ai';
+import { nameGuide } from './ai/name-guide';
 import { DesktopCaptureSink } from './capture-sink';
 
 const sink = new DesktopCaptureSink();
@@ -16,6 +17,12 @@ allScreenshotIds().then((ids) => window.mimik.screenshots.sweep(ids));
 
 window.mimik.onRequest('mimik:capture:startGuide', () => sink.startGuide());
 window.mimik.onRequest('mimik:capture:step', (payload) => sink.captureStep(payload as CaptureStepData));
+
+window.mimik.onRequest('mimik:capture:removeStep', async (payload) => {
+  const { guideId, stepId } = payload as { guideId: string; stepId: string };
+  await deleteStep(guideId, stepId);
+  return true;
+});
 
 window.mimik.onRequest('mimik:capture:finishGuide', async (payload) => {
   const guideId = payload as string;

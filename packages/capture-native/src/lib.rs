@@ -4,6 +4,8 @@ use napi::bindgen_prelude::AsyncTask;
 use napi::{Env, Result, Task};
 use napi_derive::napi;
 
+#[cfg(any(windows, test))]
+mod hit;
 #[cfg(windows)]
 mod win;
 
@@ -16,6 +18,12 @@ pub struct ElementRect {
 }
 
 #[napi(object)]
+pub struct ElementNode {
+  pub role: Option<String>,
+  pub name: Option<String>,
+}
+
+#[napi(object)]
 pub struct UiElement {
   pub role: Option<String>,
   pub name: Option<String>,
@@ -24,6 +32,8 @@ pub struct UiElement {
   pub help_text: Option<String>,
   pub is_password: bool,
   pub rect: Option<ElementRect>,
+  pub ancestors: Vec<ElementNode>,
+  pub children: Vec<ElementNode>,
 }
 
 pub struct ElementLookup {
@@ -85,9 +95,9 @@ pub fn resolve_key(keycode: u32, shift: bool, ctrl: bool, alt: bool) -> Option<S
 }
 
 #[napi]
-pub fn reset_dead_key_state() {
+pub fn clear_dead_key() {
   #[cfg(windows)]
-  win::reset_dead_key_state();
+  win::clear_dead_key();
 }
 
 #[napi]

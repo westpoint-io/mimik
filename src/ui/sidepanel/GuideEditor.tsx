@@ -1,9 +1,5 @@
-import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
-import { getMostCommonDomain } from '@mimik/ui/lib/utils';
-import BlockCard from '@mimik/ui/shared/BlockCard';
-import EmptyGuideState from '@mimik/ui/shared/EmptyGuideState';
-import FaviconImg from '@mimik/ui/shared/FaviconImg';
-import StepCard from '@mimik/ui/sidepanel/StepCard';
+import { getMostCommonDomain } from '@mimik/core/guides/domain';
+import { BlockCard, EmptyGuideState, FaviconImg, StepCard, Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui';
 import { ArrowLeft, Maximize2, Play } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { i18n } from '#imports';
@@ -12,7 +8,11 @@ import { actionSteps, isBlock, stepNumbers } from '@/core/guides/blocks';
 import { getGuide, onGuidesChanged } from '@/core/guides/service';
 import type { Guide, Screenshot, Step } from '@/core/guides/types';
 import { dominantRatio } from '@/core/screenshot/geometry';
-import { createTab, focusWindow, getExtensionURL, queryTabs, updateTab } from '@/lib/browser-api';
+import { createTab } from '@/lib/browser-api/create-tab';
+import { focusWindow } from '@/lib/browser-api/focus-window';
+import { getExtensionURL } from '@/lib/browser-api/get-extension-url';
+import { queryTabs } from '@/lib/browser-api/query-tabs';
+import { updateTab } from '@/lib/browser-api/update-tab';
 import { sendMessage } from '@/lib/messaging';
 
 interface GuideEditorProps {
@@ -32,7 +32,7 @@ interface GuideData {
   screenshots: Map<string, Screenshot>;
 }
 
-export default function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorProps) {
+export function GuideEditor({ guideId, onBack, onGuideMe }: GuideEditorProps) {
   const [data, setData] = useState<GuideData | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);

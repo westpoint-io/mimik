@@ -10,7 +10,7 @@ You click "Record," perform a workflow in your browser, and Mimik automatically 
 
 ## Architecture
 
-**Everything runs in the Chrome extension. No backend.**
+**Everything runs on the user's machine — in the Chrome extension or the desktop app. No backend.**
 
 - Storage: IndexedDB via Dexie.js (browser-local)
 - AI descriptions: optional, user provides their own API key in settings
@@ -20,71 +20,23 @@ You click "Record," perform a workflow in your browser, and Mimik automatically 
 ### Directory Structure
 
 ```
-src/
-├── core/                    # Business logic (no UI dependencies)
-│   ├── capture/             # Recording pipeline
-│   │   ├── ai/              # AI description + title generation (Vercel AI SDK)
-│   │   │   ├── description.ts   # getAIDescription (DOM context → AI → step text)
-│   │   │   ├── title.ts         # generateGuideTitle (steps → AI → guide name)
-│   │   │   ├── models.ts        # AI_PROVIDERS config (OpenAI/Anthropic model lists)
-│   │   │   ├── prompts.ts       # Prompt templates
-│   │   │   └── provider.ts      # createModel factory (OpenAI/Anthropic)
-│   │   ├── dom/              # DOM extraction utilities
-│   │   │   ├── context.ts       # DOMContext extraction + serialization
-│   │   │   ├── element-meta.ts  # extractElementMeta (selector, text, aria, rect)
-│   │   │   └── element-utils.ts # findFocusableAncestor, isTextField, etc.
-│   │   ├── events/           # Event capture system
-│   │   │   ├── handlers.ts      # CaptureController class + startCapture
-│   │   │   └── input-session.ts # InputSession (typing lifecycle)
-│   │   ├── machine.ts        # xstate capture state machine
-│   │   ├── session.ts        # CaptureSession (lifecycle manager)
-│   │   ├── spa-nav.ts        # SPA navigation tracking
-│   │   ├── start-notification.ts # Recording notification overlay
-│   │   └── step-description.ts   # Fallback rule-based descriptions
-│   ├── blur/                # Smart blur: regex presets, DOM scanner, element picker, panel UI
-│   ├── export/              # HTML, PDF, DOCX, Markdown, video generators + shared utils
-│   └── guides/              # Data layer: types, Dexie DB, CRUD service
-├── entrypoints/             # Chrome extension entry points (WXT)
-│   ├── background/          # Service worker: state machine, message handlers, tab management
-│   ├── content.ts           # Content script: CaptureSession, event listeners
-│   ├── sidepanel/           # Side panel React mount
-│   ├── fullview/            # Full-page view React mount
-│   ├── onboarding/          # Onboarding wizard (opens on first install)
-│   └── options/             # Settings page React mount
-├── lib/                     # Shared utilities
-│   ├── messaging.ts         # Extension messaging protocol (webext-core)
-│   ├── port.ts              # Long-lived port: background ↔ sidepanel
-│   ├── browser-api.ts       # Chrome API wrappers
-│   ├── tab-messages.ts      # Content script message types
-│   ├── logger.ts            # Logging utility
-│   └── utils.ts             # Shared helpers (dates, URLs, cn)
-├── stores/                  # Zustand state stores
-│   └── fullview.ts          # Fullview UI state (search, counts, guide data)
-└── ui/                      # React components
-    ├── components/ui/       # shadcn/ui primitives (button, input, dialog, badge)
-    ├── fullview/            # Full-page dashboard
-    │   ├── components/      # Extracted sub-components (grid, list, search, etc.)
-    │   ├── App.tsx
-    │   ├── TopNav.tsx
-    │   ├── SearchModal.tsx
-    │   ├── GuideContent.tsx
-    │   ├── LibraryContent.tsx
-    │   └── router.ts
-    ├── sidepanel/           # Side panel UI
-    │   ├── App.tsx
-    │   ├── LibraryView.tsx
-    │   ├── GuideEditor.tsx
-    │   ├── RecordingView.tsx
-    │   ├── StepCard.tsx
-    │   ├── ExportMenu.tsx
-    │   ├── BlurCanvas.tsx
-    │   └── ZoomScreenshot.tsx
-    ├── onboarding/          # Onboarding wizard UI
-    │   └── App.tsx          # 5-step wizard (welcome, AI, blur, pin, done)
-    ├── shared/              # Shared UI components
-    │   └── SettingsView.tsx  # AI settings (provider, model, API key)
-    └── options/             # Settings page
-        └── App.tsx
+src/                     the Chrome extension (WXT)
+├── entrypoints/         background, content, sidepanel, fullview, onboarding, options, offscreen, mic-permission
+├── capture/             capture session, DOM event handlers and the capture sink, in the content script
+├── blur/                smart blur picker and manager in the page
+├── guideme/             Guide Me in the page
+├── lib/                 extension plumbing: browser-api/, port/, offscreen/, voice/, update-notice/, messaging
+├── ui/                  extension screens: sidepanel/, fullview/, onboarding/, options/, mic-permission/, shared/
+└── locales/
+packages/
+├── core/src/            logic both surfaces share: capture, guides, export, screenshot, blur, guideme, i18n, env
+├── ui/src/              React both surfaces share, grouped by feature
+└── capture-native/      the Windows UIAutomation addon, in Rust
+apps/desktop/src/
+├── main/                Electron main: window, tray, capture pipeline, overlay windows, shortcuts
+├── preload/             the contextBridge API
+└── renderer/            the app window, the overlay renderer, settings/, ai/ and the checks
+scripts/                 repository checks that pnpm lint runs
 ```
 
 ## State Management
@@ -200,7 +152,9 @@ The mapping is chosen so the shared precedence in `buildFallbackDescription` —
 branching on `source`. That is why the accessible name lands in `ariaLabel` rather than `name`:
 `name` sits near the bottom of that list, and a control's accessible name should beat its value.
 `name` therefore holds the stable machine identifier instead, which is what a future desktop replay
-will want. UIAutomation has no placeholder property in the API surface we bind, so that field stays
+will want. A description never quotes one that reads as an identifier — no spaces, and a digit, a
+separator or a camel-case join, like `fl-post-111` or `SaveButton` — because that is an id attribute,
+not something a reader can find on screen. UIAutomation has no placeholder property in the API surface we bind, so that field stays
 null there.
 
 A fourth source, `screen`, knows only where the click landed: it fills `rect` with a fixed box around
@@ -208,7 +162,9 @@ the click point, `clickPoint`, `devicePixelRatio`, `app` and `window`, and leave
 null.
 
 `tag`, `cssSelector`, `href` and `dataTestId` are DOM-only and absent elsewhere. `app` and `window`
-are the reverse — desktop only. `inputType` is mostly DOM-only, but a desktop typing step sets it to
+are the reverse — desktop only — and so are `ancestors` and `children`, the role and name of up to
+four elements above the target and twelve directly inside it, filled only when the target has no
+name of its own. `inputType` is mostly DOM-only, but a desktop typing step sets it to
 `password` when the field says so, because that is the one input type a screen capture can learn.
 
 Guide Me is the one place a `source` check is correct, through `isReplayable`. It replays against a
@@ -300,7 +256,20 @@ Windows only. `is_supported()` answers false everywhere else and `elementAtPoint
 so the app, the checks and the recording pipeline all behave the same as when the binary is simply
 missing. macOS is the same shape of work against `AXUIElementCopyAttributeValue` and is not done.
 
-The implementation is `IUIAutomation::ElementFromPoint` and six property reads. COM is initialised
+The implementation is `IUIAutomation::ElementFromPoint` and six property reads, plus a walk of the
+control view when the element has no name. Named elements skip the walk, because every step of it is
+another cross-process call into the application being recorded.
+
+The hit test alone is not the answer. It returns whatever the application's provider says is at the
+point, and some providers answer with a layer rather than a control: the Windows 11 search panel
+reports a pane called "CoreInput" covering every result, so each click on a result was named after
+it. Whenever the hit has children, its whole subtree is fetched with `FindAllBuildCache`, the
+rectangles cached so the lookup is one cross-process call rather than one per element, and the
+smallest element whose rectangle holds the point is used instead. A tie keeps the outer element,
+since `FindAll` lists a parent before its children and the parent is the control. A text field is
+left alone, because narrowing it would land on the text run inside and turn "Enter" into "Click".
+`smallest_under` in `hit.rs` is that rule with no COM in it, which is why it is the one part of the
+addon with tests that run on Linux. COM is initialised
 multi-threaded once per worker thread and the `IUIAutomation` instance is cached in a thread local,
 because the call runs on the libuv threadpool through `AsyncTask` rather than on the main thread —
 a cross-process UIAutomation call against a busy application blocks for as long as that application
@@ -315,7 +284,7 @@ the way in and the rectangle with `screenToDipRect` on the way out, the same con
 name.
 
 `focusedElement()` is the second call. The remaining three — `keyLabel`, `resolveKey` and
-`resetDeadKeyState` — are the keyboard, and unlike the first two they are synchronous, because
+`clearDeadKey` — are the keyboard, and unlike the first two they are synchronous, because
 resolving a scancode against a keyboard layout is a local call with nothing to wait on. It reports `isPassword` alongside the usual fields, and the value is discarded at the
 addon boundary when that flag is set, so a password never reaches our data even though UIAutomation
 already withholds it.
@@ -339,7 +308,7 @@ had grown a private copy of it, identical line for line.
 
 ## Boundaries The Linter Holds
 
-`biome.json` covers `src`, `packages/core`, `packages/ui` and `apps/desktop`. `packages/ui` was
+`biome.json` covers `src`, `packages/core`, `packages/ui`, `apps/desktop` and `scripts`. `packages/ui` was
 missing from that list for a long time and nobody noticed, which is how forty-odd files reached it
 unchecked; adding it produced forty-one fixes on the first run.
 
@@ -355,6 +324,61 @@ imports from `@mimik/core`. The renderer aliases the package to its source and b
 runtime to a path with no file and the app dies on launch with `ERR_MODULE_NOT_FOUND`. That is why
 `capture/screenshot.ts` keeps its own three-line `clamp` rather than importing core's: deduplicating
 a one-liner is not worth a cross-boundary dependency that does not work.
+
+## Code Layout
+
+`packages/ui/src` is grouped by feature, not by the surface that first used a file: `ai`,
+`annotation`, `common`, `export`, `guide`, `history`, `library`, `navigation` and `search`. Inside a
+feature, components sit in `components/`, hooks in `hooks/`, plain functions in `lib/`, a store
+slice in `store/`, and a `types.ts` only when several files share a type. `components/ui` holds the
+shadcn primitives as the generator writes them, and `stores/` merges the slices.
+
+The apps take the same shape one surface at a time. Each of `src/ui/sidepanel`, `fullview`,
+`onboarding`, `mic-permission`, `shared` and `apps/desktop/src/renderer` keeps its components side by
+side, its functions in `lib/` and its hooks in `hooks/`. `src/lib` is already a lib folder, so a
+module there that held several functions became a folder named after it — `browser-api/`, `port/`,
+`offscreen/`, `update-notice/` — and the voice pieces share `voice/`. An entry script such as
+`overlay.ts` or `check-storage.ts` keeps only its dispatch and imports the rest from a folder of the
+same name.
+
+A file exports one thing — a component, a hook or a function — and is named after it. A hook or a
+`lib/` function may keep one private helper that nothing else calls; a component file keeps none, so
+its helpers live in `lib/`. Constants, types and objects of functions may sit beside the export they
+serve. That rule holds in all four roots: `packages/ui/src`, `src/ui`, `src/lib` and
+`apps/desktop/src/renderer`.
+
+Exports are named. A default export can be imported under any name, so one component can read
+differently at every import site; a named one is found by the same search everywhere. WXT
+entrypoints and the config files keep their defaults because the framework reads them, and the one
+`React.lazy` maps a named export onto the `default` it needs.
+
+The apps import from `'@mimik/ui'` and nowhere deeper, except `@mimik/ui/env` and
+`@mimik/ui/global.css`. `src/index.ts` is the one file allowed to re-export. Inside the package every
+import is relative — it never names itself, through the entry or otherwise, so it cannot cycle
+through its own index. The extension build was diffed against the baseline from before the entry
+existed: the content script came out byte-identical, and the whole build within a few hundred bytes.
+
+State that several functions share lives in a `{ current }` holder — `localVoiceHost`, the offscreen
+document's `creating` promise, `lastVoice` in `port/state.ts` — because an imported `let` is
+read-only in the module that imports it, so a getter and setter pair could not be split without one.
+The UI package's env adapter is the same idea for functions: `tabs`, `panel` and `messages` are
+objects of accessors over the one configured adapter, which leaves `configureUi` its only export.
+
+The linter holds it. `noRestrictedImports` rejects a deep `@mimik/ui/*` import from the apps and any
+`@mimik/ui` import from inside `packages/`. `noBarrelFile`, `useComponentExportOnlyModules` and
+`noDefaultExport` cover the four roots, with the shadcn primitives excused from the second since they
+export their `*Variants` beside the component. `scripts/check-exports.mjs` runs after Biome in
+`pnpm lint` and catches what no Biome rule can: a second exported function, a helper declared in a
+component file, a second private helper anywhere else, and any re-export outside the package entry.
+
+Three things break quietly when files move here. The root `tsconfig.json` declares its own `paths`,
+which replace the ones in `.wxt/tsconfig.json` rather than extending them, so the bare `@mimik/ui`
+entry has to be listed in the root config and in `apps/desktop/tsconfig.json` alike. A `vi.mock`
+path is a string the refactoring tools do not rewrite; a stale one mocks nothing without failing,
+and once a module is split each mock has to name the file its function now lives in —
+`vi.mock('@/lib/browser-api/local-storage')`, not the folder. And `sideEffects` in the package's
+`package.json` names `common/lib/dayjs-locale.ts`, because that file registers the dayjs locales by
+importing them; renaming it without updating the entry lets a bundler drop the translations.
 
 ## Which Client Is Running
 
@@ -425,6 +449,21 @@ a wrong capture mode is discovered after twenty steps rather than after one. Mai
 screenshot's URL when it tells the overlay a step was captured, so the card reads it over the same
 `mimik-screenshot://` scheme the app window uses and no image data crosses IPC.
 
+Under the title the card says where the words came from, with the same Basic and AI badges the guide
+uses, and while a description is still being written it shows that instead of a title that is about
+to change. The heuristic text is known the moment the step is written; the AI rewrite arrives later
+in the renderer, which sends `mimik:capture:described` so main can update the step it is holding and
+the badge flips without a reload. A capture in flight lays the camera mascot over the last
+screenshot with the number of the step being taken, which is the card's loader. A Remove button on the
+preview drops the step just taken: main keeps the recording's steps in order, asks the renderer to
+delete the last one and puts the card back on the one before, so a wrong capture is undone where it
+was noticed. The Ready and waiting states name the start/stop and capture-now shortcuts, read from the
+settings, because the card is the one place someone looks while deciding how to begin.
+
+Everything the card draws arrives as one `OverlayView` — state, region, step, mode, busy, starting
+and the shortcut labels — through `view()` and `onUpdate`, rather than five positional arguments that
+every new field would have lengthened.
+
 All three roles are one HTML file and one stylesheet, told apart only by `body.editor`,
 `body.boundary` and `body.controls`, so an id is shared across three documents. The card's rules are
 scoped under `body.controls` for that reason: an unscoped `#hint` already existed for the region
@@ -454,8 +493,11 @@ screenshots it was displaying.
 `overlay.withHidden(fn)` is the fallback for Linux, where content protection is a no-op. It hides
 every visible overlay for the duration of `fn` and restores exactly the ones it hid, reapplying
 protection on the way back. Hiding a window is visible as a blink once per captured step, so it is
-used only where nothing else works. `setOpacity(0)` is not an alternative: it stopped captures
-happening at all.
+used only where nothing else works. It waits 60 ms after hiding before running `fn`, since a grab
+taken straight after `hide()` can beat the compositor and still contain the card. Grabs can overlap —
+a click that closes a typing session starts two — so overlapping calls share one hide and the
+windows come back when the last of them finishes. `setOpacity(0)` is
+not an alternative: it stopped captures happening at all.
 
 Anything the card hides is hidden with the `hidden` property, and `body.controls [hidden]` forces
 `display: none` because several of those elements are flex containers whose author rule outranks the
@@ -469,9 +511,11 @@ it; `lucide` has no dependencies and hands back an `SVGElement`. Copying path da
 package is not the alternative — that silently pins the overlay to whatever the icons looked like on
 the day it was written.
 
-The mascot's geometry lives once, in `packages/ui/src/shared/mascot-shapes.ts`. `MascotIcon` renders it
+The mascot's geometry lives once, in `packages/ui/src/common/lib/mascot-shapes.ts`. `MascotIcon` renders it
 as React with Tailwind classes so it themes with tokens; the overlay builds the same paths as DOM nodes
-with CSS variables, because that renderer has neither React nor Tailwind. Two renderers, one set of
+with CSS variables, because that renderer has neither React nor Tailwind. The camera-holding variant
+is the same mascot dropped by `CAMERA_MASCOT_DROP` with `CAMERA_MASCOT_PARTS` over it, rendered by
+`CameraMascot` in the extension's recording view and by `cameraMascot` on the card. Two renderers, one set of
 coordinates — copying the paths into the overlay would have made it the fifth copy of this drawing in
 the repository.
 
@@ -491,7 +535,11 @@ screenshot and the row that points at it.
 `pnpm --filter @mimik/desktop check:overlay` asserts persistence, clamping, one editor per display,
 controls clearing the region, whole-screen mode dropping the boundary, clicks on the bar being
 ignored, and the state changes — driving Start and Pause through a real renderer
-click so the preload and IPC path is covered rather than the main-process methods alone. On Linux it
+click so the preload and IPC path is covered rather than the main-process methods alone. Start is
+asserted twice: the intro window opens over the capture area with the card saying "Starting…" and no
+start reaching the host, and then, once the real animation has finished, the recording begins. The
+card's states are asserted from the rendered DOM — the waiting prompt, the badge moving from Basic to
+AI, the writing state, the capture veil and the Remove command. On Linux it
 runs under `xvfb-run` when available (`xorg-server-xvfb`), so the check does not throw always-on-top
 windows over whatever you are doing.
 
@@ -508,8 +556,8 @@ they came from.
 The work splits across the process boundary the way the extension splits across content script and
 service worker. `DesktopRecorder` in main owns the global input hook, discards clicks outside the
 capture region or while paused, and serialises the rest through a single promise chain so two clicks
-cannot interleave. For each click it hides the overlays, grabs the display, crops to the region with
-`nativeImage.crop`, and writes the result to disk. `DesktopCaptureSink` in the renderer
+cannot interleave. For each click it hides the overlays, grabs the display, crops to what the capture
+mode frames, and writes the result to disk. `DesktopCaptureSink` in the renderer
 implements `CaptureSink` and writes through `@mimik/core/guides/service`, exactly as the extension's
 `step-pipeline.ts` does.
 
@@ -545,11 +593,23 @@ Files outlive the rows that point at them, because deleting a guide only removes
 renderer sends every known screenshot id to main at startup and main deletes any file not in that
 set, so an interrupted delete costs disk until the next launch rather than forever.
 
-Which window is focused is read **after** the settle delay, not when the click arrives. The input hook
-fires on the press, and the operating system has not necessarily moved the foreground window yet, so
-asking first frames whatever was in front a moment ago — the recording card included, if that was the
-last thing touched. Reading it beside the grab is the only ordering that describes the screen being
-photographed.
+A click is the press, not the release. The hook listens for `mousedown`, and the element lookup and
+the display grab both start in that handler rather than when the capture queue reaches the step.
+By the release the application has already acted — the new tab exists and its close button is under
+the pointer, the popup the pointer was on has closed, the skipped ad has become the next button —
+and every one of those read back as a confidently wrong step name. Starting them in the queue was
+the same mistake with a longer delay, because a click that lands while the previous step is still
+being written waits for it. A press that turns into a drag is therefore a click as well.
+
+The display is grabbed first and cropped last. `grabDisplay` takes the whole display under the click
+and hands back a function that crops it, and the frame is chosen only afterwards, so neither a
+window lookup nor a delay sits between the press and the picture.
+
+Which window is focused is read **after** the grab and at least the settle delay after the click,
+never when the click arrives, because the operating system has not necessarily moved the foreground
+window yet — asking first frames whatever was in front a moment ago, the recording card included if
+that was the last thing touched. The settle delay runs beside the grab rather than before it, so it
+costs the screenshot nothing.
 
 The card itself is not focusable, so clicking Pause or Finish never makes the app frontmost and never
 changes what active-window mode will frame next. The region editors stay focusable because they read
@@ -572,8 +632,8 @@ and the foreground app and window title; it just knows nothing about the control
 step degrades to where the addon has no build, where the lookup times out, and on every platform but
 Windows.
 
-The lookup starts the moment the click arrives and is awaited after the grab, so it overlaps the
-settle delay and the screenshot instead of adding to them. That it runs early is not only for speed:
+The lookup starts on the press and is awaited after the grab, so it overlaps the settle delay and
+the screenshot instead of adding to them. That it runs early is not only for speed:
 the control has to be read before the click takes effect, or a menu that has opened or a button that
 has vanished is what answers. It is the mirror of the focused-window read, which has to happen late
 for the same reason — the window the click moved to the front is the one being photographed, but the
@@ -646,7 +706,7 @@ returns its top-level window and the target outlines the entire screenshot.
 
 Typing is one step, and the text in it is read rather than reconstructed. The keyboard hook decides
 only *when* a typing session starts and ends; what was typed comes from the focused element's value
-in the accessibility tree at the moment the session closes. That is the whole reason there is no
+in the accessibility tree. That is the whole reason there is no
 keycode table, no layout handling, no dead-key state and no IME composition tracking in this
 codebase — the machinery those need exists to answer a question we do not ask.
 
@@ -655,12 +715,26 @@ A session opens on any key that is not a modifier, not `Enter`, `Tab` or `Escape
 with no keys. `Shift` plus a letter still counts as typing, which is why modifiers are tested
 individually rather than as a set.
 
+When the value is read depends on what closed the session. The idle timeout and `Enter`, `Tab` or
+`Escape` read it then, because the field still has focus and the last keys are only in the live
+value. A click, pause, stop or capture-now reads a snapshot instead: 400 ms after each key the
+focused element is read again, because by the time a click closes the session the focus has moved
+to whatever was clicked — a search suggestion, say — and a read then finds no text field and drops
+the step. A key typed after the snapshot makes its value stale, so the snapshot still says which
+field it was but the text comes from the keystroke buffer. No snapshot at all, a click within
+400 ms of the first key, falls back to reading at the close.
+
+Whichever read it is starts when the session closes, and so does the typing step's grab, which
+follows the field read so it frames the right display. Neither waits for the queue. `Enter` in a
+browser's address bar is why: by the time a queued read ran, the page had navigated, focus had
+moved to the document, and the step named the new tab page and photographed its wallpaper.
+
 Closing a session does not guarantee a step. The focused element is read first, and nothing is
 written unless it is a text field with something to show for it. A password field is the exception
 in the other direction: it reports no value by design, and the step is written anyway with no
 `inputValue`, worded "Type password" rather than naming any contents.
 
-Keys that are not typing get their own step, unless `captureKeys` is off. A shortcut always does; `Enter`, `Tab` and `Escape` do
+Keys that are not typing get their own step, unless `recordKeys` is off. A shortcut always does; `Enter`, `Tab` and `Escape` do
 only when no typing session was open, because the `Enter` that submits a field is part of that
 field's step rather than a step of its own. Auto-repeat is collapsed the way a double click is —
 `isRepeatKey` drops the same keycode within 500 ms, so holding a key down is one step.
@@ -672,14 +746,16 @@ as `Q` on QWERTY and `A` on AZERTY, which is what the application being recorded
 dead-key state as a side effect, and a shortcut only needs the letter, digit or named key. A key that
 maps to none of those yields no label and therefore no step, rather than a step nobody can follow.
 
-Two sources compete for the text and `chooseTypedText` picks between them. The field's value wins
+Two sources compete for the text and `typedTextFor` picks between them. The field's value wins
 by default, because it is what is actually on screen and it survives caret movement, selection and
-autocomplete; turning `typingSmartDetection` off skips that read entirely and always uses the
-buffer. The keystroke buffer wins in three cases: the focused element reports no value, the
-value is empty, or the value runs more than twice the buffer and past 80 characters. That last rule
-is what makes rich text work — in a word processor the "field" is the whole document, so its value
-is the entire text rather than the sentence just typed, and the buffer is the only thing that knows
-which part is new. A non-text role yields nothing at all, so a keypress in a file manager is not a
+autocomplete; turning `readFieldText` off skips that read entirely and always uses the buffer. The
+keystroke buffer wins in three cases: the focused element reports no value, the value is empty, or
+the field holds more than was typed by a margin that depends on its type — 24 characters for a
+document, 120 for anything else. That last rule is what makes rich text work — in a word processor
+the "field" is the whole document, so its value is the entire text rather than the sentence just
+typed, and the buffer is the only thing that knows which part is new. A document gets the small
+margin because holding text beyond this session is what a document normally does, while a single
+field holding far more than was typed is the exception. A non-text role yields nothing at all, so a keypress in a file manager is not a
 step.
 
 Building that buffer is the only place a keystroke becomes a character. `resolveKey` runs
@@ -687,7 +763,7 @@ Building that buffer is the only place a keystroke becomes a character. `resolve
 caps-lock state, and appends what comes back; `Backspace` removes one. Dead keys fall out of this
 for free: `ToUnicodeEx` returns nothing for the accent itself and the composed character for the key
 after it, because it keeps that state per thread and every keystroke goes through the same one. The
-cost is that the state is real and can be left armed, so `resetDeadKeyState` flushes it whenever a
+cost is that the state is real and can be left armed, so `clearDeadKey` flushes it whenever a
 session ends.
 
 Values are stripped of `\uFFF9`–`\uFFFD`, `\uFEFF` and `\u200B` before use. Accessibility
@@ -741,19 +817,35 @@ by rule when there is not. `getAIDescription` takes a serialised context string 
 shape of thing from the application, the window title, the control's role and name, and the value,
 which is what UIAutomation knows. No screenshot is ever sent.
 
-A step is written with its heuristic description immediately and `aiPending` set, then rewritten
-when the model answers. The flag is cleared **whichever way that goes** — a miss, a failure and a
-missing key all clear it — because a pending flag that only clears on success is the same trap as a
-title placeholder that only resolves with AI: without a key it stays there forever.
+A step is written with its heuristic description immediately and, when a provider key is saved,
+with `aiPending` set; then it is rewritten when the model answers. Saving a key is what enabling AI
+means here, so without one the flag is never set and nothing on the card claims a description is
+coming. With one, the flag is cleared **whichever way the request goes** — a miss and a failure both
+clear it — because a pending flag that only clears on success is the same trap as a title
+placeholder that only resolves with AI.
 
 Stopping a recording names the guide twice. The application name lands first so the view never opens
 on a placeholder, and `generateGuideMeta` replaces it if a key is configured. Ordering it that way
 means the guide is always named, and the AI title is an improvement rather than a prerequisite.
 
-Step descriptions are only as good as the element lookup. With one, `buildFallbackDescription` gets
-a role and an accessible name and writes the same wording it writes for the extension. Without one
-it has nothing but the action, and every step in the guide reads the same — which is what a
-`screen`-sourced recording looks like.
+Step descriptions are only as good as the element lookup. `buildFallbackDescription` picks the verb
+from the role — a text field is entered, a combo box, radio button or menu item is selected, anything
+else is clicked — and quotes the name it finds. A desktop typing step quotes what was typed instead,
+`Type "…"`, collapsed to one line and cut at 200 characters, because the text is the instruction
+and the field is usually obvious from the screenshot; the extension still names the field. The name
+is the accessible name first; a text field
+then falls back to its placeholder and help text but never its value, which is what was typed into
+it, and the machine identifier is used only when it does not read as one. An element with no name of its own borrows one: a group or pane from the first named control
+inside it, anything else from its nearest named ancestor, stopping at the window, because naming
+the window as the click target would be wrong. Chrome's internal window class names and bare numbers
+on panes are discarded, since the accessibility tree reports both as names, and invisible format
+characters are stripped from every name — web pages wrap words in direction isolates and
+zero-width marks that the PDF font draws as boxes. When nothing is left the
+step reads "Click here" rather than "Click treeitem" — the control type is not a name. A
+`screen`-sourced recording, with no lookup at all, is every step reading "Click here".
+
+The AI rewrite runs only when a provider key is saved, which is what enabling AI means here, and
+the step it rewrites is marked `ai` so the badge says so.
 
 ## Feature Hooks
 
@@ -789,9 +881,9 @@ take a search and replace.
 
 ## Fullview Store
 
-One Zustand store, four slices — `library`, `search`, `guide`, `editor` — merged in
-`stores/fullview.ts`. Consumers see no difference: `useFullviewStore` and `useFullview` are the same
-exports they always were, and `useFullview` still wraps `useShallow`, which is what makes the
+One Zustand store, four slices — `library`, `search`, `guide`, `editor` — each living in its
+feature's `store/` folder and merged in `stores/fullview.ts`. `useFullview` sits beside it in
+`stores/use-fullview.ts` and wraps `useShallow`, which is what makes the
 object-returning selectors all over the fullview safe rather than a re-render trap.
 
 Slices rather than separate stores because one cross-domain write genuinely exists: opening a
@@ -856,13 +948,13 @@ that is worth one deliberate choice before recording rather than a control disco
 Picking a mode writes `captureMode` straight through to `capture-settings.json`, so the sheet reopens
 on whatever was used last and the recording bar's own picker reads the same value.
 
-The sheet holds the mode and nothing else. `captureOutsideClicks` was tried there and taken out: read
+The sheet holds the mode and nothing else. `keepClicksBeyondArea` was tried there and taken out: read
 beside a rectangle the user has just chosen, an option that falls back to the whole screen reads as
 undoing that choice, when what it really decides is whether a click outside the rectangle is dropped
 or kept. It stays in Settings, where there is room to say so. Nothing in the sheet is editable in two
 places.
 
-Start on Selected Region opens the region editor first and arming happens when the rectangle is
+Starting in Area mode opens the region editor first and arming happens when the rectangle is
 confirmed. The other two modes arm directly, because they have no rectangle to draw.
 
 Guide rows carry an avatar built from the guide title through `getDomainInitial`, which gives a stable
@@ -871,7 +963,7 @@ letter and tint from a hash without a second query. A desktop guide has no web a
 only identity available. Star and delete are always visible rather than revealed on hover, matching
 the side panel; the fullview list hides them until hover and that reads as inert in a window this wide.
 
-Routing is `@mimik/ui/fullview/router`, not a hand-rolled `hashchange` listener. The desktop had one
+Routing is `useRoute` and `navigate` from `@mimik/ui`, not a hand-rolled `hashchange` listener. The desktop had one
 matching `#guide/<id>`, which is the same scheme the shared router already parses, so adopting it
 cost nothing and bought Starred and Trash the routes the header needs. `HomeScreen` serves the `all`
 category and `LibraryContent` serves the other two, because the hero and Start Capture belong on the
@@ -888,16 +980,18 @@ read by main rather than by core, because none of them mean anything to the exte
 | `showCursor` | on | A pointer is drawn into the screenshot at the click point |
 | `cursorStyle` | `arrow`, `dot` on Linux | Which pointer shape gets drawn |
 | `screenshotDelayMs` | 0, capped at 2000 | Extra wait between the click and the grab |
-| `captureOutsideClicks` | off | Whether clicks beyond the capture area are recorded at all, in `region` mode only |
-| `captureKeys` | on | Whether a shortcut or a named key becomes a step |
-| `captureTyping` | on | Whether typing becomes a step |
+| `keepClicksBeyondArea` | off | Whether clicks beyond the capture area are recorded at all, in `region` mode only |
+| `recordKeys` | on | Whether a shortcut or a named key becomes a step |
+| `recordTyping` | on | Whether typing becomes a step |
 | `typingDebounceMs` | 1200, clamped to 200–5000 | Quiet time that closes a typing session |
-| `typingSmartDetection` | on | Off means the keystroke buffer is used and the field's value is never read |
+| `readFieldText` | on | Off means the keystroke buffer is used and the field's value is never read |
 | `zoomLevel` | automatic | How far a step zooms toward the click: `null` derives it, or 1–5 in 0.25 steps |
 | `shortcuts` | three accelerators | Global keys for start/stop, pause/resume and capture now |
 
 `normaliseSettings` runs on every read and write, so an out-of-range delay clamps and an unknown
-cursor style falls back to the platform default rather than reaching the recorder.
+cursor style falls back to the platform default rather than reaching the recorder. It also reads four
+settings under the names an earlier build saved them as, so a file written before the rename keeps
+its choices; the next save writes only the current names.
 
 `CursorStyle` and `CursorMark` are core's, not main's. The mark is written in main, crosses IPC, and
 is stored as `edits.cursor`, which the renderer reads through core's type — so two declarations had to
@@ -924,8 +1018,9 @@ burst of clicks stays suppressed until there is a real gap. The rule is time onl
 takes its timestamps as arguments rather than reading the clock, so it is exercised without a mouse.
 
 The cost is that two deliberate presses on different controls less than 500 ms apart become one step.
-Matching on position as well would separate them, and that was tried and dropped in favour of keeping
-the rule identical to the one this behaviour was modelled on.
+Matching on position as well would separate them, and that was tried and dropped: a position check
+needs a distance tolerance, and one that fits a 1× display is wrong on a 2× one, while time alone
+needs no tuning.
 
 A click outside the capture area cannot be framed by a region that does not contain it, so those
 captures fall back to the whole display the click landed on. `shouldCapture` is exported for that
@@ -976,14 +1071,14 @@ altogether, because the extension shows the verdict, the model list and the warn
 separate things and the copy collapsed them into one line. Two implementations of the same screen
 diverge by default; one does not.
 
-What moved with it: `KeyStatusNote`, `KeyWarningNote`, `ModelList`, `SecretInput` and `useKeyCheck`,
-all now in `key-status.tsx`. The hook takes its validator as an argument, which is the only part
+What moved with it: `KeyStatusNote`, `KeyWarningNote`, `ModelList` and `SecretInput`, one file each
+under `ai/components`, and `useKeyCheck` in `ai/hooks`. The hook takes its validator as an argument, which is the only part
 that genuinely differs — the extension goes through background messaging because a service worker is
 what has `host_permissions`, and the desktop calls `validateApiKey` directly on top of the main
 process fetch.
 
 The rest of `SettingsView` stayed put. Voice narration, smart blur, brand logos and the microphone
-picker have no desktop meaning, and it reaches for `@/lib/browser-api`. Splitting it did mean the
+picker have no desktop meaning, and it reaches into `@/lib/browser-api/`. Splitting it did mean the
 autosave had to change shape: the AI fields left the parent's snapshot, so `AiSettings` reports its
 own changes through `onChange` and both halves queue into the same debounced flush. `SettingsView`
 still keeps the provider and key in state for one reason — `resolveVoiceApiKey` falls back to the AI
@@ -1027,12 +1122,21 @@ Start/stop goes straight from hidden to recording rather than arming first, beca
 job is to start recording should not need a second press. The stored region is used as it stands,
 which is what makes that possible in `region` mode.
 
+Starting, from the card or the shortcut, plays the extension's start animation first, and the
+recording begins when it ends. The overlay opens a click-through, content-protected window over what
+is about to be framed — the region, the focused window or the display, the same `frameFor` decision a
+capture makes — and that window calls core's `showStartNotification`, so both surfaces run one
+animation from one module. The host hears `start` only after the animation's `animationend`, which
+is the ordering the extension uses too: nothing clicked during it is recorded, so the animation never
+lands in a step, including on Linux where content protection does nothing. Closing the card during it
+cancels the start. A six-second limit ends a stalled intro rather than leaving the recording unstarted.
+
 Capture-now writes an ordinary click step at the cursor. There is no separate action for it: the
 point of pressing it is that the cursor is already on the thing worth capturing.
 
 The keystroke that drives a shortcut must not also be recorded as one. Without that check, pausing a
 recording writes "Press Alt+Shift+P on Mimik" as a step, which is both wrong and confusing, and
-resuming writes another. `matchesShortcut` compares a keystroke against each configured accelerator
+resuming writes another. `isBoundShortcut` compares a keystroke against each configured accelerator
 before `captureKey` writes anything, and it compares by parts rather than by string so
 `Shift+Alt+P` and `Alt+Shift+P` are the same shortcut. `CommandOrControl` resolves to Control
 everywhere but macOS.
@@ -1093,7 +1197,7 @@ unexplained.
 
 ## Design System
 
-All colors are defined as CSS variables in `src/ui/global.css` and used via Tailwind classes:
+All colors are defined as CSS variables in `packages/ui/src/global.css` and used via Tailwind classes:
 
 | Token | Color | Usage |
 |-------|-------|-------|

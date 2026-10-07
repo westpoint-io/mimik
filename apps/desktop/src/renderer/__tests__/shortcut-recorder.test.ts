@@ -1,6 +1,6 @@
 import type React from 'react';
 import { describe, expect, it } from 'vitest';
-import { accelerator } from '../ShortcutRecorder';
+import { accelerator } from '../settings/lib/accelerator';
 
 const press = (key: string, held: Partial<Record<'ctrlKey' | 'altKey' | 'shiftKey' | 'metaKey', boolean>> = {}) =>
   ({ key, ctrlKey: false, altKey: false, shiftKey: false, metaKey: false, ...held }) as React.KeyboardEvent;

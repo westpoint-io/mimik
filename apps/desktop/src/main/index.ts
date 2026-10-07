@@ -2,10 +2,11 @@ import { join } from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, protocol, screen, shell, Tray } from 'electron';
 import { registerAiFetch } from './ai-fetch';
 import { ask } from './ask';
-import { DesktopRecorder } from './capture/recorder';
+import { focusedWindow } from './capture/focused-window';
+import { DesktopRecorder, frameFor } from './capture/recorder';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from './capture/screenshot-store';
 import { type CaptureMode, type CaptureSettings, loadSettings, saveSettings } from './capture/settings';
-import { CaptureOverlay, type OverlayCommand } from './overlay';
+import { CaptureOverlay, type OverlayCommand, type OverlayStep } from './overlay';
 import { bindShortcuts, type ShortcutName, shortcutMap, unbindShortcuts } from './shortcuts';
 import { checkForUpdates } from './updater';
 
@@ -15,7 +16,7 @@ let overlay: CaptureOverlay | null = null;
 let recorder: DesktopRecorder | null = null;
 let guideId: string | null = null;
 let captureSettings: CaptureSettings | null = null;
-let stepCount = 0;
+let steps: OverlayStep[] = [];
 
 function resource(file: string): string {
   return app.isPackaged ? join(process.resourcesPath, file) : join(__dirname, '../../resources', file);
@@ -144,8 +145,18 @@ async function onOverlayCommand(command: OverlayCommand): Promise<void> {
     overlay?.refresh();
     return;
   }
+  if (command === 'remove') {
+    const removed = steps.pop();
+    if (removed && guideId) {
+      await ask(mainWindow?.webContents ?? null, 'mimik:capture:removeStep', { guideId, stepId: removed.id }).catch(
+        () => undefined,
+      );
+    }
+    overlay?.showStep(steps.at(-1) ?? null);
+    return;
+  }
   if (command === 'start' && !guideId) {
-    stepCount = 0;
+    steps = [];
     try {
       guideId = await ask<string>(mainWindow?.webContents ?? null, 'mimik:capture:startGuide');
     } catch (error) {
@@ -167,7 +178,7 @@ async function onOverlayCommand(command: OverlayCommand): Promise<void> {
   } else if (command === 'stop' || command === 'cancel') {
     recorder?.stop();
     await recorder?.drain();
-    if (command === 'stop' && stepCount > 0) finished = guideId;
+    if (command === 'stop' && steps.length > 0) finished = guideId;
     if (finished) {
       await ask(mainWindow?.webContents ?? null, 'mimik:capture:finishGuide', finished).catch(() => undefined);
     }
@@ -206,9 +217,28 @@ if (!app.requestSingleInstanceLock()) {
     ipcMain.handle('mimik:screenshots:sweep', (_event, keep: string[]) => sweepScreenshots(keep));
 
     captureSettings = loadSettings();
+    const shortcutLabel = (accelerator: string | null) =>
+      accelerator?.replace(/CommandOrControl|CmdOrCtrl/g, process.platform === 'darwin' ? 'Cmd' : 'Ctrl') || null;
     overlay = new CaptureOverlay(
       (command) => void onOverlayCommand(command),
       () => (captureSettings ?? loadSettings()).captureMode,
+      {
+        introFrame: async () => {
+          const settings = captureSettings ?? loadSettings();
+          const focused = settings.captureMode === 'window' ? await focusedWindow() : null;
+          const region = overlay?.region ?? { x: 0, y: 0, width: 0, height: 0 };
+          return frameFor(
+            settings.captureMode,
+            screen.getCursorScreenPoint(),
+            region,
+            focused?.ok ? focused.window.bounds : null,
+          );
+        },
+        shortcuts: () => {
+          const { shortcuts } = captureSettings ?? loadSettings();
+          return { startStop: shortcutLabel(shortcuts.startStop), capture: shortcutLabel(shortcuts.capture) };
+        },
+      },
     );
     recorder = new DesktopRecorder(
       () => overlay?.region ?? { x: 0, y: 0, width: 0, height: 0 },
@@ -218,11 +248,24 @@ if (!app.requestSingleInstanceLock()) {
       },
       async (request) => {
         try {
-          const reply = await ask<{ title?: string }>(mainWindow?.webContents ?? null, 'mimik:capture:step', {
-            ...request,
-            guideId,
-          }).catch(() => undefined);
-          if (reply?.title) overlay?.stepCaptured(++stepCount, reply.title, request.image.src);
+          const reply = await ask<{ stepId?: string; title?: string; pending?: boolean }>(
+            mainWindow?.webContents ?? null,
+            'mimik:capture:step',
+            { ...request, guideId },
+          ).catch(() => undefined);
+          if (reply?.stepId && reply.title) {
+            const step: OverlayStep = {
+              id: reply.stepId,
+              index: steps.length + 1,
+              title: reply.title,
+              src: request.image.src,
+              source: 'heuristic',
+              pending: reply.pending === true,
+              app: request.elementMeta.app?.name ?? null,
+            };
+            steps.push(step);
+            overlay?.showStep(step);
+          }
           return reply;
         } finally {
           overlay?.setBusy(false);
@@ -240,6 +283,16 @@ if (!app.requestSingleInstanceLock()) {
       overlay?.refresh();
       applyShortcuts();
       return captureSettings;
+    });
+    ipcMain.on('mimik:capture:described', (_event, stepId: string, description: string | null) => {
+      const step = steps.find((candidate) => candidate.id === stepId);
+      if (!step) return;
+      if (description) {
+        step.title = description;
+        step.source = 'ai';
+      }
+      step.pending = false;
+      if (step === steps.at(-1)) overlay?.showStep(step);
     });
     ipcMain.handle('mimik:capture:region', () => overlay?.region);
     ipcMain.handle('mimik:capture:edit', () => overlay?.edit());

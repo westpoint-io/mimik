@@ -15,6 +15,7 @@
       "packages/ui/src/**/*.tsx",
       "apps/desktop/src/**/*.ts",
       "apps/desktop/src/**/*.tsx",
+      "scripts/**/*.mjs",
       "*.json"
     ]
   },
@@ -78,10 +79,77 @@
                   {
                     "group": ["@/lib/*", "@/ui/*", "@/entrypoints/*", "#imports", "**/apps/**"],
                     "message": "Shared packages must not import from an app. Move the code into the app, or the dependency the other way."
+                  },
+                  {
+                    "group": ["@mimik/ui/**"],
+                    "message": "Import by relative path inside the ui package. Other packages never import it."
+                  }
+                ],
+                "paths": {
+                  "@mimik/ui": "Import by relative path inside the ui package. Other packages never import it."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/**/*.ts", "src/**/*.tsx", "apps/**/*.ts", "apps/**/*.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@mimik/ui/**", "!@mimik/ui/env", "!@mimik/ui/global.css"],
+                    "message": "Import from '@mimik/ui'. Add the export to packages/ui/src/index.ts if it is missing."
                   }
                 ]
               }
             }
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "packages/ui/src/**/*.ts",
+        "packages/ui/src/**/*.tsx",
+        "src/ui/**",
+        "src/lib/**",
+        "apps/desktop/src/renderer/**",
+        "!packages/ui/src/components/ui/**"
+      ],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noBarrelFile": "error"
+          },
+          "style": {
+            "useComponentExportOnlyModules": "error"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/ui/src/index.ts"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noBarrelFile": "off"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["packages/ui/src/**", "src/ui/**", "src/lib/**", "apps/desktop/src/renderer/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noDefaultExport": "error"
           }
         }
       }

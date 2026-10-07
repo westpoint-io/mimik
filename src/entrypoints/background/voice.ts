@@ -1,26 +1,28 @@
-import { logger } from '@mimik/ui/lib/logger';
+import { logger } from '@mimik/core/logger';
 import { CaptureState } from '@/core/capture/machine';
 import { hasVoiceApiKey, VOICE_KEY_SETTINGS } from '@/core/capture/voice/api-key';
 import { narrationUpdates } from '@/core/capture/voice/narration-updates';
 import { applyNarrationToSteps, findExistingStepIds, getStepsForGuide } from '@/core/guides/service';
-import { localStorage, onMessage as onRuntimeMessage } from '@/lib/browser-api';
+import { localStorage } from '@/lib/browser-api/local-storage';
+import { onMessage as onRuntimeMessage } from '@/lib/browser-api/on-message';
+import { closeVoiceHost } from '@/lib/offscreen/close-voice-host';
+import { closeVoiceHostIfIdle } from '@/lib/offscreen/close-voice-host-if-idle';
+import { ensureVoiceHost } from '@/lib/offscreen/ensure-voice-host';
+import { flushVoiceCapture } from '@/lib/offscreen/flush-voice-capture';
+import { hasVoiceHost } from '@/lib/offscreen/has-voice-host';
+import { openMicPermissionPage } from '@/lib/offscreen/open-mic-permission-page';
+import { queryMicPermission } from '@/lib/offscreen/query-mic-permission';
+import { registerVoicePanelRelay } from '@/lib/offscreen/register-voice-panel-relay';
+import { startVoiceCapture } from '@/lib/offscreen/start-voice-capture';
+import { stopVoiceCapture } from '@/lib/offscreen/stop-voice-capture';
+import { supportsVoice } from '@/lib/offscreen/supports-voice';
+import { broadcastVoiceToPanel } from '@/lib/port/broadcast-voice-to-panel';
+import type { PanelVoiceUpdate, VoicePhase } from '@/lib/port/types';
+import { handedOffPcm } from '@/lib/voice/handed-off-pcm';
+import { isVoiceMessageFor } from '@/lib/voice/is-voice-message-for';
+import { narrateRecording, type VoiceRecording } from '@/lib/voice/narrate-recording';
+import { readTranscriptionSettings } from '@/lib/voice/read-transcription-settings';
 import {
-  closeVoiceHost,
-  closeVoiceHostIfIdle,
-  ensureVoiceHost,
-  flushVoiceCapture,
-  hasVoiceHost,
-  openMicPermissionPage,
-  queryMicPermission,
-  registerVoicePanelRelay,
-  startVoiceCapture,
-  stopVoiceCapture,
-  supportsVoice,
-} from '@/lib/offscreen';
-import type { VoicePhase } from '@/lib/port';
-import { broadcastVoiceToPanel, type PanelVoiceUpdate } from '@/lib/port';
-import {
-  isVoiceMessageFor,
   VOICE_BACKGROUND_TARGET,
   type VoiceErrorEvent,
   type VoiceEvent,
@@ -29,9 +31,8 @@ import {
   type VoicePermissionResultEvent,
   type VoiceResultEvent,
   type VoiceStepMark,
-} from '@/lib/voice-messages';
-import { narrateRecording, readTranscriptionSettings, type VoiceRecording } from '@/lib/voice-narration';
-import { handedOffPcm, voiceStopAction } from '@/lib/voice-recovery';
+} from '@/lib/voice/voice-message';
+import { voiceStopAction } from '@/lib/voice/voice-stop-action';
 import { discardDeferred } from './deferred-descriptions';
 import { describeStepNow, describeUnnarratedSteps } from './describe-unnarrated';
 

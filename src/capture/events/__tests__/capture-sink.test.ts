@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CaptureSink, CaptureStepData } from '@/core/capture/sink';
 import { type CaptureHandle, startCapture } from '../handlers';
 
-vi.mock('@/lib/browser-api', () => ({
+vi.mock('@/lib/browser-api/local-storage', () => ({
   localStorage: { get: vi.fn().mockResolvedValue({}), set: vi.fn().mockResolvedValue(undefined) },
 }));
 

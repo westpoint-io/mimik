@@ -166,15 +166,15 @@ desktop:
   showCursor: Show the cursor in screenshots
   pointerStyle: Pointer style
   screenshotDelay: Screenshot delay
-  captureOutside: Capture clicks outside the capture area
+  keepClicksBeyondArea: Capture clicks outside the capture area
   guideInApp: "Guide in $1"
   newGuide: New Guide
   capturingSection: Capturing
   milliseconds: ms
   captureMode: Qué capturar
-  modeWindow: Ventana activa
-  modeScreen: Pantalla completa
-  modeRegion: Región seleccionada
+  modeWindow: Ventana
+  modeScreen: Pantalla
+  modeRegion: Área
   readyToRecord: Listo para grabar
   startSheetTitle: Iniciar una captura
   startButton: Iniciar
@@ -189,11 +189,11 @@ desktop:
   zoomLevelHint: "Las grabaciones nuevas empiezan aquí. Automático mantiene todos los pasos del mismo tamaño."
   zoomAuto: "Automático"
   zoomGuide: "Zoom"
-  captureKeys: "Registrar atajos y teclas con nombre"
-  captureTyping: "Registrar lo que escribes"
+  recordKeys: "Registrar atajos y teclas con nombre"
+  recordTyping: "Registrar lo que escribes"
   typingDebounce: "Cerrar el paso de escritura tras"
-  typingSmart: "Leer el texto del propio campo cuando se pueda"
-  typingSmartHint: "Si se desactiva, la guía registra tus pulsaciones"
+  readFieldText: "Leer el texto del propio campo cuando se pueda"
+  readFieldTextHint: "Si se desactiva, la guía registra tus pulsaciones"
   shortcutStartStop: "Iniciar o finalizar una grabación"
   shortcutPauseResume: "Pausar o reanudar"
   shortcutCapture: "Capturar un paso ahora"
@@ -512,20 +512,24 @@ onboarding:
   openMimik: Abrir Mimik
 
 steps:
-  pressKey: "Presionar $1 en $2"
-  toggleCheckbox: "Marcar $1"
-  selectRadio: "Seleccionar $1"
-  toggleSwitch: "Alternar $1"
+  pressKey: 'Pulsar $1 en "$2"'
+  toggleCheckbox: 'Marcar "$1"'
+  select: 'Seleccionar "$1"'
+  enter: 'Escribir en "$1"'
+  toggleSwitch: 'Alternar "$1"'
   clickLink: 'Clic en enlace "$1"'
-  click: "Clic en $1"
-  rightClick: "Clic derecho en $1"
-  typeIntoField: "Escribir en el campo $1 $2"
-  typeInto: "Escribir en $1"
+  click: 'Clic en "$1"'
+  clickHere: "Clic aquí"
+  rightClick: 'Clic derecho en "$1"'
+  rightClickHere: "Clic derecho aquí"
+  typeIntoField: 'Escribir en el campo $1 "$2"'
+  typeInto: 'Escribir en "$1"'
+  type: 'Escribir "$1"'
   typeSecret: "Escribir contraseña"
-  copyFrom: "Copiar de $1"
-  pasteInto: "Pegar en $1"
-  cutFrom: "Cortar de $1"
-  drag: "Arrastrar $1"
+  copyFrom: 'Copiar de "$1"'
+  pasteInto: 'Pegar en "$1"'
+  cutFrom: 'Cortar de "$1"'
+  drag: 'Arrastrar "$1"'
   navigate: Ir a la página
   defaultAction: "$1 $2"
 

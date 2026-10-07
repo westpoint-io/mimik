@@ -45,7 +45,7 @@ describe('buildFallbackDescription', () => {
       'click',
       makeMeta({ tag: 'input', inputType: 'radio', ariaLabel: 'Option A' }),
     );
-    expect(result).toBe('steps.selectRadio[Option A]');
+    expect(result).toBe('steps.select[Option A]');
   });
 
   it('generates switch toggle for role=switch', () => {
@@ -88,9 +88,13 @@ describe('buildFallbackDescription', () => {
     expect(result).toBe('steps.drag[Card]');
   });
 
-  it('falls back to tag when no label is available', () => {
+  it('says click here when nothing names the element', () => {
     const result = buildFallbackDescription('click', makeMeta({ tag: 'div' }));
-    expect(result).toBe('steps.click[div]');
+    expect(result).toBe('steps.clickHere');
+  });
+
+  it('says right-click here when nothing names the element', () => {
+    expect(buildFallbackDescription('auxclick', makeMeta({ tag: 'div' }))).toBe('steps.rightClickHere');
   });
 
   it('uses default action for unknown actions', () => {
@@ -142,8 +146,69 @@ describe('accessibility-tree sources', () => {
     expect(viaTag).toBe(viaRole);
   });
 
-  it('falls back to role when nothing nameable is present', () => {
-    expect(buildFallbackDescription('click', axMeta({ role: 'button' }))).toBe('steps.click[button]');
+  it('says click here rather than naming the control type', () => {
+    expect(buildFallbackDescription('click', axMeta({ role: 'button' }))).toBe('steps.clickHere');
+  });
+
+  it('enters a text field and never names it by what is typed in it', () => {
+    const meta = axMeta({ role: 'textbox', textContent: 'hello', altText: 'Search' });
+    expect(buildFallbackDescription('click', meta)).toBe('steps.enter[Search]');
+  });
+
+  it('selects from combo boxes, radio buttons and menu items', () => {
+    for (const role of ['combobox', 'radio', 'menuitem']) {
+      expect(buildFallbackDescription('click', axMeta({ role, ariaLabel: 'Font' }))).toBe('steps.select[Font]');
+    }
+  });
+
+  it('names an unnamed group after the control inside it before any text', () => {
+    const meta = axMeta({
+      role: 'group',
+      children: [
+        { role: 'text', name: 'Caption' },
+        { role: 'button', name: 'Save' },
+      ],
+    });
+    expect(buildFallbackDescription('click', meta)).toBe('steps.click[Save]');
+  });
+
+  it('borrows the nearest named ancestor but stops at the window', () => {
+    const inside = axMeta({
+      role: 'img',
+      ancestors: [
+        { role: 'group', name: null },
+        { role: 'listitem', name: 'Pictures' },
+      ],
+    });
+    const outside = axMeta({ role: 'img', ancestors: [{ role: 'window', name: 'File Explorer' }] });
+    expect(buildFallbackDescription('click', inside)).toBe('steps.click[Pictures]');
+    expect(buildFallbackDescription('click', outside)).toBe('steps.clickHere');
+  });
+
+  it('ignores host window names and bare numbers on panes', () => {
+    expect(buildFallbackDescription('click', axMeta({ role: 'pane', ariaLabel: 'Chrome Legacy Window' }))).toBe(
+      'steps.clickHere',
+    );
+    expect(buildFallbackDescription('click', axMeta({ role: 'pane', textContent: '42' }))).toBe('steps.clickHere');
+  });
+
+  it('never names a control by an identifier', () => {
+    for (const name of ['fl-post-111', 'SaveButton', 'btn_submit', 'item3']) {
+      expect(buildFallbackDescription('click', axMeta({ role: 'button', name }))).toBe('steps.clickHere');
+    }
+    expect(buildFallbackDescription('click', axMeta({ role: 'button', name: 'Save' }))).toBe('steps.click[Save]');
+  });
+
+  it('names what was typed when the value is known', () => {
+    const meta = axMeta({ role: 'textbox', ariaLabel: 'Search box' });
+    expect(buildFallbackDescription('input', meta, '  noticias\nde   hoy ')).toBe('steps.type[noticias de hoy]');
+    expect(buildFallbackDescription('input', meta)).toBe('steps.typeInto[Search box]');
+    expect(buildFallbackDescription('input', { ...meta, inputType: 'password' }, 'hunter2')).toBe('steps.typeSecret');
+  });
+
+  it('drops invisible characters from names', () => {
+    const meta = axMeta({ role: 'link', ariaLabel: '\u2068Policía\u2069 \u2068abate\u200b\u2069' });
+    expect(buildFallbackDescription('click', meta)).toBe('steps.click[Policía abate]');
   });
 
   it('describes typing without an inputType', () => {

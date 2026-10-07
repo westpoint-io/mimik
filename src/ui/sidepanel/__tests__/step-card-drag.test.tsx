@@ -1,14 +1,12 @@
 // @vitest-environment jsdom
 
-import { TooltipProvider } from '@mimik/ui/components/ui/tooltip';
+import { StepCard, TooltipProvider } from '@mimik/ui';
 import { fireEvent, render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Step } from '@/core/guides/types';
 
 vi.mock('@/core/guides/service', () => ({ replaceScreenshot: vi.fn() }));
 vi.mock('@/core/screenshot/render', () => ({ imageDimensions: vi.fn(), renderScreenshot: vi.fn() }));
-
-import StepCard from '@mimik/ui/sidepanel/StepCard';
 
 const step: Step = {
   id: 's1',

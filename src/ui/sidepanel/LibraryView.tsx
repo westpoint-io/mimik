@@ -1,6 +1,4 @@
-import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
-import { formatRelativeTime } from '@mimik/ui/lib/utils';
-import FaviconImg from '@mimik/ui/shared/FaviconImg';
+import { FaviconImg, formatRelativeTime, Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui';
 import { Star, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { i18n } from '#imports';
@@ -25,7 +23,7 @@ interface GuideWithMeta extends Guide {
   domain: string;
 }
 
-export default function LibraryView({ onOpen, searchQuery = '' }: LibraryViewProps) {
+export function LibraryView({ onOpen, searchQuery = '' }: LibraryViewProps) {
   const [guides, setGuides] = useState<GuideWithMeta[]>([]);
   const [loading, setLoading] = useState(true);
 

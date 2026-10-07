@@ -1,7 +1,7 @@
 import { i18n } from '@mimik/core/env';
 import { getGuide, updateScreenshotEdits } from '@mimik/core/guides/service';
 import { MAX_ZOOM, MIN_ZOOM, rezoomEdits, ZOOM_STEP } from '@mimik/core/screenshot/record';
-import { Select, SelectContent, SelectItem, SelectTrigger } from '@mimik/ui/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@mimik/ui';
 import { ZoomIn } from 'lucide-react';
 import { useState } from 'react';
 
@@ -10,7 +10,7 @@ const LEVELS = Array.from(
   (_, i) => MIN_ZOOM + i * ZOOM_STEP,
 );
 
-export default function GuideZoom({ guideId, onDone }: { guideId: string; onDone: () => void }) {
+export function GuideZoom({ guideId, onDone }: { guideId: string; onDone: () => void }) {
   const [busy, setBusy] = useState(false);
 
   const apply = async (value: string) => {

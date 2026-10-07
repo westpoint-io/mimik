@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const store: Record<string, unknown> = {};
 
-vi.mock('@/lib/browser-api', () => ({
+vi.mock('@/lib/browser-api/local-storage', () => ({
   localStorage: {
     get: (keys: string[]) =>
       Promise.resolve(Object.fromEntries(keys.filter((key) => key in store).map((key) => [key, store[key]]))),
@@ -13,15 +13,18 @@ vi.mock('@/lib/browser-api', () => ({
       return Promise.resolve();
     },
   },
-  getActiveTab: vi.fn().mockResolvedValue(undefined),
-  openSidebar: vi.fn(),
+}));
+vi.mock('@/lib/browser-api/get-active-tab', () => ({ getActiveTab: vi.fn().mockResolvedValue(undefined) }));
+vi.mock('@/lib/browser-api/open-sidebar', () => ({ openSidebar: vi.fn() }));
+vi.mock('@/lib/browser-api/request-host-permissions', () => ({
   requestHostPermissions: vi.fn().mockResolvedValue(true),
 }));
-
-vi.mock('@/lib/offscreen', () => ({ openMicPermissionPage: vi.fn().mockResolvedValue(undefined) }));
+vi.mock('@/lib/offscreen/open-mic-permission-page', () => ({
+  openMicPermissionPage: vi.fn().mockResolvedValue(undefined),
+}));
 
 import { fakeBrowser } from 'wxt/testing';
-import OnboardingApp from '../App';
+import { OnboardingApp } from '../App';
 
 // the AI step persists through @mimik/core, which vitest.setup backs with fakeBrowser storage
 const aiStore = async () => (await fakeBrowser.storage.local.get('aiApiKey')).aiApiKey;
