@@ -1,0 +1,29 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignoreUnresolved": ["#imports"],
+  "ignoreDependencies": ["@mimik/locales"],
+  "workspaces": {
+    ".": {
+      "entry": ["src/entrypoints/*.ts", "src/entrypoints/*/index.{ts,tsx}", "scripts/*.mjs"],
+      "project": ["src/**/*.{ts,tsx}", "scripts/**"]
+    },
+    "apps/desktop": {
+      "entry": ["src/preload/*.ts", "src/renderer/*.html", "scripts/*.{ts,mjs,cjs}"],
+      "project": ["src/**/*.{ts,tsx}", "scripts/**"],
+      "ignoreDependencies": ["tailwindcss"]
+    },
+    "packages/core": {
+      "includeEntryExports": true,
+      "project": ["src/**/*.ts"],
+      "ignore": ["src/export/empty.ts"]
+    },
+    "packages/ui": {
+      "includeEntryExports": true,
+      "project": ["src/**/*.{ts,tsx}"],
+      "ignore": ["src/components/ui/**"]
+    },
+    "packages/capture-native": {
+      "ignore": ["index.js"]
+    }
+  }
+}

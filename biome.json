@@ -47,7 +47,8 @@
         "useConst": "error"
       },
       "suspicious": {
-        "noExplicitAny": "off"
+        "noExplicitAny": "off",
+        "noImportCycles": "error"
       },
       "a11y": {
         "useButtonType": "off",
@@ -55,6 +56,14 @@
         "useKeyWithClickEvents": "off",
         "noSvgWithoutTitle": "off",
         "noLabelWithoutControl": "off"
+      },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": {
+          "level": "warn",
+          "options": {
+            "maxAllowedComplexity": 25
+          }
+        }
       }
     }
   },
