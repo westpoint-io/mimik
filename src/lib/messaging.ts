@@ -35,6 +35,10 @@ export interface StopRecordingResponse {
   inserted?: boolean;
 }
 
+export interface DiscardRecordingResponse {
+  discarded: boolean;
+}
+
 export interface StartGuideMeData {
   guideId: string;
 }
@@ -121,6 +125,7 @@ interface MimikProtocol {
   getState(): GetStateResponse;
   startRecording(data: StartRecordingData): StartRecordingResponse;
   stopRecording(): StopRecordingResponse;
+  discardRecording(): DiscardRecordingResponse;
   captureStep(data: CaptureStepData): CaptureStepResponse;
   updateInputStep(data: UpdateInputStepData): UpdateInputStepResponse;
   finalizeInputStep(data: FinalizeInputStepData): FinalizeInputStepResponse;

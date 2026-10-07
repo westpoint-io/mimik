@@ -1,25 +1,20 @@
 import { aiFailureNotice } from '@mimik/core/capture/ai/errors';
+import { CaptureState } from '@mimik/core/capture/machine';
 import { splitAtShortcut } from '@mimik/core/capture/split-at-shortcut';
 import { hasVoiceApiKey, VOICE_KEY_SETTINGS } from '@mimik/core/capture/voice/api-key';
+import { voiceErrorKey } from '@mimik/core/capture/voice/voice-error-key';
 import { i18n, localStorage } from '@mimik/core/env';
+import { STEP_SOURCE_LABELS } from '@mimik/core/guides/step-source-labels';
 import type { OverlayView } from '../../main/overlay';
 import { icon } from '../icons';
 import { cameraMascot } from './camera-mascot';
 import { el } from './el';
 
 const MODES = [
-  { id: 'window', label: 'desktop_modeWindow', glyph: 'window' },
-  { id: 'screen', label: 'desktop_modeScreen', glyph: 'monitor' },
-  { id: 'area', label: 'desktop_modeRegion', glyph: 'area' },
+  { id: 'window', label: 'desktop.modeWindow', glyph: 'window' },
+  { id: 'screen', label: 'desktop.modeScreen', glyph: 'monitor' },
+  { id: 'area', label: 'desktop.modeArea', glyph: 'area' },
 ] as const;
-
-const MODE_COMMAND: Record<string, string> = {
-  window: 'mode:window',
-  screen: 'mode:screen',
-  area: 'mode:region',
-};
-
-const MODE_ID: Record<string, string> = { window: 'window', screen: 'screen', region: 'area' };
 
 const AI_WAIT_MS = 8000;
 
@@ -32,34 +27,35 @@ export function controls(): void {
   let collapsed = false;
 
   const dot = el('span', { id: 'dot' });
-  const label = el('span', { id: 'label' }, 'Ready');
+  const label = el('span', { id: 'label' }, i18n.t('desktop.armed'));
   const counter = el('span', { id: 'counter' });
   const badge = el('span', { id: 'badge' });
-  const collapse = el('button', { id: 'collapse', type: 'button', title: 'Collapse' });
+  const collapse = el('button', { id: 'collapse', type: 'button', title: i18n.t('desktop.collapse') });
   collapse.append(icon('chevronDown'));
   const head = el('div', { id: 'head' }, dot, label, counter, badge, collapse);
 
   const shot = el('img', { id: 'shot', alt: '' });
   const veilPause = el('span', { id: 'veilPause' }, icon('pause', 16));
   const veil = el('div', { id: 'veil' }, veilPause);
-  const remove = el('button', { id: 'remove', type: 'button', title: i18n.t('recording_deleteStep') });
-  remove.setAttribute('aria-label', i18n.t('recording_deleteStep'));
+  const remove = el('button', { id: 'remove', type: 'button', title: i18n.t('recording.deleteStep') });
+  remove.setAttribute('aria-label', i18n.t('recording.deleteStep'));
   remove.append(icon('trash', 13));
   const preview = el('div', { id: 'preview' }, shot, veil, remove);
 
   const stepTitle = el('p', { id: 'stepTitle' });
-  const source = el('span', { id: 'source', title: i18n.t('stepSource_hint') });
+  const source = el('span', { id: 'source', title: i18n.t('stepSource.hint') });
   const metaText = el('span', { id: 'metaText' });
   const stepMeta = el('div', { id: 'stepMeta' }, source, metaText);
 
   const tip = el('p', { id: 'tip' });
+  const hintBefore = el('span', {});
   const hintKey = el('kbd', { id: 'hintKey' });
   const hintText = el('span', {});
   const hint = el(
     'div',
     { id: 'keyHint' },
     icon('keyboard', 14),
-    el('p', {}, el('strong', {}, 'Tip:'), ' you can press ', hintKey, hintText),
+    el('p', {}, el('strong', {}, i18n.t('desktop.tipLabel')), ' ', hintBefore, hintKey, hintText),
   );
   const intro = el('div', { id: 'intro' }, el('div', { id: 'mascot' }, cameraMascot(56)), tip);
   const filmShot = el('img', { alt: '' });
@@ -85,7 +81,7 @@ export function controls(): void {
   const voiceBars = el('span', { id: 'voiceBars' });
   const bars = VOICE_BARS.map(() => voiceBars.appendChild(el('i', {})));
   const voiceLabel = el('strong', {});
-  const voiceHint = el('p', { id: 'voiceHint' }, i18n.t('voice_orderHint'));
+  const voiceHint = el('p', { id: 'voiceHint' }, i18n.t('voice.orderHint'));
   const voice = el(
     'div',
     { id: 'voice', role: 'status' },
@@ -94,12 +90,12 @@ export function controls(): void {
   );
   const body = el('div', { id: 'body' }, stage, intro, hint, voice);
 
-  const modeLabel = el('p', { id: 'modeLabel' }, i18n.t('desktop_captureMode'));
+  const modeLabel = el('p', { id: 'modeLabel' }, i18n.t('desktop.captureMode'));
   const modeRow = el('div', { id: 'modes' });
   const modeButtons = MODES.map(({ id, label: text, glyph }) => {
     const button = el('button', { type: 'button', className: 'mode' }, icon(glyph, 13), i18n.t(text));
     button.dataset.mode = id;
-    button.addEventListener('click', () => window.mimikOverlay.command(MODE_COMMAND[id]));
+    button.addEventListener('click', () => window.mimikOverlay.command(`mode:${id}`));
     modeRow.append(button);
     return button;
   });
@@ -135,7 +131,7 @@ export function controls(): void {
   let gaveUp: string | null = null;
   let landing = false;
   let landedId: string | null = null;
-  let printingIndex = 1;
+  let printingNumber = 1;
   let shownPercent = 0;
 
   const resetPercent = () => {
@@ -165,20 +161,20 @@ export function controls(): void {
 
   const render = (view: OverlayView) => {
     const { state, step, busy, progress, print, starting, mode, shortcuts, aiFailure, narration } = view;
-    const armed = state === 'armed';
-    const recording = state === 'recording';
-    const paused = state === 'paused';
+    const armed = state === CaptureState.ARMED;
+    const recording = state === CaptureState.RECORDING;
+    const paused = state === CaptureState.PAUSED;
     const waiting = recording && !step && !busy;
     const resting = paused && !step && !busy;
 
     if (busy && !wasBusy) {
-      printingIndex = (step?.index ?? 0) + 1;
+      printingNumber = (step?.number ?? 0) + 1;
       if (step) landedId = step.id;
       resetPercent();
       printingStep = true;
     }
     wasBusy = busy;
-    const printed = step && step.index >= printingIndex ? step : null;
+    const printed = step && step.number >= printingNumber ? step : null;
     const developed = printed?.src ?? print.src;
     if (printingStep && developed && filmShot.getAttribute('src') !== developed) filmShot.src = developed;
     photo.classList.toggle('developing', Boolean(printingStep && developed));
@@ -207,19 +203,19 @@ export function controls(): void {
     document.body.classList.toggle('resting', resting);
     document.body.classList.toggle('busy', busy);
 
-    const count = capturing ? printingIndex - 1 : (step?.index ?? 0);
+    const count = capturing ? printingNumber - 1 : (step?.number ?? 0);
     const counted = [String(count)];
     label.textContent = starting
-      ? 'Starting…'
+      ? i18n.t('desktop.starting')
       : recording
-        ? i18n.t(count === 1 ? 'recording_recording' : 'recording_recordingPlural', counted)
+        ? i18n.t(count === 1 ? 'recording.recording' : 'recording.recordingPlural', counted)
         : paused
-          ? i18n.t('recording_capturePaused')
-          : i18n.t('desktop_ready');
-    counter.textContent = i18n.t(count === 1 ? 'fullview_stepCount' : 'fullview_stepCountPlural', counted);
+          ? i18n.t('recording.capturePaused')
+          : i18n.t('desktop.armed');
+    counter.textContent = i18n.t(count === 1 ? 'fullview.stepCount' : 'fullview.stepCountPlural', counted);
     counter.hidden = !paused;
 
-    const modeId = MODE_ID[mode] ?? 'window';
+    const modeId = mode;
     if (modeId !== shownMode) {
       shownMode = modeId;
       const shown = MODES.find((candidate) => candidate.id === modeId) ?? MODES[0];
@@ -227,12 +223,14 @@ export function controls(): void {
     }
     badge.hidden = paused || collapsed;
 
-    const micLocked = !micKeyed && !micOn;
-    const micState = micOn ? 'on' : micLocked ? 'locked' : 'off';
+    const micLocked = (!micKeyed && !micOn) || paused;
+    const micState = `${micOn ? 'on' : micLocked ? 'locked' : 'off'}${paused ? ':paused' : ''}`;
     if (micState !== shownMic) {
       shownMic = micState;
-      const micLabel = i18n.t(micLocked ? 'voice_needsApiKey' : micOn ? 'voice_turnOff' : 'voice_turnOn');
-      mic.className = micState;
+      const micLabel = i18n.t(
+        paused ? 'voice.pausedWithCapture' : micLocked ? 'voice.needsApiKey' : micOn ? 'voice.turnOff' : 'voice.turnOn',
+      );
+      mic.className = micLocked ? 'locked' : micOn ? 'on' : 'off';
       mic.title = micLabel;
       mic.setAttribute('aria-label', micLabel);
       mic.setAttribute('aria-pressed', String(micOn));
@@ -244,7 +242,7 @@ export function controls(): void {
       shownChevron = chevron;
       collapse.replaceChildren(icon(collapsed ? 'chevronUp' : 'chevronDown'));
     }
-    collapse.title = collapsed ? 'Expand' : 'Collapse';
+    collapse.title = i18n.t(collapsed ? 'desktop.expand' : 'desktop.collapse');
 
     if (step && !capturing && shot.getAttribute('src') !== step.src) shot.src = step.src;
     stage.hidden = armed || !(capturing || step);
@@ -260,7 +258,7 @@ export function controls(): void {
       aim.style.left = `${(width - shownWidth) / 2 + aimed.x * shownWidth}px`;
       aim.style.top = `${(height - shownHeight) / 2 + aimed.y * shownHeight}px`;
     }
-    printing.textContent = `Capturing step ${printingIndex}`;
+    printing.textContent = i18n.t('desktop.capturingStep', [String(printingNumber)]);
     shot.hidden = !step?.src;
     veil.hidden = !paused || capturing;
     remove.hidden = !step || capturing || armed;
@@ -273,30 +271,37 @@ export function controls(): void {
     preview.style.setProperty('--title-extra', `${step ? Math.max(0, extra) : 0}px`);
     source.hidden = !step;
     const sourceKind = step?.source === 'ai' ? 'ai' : step?.source === 'narration' ? 'voice' : 'basic';
-    source.textContent = i18n.t(`stepSource_${sourceKind}`);
+    source.textContent = i18n.t(STEP_SOURCE_LABELS[step?.source ?? 'heuristic']);
     source.className = sourceKind;
     metaText.textContent =
-      [step ? i18n.t('export_stepLabel', [String(step.index)]) : '', step?.app ?? ''].filter(Boolean).join(' · ') ||
+      [step ? i18n.t('export.stepLabel', [String(step.number)]) : '', step?.app ?? ''].filter(Boolean).join(' · ') ||
       '\u00a0';
 
     intro.hidden = !(armed || waiting || resting);
     tip.textContent = armed
-      ? 'Each click is saved as a step.'
+      ? i18n.t('desktop.tipArmed')
       : resting
-        ? 'Nothing is recorded while paused.'
-        : 'Your first click will show up here.';
+        ? i18n.t('desktop.tipPaused')
+        : i18n.t('desktop.tipWaiting');
     const key = armed ? shortcuts.startStop : shortcuts.capture;
     hint.hidden = intro.hidden || resting || !key || Boolean(narration);
     voice.hidden = collapsed || !narration;
-    voiceHint.hidden = intro.hidden;
+    const voiceFailed = Boolean(narration?.reason);
+    voiceHint.hidden = intro.hidden && !voiceFailed;
+    voiceHint.textContent = i18n.t(voiceFailed ? 'voice.guideSafe' : 'voice.orderHint');
+    voiceBars.hidden = voiceFailed;
     voiceBars.classList.toggle('speaking', narration?.speaking === true);
-    voiceLabel.textContent = i18n.t(narration?.speaking ? 'voice_micHearing' : 'voice_micQuiet');
+    voiceLabel.textContent = narration?.reason
+      ? i18n.t(voiceErrorKey(narration.reason))
+      : i18n.t(narration?.speaking ? 'voice.micHearing' : 'voice.micQuiet');
     bars.forEach((bar, index) => {
       const scale = Math.max(VOICE_BAR_FLOOR, Math.min(1, (narration?.level ?? 0) * VOICE_BARS[index]));
       bar.style.transform = `scaleY(${scale})`;
     });
     hintKey.textContent = key ?? '';
-    hintText.textContent = armed ? ' to start and stop.' : ' to capture without clicking.';
+    const [before, after] = i18n.t(armed ? 'desktop.hintStartStop' : 'desktop.hintCapture', ['\u0000']).split('\u0000');
+    hintBefore.textContent = before ?? '';
+    hintText.textContent = after ?? '';
     body.hidden = collapsed;
 
     modes.hidden = collapsed || !paused;
@@ -304,14 +309,16 @@ export function controls(): void {
 
     if (state !== shownIcon) {
       shownIcon = state;
-      const secondaryLabel = i18n.t(armed ? 'common_close' : recording ? 'desktop_pause' : 'desktop_resume');
+      const secondaryLabel = i18n.t(
+        armed ? 'common.close' : recording ? 'recording.pauseCapture' : 'recording.resumeCapture',
+      );
       secondary.replaceChildren(icon(armed ? 'close' : recording ? 'pause' : 'play', 16));
       secondary.title = secondaryLabel;
       secondary.setAttribute('aria-label', secondaryLabel);
       primary.replaceChildren(icon(armed ? 'video' : 'check'));
-      primary.append(i18n.t(armed ? 'desktop_startButton' : 'desktop_finish'));
+      primary.append(i18n.t(armed ? 'desktop.startButton' : 'recording.finishRecording'));
     }
-    secondary.dataset.command = armed ? 'cancel' : recording ? 'pause' : 'resume';
+    secondary.dataset.command = armed ? 'disarm' : recording ? 'pause' : 'resume';
     primary.dataset.command = armed ? 'start' : 'stop';
     primary.disabled = starting || (busy && !armed);
     foot.hidden = collapsed;
@@ -362,10 +369,10 @@ export function controls(): void {
   }
 
   primary.addEventListener('click', () => window.mimikOverlay.command(primary.dataset.command ?? 'start'));
-  secondary.addEventListener('click', () => window.mimikOverlay.command(secondary.dataset.command ?? 'cancel'));
-  remove.addEventListener('click', () => window.mimikOverlay.command('remove'));
+  secondary.addEventListener('click', () => window.mimikOverlay.command(secondary.dataset.command ?? 'disarm'));
+  remove.addEventListener('click', () => window.mimikOverlay.command('deleteStep'));
   mic.addEventListener('click', () => {
-    if (shownMic !== 'locked') window.mimikOverlay.command(micOn ? 'mic:off' : 'mic:on');
+    if (mic.className !== 'locked') window.mimikOverlay.command(micOn ? 'narration:stop' : 'narration:start');
   });
   const readMic = () =>
     localStorage.get([...VOICE_KEY_SETTINGS, 'voiceEnabled']).then((stored) => {

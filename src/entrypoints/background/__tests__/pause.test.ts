@@ -22,8 +22,8 @@ vi.mock('../actor', () => ({ getActor: () => actor }));
 vi.mock('../tab-manager', () => ({
   broadcastDismissBlur: record('dismissBlur'),
   broadcastClearBlur: record('clearBlur'),
-  broadcastStopCaptureAndFlush: record('flush'),
-  broadcastStartCapture: record('startCapture'),
+  broadcastDetachCaptureAndFlush: vi.fn(record('flush')),
+  broadcastAttachCapture: record('attachCapture'),
   injectContentScript: record('inject'),
   isInjectableTab: (tab: { url?: string }) => !!tab.url?.startsWith('https://'),
 }));
@@ -57,6 +57,19 @@ describe('pauseCapture', () => {
     expect(actor.getSnapshot().value).toBe(CaptureState.PAUSED);
     expect(actor.getSnapshot().context.pauseReason).toBe('manual');
     expect(calls).toContain('flush');
+  });
+
+  it('flushes the frames while still recording, so a click made just before the pause is kept', async () => {
+    const { broadcastDetachCaptureAndFlush } = await import('../tab-manager');
+    let stateDuringFlush: string | null = null;
+    vi.mocked(broadcastDetachCaptureAndFlush).mockImplementationOnce(async () => {
+      stateDuringFlush = actor.getSnapshot().value;
+    });
+
+    await pauseCapture('manual');
+
+    expect(stateDuringFlush).toBe(CaptureState.RECORDING);
+    expect(actor.getSnapshot().value).toBe(CaptureState.PAUSED);
   });
 
   it('refuses when nothing is recording, without touching the frames', async () => {
@@ -127,7 +140,7 @@ describe('resumeCapture', () => {
 
     await resumeCapture();
 
-    expect(calls).toEqual(['inject', 'startCapture']);
+    expect(calls).toEqual(['inject', 'attachCapture']);
   });
 
   it('skips injection on a tab that cannot take a content script', async () => {
@@ -137,7 +150,7 @@ describe('resumeCapture', () => {
 
     await resumeCapture();
 
-    expect(calls).toEqual(['startCapture']);
+    expect(calls).toEqual(['attachCapture']);
   });
 
   it('restarts narration only when the pause stopped it', async () => {
@@ -196,7 +209,7 @@ describe('resumeFromPause', () => {
 
     await resumeFromPause();
 
-    expect(calls.indexOf('dismissBlur')).toBeLessThan(calls.indexOf('startCapture'));
+    expect(calls.indexOf('dismissBlur')).toBeLessThan(calls.indexOf('attachCapture'));
   });
 
   it('still dismisses when there is nothing to resume', async () => {

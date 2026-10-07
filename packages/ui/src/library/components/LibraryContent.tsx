@@ -32,9 +32,9 @@ interface LibraryContentProps {
 }
 
 const emptyConfig: Record<string, { titleKey: string; subKey: string }> = {
-  all: { titleKey: 'library_noGuidesTitle', subKey: 'library_noGuidesSub' },
-  starred: { titleKey: 'library_noStarredTitle', subKey: 'library_noStarredSub' },
-  trash: { titleKey: 'library_trashEmptyTitle', subKey: 'library_trashEmptySub' },
+  all: { titleKey: 'library.noGuidesTitle', subKey: 'library.noGuidesSub' },
+  starred: { titleKey: 'library.noStarredTitle', subKey: 'library.noStarredSub' },
+  trash: { titleKey: 'library.trashEmptyTitle', subKey: 'library.trashEmptySub' },
 };
 
 export function LibraryContent({ category }: LibraryContentProps) {
@@ -220,11 +220,11 @@ export function LibraryContent({ category }: LibraryContentProps) {
       )}
       {duplicateFailed && (
         <p role="alert" className="text-xs mb-3 text-center text-destructive">
-          {i18n.t('library_duplicateFailed')}
+          {i18n.t('library.duplicateFailed')}
         </p>
       )}
       {total === null ? (
-        <p className="text-sm py-12 text-center text-purple">{i18n.t('common_loading')}</p>
+        <p className="text-sm py-12 text-center text-purple">{i18n.t('common.loading')}</p>
       ) : total === 0 ? (
         <div className="text-center py-20 flex flex-col items-center">
           <EmptyMascot category={category} />
@@ -263,7 +263,7 @@ export function LibraryContent({ category }: LibraryContentProps) {
             <ChevronLeft size={15} />
           </button>
           <span className="text-xs font-medium text-muted-foreground">
-            {i18n.t('fullview_pageOf', [String(page + 1), String(totalPages)])}
+            {i18n.t('fullview.pageOf', [String(page + 1), String(totalPages)])}
           </span>
           <button
             onClick={() => applyPage(page + 1)}

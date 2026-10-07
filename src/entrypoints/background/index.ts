@@ -14,6 +14,8 @@ import {
   getScreenshotsForSteps,
   getStepsForGuide,
   mergeGuideInto,
+  permanentlyDeleteGuide,
+  softDeleteGuide,
 } from '@/core/guides/service';
 import type { Step } from '@/core/guides/types';
 import { getActiveTab } from '@/lib/browser-api/get-active-tab';
@@ -33,13 +35,15 @@ import { registerNavigationListeners } from './navigation';
 import { pauseCapture, resumeFromPause, whenPauseSettled } from './pause';
 import { handleCaptureStep, handleFinalizeInputStep, handleUpdateInputStep } from './step-pipeline';
 import {
+  broadcastAttachCapture,
   broadcastClearBlur,
-  broadcastStartCapture,
-  broadcastStopCapture,
+  broadcastDetachCapture,
+  broadcastDetachCaptureAndFlush,
   isInjectableTab,
   showNotificationOnTab,
 } from './tab-manager';
 import {
+  abortVoiceNarration,
   canStartNarrationNow,
   getVoiceUpdate,
   registerVoiceListeners,
@@ -146,7 +150,7 @@ export default defineBackground(() => {
 
     await startVoiceNarration(activeTab?.id);
 
-    await broadcastStartCapture(guideId);
+    await broadcastAttachCapture(guideId);
     return { guideId };
   });
 
@@ -155,7 +159,7 @@ export default defineBackground(() => {
     await whenPauseSettled();
     const actor = getActor();
     const { currentGuideId: guideId, insertTargetGuideId, insertAtIndex } = actor.getSnapshot().context;
-    await broadcastStopCapture();
+    await broadcastDetachCaptureAndFlush();
     await broadcastClearBlur();
     actor.send({ type: 'STOP_RECORDING' });
 
@@ -171,6 +175,21 @@ export default defineBackground(() => {
     if (guideId) generateGuideMetaOnStop(guideId).catch(() => {});
 
     return { success: true, guideId: guideId ?? undefined, inserted: false };
+  });
+
+  onMessage('discardRecording', async () => {
+    await waitUntilReady();
+    await whenPauseSettled();
+    const actor = getActor();
+    const { currentGuideId: guideId, insertTargetGuideId } = actor.getSnapshot().context;
+    await broadcastDetachCapture();
+    await broadcastClearBlur();
+    actor.send({ type: 'STOP_RECORDING' });
+    await abortVoiceNarration();
+    if (!guideId) return { discarded: false };
+    if (insertTargetGuideId !== null) await permanentlyDeleteGuide(guideId);
+    else await softDeleteGuide(guideId);
+    return { discarded: true };
   });
 
   onMessage('startNarration', async () => ({ started: await startNarrationIfPossible() }));

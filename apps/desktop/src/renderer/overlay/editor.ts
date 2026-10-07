@@ -32,18 +32,18 @@ export function editor(origin: { x: number; y: number }): void {
   const cancel = el(
     'button',
     { type: 'button', className: 'secondary' },
-    i18n.t('common_cancel'),
+    i18n.t('common.cancel'),
     el('kbd', {}, 'Esc'),
   );
   const done = el(
     'button',
     { type: 'button', className: 'primary' },
     icon('check', 15),
-    i18n.t('annotationEditor_done'),
+    i18n.t('annotationEditor.done'),
     el('kbd', {}, 'Enter'),
   );
-  cancel.addEventListener('click', () => window.mimikOverlay.command('cancel'));
-  done.addEventListener('click', () => window.mimikOverlay.command('arm'));
+  cancel.addEventListener('click', () => window.mimikOverlay.command('cancelEdit'));
+  done.addEventListener('click', () => window.mimikOverlay.command('done'));
   const bar = el(
     'div',
     { id: 'bar' },
@@ -115,8 +115,8 @@ export function editor(origin: { x: number; y: number }): void {
   });
 
   window.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter') window.mimikOverlay.command('arm');
-    if (event.key === 'Escape') window.mimikOverlay.command('cancel');
+    if (event.key === 'Enter') window.mimikOverlay.command('done');
+    if (event.key === 'Escape') window.mimikOverlay.command('cancelEdit');
   });
 
   window.mimikOverlay.region().then((current) => {

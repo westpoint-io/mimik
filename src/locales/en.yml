@@ -28,7 +28,6 @@ sidepanel:
   connecting: Connecting…
   heroTitle: What would you like to capture?
   heroSubtitle: Record any workflow automatically
-  startCapture: "Start capture"
   searchPlaceholder: Search guides…
   recentLabel: Recent
   notRecordable: Open a website to start capturing
@@ -90,6 +89,10 @@ recording:
   minutesAgo: "$1m ago"
 
 settings:
+  cardKeyboard: "Typing and keys"
+  cardKeyboardHint: "What your keyboard adds to a guide."
+  recordKeys: "Record shortcuts and named keys"
+  recordKeysHint: "Ctrl+S, Enter and the like become steps."
   microphoneAccess: "Microphone access"
   microphoneAccessAsk: "Your browser asks once before Mimik can hear you."
   microphoneAccessAllow: "Allow"
@@ -186,13 +189,20 @@ blurPresets:
   macAddress: "MAC address"
 
 desktop:
+  collapse: "Collapse"
+  expand: "Expand"
+  starting: "Starting…"
+  capturingStep: "Capturing step $1"
+  tipArmed: "Each click is saved as a step."
+  tipPaused: "Nothing is recorded while paused."
+  tipWaiting: "Your first click will show up here."
+  tipLabel: "Tip:"
+  hintStartStop: "you can press $1 to start and stop."
+  hintCapture: "you can press $1 to capture without clicking."
   micAccessAsk: "macOS asks once before Mimik can hear you."
   micAccessRefused: "Refused. Turn on Mimik in Privacy & Security."
   micAccessOpen: "Open settings"
-  ready: Ready
-  pause: Pause
-  resume: Resume
-  finish: Finish
+  armed: Ready
   screenshotDelay: Screenshot delay
   keepClicksBeyondArea: Capture clicks outside the area
   keepClicksBeyondAreaHint: "In Area mode, clicks outside the area still become steps, framed by the area."
@@ -202,7 +212,7 @@ desktop:
   captureMode: What to capture
   modeWindow: Window
   modeScreen: Screen
-  modeRegion: Area
+  modeArea: Area
   startSheetTitle: Start a capture
   permissionsTitle: "Allow Mimik to record"
   permissionsIntro: "Mimik needs a couple of permissions to record."
@@ -243,23 +253,19 @@ desktop:
   upToDate: "Up to date"
   upToDateMessage: "Mimik $1 is current."
   cardScreenshots: "Screenshots"
-  cardKeyboard: "Typing and keys"
   cardGlobalKeys: "Global keys"
   cardGlobalKeysHint: "Taken from every application while Mimik is running."
   zoomLevel: "Zoom toward the click"
   zoomLevelHint: "New recordings start here. Automatic keeps every step the same size."
   zoomAuto: "Automatic"
   zoomGuide: "Zoom"
-  recordKeys: "Record shortcuts and named keys"
   recordTyping: "Record what you type"
   recordTypingHint: "Everything you type into one field becomes one step."
   typingDebounce: "Close a typing step after"
   typingDebounceHint: "A pause this long ends the typing step."
   cardScreenshotsHint: "What each step's screenshot shows."
-  cardKeyboardHint: "What your keyboard adds to a guide."
   captureModeHint: "Window follows the app you click."
   screenshotDelayHint: "Wait before taking the screenshot, for menus that animate."
-  recordKeysHint: "Ctrl+S, Enter and the like become steps."
   seconds: "s"
   shortcutStartStop: "Start or finish a recording"
   shortcutPauseResume: "Pause or resume"

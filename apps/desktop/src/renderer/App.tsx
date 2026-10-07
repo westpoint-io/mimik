@@ -1,3 +1,4 @@
+import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import { i18n, localStorage } from '@mimik/core/env';
 import {
   AppFrame,
@@ -8,18 +9,20 @@ import {
   TooltipProvider,
   useFullview,
   useRoute,
+  VoiceNotice,
 } from '@mimik/ui';
 import { useCallback, useEffect, useState } from 'react';
-import type { CaptureInsert } from '../main/capture/insert';
 import { CaptureSheet } from './CaptureSheet';
 import { DesktopOnboarding } from './DesktopOnboarding';
 import { GuideZoom } from './GuideZoom';
+import { useNarrationUpdate } from './hooks/use-narration-update';
 import { PermissionsDialog } from './PermissionsDialog';
 import { REOPEN_SETTINGS } from './settings/lib/reopen-settings';
 import { SettingsDialog } from './settings/SettingsDialog';
 
 export function App() {
   const route = useRoute();
+  const narration = useNarrationUpdate();
   const [settingsOpen, setSettingsOpen] = useState(() => sessionStorage.getItem(REOPEN_SETTINGS) !== null);
   const [sheet, setSheet] = useState<{ insert?: CaptureInsert } | null>(null);
   const [guideKey, setGuideKey] = useState(0);
@@ -64,7 +67,7 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    window.mimik.capture.onCommand((command, _state, _region, id) => {
+    window.mimik.capture.onStateUpdate(({ command, currentGuideId: id }) => {
       if (command !== 'stop' || !id) return;
       setSettingsOpen(false);
       setSheet(null);
@@ -89,7 +92,7 @@ export function App() {
         route={route}
         onStartCapture={() => setSheet({})}
         onSettings={() => setSettingsOpen(true)}
-        version={version && i18n.t('desktop_version', [version])}
+        version={version && i18n.t('desktop.version', [version])}
         guideActions={
           route.page === 'guide' ? (
             <GuideZoom guideId={route.guideId} onDone={() => setGuideKey((n) => n + 1)} />
@@ -116,6 +119,11 @@ export function App() {
       </AppFrame>
       <SearchModal />
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <VoiceNotice
+        update={narration.update}
+        seenLive={narration.seenLive}
+        onOpenSettings={() => setSettingsOpen(true)}
+      />
       {sheet && <CaptureSheet insert={sheet.insert} onClose={() => setSheet(null)} />}
       <PermissionsDialog open={permissionsOpen} onClose={closePermissions} />
     </TooltipProvider>

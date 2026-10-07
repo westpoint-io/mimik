@@ -1,7 +1,7 @@
-import type { PanelVoiceUpdate } from '@/lib/port/types';
-import { narratedKey } from '@/ui/sidepanel/lib/narrated-key';
-import { voiceErrorKey } from '@/ui/sidepanel/lib/voice-error-key';
+import { narratedKey } from './narrated-key';
+import { voiceErrorKey } from './voice-error-key';
 import { voiceSignature } from './voice-signature';
+import type { VoiceUpdate } from './voice-update';
 
 export const VOICE_CONFIRM_MS = 7000;
 
@@ -17,7 +17,7 @@ export interface VoiceNotice {
   autoDismissMs: number | null;
 }
 
-export function voiceNotice(update: PanelVoiceUpdate, seenLive: boolean): VoiceNotice | null {
+export function voiceNotice(update: VoiceUpdate, seenLive: boolean): VoiceNotice | null {
   const signature = voiceSignature(update);
 
   if (update.phase === 'transcribing') {

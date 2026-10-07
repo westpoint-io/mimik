@@ -25,21 +25,21 @@ export function PermissionsDialog({ open, onClose }: { open: boolean; onClose(gr
       <DialogContent aria-describedby={undefined} className="gap-3.5 px-8 pb-8 pt-9 sm:max-w-[500px]">
         <div className="mb-2.5 flex flex-col items-center gap-2.5 text-center">
           <PermissionsMascot granted={[granted?.accessibility === true, granted?.screen === true]} />
-          <DialogTitle className="text-[22px] font-bold">{i18n.t('desktop_permissionsTitle')}</DialogTitle>
-          <p className="text-[13.5px] text-muted-foreground">{i18n.t('desktop_permissionsIntro')}</p>
+          <DialogTitle className="text-[22px] font-bold">{i18n.t('desktop.permissionsTitle')}</DialogTitle>
+          <p className="text-[13.5px] text-muted-foreground">{i18n.t('desktop.permissionsIntro')}</p>
         </div>
         <PermissionCard
           Icon={Hand}
-          title={i18n.t('desktop_permissionAccessibility')}
-          hint={i18n.t('desktop_permissionAccessibilityHint')}
+          title={i18n.t('desktop.permissionAccessibility')}
+          hint={i18n.t('desktop.permissionAccessibilityHint')}
           state={granted?.accessibility ? 'granted' : 'missing'}
           onGrant={() => grant('accessibility')}
           onRestart={() => window.mimik.permissions.restart()}
         />
         <PermissionCard
           Icon={Monitor}
-          title={i18n.t('desktop_permissionScreen')}
-          hint={i18n.t(screenState === 'restart' ? 'desktop_permissionScreenRestart' : 'desktop_permissionScreenHint')}
+          title={i18n.t('desktop.permissionScreen')}
+          hint={i18n.t(screenState === 'restart' ? 'desktop.permissionScreenRestart' : 'desktop.permissionScreenHint')}
           state={screenState}
           onGrant={() => grant('screen')}
           onRestart={() => window.mimik.permissions.restart()}

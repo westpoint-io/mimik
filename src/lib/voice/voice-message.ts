@@ -1,5 +1,6 @@
 import type { VoiceProvider } from '@/core/capture/voice/transcribe';
 import type { NarrationResult } from '@/core/capture/voice/types';
+import type { VoiceErrorReason } from '@/core/capture/voice/voice-update';
 
 export const VOICE_OFFSCREEN_TARGET = 'mimik-offscreen';
 export const VOICE_BACKGROUND_TARGET = 'mimik-background';
@@ -26,17 +27,6 @@ export const VoiceMessage = {
 } as const;
 
 export type VoiceMessageType = (typeof VoiceMessage)[keyof typeof VoiceMessage];
-
-export type VoiceErrorReason =
-  | 'permission-denied'
-  | 'no-device'
-  | 'no-audio'
-  | 'not-recording'
-  | 'already-recording'
-  | 'missing-api-key'
-  | 'stream-ended'
-  | 'unsupported'
-  | 'unknown';
 
 export interface VoiceEnvelope {
   type: VoiceMessageType;

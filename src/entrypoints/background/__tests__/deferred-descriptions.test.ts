@@ -1,39 +1,18 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { DOMContext } from '@/core/capture/dom/context';
 import {
   clearDeferredDescriptions,
   deferDescription,
   discardDeferred,
-  shouldQueueAiDescription,
   takeDeferredDescription,
   takeDeferredDescriptions,
 } from '../deferred-descriptions';
 
-const ctx = (name: string) => ({ page: { title: name, path: '/' } }) as DOMContext;
-
-const base = { action: 'click', hasDomContext: true, hasAiKey: true, narrationCapturing: false };
-
-describe('shouldQueueAiDescription', () => {
-  it('queues a description for a normal click', () => {
-    expect(shouldQueueAiDescription(base)).toBe(true);
-  });
-
-  it('does not queue while narration is capturing', () => {
-    expect(shouldQueueAiDescription({ ...base, narrationCapturing: true })).toBe(false);
-  });
-
-  it('does not queue without an api key', () => {
-    expect(shouldQueueAiDescription({ ...base, hasAiKey: false })).toBe(false);
-  });
-
-  it('does not queue without dom context', () => {
-    expect(shouldQueueAiDescription({ ...base, hasDomContext: false })).toBe(false);
-  });
-
-  it('does not queue for input actions', () => {
-    expect(shouldQueueAiDescription({ ...base, action: 'input' })).toBe(false);
-  });
-});
+const jobs = new Map<string, () => Promise<void>>();
+const ctx = (name: string) => {
+  const job = jobs.get(name) ?? (async () => undefined);
+  jobs.set(name, job);
+  return job;
+};
 
 describe('takeDeferredDescriptions', () => {
   beforeEach(() => {
@@ -57,10 +36,10 @@ describe('takeDeferredDescriptions', () => {
     expect(takeDeferredDescriptions('g1', []).map((p) => p.stepId)).toEqual(['s1', 's2']);
   });
 
-  it('carries the dom context captured at the time', () => {
+  it('carries the description job captured at the time', () => {
     deferDescription('g1', 's1', ctx('billing'));
 
-    expect(takeDeferredDescriptions('g1', [])[0].domContext.page.title).toBe('billing');
+    expect(takeDeferredDescriptions('g1', [])[0].describe).toBe(ctx('billing'));
   });
 
   it('drains, so a second call returns nothing', () => {
@@ -111,10 +90,10 @@ describe('discardDeferred', () => {
 });
 
 describe('takeDeferredDescription', () => {
-  it('hands back the context saved for one step', () => {
+  it('hands back the job saved for one step', () => {
     deferDescription('g1', 's1', ctx('one'));
 
-    expect(takeDeferredDescription('g1', 's1')).toEqual(ctx('one'));
+    expect(takeDeferredDescription('g1', 's1')).toBe(ctx('one'));
   });
 
   it('leaves the other steps waiting for the end of the recording', () => {

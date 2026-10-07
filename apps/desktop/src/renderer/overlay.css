@@ -217,12 +217,12 @@ body.boundary #frame {
   border-radius: 2px;
 }
 
-body.boundary[data-state='paused'] #frame {
+body.boundary[data-state='PAUSED'] #frame {
   border-style: dashed;
   border-color: var(--muted);
 }
 
-body.boundary[data-state='armed'] #frame {
+body.boundary[data-state='ARMED'] #frame {
   border-style: dashed;
 }
 
@@ -277,13 +277,13 @@ body.controls #dot {
   background: #9ca3af;
 }
 
-body.controls[data-state='recording'] #dot {
+body.controls[data-state='RECORDING'] #dot {
   background: #dc2626;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.18);
   animation: blink 1.6s ease-in-out infinite;
 }
 
-body.controls.collapsed[data-state='recording'] #dot {
+body.controls.collapsed[data-state='RECORDING'] #dot {
   background: #f87171;
 }
 
@@ -377,7 +377,7 @@ body.controls #veil {
   background: rgba(238, 242, 255, 0.72);
 }
 
-body.controls[data-state='paused'] #veil {
+body.controls[data-state='PAUSED'] #veil {
   background: rgba(255, 255, 255, 0.55);
 }
 

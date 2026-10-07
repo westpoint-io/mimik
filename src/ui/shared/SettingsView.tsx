@@ -11,7 +11,7 @@ import {
   useApiKeys,
   VoiceoverSettings,
 } from '@mimik/ui';
-import { ArrowLeft, Bug, Check, ChevronRight, EyeOff, Shield, Star } from 'lucide-react';
+import { ArrowLeft, Bug, Check, ChevronRight, EyeOff, Keyboard, Shield, Star } from 'lucide-react';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import { sendMessage } from '@/lib/messaging';
@@ -29,6 +29,7 @@ interface SettingsViewProps {
 export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
   const [section, setSection] = useState<SettingsSection>(() => settingsSection(window.location.hash));
   const [loaded, setLoaded] = useState(false);
+  const [recordKeys, setRecordKeys] = useState(false);
   const [blurPresets, setBlurPresets] = useState<Record<PresetKey, boolean>>({
     email: true,
     phone: true,
@@ -39,13 +40,14 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
   });
 
   useEffect(() => {
-    localStorage.get(['blurPresets']).then((result) => {
+    localStorage.get(['blurPresets', 'recordKeys']).then((result) => {
       if (result.blurPresets) setBlurPresets(result.blurPresets as Record<PresetKey, boolean>);
+      setRecordKeys(result.recordKeys === true);
       setLoaded(true);
     });
   }, []);
 
-  const { saved, queue } = useSettingsAutosave({ blurPresets }, loaded);
+  const { saved, queue } = useSettingsAutosave({ blurPresets, recordKeys }, loaded);
   const keys = useApiKeys({ onChange: queue });
 
   const showSection = (next: SettingsSection) => {
@@ -118,6 +120,24 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
         ))}
       </SettingsCard>
     ),
+    keys: (
+      <SettingsCard icon={Keyboard} title={i18n.t('settings.cardKeyboard')} hint={i18n.t('settings.cardKeyboardHint')}>
+        <div className="flex items-center justify-between gap-3 py-2">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold text-foreground">{i18n.t('settings.recordKeys')}</p>
+            <p className="text-[11px] text-muted-foreground">{i18n.t('settings.recordKeysHint')}</p>
+          </div>
+          <Switch
+            checked={recordKeys}
+            label={i18n.t('settings.recordKeys')}
+            onChange={(on) => {
+              setRecordKeys(on);
+              localStorage.set({ recordKeys: on });
+            }}
+          />
+        </div>
+      </SettingsCard>
+    ),
     'api-keys': <ApiKeysSettings state={keys} validate={validateApiKey} title={i18n.t('settings.apiKeys')} />,
   };
 
@@ -179,6 +199,7 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
         {sections.narration}
         {sections['voice-over']}
         {sections['smart-blur']}
+        {sections.keys}
         <div className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-secondary text-[10px] text-muted-foreground leading-relaxed">
           <Shield size={12} className="shrink-0 mt-0.5 text-accent" />
           <span>{i18n.t('settings.privacyNotice')}</span>

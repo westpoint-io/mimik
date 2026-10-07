@@ -1,5 +1,5 @@
 export interface CaptureInsert {
-  guideId: string;
-  atIndex: number;
+  insertTargetGuideId: string;
+  insertAtIndex: number;
   afterStep: number;
 }

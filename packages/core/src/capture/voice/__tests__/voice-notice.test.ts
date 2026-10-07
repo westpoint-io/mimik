@@ -1,14 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import type { PanelVoiceUpdate, VoicePhase } from '@/lib/port/types';
-import { VOICE_CONFIRM_MS, voiceNotice } from '../lib/voice-notice';
-import { voiceSignature } from '../lib/voice-signature';
+import { VOICE_CONFIRM_MS, voiceNotice } from '../voice-notice';
+import { voiceSignature } from '../voice-signature';
+import type { VoicePhase, VoiceUpdate } from '../voice-update';
 
 const LOCALES = ['en', 'es', 'fr', 'pt-BR', 'zh-CN'];
 
-function update(phase: VoicePhase, extra: Partial<PanelVoiceUpdate> = {}): PanelVoiceUpdate {
-  return { type: 'VOICE_UPDATE', phase, ...extra };
+function update(phase: VoicePhase, extra: Partial<VoiceUpdate> = {}): VoiceUpdate {
+  return { phase, ...extra };
 }
 
 function localeKeys(locale: string): Set<string> {

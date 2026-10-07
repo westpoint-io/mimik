@@ -28,7 +28,6 @@ sidepanel:
   connecting: Wird verbunden…
   heroTitle: Was möchtest du aufnehmen?
   heroSubtitle: Nimm jeden Workflow automatisch auf
-  startCapture: Aufnahme starten
   searchPlaceholder: Anleitungen durchsuchen…
   recentLabel: Zuletzt verwendet
   notRecordable: "Öffne eine Website, um mit der Aufnahme zu beginnen"
@@ -90,6 +89,10 @@ recording:
   minutesAgo: "vor $1 Min."
 
 settings:
+  cardKeyboard: "Tippen und Tasten"
+  cardKeyboardHint: "Was deine Tastatur zu einer Anleitung beiträgt."
+  recordKeys: "Kürzel und benannte Tasten aufzeichnen"
+  recordKeysHint: "Strg+S, Enter und Ähnliches werden zu Schritten."
   microphoneAccess: "Mikrofonzugriff"
   microphoneAccessAsk: "Dein Browser fragt einmal, bevor Mimik dich hören kann."
   microphoneAccessAllow: "Erlauben"
@@ -186,13 +189,20 @@ blurPresets:
   macAddress: MAC-Adresse
 
 desktop:
+  collapse: "Einklappen"
+  expand: "Ausklappen"
+  starting: "Wird gestartet…"
+  capturingStep: "Schritt $1 wird aufgenommen"
+  tipArmed: "Jeder Klick wird als Schritt gespeichert."
+  tipPaused: "Während der Pause wird nichts aufgenommen."
+  tipWaiting: "Dein erster Klick erscheint hier."
+  tipLabel: "Tipp:"
+  hintStartStop: "mit $1 startest und beendest du die Aufnahme."
+  hintCapture: "mit $1 nimmst du einen Schritt ohne Klick auf."
   micAccessAsk: "macOS fragt einmal, bevor Mimik dich hören kann."
   micAccessRefused: "Abgelehnt. Aktiviere Mimik unter Datenschutz & Sicherheit."
   micAccessOpen: "Einstellungen öffnen"
-  ready: "Bereit"
-  pause: "Pausieren"
-  resume: "Fortsetzen"
-  finish: "Beenden"
+  armed: "Bereit"
   screenshotDelay: "Screenshot-Verzögerung"
   keepClicksBeyondArea: "Klicks außerhalb des Bereichs aufnehmen"
   keepClicksBeyondAreaHint: "Im Bereichsmodus werden Klicks außerhalb trotzdem zu Schritten, gezeigt im Bereich."
@@ -202,7 +212,7 @@ desktop:
   captureMode: Was aufnehmen
   modeWindow: Fenster
   modeScreen: Bildschirm
-  modeRegion: Bereich
+  modeArea: Bereich
   startSheetTitle: Aufnahme starten
   permissionsTitle: "Mimik das Aufnehmen erlauben"
   permissionsIntro: "Mimik braucht ein paar Berechtigungen, um aufzunehmen."
@@ -243,23 +253,19 @@ desktop:
   upToDate: "Auf dem neuesten Stand"
   upToDateMessage: "Mimik $1 ist aktuell."
   cardScreenshots: "Screenshots"
-  cardKeyboard: "Tippen und Tasten"
   cardGlobalKeys: "Globale Tasten"
   cardGlobalKeysHint: "Werden jeder Anwendung entzogen, solange Mimik läuft."
   zoomLevel: "Auf den Klick zoomen"
   zoomLevelHint: "Neue Aufzeichnungen starten hier. Automatisch hält alle Schritte gleich groß."
   zoomAuto: "Automatisch"
   zoomGuide: "Zoom"
-  recordKeys: "Kürzel und benannte Tasten aufzeichnen"
   recordTyping: "Eingaben aufzeichnen"
   recordTypingHint: "Alles, was du in ein Feld tippst, wird ein Schritt."
   typingDebounce: "Eingabeschritt beenden nach"
   typingDebounceHint: "Eine so lange Pause beendet den Eingabeschritt."
   cardScreenshotsHint: "Was der Screenshot jedes Schritts zeigt."
-  cardKeyboardHint: "Was deine Tastatur zu einer Anleitung beiträgt."
   captureModeHint: "Fenster folgt der App, die du anklickst."
   screenshotDelayHint: "Wartezeit vor dem Screenshot, für Menüs mit Animation."
-  recordKeysHint: "Strg+S, Enter und Ähnliches werden zu Schritten."
   seconds: "s"
   shortcutStartStop: "Aufnahme starten oder beenden"
   shortcutPauseResume: "Pausieren oder fortsetzen"

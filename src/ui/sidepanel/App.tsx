@@ -1,3 +1,4 @@
+import { isLive } from '@mimik/core/capture/is-live';
 import { logger } from '@mimik/core/logger';
 import { Button, Input, TooltipProvider } from '@mimik/ui';
 import { Globe, Search, Settings, Video } from 'lucide-react';
@@ -63,7 +64,7 @@ export function App() {
       },
       onDisconnect: () => setIsAlive(false),
       onStateUpdate: (update) => {
-        const live = update.state === CaptureState.RECORDING || update.state === CaptureState.PAUSED;
+        const live = isLive(update.state);
         const isPaused = update.state === CaptureState.PAUSED;
         setPaused(isPaused);
         setPauseReason(isPaused ? (update.pauseReason ?? null) : null);
@@ -166,12 +167,23 @@ export function App() {
     }
   }, []);
 
+  const handleDiscardRecording = useCallback(async () => {
+    try {
+      await sendMessage('discardRecording', undefined);
+      setIsRecording(false);
+      setView({ name: 'library' });
+    } catch (err) {
+      logger.error(' DISCARD_RECORDING error', err);
+    }
+  }, []);
+
   function renderView() {
     if (view.name === 'recording') {
       return (
         <RecordingView
           guideId={view.guideId}
           onStop={handleStopRecording}
+          onDiscard={handleDiscardRecording}
           voice={voice}
           aiFailure={aiFailure}
           paused={paused}
@@ -258,7 +270,7 @@ export function App() {
               className="w-full py-3 px-4 h-auto rounded-lg font-semibold text-sm hover:-translate-y-px shadow-sm"
             >
               <Video size={18} />
-              {i18n.t('sidepanel.startCapture')}
+              {i18n.t('capture.startCapture')}
             </Button>
           ) : (
             <p className="flex items-center justify-center gap-1.5 rounded-lg border border-border py-2.5 text-xs font-medium text-muted-foreground">

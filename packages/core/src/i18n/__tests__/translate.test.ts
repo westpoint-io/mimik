@@ -26,9 +26,9 @@ describe('translate', () => {
   });
 
   it('accepts the underscore key style as well as dots', () => {
-    expect(translate(messages, 'common_save')).toBe('Save');
+    expect(translate(messages, 'common.save')).toBe('Save');
     expect(translate(messages, 'nested_deep_leaf')).toBe('Leaf');
-    expect(translate(messages, 'common_updated', ['2.0'])).toBe('Updated to v2.0');
+    expect(translate(messages, 'common.updated', ['2.0'])).toBe('Updated to v2.0');
   });
 
   it('fills substitutions by position', () => {

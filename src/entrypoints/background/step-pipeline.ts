@@ -1,13 +1,10 @@
 import { logger } from '@mimik/core/logger';
 import { queueDescription } from '@/core/capture/ai/description-queue';
-import { AI_CREDENTIAL_SETTINGS, resolveAiCredentials } from '@/core/capture/ai/keys';
 import type { DOMContext } from '@/core/capture/dom/context';
+import { isLive } from '@/core/capture/is-live';
 import { CaptureState } from '@/core/capture/machine';
-import { buildFallbackDescription } from '@/core/capture/step-description';
+import { type StepNarration, writeStep } from '@/core/capture/write-step';
 import {
-  addStepToGuide,
-  clearStepAiPending,
-  createStep,
   getStep,
   saveScreenshot,
   updateStepCapture,
@@ -20,8 +17,8 @@ import { captureVisibleTab } from '@/lib/browser-api/capture-visible-tab';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import type { CaptureStepData, CaptureStepResponse } from '@/lib/messaging';
 import { getActor } from './actor';
-import { generateAiDescription } from './ai-description';
-import { deferDescription, shouldQueueAiDescription } from './deferred-descriptions';
+import { deferDescription } from './deferred-descriptions';
+import { describeDomStep } from './describe-dom-step';
 import { flushNarrationForStep, getVoiceUpdate } from './voice';
 
 async function takeScreenshot(stepId: string, meta: ElementMeta): Promise<string | undefined> {
@@ -55,64 +52,34 @@ function isRecording(): boolean {
   return getActor().getSnapshot().value === CaptureState.RECORDING;
 }
 
-function isRecordingOrPaused(): boolean {
-  return getActor().getSnapshot().value !== CaptureState.IDLE;
-}
-
-async function tryAIDescription(stepId: string, domContext: DOMContext) {
-  if (!resolveAiCredentials(await localStorage.get([...AI_CREDENTIAL_SETTINGS]))) return;
-  try {
-    await clearStepAiPending(stepId, await generateAiDescription(domContext));
-  } catch (err) {
-    await clearStepAiPending(stepId);
-    throw err;
-  }
-}
+const narration: StepNarration = {
+  take(guideId, stepId, timestamp, describe) {
+    if (describe) deferDescription(guideId, stepId, describe);
+    void flushNarrationForStep(guideId, stepId, timestamp);
+  },
+};
 
 export async function handleCaptureStep(data: CaptureStepData): Promise<CaptureStepResponse> {
   const snap = getActor().getSnapshot();
   if (snap.value !== CaptureState.RECORDING) return { ignored: true };
 
-  const stepIndex = snap.context.stepCount;
   getActor().send({ type: 'USER_ACTION' });
 
-  const guideId = snap.context.currentGuideId!;
   const stepId = crypto.randomUUID();
-
   const screenshotId = await takeScreenshot(stepId, data.elementMeta);
-
-  const narrationCapturing = getVoiceUpdate().phase === 'recording';
-  const hasAiKey = resolveAiCredentials(await localStorage.get([...AI_CREDENTIAL_SETTINGS])) !== null;
-  const willUseAI = shouldQueueAiDescription({
-    action: data.action,
-    hasDomContext: !!data.domContext,
-    hasAiKey,
-    narrationCapturing,
-  });
-
-  const timestamp = Date.now();
-  await createStep({
-    id: stepId,
-    guideId,
-    index: stepIndex,
-    description: buildFallbackDescription(data.action, data.elementMeta),
-    action: data.action,
-    url: snap.context.currentUrl,
-    timestamp,
-    screenshotId,
-    elementMeta: data.elementMeta,
-    descriptionSource: 'heuristic',
-    aiPending: willUseAI || narrationCapturing,
-  });
-  await addStepToGuide(guideId, stepId);
-
   const domContext = data.domContext;
-  if (data.action !== 'input' && domContext) {
-    if (willUseAI) queueDescription(guideId, () => tryAIDescription(stepId, domContext));
-    else if (narrationCapturing && hasAiKey) deferDescription(guideId, stepId, domContext);
-  }
 
-  if (narrationCapturing) void flushNarrationForStep(guideId, stepId, timestamp);
+  await writeStep({
+    stepId,
+    guideId: snap.context.currentGuideId!,
+    action: data.action,
+    elementMeta: data.elementMeta,
+    screenshotId,
+    place: { url: snap.context.currentUrl },
+    describable: data.action !== 'input' && domContext !== undefined,
+    describe: () => (domContext ? describeDomStep(stepId, domContext) : Promise.resolve()),
+    narration: getVoiceUpdate().phase === 'recording' ? narration : null,
+  });
 
   return { stepId };
 }
@@ -130,12 +97,10 @@ export async function handleFinalizeInputStep(
   elementMeta: ElementMeta,
   domContext: DOMContext | undefined,
 ) {
-  if (!isRecordingOrPaused()) return;
+  if (!isLive(getActor().getSnapshot().value)) return;
   const screenshotId = await takeScreenshot(stepId, elementMeta);
   await updateStepCapture(stepId, elementMeta, screenshotId);
 
   const guideId = (await getStep(stepId))?.guideId;
-  if (domContext && guideId) {
-    queueDescription(guideId, () => tryAIDescription(stepId, domContext));
-  }
+  if (domContext && guideId) queueDescription(guideId, () => describeDomStep(stepId, domContext));
 }

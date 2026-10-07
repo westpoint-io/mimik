@@ -1,3 +1,4 @@
+import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import { i18n } from '@mimik/core/env';
 import { isBlock, stepNumbers } from '@mimik/core/guides/blocks';
 import { createSnapshot, deleteSteps, insertBlock, reorderSteps } from '@mimik/core/guides/service';
@@ -10,7 +11,6 @@ import { ConfirmDialog } from '../../common/components/ConfirmDialog';
 import { Button } from '../../components/ui/button';
 import { useFullview } from '../../stores/use-fullview';
 import { BlockCard } from './BlockCard';
-import { CaptureTabDialog } from './CaptureTabDialog';
 import { EmptyGuideState } from './EmptyGuideState';
 import { InsertBlockMenu } from './InsertBlockMenu';
 import { StepCard } from './StepCard';
@@ -26,8 +26,7 @@ interface GuideStepListProps {
   readOnly?: boolean;
   onChanged?: () => void;
   hasApiKey?: boolean;
-  onInsertRecording?: (guideId: string, insertAtIndex: number, tabId: number) => void;
-  onCaptureMore?: (atIndex: number, afterStep: number) => void;
+  onCaptureMore?: (target: CaptureInsert) => void;
 }
 
 export function GuideStepList({
@@ -41,7 +40,6 @@ export function GuideStepList({
   readOnly,
   onChanged,
   hasApiKey,
-  onInsertRecording,
   onCaptureMore,
 }: GuideStepListProps) {
   const { scrollToStepId, setActiveStepId, bumpHistoryRefresh } = useFullview((s) => ({
@@ -50,7 +48,6 @@ export function GuideStepList({
     bumpHistoryRefresh: s.bumpHistoryRefresh,
   }));
 
-  const [recordAtIndex, setRecordAtIndex] = useState<number | null>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -59,13 +56,14 @@ export function GuideStepList({
   const stepRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const frameRatio = dominantRatio(screenshots);
   const numbers = stepNumbers(steps);
-  const recordAt =
-    onCaptureMore || onInsertRecording
-      ? (atIndex: number) => () =>
-          onCaptureMore
-            ? onCaptureMore(atIndex, steps.slice(0, atIndex).filter((step) => !isBlock(step)).length)
-            : setRecordAtIndex(atIndex)
-      : undefined;
+  const recordAt = onCaptureMore
+    ? (atIndex: number) => () =>
+        onCaptureMore({
+          insertTargetGuideId: guideId,
+          insertAtIndex: atIndex,
+          afterStep: steps.slice(0, atIndex).filter((step) => !isBlock(step)).length,
+        })
+    : undefined;
 
   useEffect(() => {
     if (scrollToStepId) {
@@ -159,18 +157,6 @@ export function GuideStepList({
           onDragEnd: handleDragEnd,
         };
 
-  const captureDialog = (
-    <CaptureTabDialog
-      open={recordAtIndex !== null}
-      onCancel={() => setRecordAtIndex(null)}
-      onStart={(tabId) => {
-        const atIndex = recordAtIndex;
-        setRecordAtIndex(null);
-        if (atIndex !== null) onInsertRecording?.(guideId, atIndex, tabId);
-      }}
-    />
-  );
-
   if (steps.length === 0) {
     return (
       <div className="flex flex-col">
@@ -178,7 +164,6 @@ export function GuideStepList({
         {!readOnly && (
           <InsertBlockMenu onInsert={(blockType) => handleInsertBlock(0, blockType)} onRecord={recordAt?.(0)} />
         )}
-        {captureDialog}
       </div>
     );
   }
@@ -247,7 +232,6 @@ export function GuideStepList({
           )}
         </div>
       ))}
-      {captureDialog}
       {selected.size > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 rounded-full border border-border bg-card px-4 py-2 shadow-lg">
           <span className="text-[12px] font-medium text-foreground">

@@ -27,14 +27,14 @@ function createTabMessageHandler(session: CaptureSession, guideMe: GuideMeContro
         sendResponse({ alive: true, capturing: session.isActive });
         return true;
 
-      case TabMessage.START_CAPTURE:
+      case TabMessage.ATTACH_CAPTURE:
         if (msg.guideId) {
           session.start(msg.guideId as string);
           sendResponse({ started: true });
         }
         return true;
 
-      case TabMessage.STOP_CAPTURE:
+      case TabMessage.DETACH_CAPTURE:
         session.stop().then(() => sendResponse({ stopped: true }));
         return true;
 

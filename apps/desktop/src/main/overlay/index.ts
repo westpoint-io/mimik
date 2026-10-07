@@ -1,33 +1,43 @@
 import { join } from 'node:path';
-import type { AiFailureReason } from '@mimik/core/capture/ai/errors';
+import type { AiFailureUpdate } from '@mimik/core/capture/ai/errors';
+import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
+import {
+  CaptureState,
+  type CaptureStateValue,
+  type captureMachine,
+  type PauseReason,
+} from '@mimik/core/capture/machine';
+import type { VoiceErrorReason } from '@mimik/core/capture/voice/voice-update';
+import type { DescriptionSource } from '@mimik/core/guides/types';
 import { app, BrowserWindow, ipcMain, screen } from 'electron';
+import type { Actor } from 'xstate';
 import { clampToDisplays, loadRegion, type Region, saveRegion } from '../capture/region';
 import type { CaptureMode } from '../capture/settings';
 
-export type OverlayState = 'hidden' | 'editing' | 'armed' | 'recording' | 'paused';
+export type CaptureActor = Actor<typeof captureMachine>;
 export type OverlayCommand =
-  | 'edit'
-  | 'arm'
-  | 'cancel'
+  | 'done'
+  | 'cancelEdit'
+  | 'disarm'
   | 'start'
   | 'pause'
   | 'resume'
   | 'stop'
   | 'mode:window'
   | 'mode:screen'
-  | 'mode:region'
-  | 'remove'
-  | 'mic:on'
-  | 'mic:off'
+  | 'mode:area'
+  | 'deleteStep'
+  | 'narration:start'
+  | 'narration:stop'
   | 'intro:done';
 
 export interface OverlayStep {
   id: string;
-  index: number;
+  number: number;
   title: string;
   action: string;
   src: string;
-  source: 'heuristic' | 'ai' | 'narration';
+  source: DescriptionSource;
   pending: boolean;
   app: string | null;
 }
@@ -42,14 +52,10 @@ export interface OverlayShortcuts {
   capture: string | null;
 }
 
-export interface OverlayAiFailure {
-  reason: AiFailureReason;
-  provider: string;
-}
-
 export interface OverlayNarration {
   level: number;
   speaking: boolean;
+  reason?: VoiceErrorReason;
 }
 
 export interface OverlayAim {
@@ -64,7 +70,8 @@ export interface OverlayPrint {
 }
 
 export interface OverlayView {
-  state: OverlayState;
+  state: CaptureStateValue;
+  pauseReason: PauseReason | null;
   region: Region;
   step: OverlayStep | null;
   mode: CaptureMode;
@@ -73,12 +80,13 @@ export interface OverlayView {
   print: OverlayPrint;
   starting: boolean;
   shortcuts: OverlayShortcuts;
-  aiFailure: OverlayAiFailure | null;
+  aiFailure: AiFailureUpdate | null;
   narration: OverlayNarration | null;
 }
 
 export interface OverlayOptions {
   introFrame?: () => Promise<Region>;
+  insert?: () => CaptureInsert | null;
   shortcuts?: () => OverlayShortcuts;
 }
 
@@ -144,23 +152,23 @@ export class CaptureOverlay {
   private anchor: { right: number; bottom: number } | null = null;
   private intro: BrowserWindow | null = null;
   private introDone: ((finished: boolean) => void) | null = null;
-  private current: OverlayState = 'hidden';
+  private editing = false;
   private rect: Region;
   private step: OverlayStep | null = null;
   private size = { width: CONTROLS.width, height: CONTROLS.height };
   private busy = false;
   private progress: OverlayProgress = { percent: 0, ms: 0 };
   private print: OverlayPrint = { src: null, aim: null };
-  private aiFailure: OverlayAiFailure | null = null;
+  private aiFailure: AiFailureUpdate | null = null;
   private narration: OverlayNarration | null = null;
-  private editingFrom: OverlayState = 'hidden';
   private modeBeforeEdit: CaptureMode | null = null;
   private hiding: { shown: BrowserWindow[]; ready: Promise<unknown>; users: number } | null = null;
   private starting = false;
 
   constructor(
+    private capture: CaptureActor,
     private onCommand: (command: OverlayCommand) => void,
-    private mode: () => CaptureMode = () => 'region',
+    private mode: () => CaptureMode = () => 'area',
     private options: OverlayOptions = {},
   ) {
     this.rect = loadRegion();
@@ -169,14 +177,19 @@ export class CaptureOverlay {
     ipcMain.on('mimik:overlay:setRegion', (_event, next: Region) => this.setRegion(next));
     ipcMain.on('mimik:overlay:command', (_event, command: OverlayCommand) => this.command(command));
     ipcMain.on('mimik:overlay:size', (_event, width: number, height: number) => this.resize(width, height));
+    capture.subscribe(() => this.render());
   }
 
   get region(): Region {
     return this.rect;
   }
 
-  get state(): OverlayState {
-    return this.current;
+  get state(): CaptureStateValue {
+    return this.capture.getSnapshot().value;
+  }
+
+  get isEditing(): boolean {
+    return this.editing;
   }
 
   private windows(): BrowserWindow[] {
@@ -191,7 +204,8 @@ export class CaptureOverlay {
 
   private view(): OverlayView {
     return {
-      state: this.current,
+      state: this.state,
+      pauseReason: this.capture.getSnapshot().context.pauseReason,
       region: this.rect,
       step: this.step,
       mode: this.mode(),
@@ -211,8 +225,7 @@ export class CaptureOverlay {
   }
 
   refresh(): void {
-    if (this.current !== 'hidden' && this.current !== 'editing') this.show(this.current);
-    else this.broadcast();
+    this.render();
   }
 
   ignores(point: { x: number; y: number }): boolean {
@@ -228,7 +241,7 @@ export class CaptureOverlay {
     this.broadcast();
   }
 
-  setAiFailure(failure: OverlayAiFailure | null): void {
+  setAiFailure(failure: AiFailureUpdate | null): void {
     this.aiFailure = failure;
     this.broadcast();
   }
@@ -304,7 +317,7 @@ export class CaptureOverlay {
   }
 
   private ensureBoundary(): void {
-    if (this.mode() !== 'region') {
+    if (this.mode() !== 'area') {
       if (this.boundary && !this.boundary.isDestroyed()) this.boundary.destroy();
       this.boundary = null;
       return;
@@ -337,8 +350,7 @@ export class CaptureOverlay {
   }
 
   edit(): void {
-    if (this.current !== 'editing') this.editingFrom = this.current;
-    this.current = 'editing';
+    this.editing = true;
     if (this.boundary && !this.boundary.isDestroyed()) this.boundary.hide();
     if (this.controls && !this.controls.isDestroyed()) this.controls.hide();
     this.closeEditors();
@@ -354,9 +366,22 @@ export class CaptureOverlay {
     });
   }
 
-  private show(state: Exclude<OverlayState, 'hidden' | 'editing'>): void {
+  private stopEditing(): void {
+    this.editing = false;
+    this.modeBeforeEdit = null;
     this.closeEditors();
-    this.current = state;
+  }
+
+  private render(): void {
+    if (this.editing) {
+      this.broadcast();
+      return;
+    }
+    if (this.state === CaptureState.IDLE) {
+      for (const win of this.windows()) win.hide();
+      this.broadcast();
+      return;
+    }
     this.ensureBoundary();
     this.ensureControls();
     for (const win of this.windows()) {
@@ -367,28 +392,27 @@ export class CaptureOverlay {
   }
 
   arm(): void {
-    this.show('armed');
-  }
-
-  record(): void {
-    this.show('recording');
-  }
-
-  pause(): void {
-    this.show('paused');
+    this.stopEditing();
+    if (this.state === CaptureState.IDLE) this.capture.send({ type: 'ARM' });
+    else this.render();
   }
 
   private async begin(): Promise<void> {
     if (this.starting) return;
     this.starting = true;
-    this.show('armed');
+    this.arm();
     const frame = await (this.options.introFrame?.() ?? Promise.resolve(this.displayUnderCursor())).catch(() =>
       this.displayUnderCursor(),
     );
     const finished = await this.playIntro(frame);
     this.starting = false;
-    if (!finished) return;
-    this.record();
+    if (!finished || this.state !== CaptureState.ARMED) return;
+    const target = this.options.insert?.();
+    this.capture.send({
+      type: 'START_RECORDING',
+      insertTargetGuideId: target?.insertTargetGuideId,
+      insertAtIndex: target?.insertAtIndex,
+    });
     this.onCommand('start');
   }
 
@@ -420,13 +444,15 @@ export class CaptureOverlay {
     });
   }
 
-  hide(): void {
+  reset(): void {
     this.introDone?.(false);
     this.starting = false;
     this.narration = null;
-    this.current = 'hidden';
-    this.closeEditors();
-    for (const win of this.windows()) win.hide();
+    this.step = null;
+    this.stopEditing();
+    if (this.state === CaptureState.ARMED) this.capture.send({ type: 'DISARM' });
+    else if (this.state !== CaptureState.IDLE) this.capture.send({ type: 'STOP_RECORDING' });
+    this.render();
   }
 
   run(command: OverlayCommand): void {
@@ -434,25 +460,31 @@ export class CaptureOverlay {
   }
 
   private command(command: OverlayCommand): void {
+    const state = this.state;
     if (command.startsWith('mode:')) {
       const before = this.mode();
       this.onCommand(command);
-      if (command === 'mode:region' && this.current === 'paused') {
-        this.modeBeforeEdit = before;
+      if (command === 'mode:area' && state === CaptureState.PAUSED && !this.editing) {
         this.edit();
+        this.modeBeforeEdit = before;
       }
       return;
     }
-    const recording = this.editingFrom === 'recording' || this.editingFrom === 'paused';
-    if (this.current === 'editing' && recording && (command === 'arm' || command === 'cancel')) {
-      if (command === 'cancel' && this.modeBeforeEdit) this.onCommand(`mode:${this.modeBeforeEdit}`);
-      this.modeBeforeEdit = null;
-      if (this.editingFrom === 'recording') this.record();
-      else if (command === 'cancel') this.pause();
-      else {
-        this.record();
-        this.onCommand('resume');
+    if (command === 'done') {
+      if (state === CaptureState.PAUSED) this.command('resume');
+      else this.arm();
+      return;
+    }
+    if (command === 'cancelEdit') {
+      const restore = this.modeBeforeEdit;
+      this.stopEditing();
+      if (state === CaptureState.PAUSED) {
+        if (restore) this.onCommand(`mode:${restore}`);
+        this.render();
+        return;
       }
+      this.reset();
+      this.onCommand(command);
       return;
     }
     if (command === 'intro:done') {
@@ -463,25 +495,33 @@ export class CaptureOverlay {
       void this.begin();
       return;
     }
-    if (command === 'remove') {
+    if (command === 'deleteStep') {
       if (!this.busy) this.onCommand(command);
       return;
     }
-    if (command === 'mic:on' || command === 'mic:off') {
+    if (command === 'narration:start' || command === 'narration:stop') {
       this.onCommand(command);
       return;
     }
-    if (this.starting && command !== 'cancel' && command !== 'stop') return;
-    if (command === 'edit') this.edit();
-    else if (command === 'arm') this.arm();
-    else if (command === 'resume') this.record();
-    else if (command === 'pause') this.pause();
-    else {
-      this.step = null;
-      this.hide();
+    if (command === 'disarm' || (command === 'stop' && state === CaptureState.ARMED)) {
+      this.reset();
+      this.onCommand('disarm');
+      return;
     }
-    this.onCommand(command);
-    if (command === 'pause' && this.mode() === 'region') this.edit();
+    if (this.starting) return;
+    if (command === 'pause' && state === CaptureState.RECORDING) {
+      const area = this.mode() === 'area';
+      this.capture.send({ type: 'PAUSE_CAPTURE', reason: area ? 'area' : 'manual' });
+      this.onCommand(command);
+      if (area) this.edit();
+    } else if (command === 'resume' && state === CaptureState.PAUSED) {
+      this.stopEditing();
+      this.capture.send({ type: 'RESUME_CAPTURE' });
+      this.onCommand(command);
+    } else if (command === 'stop' && state !== CaptureState.IDLE) {
+      this.reset();
+      this.onCommand(command);
+    }
   }
 
   async withHidden<T>(fn: () => Promise<T>): Promise<T> {
@@ -516,7 +556,7 @@ export class CaptureOverlay {
     for (const win of [this.boundary, this.controls]) if (win && !win.isDestroyed()) win.destroy();
     this.boundary = null;
     this.controls = null;
-    this.current = 'hidden';
+    this.editing = false;
     for (const channel of ['mimik:overlay:region', 'mimik:overlay:view']) ipcMain.removeHandler(channel);
     ipcMain.removeAllListeners('mimik:overlay:setRegion');
     ipcMain.removeAllListeners('mimik:overlay:command');

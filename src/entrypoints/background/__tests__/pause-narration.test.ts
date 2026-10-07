@@ -15,8 +15,8 @@ vi.mock('@/lib/browser-api', () => ({ getActiveTab: () => Promise.resolve({ id: 
 vi.mock('@/lib/logger', () => ({ logger: { info: vi.fn(), debug: vi.fn(), warn: vi.fn(), error: vi.fn() } }));
 vi.mock('../tab-manager', () => ({
   broadcastDismissBlur: vi.fn().mockResolvedValue(undefined),
-  broadcastStartCapture: vi.fn().mockResolvedValue(undefined),
-  broadcastStopCaptureAndFlush: vi.fn().mockResolvedValue(undefined),
+  broadcastAttachCapture: vi.fn().mockResolvedValue(undefined),
+  broadcastDetachCaptureAndFlush: vi.fn().mockResolvedValue(undefined),
   injectContentScript: vi.fn().mockResolvedValue(undefined),
   isInjectableTab: () => true,
 }));

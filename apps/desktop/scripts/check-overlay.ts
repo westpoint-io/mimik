@@ -1,9 +1,11 @@
 import { join } from 'node:path';
+import { CaptureState, captureMachine } from '@mimik/core/capture/machine';
 import { app, BrowserWindow, globalShortcut, screen, webContents } from 'electron';
 import { clampToDisplays, defaultRegion, loadRegion, type Region, saveRegion } from '../src/main/capture/region';
 import type { CaptureMode } from '../src/main/capture/settings';
 import { CaptureOverlay } from '../src/main/overlay';
 import { bindShortcuts, sameShortcuts, shortcutMap, unbindShortcuts } from '../src/main/shortcuts';
+import { createActor } from 'xstate';
 
 interface CheckResult {
   name: string;
@@ -49,8 +51,17 @@ setTimeout(() => bail(new Error('check did not finish within 60s')), 60_000).unr
 
 app.whenReady().then(async () => {
   const commands: string[] = [];
-  let mode: CaptureMode = 'region';
+  let mode: CaptureMode = 'area';
+  const capture = createActor(captureMachine).start();
+  const record = () => {
+    const state = capture.getSnapshot().value;
+    if (state === CaptureState.IDLE) capture.send({ type: 'ARM' });
+    if (capture.getSnapshot().value === CaptureState.ARMED) capture.send({ type: 'START_RECORDING' });
+    if (state === CaptureState.PAUSED) capture.send({ type: 'RESUME_CAPTURE' });
+  };
+  const pause = () => capture.send({ type: 'PAUSE_CAPTURE', reason: 'manual' });
   const overlay: CaptureOverlay = new CaptureOverlay(
+    capture,
     (command) => commands.push(command),
     () => mode,
     {
@@ -137,14 +148,14 @@ app.whenReady().then(async () => {
     'Start plays the intro over the capture area before recording',
     intro !== null &&
       !commands.includes('start') &&
-      overlay.state === 'armed' &&
+      overlay.state === CaptureState.ARMED &&
       startCard.label === 'Starting…' &&
       startCard.start === true &&
       introBounds?.width === overlay.region.width &&
       introBounds?.height === overlay.region.height,
     `intro ${introBounds ? `${introBounds.width} × ${introBounds.height}` : 'missing'}, card says ${startCard.label}, commands: ${commands.join(', ') || 'none'}`,
   );
-  const recorded = await until(() => overlay.state === 'recording', 7_000);
+  const recorded = await until(() => overlay.state === CaptureState.RECORDING, 7_000);
   check(
     'Start reaches the host and records once the intro ends',
     recorded && commands.includes('start') && overlay.introWindow === null,
@@ -152,19 +163,19 @@ app.whenReady().then(async () => {
   );
   await windowWithHash('controls')?.webContents.executeJavaScript("document.querySelector('#secondary').click()");
   await settle();
-  const pausedInto = overlay.state;
-  overlay.run('cancel');
+  const pausedInto = overlay.isEditing ? 'editor' : overlay.state;
+  overlay.run('cancelEdit');
   await settle();
   check(
     'Pause in Area mode pauses and opens the area editor, and Cancel leaves it paused',
-    commands.includes('pause') && pausedInto === 'editing' && overlay.state === 'paused',
+    commands.includes('pause') && pausedInto === 'editor' && overlay.state === CaptureState.PAUSED,
     `commands: ${commands.join(', ')}; pause opened ${pausedInto}, cancel left ${overlay.state}`,
   );
   await windowWithHash('controls')?.webContents.executeJavaScript("document.querySelector('#primary').click()");
   await settle();
   check(
     'finishing hides the area and the controls',
-    overlay.state === 'hidden' && overlayWindows().every((w) => !w.isVisible()),
+    overlay.state === CaptureState.IDLE && overlayWindows().every((w) => !w.isVisible()),
     `state is ${overlay.state}; ${overlayWindows().filter((w) => w.isVisible()).length} window(s) still visible`,
   );
   overlay.arm();
@@ -197,7 +208,7 @@ app.whenReady().then(async () => {
   const evaluate = (script: string) => windowWithHash('controls')?.webContents.executeJavaScript(script);
   const card = async (fields: string) => JSON.parse(String((await evaluate(`JSON.stringify({ ${fields} })`)) ?? '{}'));
   const src = 'mimik-screenshot://00000000-0000-4000-8000-000000000000';
-  overlay.record();
+  record();
   await settle();
   const idle = await card("tip: document.querySelector('#tip').textContent, hint: document.querySelector('#keyHint').textContent");
   check(
@@ -206,12 +217,12 @@ app.whenReady().then(async () => {
     `tip: ${idle.tip}, hint: ${idle.hint}`,
   );
   const badgeWhileRecording = await card("badge: !document.querySelector('#badge').hidden && document.querySelector('#badge').textContent");
-  overlay.pause();
+  pause();
   await settle();
   const resting = await card(
     "tip: document.querySelector('#tip').textContent, intro: !document.querySelector('#intro').hidden, resting: document.body.classList.contains('resting'), hint: document.querySelector('#keyHint').hidden",
   );
-  overlay.record();
+  record();
   await settle();
   check(
     'recording names its mode, and an empty pause is not a blank card',
@@ -224,7 +235,7 @@ app.whenReady().then(async () => {
     `badge ${badgeWhileRecording.badge}, paused tip ${resting.tip}, mascot shown ${resting.intro}`,
   );
 
-  overlay.showStep({ id: 'one', index: 1, title: 'Click "Save"', action: 'click', src, source: 'heuristic', pending: false, app: 'Explorer' });
+  overlay.showStep({ id: 'one', number: 1, title: 'Click "Save"', action: 'click', src, source: 'heuristic', pending: false, app: 'Explorer' });
   await settle();
   const step = await card(
     "intro: getComputedStyle(document.querySelector('#intro')).display, title: document.querySelector('#stepTitle').textContent, source: document.querySelector('#source').textContent, meta: document.querySelector('#metaText').textContent",
@@ -235,12 +246,12 @@ app.whenReady().then(async () => {
     `intro display: ${step.intro}, title: ${step.title}, source: ${step.source}, meta: ${step.meta}`,
   );
 
-  overlay.showStep({ id: 'one', index: 1, title: 'Click "Save"', action: 'click', src, source: 'heuristic', pending: true, app: 'Explorer' });
+  overlay.showStep({ id: 'one', number: 1, title: 'Click "Save"', action: 'click', src, source: 'heuristic', pending: true, app: 'Explorer' });
   await settle();
   const pendingStep = await card(
     "title: document.querySelector('#stepTitle').textContent, source: document.querySelector('#source').textContent, loaders: document.querySelectorAll('#writing, #skeleton, #pillWriting').length",
   );
-  overlay.showStep({ id: 'one', index: 1, title: 'Save the file', action: 'click', src, source: 'ai', pending: false, app: 'Explorer' });
+  overlay.showStep({ id: 'one', number: 1, title: 'Save the file', action: 'click', src, source: 'ai', pending: false, app: 'Explorer' });
   await settle();
   const rewritten = await card("source: document.querySelector('#source').textContent, title: document.querySelector('#stepTitle').textContent");
   check(
@@ -253,7 +264,7 @@ app.whenReady().then(async () => {
     `while pending: ${pendingStep.source} "${pendingStep.title}", ${pendingStep.loaders} writing loaders; then ${rewritten.source} "${rewritten.title}"`,
   );
 
-  overlay.showStep({ id: 'one', index: 1, title: 'Press ⌃S on "Search"', action: 'keydown:⌃S', src, source: 'heuristic', pending: false, app: 'Chrome' });
+  overlay.showStep({ id: 'one', number: 1, title: 'Press ⌃S on "Search"', action: 'keydown:⌃S', src, source: 'heuristic', pending: false, app: 'Chrome' });
   await settle();
   const keyed = await card(
     "key: document.querySelector('#stepTitle kbd')?.textContent ?? null, title: document.querySelector('#stepTitle').textContent",
@@ -266,13 +277,13 @@ app.whenReady().then(async () => {
 
   await evaluate("document.querySelector('#remove').click()");
   await settle();
-  check('removing the step reaches the host', commands.includes('remove'), `commands: ${commands.join(', ')}`);
+  check('removing the step reaches the host', commands.includes('deleteStep'), `commands: ${commands.join(', ')}`);
 
-  overlay.run('mic:on');
+  overlay.run('narration:start');
   await settle();
   check(
     'turning narration on reaches the host and keeps recording',
-    commands.includes('mic:on') && overlay.state === 'recording',
+    commands.includes('narration:start') && overlay.state === CaptureState.RECORDING,
     `state ${overlay.state}, commands: ${commands.join(', ')}`,
   );
 
@@ -327,13 +338,13 @@ app.whenReady().then(async () => {
       aimed.src === src,
     `before: marker ${unaimed.aim}, developing ${unaimed.developing}; after: marker ${aimed.aim} at ${aimed.left}, developing ${aimed.developing}`,
   );
-  overlay.showStep({ id: 'two', index: 2, title: 'Click "Open"', action: 'click', src, source: 'heuristic', pending: true, app: 'Explorer' });
+  overlay.showStep({ id: 'two', number: 2, title: 'Click "Open"', action: 'click', src, source: 'heuristic', pending: true, app: 'Explorer' });
   overlay.setBusy(false);
   await settle();
   const describing = await card(
     "printer: !document.querySelector('#printer').hidden, title: getComputedStyle(document.querySelector('#stepTitle')).visibility",
   );
-  overlay.showStep({ id: 'two', index: 2, title: 'Open the file', action: 'click', src, source: 'ai', pending: false, app: 'Explorer' });
+  overlay.showStep({ id: 'two', number: 2, title: 'Open the file', action: 'click', src, source: 'ai', pending: false, app: 'Explorer' });
   await new Promise((resolve) => setTimeout(resolve, 900));
   await settle();
   const aiLanded = await card(
@@ -349,10 +360,10 @@ app.whenReady().then(async () => {
     `while describing: printer ${describing.printer}, title ${describing.title}; landed: printer ${aiLanded.printer}, ${aiLanded.source} "${aiLanded.title}"`,
   );
   const shortTitle = await card("height: document.body.scrollHeight, preview: document.querySelector('#preview').offsetHeight");
-  overlay.showStep({ id: 'one', index: 1, title: 'Click '.repeat(40), action: 'click', src, source: 'ai', pending: false, app: 'Explorer' });
+  overlay.showStep({ id: 'one', number: 1, title: 'Click '.repeat(40), action: 'click', src, source: 'ai', pending: false, app: 'Explorer' });
   await settle();
   const longTitle = await card("height: document.body.scrollHeight, preview: document.querySelector('#preview').offsetHeight");
-  overlay.showStep({ id: 'one', index: 1, title: 'Save the file', action: 'click', src, source: 'ai', pending: false, app: 'Explorer' });
+  overlay.showStep({ id: 'one', number: 1, title: 'Save the file', action: 'click', src, source: 'ai', pending: false, app: 'Explorer' });
   await settle();
   check(
     'the card keeps its height when a step lands, and a long title takes it from the screenshot',
@@ -380,7 +391,7 @@ app.whenReady().then(async () => {
   );
   check(
     'Finish leads the footer, with the mic and Pause after it',
-    /^\["primary:Finish","mic:","secondary:"\]$/.test(String(order)),
+    /^\["primary:Finish recording","mic:","secondary:"\]$/.test(String(order)),
     String(order),
   );
   check(
@@ -406,11 +417,11 @@ app.whenReady().then(async () => {
   const inEditor = (script: string) => editorWindows()[0]?.executeJavaScript(script);
   const pickArea = () =>
     windowWithHash('controls')?.webContents.executeJavaScript("document.querySelector('button.mode[data-mode=\"area\"]').click()");
-  overlay.pause();
+  pause();
   await settle();
   await pickArea();
   await settle();
-  const opened = { state: overlay.state, editors: editorWindows().length, sent: commands.at(-1) };
+  const opened = { state: overlay.isEditing ? 'editor' : overlay.state, editors: editorWindows().length, sent: commands.at(-1) };
   const look = JSON.parse(
     String(
       (await inEditor(
@@ -420,21 +431,21 @@ app.whenReady().then(async () => {
   ) as { buttons?: string[]; edge?: string; corner?: string };
   await inEditor("document.querySelector('#bar button.secondary').click()");
   await settle();
-  const cancelled = { state: overlay.state, editors: editorWindows().length, sent: commands.at(-1) };
+  const cancelled = { state: overlay.isEditing ? 'editor' : overlay.state, editors: editorWindows().length, sent: commands.at(-1) };
   await pickArea();
   await settle();
   await inEditor("document.querySelector('#bar button.primary').click()");
   await settle();
-  const confirmed = { state: overlay.state, editors: editorWindows().length, sent: commands.at(-1) };
+  const confirmed = { state: overlay.isEditing ? 'editor' : overlay.state, editors: editorWindows().length, sent: commands.at(-1) };
   check(
     'picking Area while paused opens the editor, Done resumes and Cancel stays paused',
-    opened.state === 'editing' &&
+    opened.state === 'editor' &&
       opened.editors === displays.length &&
-      opened.sent === 'mode:region' &&
-      cancelled.state === 'paused' &&
+      opened.sent === 'mode:area' &&
+      cancelled.state === CaptureState.PAUSED &&
       cancelled.editors === 0 &&
       cancelled.sent === 'mode:screen' &&
-      confirmed.state === 'recording' &&
+      confirmed.state === CaptureState.RECORDING &&
       confirmed.editors === 0 &&
       confirmed.sent === 'resume',
     `opened ${JSON.stringify(opened)}, cancel ${JSON.stringify(cancelled)}, done ${JSON.stringify(confirmed)}`,
@@ -494,7 +505,7 @@ app.whenReady().then(async () => {
     `refused ${clash.join(', ') || 'nothing'}`,
   );
 
-  overlay.hide();
+  overlay.reset();
   overlay.destroy();
   saveRegion(defaultRegion());
 

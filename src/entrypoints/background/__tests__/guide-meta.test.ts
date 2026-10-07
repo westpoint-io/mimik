@@ -230,13 +230,13 @@ describe('background guide-meta', () => {
       expect(updateGuideTitleMock).toHaveBeenCalledWith(GUIDE_ID, 'background.newGuide');
     });
 
-    it('writes no title at all when no step has a description', async () => {
+    it('names a guide with no described step by the fallback, without asking the model', async () => {
       getStepsForGuideMock.mockResolvedValue([{ description: '', url: 'https://example.com' }]);
 
       await generateGuideMetaOnStop(GUIDE_ID);
 
       expect(generateGuideMetaMock).not.toHaveBeenCalled();
-      expect(updateGuideTitleMock).not.toHaveBeenCalled();
+      expect(updateGuideTitleMock).toHaveBeenCalledTimes(1);
       expect(updateGuideDescriptionMock).not.toHaveBeenCalled();
     });
 

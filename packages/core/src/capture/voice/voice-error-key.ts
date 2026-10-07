@@ -1,4 +1,4 @@
-import type { VoiceErrorReason } from '@/lib/voice/voice-message';
+import type { VoiceErrorReason } from './voice-update';
 
 const VOICE_ERROR_KEYS: Record<VoiceErrorReason, string> = {
   'permission-denied': 'voice.errorPermissionDenied',

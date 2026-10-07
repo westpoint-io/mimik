@@ -99,10 +99,10 @@ export function SearchModal() {
 
   const typed = query.trim();
   const heading = !typed
-    ? i18n.t('search_recent')
+    ? i18n.t('search.recent')
     : shown.length === 1
-      ? i18n.t('search_resultsOne')
-      : i18n.t('search_results', [String(shown.length)]);
+      ? i18n.t('search.resultsOne')
+      : i18n.t('search.results', [String(shown.length)]);
 
   return (
     <Dialog open={open} onOpenChange={setSearchOpen} modal={false}>
@@ -113,7 +113,7 @@ export function SearchModal() {
         >
           <div
             role="dialog"
-            aria-label={i18n.t('fullview_searchPlaceholder')}
+            aria-label={i18n.t('fullview.searchPlaceholder')}
             className="w-full max-w-[620px] overflow-hidden rounded-2xl border border-border bg-card shadow-[0_30px_80px_rgba(30,27,75,0.3)]"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={handleKeyDown}
@@ -122,7 +122,7 @@ export function SearchModal() {
               <Search size={19} className="shrink-0 text-foreground" />
               <Input
                 ref={inputRef}
-                placeholder={i18n.t('fullview_searchPlaceholder')}
+                placeholder={i18n.t('fullview.searchPlaceholder')}
                 value={query}
                 onChange={(e) => {
                   setQuery(e.target.value);
@@ -149,9 +149,9 @@ export function SearchModal() {
               <div className="flex flex-col items-center gap-2 px-6 pt-7 pb-8 text-center">
                 <MascotIcon size={52} pose="lookaway" />
                 <p className="text-sm font-semibold text-foreground">
-                  {typed ? i18n.t('search_noMatch', [typed]) : i18n.t('search_noGuidesYet')}
+                  {typed ? i18n.t('search.noMatch', [typed]) : i18n.t('search.noGuidesYet')}
                 </p>
-                {typed && <p className="text-[12.5px] text-muted-foreground">{i18n.t('search_noMatchHint')}</p>}
+                {typed && <p className="text-[12.5px] text-muted-foreground">{i18n.t('search.noMatchHint')}</p>}
               </div>
             )}
           </div>

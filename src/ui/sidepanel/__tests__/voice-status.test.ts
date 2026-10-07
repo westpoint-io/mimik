@@ -1,12 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import type { VoiceErrorReason } from '@/lib/voice/voice-message';
+import { narratedKey } from '@/core/capture/voice/narrated-key';
+import { voiceErrorKey } from '@/core/capture/voice/voice-error-key';
+import type { VoiceErrorReason } from '@/core/capture/voice/voice-update';
 import { LEVEL_STALE_MS, MIC_ACTIVITIES, micActivity, SPEAKING_HOLD_MS } from '../lib/mic-activity';
 import { micActivityKey } from '../lib/mic-activity-key';
 import { MIC_BAR_MIN_SCALE, MIC_BARS, micBarScale } from '../lib/mic-bar-scale';
-import { narratedKey } from '../lib/narrated-key';
-import { voiceErrorKey } from '../lib/voice-error-key';
 
 const LOCALES = ['en', 'es', 'fr', 'pt-BR', 'zh-CN'];
 

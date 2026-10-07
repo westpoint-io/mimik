@@ -59,3 +59,4 @@ export { useFullview } from './stores/use-fullview';
 export { MicrophoneAccessRow } from './voice/components/MicrophoneAccessRow';
 export { MicrophonePicker } from './voice/components/MicrophonePicker';
 export { NarrationSettings } from './voice/components/NarrationSettings';
+export { VoiceNotice } from './voice/components/VoiceNotice';

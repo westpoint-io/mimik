@@ -1,40 +1,24 @@
-import type { DOMContext } from '@/core/capture/dom/context';
+import type { Describe } from '@/core/capture/write-step';
 
 export interface DeferredDescription {
   stepId: string;
-  domContext: DOMContext;
+  describe: Describe;
 }
 
-export interface AiDescriptionInput {
-  action: string;
-  hasDomContext: boolean;
-  hasAiKey: boolean;
-  narrationCapturing: boolean;
-}
+const deferred = new Map<string, Map<string, Describe>>();
 
-const deferred = new Map<string, Map<string, DOMContext>>();
-
-export function shouldQueueAiDescription({
-  action,
-  hasDomContext,
-  hasAiKey,
-  narrationCapturing,
-}: AiDescriptionInput): boolean {
-  return action !== 'input' && hasDomContext && hasAiKey && !narrationCapturing;
-}
-
-export function deferDescription(guideId: string, stepId: string, domContext: DOMContext): void {
-  const forGuide = deferred.get(guideId) ?? new Map<string, DOMContext>();
-  forGuide.set(stepId, domContext);
+export function deferDescription(guideId: string, stepId: string, describe: Describe): void {
+  const forGuide = deferred.get(guideId) ?? new Map<string, Describe>();
+  forGuide.set(stepId, describe);
   deferred.set(guideId, forGuide);
 }
 
-export function takeDeferredDescription(guideId: string, stepId: string): DOMContext | undefined {
+export function takeDeferredDescription(guideId: string, stepId: string): Describe | undefined {
   const forGuide = deferred.get(guideId);
   if (!forGuide) return undefined;
-  const domContext = forGuide.get(stepId);
+  const describe = forGuide.get(stepId);
   forGuide.delete(stepId);
-  return domContext;
+  return describe;
 }
 
 export function takeDeferredDescriptions(guideId: string, narratedStepIds: readonly string[]): DeferredDescription[] {
@@ -43,9 +27,7 @@ export function takeDeferredDescriptions(guideId: string, narratedStepIds: reado
   deferred.delete(guideId);
 
   const narrated = new Set(narratedStepIds);
-  return [...forGuide]
-    .filter(([stepId]) => !narrated.has(stepId))
-    .map(([stepId, domContext]) => ({ stepId, domContext }));
+  return [...forGuide].filter(([stepId]) => !narrated.has(stepId)).map(([stepId, describe]) => ({ stepId, describe }));
 }
 
 export function discardDeferred(guideId: string, stepIds: readonly string[]): void {

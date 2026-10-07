@@ -28,7 +28,6 @@ sidepanel:
   connecting: Conectando…
   heroTitle: "¿Qué quieres capturar?"
   heroSubtitle: "Graba cualquier flujo de trabajo automáticamente"
-  startCapture: Empezar a capturar
   searchPlaceholder: Buscar guías…
   recentLabel: Recientes
   notRecordable: Abre un sitio web para empezar a grabar
@@ -90,6 +89,10 @@ recording:
   minutesAgo: "hace $1m"
 
 settings:
+  cardKeyboard: "Escritura y teclas"
+  cardKeyboardHint: "Lo que tu teclado añade a una guía."
+  recordKeys: "Registrar atajos y teclas con nombre"
+  recordKeysHint: "Ctrl+S, Enter y similares se convierten en pasos."
   microphoneAccess: "Acceso al micrófono"
   microphoneAccessAsk: "Tu navegador pregunta una vez antes de que Mimik pueda oírte."
   microphoneAccessAllow: "Permitir"
@@ -186,13 +189,20 @@ blurPresets:
   macAddress: "Dirección MAC"
 
 desktop:
+  collapse: "Contraer"
+  expand: "Expandir"
+  starting: "Iniciando…"
+  capturingStep: "Capturando el paso $1"
+  tipArmed: "Cada clic se guarda como un paso."
+  tipPaused: "No se graba nada mientras está en pausa."
+  tipWaiting: "Tu primer clic aparecerá aquí."
+  tipLabel: "Consejo:"
+  hintStartStop: "pulsa $1 para iniciar y detener."
+  hintCapture: "pulsa $1 para capturar sin hacer clic."
   micAccessAsk: "macOS pregunta una vez antes de que Mimik pueda oírte."
   micAccessRefused: "Denegado. Activa Mimik en Privacidad y seguridad."
   micAccessOpen: "Abrir ajustes"
-  ready: "Listo"
-  pause: "Pausar"
-  resume: "Reanudar"
-  finish: "Finalizar"
+  armed: "Listo"
   screenshotDelay: "Retraso de la captura"
   keepClicksBeyondArea: "Capturar clics fuera del área"
   keepClicksBeyondAreaHint: "En modo Área, los clics fuera del área también se vuelven pasos, encuadrados en el área."
@@ -202,7 +212,7 @@ desktop:
   captureMode: Qué capturar
   modeWindow: Ventana
   modeScreen: Pantalla
-  modeRegion: Área
+  modeArea: Área
   startSheetTitle: Iniciar una captura
   permissionsTitle: "Permite que Mimik grabe"
   permissionsIntro: "Mimik necesita un par de permisos para grabar."
@@ -243,23 +253,19 @@ desktop:
   upToDate: "Actualizado"
   upToDateMessage: "Mimik $1 es la versión más reciente."
   cardScreenshots: "Capturas de pantalla"
-  cardKeyboard: "Escritura y teclas"
   cardGlobalKeys: "Teclas globales"
   cardGlobalKeysHint: "Se toman de todas las aplicaciones mientras Mimik está en ejecución."
   zoomLevel: "Acercar hacia el clic"
   zoomLevelHint: "Las grabaciones nuevas empiezan aquí. Automático mantiene todos los pasos del mismo tamaño."
   zoomAuto: "Automático"
   zoomGuide: "Zoom"
-  recordKeys: "Registrar atajos y teclas con nombre"
   recordTyping: "Registrar lo que escribes"
   recordTypingHint: "Todo lo que escribes en un campo se convierte en un paso."
   typingDebounce: "Cerrar el paso de escritura tras"
   typingDebounceHint: "Una pausa así de larga cierra el paso de escritura."
   cardScreenshotsHint: "Lo que muestra la captura de cada paso."
-  cardKeyboardHint: "Lo que tu teclado añade a una guía."
   captureModeHint: "Ventana sigue a la app en la que haces clic."
   screenshotDelayHint: "Espera antes de la captura, para menús con animación."
-  recordKeysHint: "Ctrl+S, Enter y similares se convierten en pasos."
   seconds: "s"
   shortcutStartStop: "Iniciar o finalizar una grabación"
   shortcutPauseResume: "Pausar o reanudar"

@@ -1,0 +1,10 @@
+{
+  "path": ["src", "apps/desktop/src", "packages/core/src", "packages/ui/src"],
+  "format": ["typescript", "tsx"],
+  "minLines": 12,
+  "minTokens": 80,
+  "threshold": 0.5,
+  "ignore": ["**/__tests__/**", "**/*.test.ts", "**/*.test.tsx", "**/components/ui/**"],
+  "reporters": ["console"],
+  "silent": true
+}

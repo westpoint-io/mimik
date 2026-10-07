@@ -15,12 +15,14 @@ import {
 import { locateFrame, placeInTab } from '@/core/capture/dom/frame-placement';
 import { isReplayedClick, replayClick, replayInit, shouldInterceptClick } from '@/core/capture/events/click-intercept';
 import type { CaptureSink } from '@/core/capture/sink';
+import type { StepAction } from '@/core/capture/step-action';
 import { DEFAULT_TARGET_COLOR } from '@/core/screenshot/types';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import { HoverRing } from '@/lib/hover-ring';
 import { InputSession } from './input-session';
+import { isRecordableKey } from './is-recordable-key';
 
-const DEDUP_MS = 300;
+const REPEAT_CLICK_MS = 300;
 const DRAG_MIN_PX = 30;
 const INTERCEPT_DELAY_MS = 100;
 const PAINT_FRAMES = 3;
@@ -68,6 +70,7 @@ class CaptureController {
   private ring = new HoverRing(DEFAULT_TARGET_COLOR);
   private hovered: HTMLElement | null = null;
   private busy = false;
+  private recordKeys = false;
 
   constructor(
     private guideId: string,
@@ -100,12 +103,18 @@ class CaptureController {
         })
         .catch(() => {});
     }
+    localStorage
+      .get(['recordKeys'])
+      .then(({ recordKeys }) => {
+        this.recordKeys = recordKeys === true;
+      })
+      .catch(() => {});
     for (const [event, handler, opts] of this.listeners) {
       window.addEventListener(event, handler, opts);
     }
   }
 
-  private capture(action: string, target: HTMLElement, point?: { x: number; y: number }) {
+  private capture(action: StepAction, target: HTMLElement, point?: { x: number; y: number }) {
     const atEvent = freezeRect(target);
     return async () => {
       const placement = locateFrame();
@@ -165,7 +174,7 @@ class CaptureController {
     if (isMimikElement(target)) return;
 
     const now = Date.now();
-    if (target === lastClickTarget && now - lastClickTime < DEDUP_MS) return;
+    if (target === lastClickTarget && now - lastClickTime < REPEAT_CLICK_MS) return;
     lastClickTarget = target;
     lastClickTime = now;
 
@@ -235,6 +244,7 @@ class CaptureController {
     }
 
     if (isSensitiveField(target) || isTextField(target)) return;
+    if (!this.recordKeys || !isRecordableKey(ke)) return;
     this.enqueue(this.capture(`keydown:${ke.key}`, target));
   }
 
@@ -280,7 +290,7 @@ class CaptureController {
     const resolved = eventTarget(e);
     const target = resolved instanceof HTMLElement ? resolved : document.activeElement;
     if (!target || !(target instanceof HTMLElement) || isMimikElement(target)) return;
-    this.enqueue(this.capture(e.type, target));
+    this.enqueue(this.capture(e.type as 'copy' | 'paste' | 'cut', target));
   }
 
   private onPointerDown(e: Event) {

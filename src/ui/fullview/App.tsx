@@ -2,7 +2,7 @@ import { AppFrame, GuideContent, LibraryContent, SearchModal, TooltipProvider, u
 import { browser } from '#imports';
 import { openSidebar } from '@/lib/browser-api/open-sidebar';
 import { UpdateNotice } from '@/ui/shared/UpdateNotice';
-import { VoiceNotice } from './components/VoiceNotice';
+import { BackgroundVoiceNotice } from './components/BackgroundVoiceNotice';
 
 export function FullViewApp() {
   const route = useRoute();
@@ -36,7 +36,7 @@ export function FullViewApp() {
           </main>
         )}
 
-        {import.meta.env.BROWSER !== 'firefox' && <VoiceNotice />}
+        {import.meta.env.BROWSER !== 'firefox' && <BackgroundVoiceNotice />}
       </AppFrame>
     </TooltipProvider>
   );
