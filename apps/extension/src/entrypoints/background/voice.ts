@@ -7,6 +7,7 @@ import { NARRATION_SETTLE_MS } from '@/core/capture/voice/narration-settle-ms';
 import { readTranscriptionSettings } from '@/core/capture/voice/read-transcription-settings';
 import { readVoiceSettings } from '@/core/capture/voice/read-voice-settings';
 import type { VoicePhase } from '@/core/capture/voice/voice-update';
+import { localStorage } from '@/core/env';
 import { getStepsForGuide } from '@/core/guides/service';
 import { onMessage as onRuntimeMessage } from '@/lib/browser-api/on-message';
 import { abortVoiceCapture } from '@/lib/offscreen/abort-voice-capture';
@@ -125,6 +126,10 @@ function releaseTranscription(guideId: string): boolean {
   return true;
 }
 
+async function switchNarrationOff(): Promise<void> {
+  await localStorage.set({ voiceEnabled: false });
+}
+
 function requestMicPermission(tabId?: number): void {
   void openMicPermissionPage(tabId).catch((error) => logger.error('voice: mic permission page failed to open', error));
 }
@@ -139,7 +144,8 @@ async function beginVoiceCapture(microphoneId: string | undefined, tabId: number
   if (permission.state === 'denied' || permission.state === 'prompt') {
     logger.info('voice: microphone permission not granted yet', permission.state);
     report({ phase: 'error', reason: 'permission-denied', error: 'Microphone access has not been granted' });
-    requestMicPermission(tabId);
+    if (permission.state === 'denied') await switchNarrationOff();
+    else requestMicPermission(tabId);
     await closeVoiceHostIfIdle();
     return;
   }
@@ -153,7 +159,7 @@ async function beginVoiceCapture(microphoneId: string | undefined, tabId: number
 
   logger.warn('voice: narration unavailable, recording without it', started);
   report({ phase: 'error', reason: started.reason, error: started.error });
-  if (started.reason === 'permission-denied') requestMicPermission(tabId);
+  if (started.reason === 'permission-denied') await switchNarrationOff();
   await closeVoiceHost();
 }
 
@@ -370,6 +376,7 @@ function handlePermissionResult(event: VoicePermissionResultEvent): void {
   if (outcome === 'ignore') return;
   if (outcome === 'report-denied') {
     report({ phase: 'error', reason: 'permission-denied', error: 'Microphone access was refused' });
+    void switchNarrationOff();
     return;
   }
   if (phase.phase === 'error') report({ phase: 'idle' });
