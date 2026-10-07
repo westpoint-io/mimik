@@ -11,6 +11,7 @@ export { SavedBadge } from './common/components/SavedBadge';
 export { Segmented } from './common/components/Segmented';
 export { SettingsCard } from './common/components/SettingsCard';
 export { Switch } from './common/components/Switch';
+export { UpdateNotice } from './common/components/UpdateNotice';
 export { useSavedFlash } from './common/hooks/use-saved-flash';
 export { formatRelativeTime } from './common/lib/format-relative-time';
 export { Button } from './components/ui/button';

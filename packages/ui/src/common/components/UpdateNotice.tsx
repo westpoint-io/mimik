@@ -1,24 +1,16 @@
 import { i18n } from '@mimik/core/env';
 import { Sparkles, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { dismissUpdateNotice } from '@/lib/update-notice/dismiss-update-notice';
-import { readUpdateNotice } from '@/lib/update-notice/read-update-notice';
 
 const RELEASES_URL = 'https://github.com/westpoint-io/mimik/releases';
 
-export function UpdateNotice({ className = '' }: { className?: string }) {
-  const [version, setVersion] = useState<string>();
+interface UpdateNoticeProps {
+  version: string | undefined;
+  onDismiss: () => void;
+  className?: string;
+}
 
-  useEffect(() => {
-    readUpdateNotice().then(setVersion);
-  }, []);
-
+export function UpdateNotice({ version, onDismiss, className = '' }: UpdateNoticeProps) {
   if (!version) return null;
-
-  const dismiss = () => {
-    setVersion(undefined);
-    dismissUpdateNotice();
-  };
 
   return (
     <div
@@ -31,13 +23,13 @@ export function UpdateNotice({ className = '' }: { className?: string }) {
         href={RELEASES_URL}
         target="_blank"
         rel="noreferrer"
-        onClick={dismiss}
+        onClick={onDismiss}
         className="text-[11px] font-semibold text-accent hover:underline"
       >
         {i18n.t('common.whatsNew')}
       </a>
       <button
-        onClick={dismiss}
+        onClick={onDismiss}
         aria-label={i18n.t('common.close')}
         className="ml-auto shrink-0 p-0.5 rounded text-muted-foreground hover:text-foreground transition-colors"
       >
