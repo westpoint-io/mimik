@@ -96,7 +96,6 @@ settings:
   model: "Modèle"
   modelCustom: Modèle personnalisé
   baseUrl: URL de base
-  useOwnServer: Utiliser mon propre serveur
   ownServerHintOpenai: "Fonctionne avec Ollama, LM Studio, vLLM ou tout serveur compatible OpenAI."
   ownServerHintAnthropic: "Fonctionne avec un proxy LiteLLM ou tout serveur compatible Anthropic."
   apiKey: "Clé API"
@@ -104,18 +103,26 @@ settings:
   hideKey: Masquer la clé
   clearKey: Effacer la clé
   aiLanguage: Langue des descriptions
+  apiKeys: "Clés API"
+  aiSection: "IA"
+  ownServer: "Votre propre serveur"
+  optional: "Facultatif"
+  serverSpeaks: "Compatible avec"
+  protocolOpenai: "API OpenAI"
+  protocolAnthropic: "API Anthropic"
+  noServer: "Aucune adresse de serveur pour l'instant."
+  noKeyFor: "Aucune clé $1 pour l'instant."
+  addOneInKeys: "Ajoutez-en une dans Clés API."
+  addKey: "Ajouter une clé"
+  noKey: "Pas de clé"
   voiceover: "Voix off de la vidéo"
   textToSpeech: "texte → voix"
   voiceoverHint: "Mimik lit le texte de chaque étape par-dessus la vidéo exportée."
-  voiceoverUsingAiKey: "Utilise la clé OpenAI des Descriptions IA."
-  voiceoverNoKey: "Ajoutez une clé API pour narrer les vidéos."
   voice: "Voix"
   speechToText: "voix → texte"
   voiceNarrationHint: "Décrivez le parcours à voix haute et Mimik rédige chaque étape à partir de ce que vous avez dit."
   voiceNarration: "Narration vocale"
-  voiceUsingAiKey: "Utilise la clé OpenAI des Descriptions IA."
   aiNoKey: "Sans clé API, les étapes reçoivent des descriptions simples basées sur des règles."
-  voiceNoKey: "Ajoutez une clé API pour narrer vos enregistrements."
   microphone: "Micro"
   microphoneDefault: "Micro par défaut du système"
   microphoneNeedsAccess: "Autorisez l'accès au micro pour voir le nom de vos appareils."
@@ -469,6 +476,7 @@ exportPreview:
   voiceoverNoKeySkip: "La vidéo est muette. Ajoutez une clé API de voix off dans les Paramètres."
   voiceoverNothingToSay: "La vidéo est muette. Ce guide n'a aucun texte à lire à voix haute."
   narrating: "Narration de l'étape $1 sur $2"
+  preparingVoiceover: "Préparation de la voix off"
   stepDescriptions: "Légendes des étapes"
   stepDescriptionsHint: "Incruster le texte de l'étape sur chaque image"
   resolution: "Qualité vidéo"
@@ -532,15 +540,18 @@ onboarding:
   welcomeBadge: Bienvenue
   welcomeTitle: "Mimik est installé !"
   welcomeMessage: "En quelques étapes, vous pourrez capturer vos parcours navigateur et générer des guides automatiquement. Pas de compte nécessaire — tout reste dans votre navigateur."
+  welcomeMessageDesktop: "En quelques étapes, vous pourrez capturer vos parcours sur votre ordinateur et générer des guides automatiquement. Pas de compte nécessaire — tout reste sur votre ordinateur."
   getStarted: "C'est parti"
   stepOf: "Étape $1 sur $2"
   aiTitle: Descriptions IA
   aiMessage: "Connectez votre clé API pour obtenir des descriptions générées par IA. C'est facultatif et modifiable dans les paramètres."
+  keySaved: "Enregistrée avec vos autres clés dans Paramètres › Clés API."
   aiGenerated: "Généré par IA"
   aiGeneratedDescription: "Description générée par IA"
   voiceTitle: "Parlez, puis agissez"
   voiceMessage: "Dites ce que vous allez faire, puis faites-le. Mimik rattache vos paroles à l'action suivante."
   voiceRecordHint: "Narration désactivée par défaut. Activez-la par guide avec le bouton micro du panneau latéral."
+  voiceRecordHintDesktop: "Narration désactivée par défaut. Activez-la par guide avec le bouton micro de la carte d'enregistrement."
   voiceDataNotice: "L'audio est envoyé au fournisseur choisi, avec votre clé API."
   voiceDemoLabel: "Comment la narration est rattachée"
   voiceDemoSay: Vous dites
@@ -568,6 +579,7 @@ onboarding:
   starLater: Plus tard
   doneTitle: "Tout est prêt"
   doneMessage: "Cliquez sur « Lancer la capture » dans le panneau latéral pour enregistrer votre premier guide."
+  doneMessageDesktop: "Cliquez sur « Lancer la capture » pour enregistrer votre premier guide."
   featureAutoCapture: Capture automatique
   featureAIAssist: Assistant IA
   featureVoice: Narration vocale
@@ -712,3 +724,10 @@ transcript:
   download: Télécharger
   delete: Supprimer la transcription
   confirmDelete: "Supprimer cette transcription ? Cette action est irréversible."
+
+stepKind:
+  click: "Clic"
+  type: "Saisie"
+  key: "Touche"
+  navigate: "Page"
+  note: "Note"

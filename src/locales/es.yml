@@ -96,7 +96,6 @@ settings:
   model: Modelo
   modelCustom: Modelo personalizado
   baseUrl: URL base
-  useOwnServer: Usar mi propio servidor
   ownServerHintOpenai: "Funciona con Ollama, LM Studio, vLLM o cualquier servidor compatible con OpenAI."
   ownServerHintAnthropic: "Funciona con un proxy LiteLLM o cualquier servidor compatible con Anthropic."
   apiKey: "Clave de API"
@@ -104,18 +103,26 @@ settings:
   hideKey: Ocultar clave
   clearKey: Borrar clave
   aiLanguage: "Idioma de las descripciones"
+  apiKeys: "Claves de API"
+  aiSection: "IA"
+  ownServer: "Tu propio servidor"
+  optional: "Opcional"
+  serverSpeaks: "Compatible con"
+  protocolOpenai: "API de OpenAI"
+  protocolAnthropic: "API de Anthropic"
+  noServer: "Aún no hay dirección de servidor."
+  noKeyFor: "Aún no hay clave de $1."
+  addOneInKeys: "Añade una en Claves de API."
+  addKey: "Añadir clave"
+  noKey: "Sin clave"
   voiceover: "Voz en off del vídeo"
   textToSpeech: "texto → voz"
   voiceoverHint: "Mimik lee el texto de cada paso sobre el vídeo exportado."
-  voiceoverUsingAiKey: "Se usa la clave de OpenAI de Descripciones con IA."
-  voiceoverNoKey: "Añade una clave de API para narrar vídeos."
   voice: "Voz"
   speechToText: "voz → texto"
   voiceNarrationHint: "Explica el flujo en voz alta y Mimik escribe cada paso con lo que dijiste."
   voiceNarration: "Narración por voz"
-  voiceUsingAiKey: "Se usa la clave de OpenAI de Descripciones con IA."
   aiNoKey: "Sin clave de API, los pasos reciben descripciones básicas basadas en reglas."
-  voiceNoKey: "Añade una clave de API para narrar tus grabaciones."
   microphone: "Micrófono"
   microphoneDefault: Predeterminado del sistema
   microphoneNeedsAccess: "Permite el acceso al micrófono para ver los nombres de tus dispositivos."
@@ -469,6 +476,7 @@ exportPreview:
   voiceoverNoKeySkip: "El vídeo no tiene sonido. Añade una clave de API de voz en off en Ajustes."
   voiceoverNothingToSay: "El vídeo no tiene sonido. Esta guía no tiene texto que leer en voz alta."
   narrating: "Narrando el paso $1 de $2"
+  preparingVoiceover: "Preparando la voz en off"
   stepDescriptions: "Textos de los pasos"
   stepDescriptionsHint: "Dibuja el texto del paso en cada fotograma del vídeo"
   resolution: "Calidad de vídeo"
@@ -532,15 +540,18 @@ onboarding:
   welcomeBadge: "Te damos la bienvenida"
   welcomeTitle: "¡Ya tienes Mimik instalado!"
   welcomeMessage: "En unos pasos vas a poder capturar flujos de trabajo y generar guías automáticas. Sin cuenta, sin registros \u2014 todo se queda en tu navegador."
+  welcomeMessageDesktop: "En unos pasos vas a poder capturar flujos de trabajo en tu ordenador y generar guías automáticas. Sin cuenta, sin registros — todo se queda en tu ordenador."
   getStarted: Empezar
   stepOf: "Paso $1 de $2"
   aiTitle: Descripciones con IA
   aiMessage: Conecta tu clave API para que la IA escriba las descripciones de cada paso. Es opcional y lo puedes cambiar después en Ajustes.
+  keySaved: "Se guarda con tus otras claves en Ajustes › Claves de API."
   aiGenerated: Generado por IA
   aiGeneratedDescription: "Descripción generada por IA"
   voiceTitle: Habla y luego actúa
   voiceMessage: "Di lo que vas a hacer y después hazlo. Mimik une tus palabras a la siguiente acción."
   voiceRecordHint: "La narración viene desactivada. Actívala por guía con el botón de micrófono del panel lateral."
+  voiceRecordHintDesktop: "La narración viene desactivada. Actívala por guía con el botón de micrófono de la tarjeta de grabación."
   voiceDataNotice: "El audio va al proveedor que elijas, con tu clave de API."
   voiceDemoLabel: "Cómo se asigna la narración"
   voiceDemoSay: Dices
@@ -568,6 +579,7 @@ onboarding:
   starLater: "Quizá más tarde"
   doneTitle: "Todo listo"
   doneMessage: "Haz clic en \"Empezar a capturar\" en el panel lateral para grabar tu primera guía."
+  doneMessageDesktop: "Haz clic en \"Empezar a capturar\" para grabar tu primera guía."
   featureAutoCapture: Captura automática
   featureAIAssist: Asistente de IA
   featureVoice: "Narración por voz"
@@ -712,3 +724,10 @@ transcript:
   download: Descargar
   delete: Eliminar transcripción
   confirmDelete: "¿Eliminar esta transcripción? No se puede deshacer."
+
+stepKind:
+  click: "Clic"
+  type: "Escribir"
+  key: "Tecla"
+  navigate: "Página"
+  note: "Nota"

@@ -1,6 +1,5 @@
+import { ProgressDots, type StepProps } from '@mimik/ui';
 import { i18n } from '#imports';
-import { ProgressDots } from '../ProgressDots';
-import type { StepProps } from '../types';
 
 export function PinExtensionStep({ onNext, onBack, index, total }: StepProps) {
   return (

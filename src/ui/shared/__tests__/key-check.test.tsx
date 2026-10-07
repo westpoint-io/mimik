@@ -7,8 +7,8 @@ const { sendMessageMock } = vi.hoisted(() => ({ sendMessageMock: vi.fn() }));
 
 vi.mock('@/lib/messaging', () => ({ sendMessage: sendMessageMock }));
 
-import { KeyStatusNote, SecretInput } from '@mimik/ui';
-import { useKeyCheck } from '@/ui/shared/hooks/use-key-check';
+import { KeyStatusNote, SecretInput, useKeyCheck } from '@mimik/ui';
+import { validateApiKey } from '@/ui/shared/lib/validate-api-key';
 
 describe('useKeyCheck', () => {
   beforeEach(() => {
@@ -17,7 +17,7 @@ describe('useKeyCheck', () => {
 
   it('retains models returned with an unsuccessful validation', async () => {
     sendMessageMock.mockResolvedValue({ valid: false, reason: 'rejected', models: ['public-model'] });
-    const { result } = renderHook(() => useKeyCheck());
+    const { result } = renderHook(() => useKeyCheck(validateApiKey));
 
     await act(async () => {
       await result.current.check('openai', 'sk-key', 'https://api.example.com/v1', 'selected-model');
@@ -29,7 +29,7 @@ describe('useKeyCheck', () => {
 
   it('maps an invalid model response to a distinct status', async () => {
     sendMessageMock.mockResolvedValue({ valid: false, reason: 'model-invalid', models: ['public-model'] });
-    const { result } = renderHook(() => useKeyCheck());
+    const { result } = renderHook(() => useKeyCheck(validateApiKey));
 
     await act(async () => {
       await result.current.check('openai', 'sk-key', 'https://api.example.com/v1', 'missing-model');
@@ -41,7 +41,7 @@ describe('useKeyCheck', () => {
 
   it('clears status and models when reset', async () => {
     sendMessageMock.mockResolvedValue({ valid: false, reason: 'model-required', models: ['public-model'] });
-    const { result } = renderHook(() => useKeyCheck());
+    const { result } = renderHook(() => useKeyCheck(validateApiKey));
 
     await act(async () => {
       await result.current.check('openai', 'sk-key', 'https://api.example.com/v1');

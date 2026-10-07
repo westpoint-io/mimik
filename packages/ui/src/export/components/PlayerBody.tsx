@@ -1,5 +1,6 @@
 import { i18n } from '@mimik/core/env';
 import type { VideoChapter } from '@mimik/core/export/video-export';
+import { FRAME_FILL } from '@mimik/core/export/video-support';
 import {
   FullscreenButton,
   MediaProvider,
@@ -12,8 +13,12 @@ import { ChevronLeft, ChevronRight, Maximize, Minimize, Pause, Play, Volume2, Vo
 import { activeIndex } from '../lib/active-index';
 import { formatClock } from '../lib/format-clock';
 import { StepList } from './StepList';
+import { StepTimeline } from './StepTimeline';
 
 const RATES = [1, 1.25, 1.5, 2];
+
+const ICON_BUTTON =
+  'flex size-[34px] items-center justify-center rounded-lg text-foreground hover:bg-secondary disabled:opacity-35 disabled:hover:bg-transparent';
 
 export function PlayerBody({ chapters, narrated }: { chapters: VideoChapter[]; narrated: boolean }) {
   const remote = useMediaRemote();
@@ -29,12 +34,21 @@ export function PlayerBody({ chapters, narrated }: { chapters: VideoChapter[]; n
   const jump = (i: number) => chapters[i] && seekTo(chapters[i].start);
 
   return (
-    <>
-      <div className="relative min-w-0 flex-1">
-        <MediaProvider className="size-full [&_video]:size-full [&_video]:object-contain" />
+    <div className="flex size-full gap-4 bg-secondary p-4">
+      <div className="flex min-w-0 flex-1 flex-col gap-3 rounded-[14px] border border-border bg-card p-4">
+        <div className="flex min-h-0 flex-1 items-center justify-center" style={{ containerType: 'size' }}>
+          <div
+            className="overflow-hidden rounded-[10px]"
+            style={{ width: 'min(100cqw, 100cqh * 16 / 9)', aspectRatio: '16 / 9', backgroundColor: FRAME_FILL }}
+          >
+            <MediaProvider className="size-full [&_video]:size-full [&_video]:object-contain" />
+          </div>
+        </div>
 
-        <div className="absolute inset-x-0 bottom-0 flex items-center gap-2 bg-gradient-to-t from-black/85 to-transparent px-3 pb-2.5 pt-8 text-white">
-          <PlayButton className="rounded-md p-1 hover:bg-white/15">
+        {chapters.length > 0 && <StepTimeline chapters={chapters} time={time} onJump={jump} />}
+
+        <div className="flex items-center gap-2">
+          <PlayButton className="flex size-[38px] items-center justify-center rounded-full bg-primary text-primary-foreground hover:bg-primary/90">
             {paused ? <Play size={16} fill="currentColor" /> : <Pause size={16} fill="currentColor" />}
           </PlayButton>
 
@@ -43,7 +57,7 @@ export function PlayerBody({ chapters, narrated }: { chapters: VideoChapter[]; n
             disabled={index <= 0}
             onClick={() => jump(index - 1)}
             aria-label={i18n.t('videoPlayer.previousStep')}
-            className="rounded-md p-1 hover:bg-white/15 disabled:opacity-35 disabled:hover:bg-transparent"
+            className={ICON_BUTTON}
           >
             <ChevronLeft size={16} />
           </button>
@@ -52,12 +66,12 @@ export function PlayerBody({ chapters, narrated }: { chapters: VideoChapter[]; n
             disabled={index < 0 || index >= chapters.length - 1}
             onClick={() => jump(index + 1)}
             aria-label={i18n.t('videoPlayer.nextStep')}
-            className="rounded-md p-1 hover:bg-white/15 disabled:opacity-35 disabled:hover:bg-transparent"
+            className={ICON_BUTTON}
           >
             <ChevronRight size={16} />
           </button>
 
-          <span className="font-mono text-[11px] tabular-nums text-white/75">
+          <span className="font-mono text-[11px] tabular-nums text-muted-foreground">
             {formatClock(time)} / {formatClock(duration)}
           </span>
 
@@ -67,19 +81,19 @@ export function PlayerBody({ chapters, narrated }: { chapters: VideoChapter[]; n
             type="button"
             onClick={() => remote.changePlaybackRate(RATES[(RATES.indexOf(rate) + 1) % RATES.length])}
             aria-label={i18n.t('videoPlayer.speed')}
-            className="rounded-md px-1.5 py-1 font-mono text-[11px] tabular-nums hover:bg-white/15"
+            className="h-7 rounded-full border border-border px-2.5 font-mono text-[11px] tabular-nums text-foreground hover:bg-secondary"
           >
             {rate}x
           </button>
 
           <MuteButton
-            className="rounded-md p-1 hover:bg-white/15"
+            className={ICON_BUTTON}
             aria-label={muted ? i18n.t('videoPlayer.unmute') : i18n.t('videoPlayer.mute')}
           >
             {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
           </MuteButton>
 
-          <FullscreenButton className="rounded-md p-1 hover:bg-white/15">
+          <FullscreenButton className={ICON_BUTTON}>
             {fullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
           </FullscreenButton>
         </div>
@@ -88,6 +102,6 @@ export function PlayerBody({ chapters, narrated }: { chapters: VideoChapter[]; n
       {chapters.length > 0 && (
         <StepList chapters={chapters} index={index} narrated={narrated} playing={!paused} onJump={jump} />
       )}
-    </>
+    </div>
   );
 }

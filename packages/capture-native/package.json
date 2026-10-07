@@ -2,6 +2,7 @@
   "name": "@mimik/capture-native",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "description": "Accessibility metadata for the element under a screen point",
   "main": "index.js",
   "types": "index.d.ts",

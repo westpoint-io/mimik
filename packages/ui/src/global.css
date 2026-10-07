@@ -89,8 +89,37 @@ input[type="checkbox"]:not(:disabled) {
   transform-origin: center;
 }
 
+@keyframes wave {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 1; }
+}
+
+@utility animate-wave {
+  animation: wave 1.2s ease-in-out infinite;
+}
+
+@keyframes reel {
+  from { transform: translateX(0); }
+  to { transform: translateX(-52px); }
+}
+
+@utility animate-reel {
+  animation: reel 0.9s linear infinite;
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
+@utility animate-rise {
+  animation: rise 0.5s ease both;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-talk {
+  .animate-talk,
+  .animate-wave,
+  .animate-reel,
+  .animate-rise {
     animation: none;
   }
 }

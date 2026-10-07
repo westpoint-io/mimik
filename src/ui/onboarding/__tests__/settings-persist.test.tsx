@@ -26,8 +26,8 @@ vi.mock('@/lib/offscreen/open-mic-permission-page', () => ({
 import { fakeBrowser } from 'wxt/testing';
 import { OnboardingApp } from '../App';
 
-// the AI step persists through @mimik/core, which vitest.setup backs with fakeBrowser storage
-const aiStore = async () => (await fakeBrowser.storage.local.get('aiApiKey')).aiApiKey;
+const savedKeys = async () =>
+  ((await fakeBrowser.storage.local.get('apiKeys')).apiKeys ?? {}) as Record<string, string | undefined>;
 
 function press(label: string) {
   fireEvent.click(screen.getAllByText(label)[0]);
@@ -58,7 +58,7 @@ describe('onboarding keeps what was typed', () => {
     fireEvent.change(apiKeyField(), { target: { value: 'sk-narration' } });
     press('common.skip');
 
-    await waitFor(() => expect(store.voiceApiKey).toBe('sk-narration'));
+    await waitFor(async () => expect((await savedKeys()).openai).toBe('sk-narration'));
   });
 
   it('holds on to the description key when the step is left through Skip', async () => {
@@ -67,17 +67,17 @@ describe('onboarding keeps what was typed', () => {
     fireEvent.change(apiKeyField(), { target: { value: 'sk-descriptions' } });
     press('common.skip');
 
-    await waitFor(async () => expect(await aiStore()).toBe('sk-descriptions'));
+    await waitFor(async () => expect((await savedKeys()).openai).toBe('sk-descriptions'));
   });
 
   it('clears the narration key when the field is emptied', async () => {
-    store.voiceApiKey = 'sk-old';
+    await fakeBrowser.storage.local.set({ voiceApiKey: 'sk-old' });
     await goToStep('onboarding.voiceTitle');
     await waitFor(() => expect(apiKeyField().value).toBe('sk-old'));
 
     fireEvent.change(apiKeyField(), { target: { value: '' } });
 
-    await waitFor(() => expect(store.voiceApiKey).toBe(''));
+    await waitFor(async () => expect((await savedKeys()).openai).toBeUndefined());
   });
 
   it('clears the description key when the field is emptied', async () => {
@@ -87,13 +87,13 @@ describe('onboarding keeps what was typed', () => {
 
     fireEvent.change(apiKeyField(), { target: { value: '' } });
 
-    await waitFor(async () => expect(await aiStore()).toBe(''));
+    await waitFor(async () => expect(await fakeBrowser.storage.local.get('apiKeys')).toEqual({ apiKeys: {} }));
   });
 
   it('picks up a key changed elsewhere when the tab comes back into view', async () => {
     await goToStep('onboarding.voiceTitle');
 
-    store.voiceApiKey = 'sk-set-in-settings';
+    await fakeBrowser.storage.local.set({ apiKeys: { openai: 'sk-set-in-settings' } });
     fireEvent(document, new Event('visibilitychange'));
 
     await waitFor(() => expect(apiKeyField().value).toBe('sk-set-in-settings'));

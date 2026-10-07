@@ -106,7 +106,6 @@ settings:
   aiDescriptions: KI-Beschreibungen
   modelCustom: Eigenes Modell
   baseUrl: Basis-URL
-  useOwnServer: Eigenen Server verwenden
   ownServerHintOpenai: "Funktioniert mit Ollama, LM Studio, vLLM oder jedem OpenAI-kompatiblen Server."
   ownServerHintAnthropic: "Funktioniert mit einem LiteLLM-Proxy oder jedem Anthropic-kompatiblen Server."
   provider: Anbieter
@@ -116,18 +115,26 @@ settings:
   hideKey: Schlüssel verbergen
   clearKey: Schlüssel löschen
   aiLanguage: Sprache der Beschreibungen
+  apiKeys: "API-Schlüssel"
+  aiSection: "KI"
+  ownServer: "Eigener Server"
+  optional: "Optional"
+  serverSpeaks: "Kompatibel mit"
+  protocolOpenai: "OpenAI-API"
+  protocolAnthropic: "Anthropic-API"
+  noServer: "Noch keine Serveradresse."
+  noKeyFor: "Noch kein $1-Schlüssel."
+  addOneInKeys: "Füge einen unter API-Schlüssel hinzu."
+  addKey: "Schlüssel hinzufügen"
+  noKey: "Kein Schlüssel"
   voiceover: "Video-Voiceover"
   textToSpeech: "Text → Sprache"
   voiceoverHint: "Mimik spricht den Text jedes Schritts über das exportierte Video."
-  voiceoverUsingAiKey: "Nutzt den OpenAI-Schlüssel aus den KI-Beschreibungen."
-  voiceoverNoKey: "Füge einen API-Schlüssel hinzu, um Videos zu vertonen."
   voice: "Stimme"
   speechToText: "Sprache → Text"
   voiceNarrationHint: "Erkläre den Ablauf laut, und Mimik formuliert jeden Schritt aus deinen Worten."
   voiceNarration: Sprachkommentar
-  voiceUsingAiKey: "Nutzt den OpenAI-Schlüssel aus den KI-Beschreibungen."
   aiNoKey: "Ohne API-Schlüssel erhalten Schritte einfache regelbasierte Beschreibungen."
-  voiceNoKey: "Füge einen API-Schlüssel hinzu, um Aufnahmen mit Sprachkommentar zu versehen."
   microphone: Mikrofon
   microphoneDefault: Systemstandard
   microphoneNeedsAccess: Erlaube den Mikrofonzugriff, um deine Gerätenamen zu sehen.
@@ -400,6 +407,7 @@ exportPreview:
   voiceoverNoKeySkip: "Das Video ist stumm. Füge in den Einstellungen einen Voiceover-API-Schlüssel hinzu."
   voiceoverNothingToSay: "Das Video ist stumm. Diese Anleitung hat keinen Text zum Vorlesen."
   narrating: "Schritt $1 von $2 wird vertont"
+  preparingVoiceover: "Voiceover wird vorbereitet"
   stepDescriptions: "Schritttexte"
   stepDescriptionsHint: "Den Schritttext in jedes Videobild einzeichnen"
   resolution: "Videoqualität"
@@ -463,15 +471,18 @@ onboarding:
   welcomeBadge: Willkommen
   welcomeTitle: "Du hast Mimik erfolgreich installiert!"
   welcomeMessage: "Mit nur wenigen Schritten bist du bereit, Browser-Workflows automatisch aufzunehmen und Schritt-für-Schritt-Anleitungen zu erstellen. Kein Konto nötig — alles bleibt in deinem Browser."
+  welcomeMessageDesktop: "Mit nur wenigen Schritten bist du bereit, Workflows auf deinem Computer automatisch aufzunehmen und Schritt-für-Schritt-Anleitungen zu erstellen. Kein Konto nötig — alles bleibt auf deinem Computer."
   getStarted: Loslegen
   stepOf: "Schritt $1 von $2"
   aiTitle: KI-Beschreibungen
   aiMessage: Verbinde deinen eigenen API-Schlüssel, um KI-generierte Schrittbeschreibungen zu erhalten. Das ist optional und kann später in den Einstellungen geändert werden.
+  keySaved: "Wird mit deinen anderen Schlüsseln unter Einstellungen › API-Schlüssel gespeichert."
   aiGenerated: KI-generiert
   aiGeneratedDescription: KI-generierte Beschreibung
   voiceTitle: Sprich, dann handle
   voiceMessage: "Sag, was du als Nächstes tust, und tu es dann. Mimik ordnet deine Worte der nächsten Aktion zu."
   voiceRecordHint: "Sprachkommentar ist standardmäßig aus. Aktiviere ihn pro Anleitung per Mikrofon in der Seitenleiste."
+  voiceRecordHintDesktop: "Sprachkommentar ist standardmäßig aus. Aktiviere ihn pro Anleitung per Mikrofon auf der Aufnahmekarte."
   voiceDataNotice: "Audio geht mit deinem API-Schlüssel an den gewählten Anbieter."
   voiceDemoLabel: "So wird dein Sprachkommentar zugeordnet"
   voiceDemoSay: Du sagst
@@ -499,6 +510,7 @@ onboarding:
   starLater: "Vielleicht später"
   doneTitle: "Alles bereit"
   doneMessage: "Klicke in der Seitenleiste auf „Aufnahme starten“, um deine erste Anleitung aufzunehmen."
+  doneMessageDesktop: "Klicke auf „Aufnahme starten“, um deine erste Anleitung aufzunehmen."
   featureAutoCapture: Auto-Aufnahme
   featureAIAssist: KI-Assistent
   featureVoice: "Sprachkommentar"
@@ -713,3 +725,10 @@ transcript:
   download: Herunterladen
   delete: Transkript löschen
   confirmDelete: "Dieses Transkript löschen? Das lässt sich nicht rückgängig machen."
+
+stepKind:
+  click: "Klick"
+  type: "Eingabe"
+  key: "Taste"
+  navigate: "Seite"
+  note: "Notiz"

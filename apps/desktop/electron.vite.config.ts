@@ -5,6 +5,7 @@ import type { PluginOption } from 'vite';
 import { load } from 'js-yaml';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import { thirdPartyNotices } from './scripts/third-party-notices';
 
 const core = resolve(__dirname, '../../packages/core/src');
 const locales = resolve(__dirname, '../../src/locales');
@@ -54,7 +55,7 @@ export default defineConfig({
   renderer: {
     root: resolve(__dirname, 'src/renderer'),
     publicDir: resolve(__dirname, '../../public'),
-    plugins: [yaml(), react(), tailwindcss()],
+    plugins: [yaml(), react(), tailwindcss(), thirdPartyNotices()],
     resolve: {
       alias: {
         '@mimik/core': core,

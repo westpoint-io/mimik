@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  hasVoiceoverKey,
-  parseVoiceoverKeys,
-  resolveVoiceoverConfig,
-  withVoiceoverKey,
-} from '@/core/export/voiceover/config';
+import { hasVoiceoverKey, resolveVoiceoverConfig } from '@/core/export/voiceover/config';
 import { VOICEOVER_PROVIDERS } from '@/core/export/voiceover/providers';
 
 describe('resolveVoiceoverConfig', () => {
@@ -12,18 +7,15 @@ describe('resolveVoiceoverConfig', () => {
     expect(resolveVoiceoverConfig({}).provider).toBe('openai');
   });
 
-  it('prefers a voice-over key of its own over the AI key', () => {
-    const config = resolveVoiceoverConfig({
-      voiceoverApiKeys: { openai: 'sk-own' },
-      aiProvider: 'openai',
-      aiApiKeys: { openai: 'sk-ai' },
-    });
-    expect(config).toMatchObject({ apiKey: 'sk-own', source: 'voiceover' });
+  it('uses the key saved for its provider', () => {
+    expect(resolveVoiceoverConfig({ voiceoverProvider: 'elevenlabs', apiKeys: { elevenlabs: 'sk_e' } }).apiKey).toBe(
+      'sk_e',
+    );
   });
 
-  it('borrows the OpenAI key already set for descriptions', () => {
+  it('shares the OpenAI key saved for descriptions', () => {
     const config = resolveVoiceoverConfig({ aiProvider: 'openai', aiApiKeys: { openai: 'sk-ai' } });
-    expect(config).toMatchObject({ apiKey: 'sk-ai', source: 'ai' });
+    expect(config.apiKey).toBe('sk-ai');
   });
 
   it('never borrows across vendors', () => {
@@ -33,11 +25,10 @@ describe('resolveVoiceoverConfig', () => {
         aiProvider: 'openai',
         aiApiKeys: { openai: 'sk-ai' },
       }),
-    ).toMatchObject({ apiKey: '', source: 'none' });
+    ).toMatchObject({ apiKey: '' });
 
     expect(resolveVoiceoverConfig({ aiProvider: 'anthropic', aiApiKeys: { anthropic: 'sk-ant' } })).toMatchObject({
       apiKey: '',
-      source: 'none',
     });
   });
 
@@ -60,21 +51,7 @@ describe('resolveVoiceoverConfig', () => {
   });
 });
 
-describe('voice-over key storage', () => {
-  it('keeps each provider key, so switching back does not lose one', () => {
-    const keys = withVoiceoverKey({ openai: 'sk-a' }, 'elevenlabs', 'sk_b');
-    expect(keys).toEqual({ openai: 'sk-a', elevenlabs: 'sk_b' });
-  });
-
-  it('clears a key when the field is emptied', () => {
-    expect(withVoiceoverKey({ openai: 'sk-a' }, 'openai', '  ')).toEqual({});
-  });
-
-  it('ignores junk and unknown providers in storage', () => {
-    expect(parseVoiceoverKeys({ openai: 'sk-a', bogus: 'x', elevenlabs: 42 })).toEqual({ openai: 'sk-a' });
-    expect(parseVoiceoverKeys(null)).toEqual({});
-  });
-
+describe('hasVoiceoverKey', () => {
   it('reports no key when nothing is set anywhere', () => {
     expect(hasVoiceoverKey({})).toBe(false);
     expect(hasVoiceoverKey({ voiceoverApiKeys: { openai: 'sk-a' } })).toBe(true);

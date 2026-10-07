@@ -6,12 +6,14 @@ import { Input } from '../../components/ui/input';
 export function SecretInput({
   value,
   onChange,
+  onBlur,
   placeholder,
   className,
   buttonClassName,
 }: {
   value: string;
   onChange: (next: string) => void;
+  onBlur?: () => void;
   placeholder?: string;
   className?: string;
   buttonClassName?: string;
@@ -25,6 +27,7 @@ export function SecretInput({
         type={revealed ? 'text' : 'password'}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
         placeholder={placeholder}
         className={`${value ? 'pr-14' : 'pr-8'} ${className ?? ''}`}
       />

@@ -1,14 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { isMicrophoneMissing } from '../lib/is-microphone-missing';
-import { microphoneListState } from '../lib/microphone-list-state';
-import { microphoneStatus } from '../lib/microphone-status';
-import { nextMicLevel, SPEAKING_LEVEL } from '../lib/next-mic-level';
-import { toMicrophoneOptions } from '../lib/to-microphone-options';
-import { SYSTEM_DEFAULT_VALUE, toSelectValue } from '../lib/to-select-value';
-import { toStoredMicrophoneId } from '../lib/to-stored-microphone-id';
-import type { MicrophoneOption } from '../types';
+import type { MicrophoneOption } from '../../types';
+import { isMicrophoneMissing } from '../is-microphone-missing';
+import { microphoneListState } from '../microphone-list-state';
+import { microphoneStatus } from '../microphone-status';
+import { nextMicLevel, SPEAKING_LEVEL } from '../next-mic-level';
+import { toMicrophoneOptions } from '../to-microphone-options';
+import { SYSTEM_DEFAULT_VALUE, toSelectValue } from '../to-select-value';
+import { toStoredMicrophoneId } from '../to-stored-microphone-id';
 
 const LOCALES = ['en', 'de', 'es', 'fr', 'pt-BR', 'zh-CN'];
 

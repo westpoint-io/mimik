@@ -96,7 +96,6 @@ settings:
   model: 模型
   modelCustom: 自定义模型
   baseUrl: 基础 URL
-  useOwnServer: 使用自己的服务器
   ownServerHintOpenai: "支持 Ollama、LM Studio、vLLM 或任何兼容 OpenAI 的服务器。"
   ownServerHintAnthropic: "支持 LiteLLM 代理或任何兼容 Anthropic 的服务器。"
   apiKey: API 密钥
@@ -104,18 +103,26 @@ settings:
   hideKey: 隐藏密钥
   clearKey: 清除密钥
   aiLanguage: 描述语言
+  apiKeys: "API 密钥"
+  aiSection: "AI"
+  ownServer: "自己的服务器"
+  optional: "可选"
+  serverSpeaks: "兼容"
+  protocolOpenai: "OpenAI API"
+  protocolAnthropic: "Anthropic API"
+  noServer: "尚未填写服务器地址。"
+  noKeyFor: "尚未添加 $1 密钥。"
+  addOneInKeys: "请在 API 密钥中添加。"
+  addKey: "添加密钥"
+  noKey: "无密钥"
   voiceover: "视频配音"
   textToSpeech: "文字 → 语音"
   voiceoverHint: "Mimik 会在导出的视频中朗读每个步骤的文本。"
-  voiceoverUsingAiKey: "使用“AI 描述”中的 OpenAI 密钥。"
-  voiceoverNoKey: "添加 API 密钥即可为视频配音。"
   voice: "语音"
   speechToText: "语音 → 文字"
   voiceNarrationHint: "边录边讲，Mimik 会根据你说的内容写出每个步骤。"
   voiceNarration: 语音讲解
-  voiceUsingAiKey: "使用“AI 描述”中的 OpenAI 密钥。"
   aiNoKey: "没有 API 密钥时，步骤使用基于规则的简单描述。"
-  voiceNoKey: "添加 API 密钥即可为录制生成语音讲解。"
   microphone: 麦克风
   microphoneDefault: 系统默认
   microphoneNeedsAccess: 允许麦克风访问后即可查看设备名称。
@@ -469,6 +476,7 @@ exportPreview:
   voiceoverNoKeySkip: "该视频无声。请在设置中添加配音 API 密钥。"
   voiceoverNothingToSay: "该视频无声。该指南没有可朗读的文本。"
   narrating: "正在为第 $1 步配音，共 $2 步"
+  preparingVoiceover: "正在准备配音"
   stepDescriptions: "步骤字幕"
   stepDescriptionsHint: "将步骤文字绘制到每一帧视频中"
   resolution: "视频质量"
@@ -532,15 +540,18 @@ onboarding:
   welcomeBadge: 欢迎
   welcomeTitle: "你已成功安装 Mimik！"
   welcomeMessage: "只需几步即可开始自动捕获浏览器工作流并生成分步指南。无需账号，一切都保留在你的浏览器中。"
+  welcomeMessageDesktop: "只需几步即可开始自动捕获电脑上的工作流并生成分步指南。无需账号，一切都保留在你的电脑上。"
   getStarted: 开始使用
   stepOf: "第 $1 步，共 $2 步"
   aiTitle: AI 描述
   aiMessage: 连接你自己的 API 密钥，即可获得 AI 生成的步骤描述。此功能可选，也可以稍后在设置中更改。
+  keySaved: "与其他密钥一起保存在“设置 › API 密钥”中。"
   aiGenerated: AI 生成
   aiGeneratedDescription: AI 生成的描述
   voiceTitle: 先说，再操作
   voiceMessage: "先说出你要做什么，再去做。Mimik 会把你的话关联到下一个动作。"
   voiceRecordHint: "语音讲解默认关闭。录制时可通过侧边栏的麦克风按钮为每份指南单独开启。"
+  voiceRecordHintDesktop: "语音讲解默认关闭。录制时可通过录制卡片上的麦克风按钮为每份指南单独开启。"
   voiceDataNotice: "音频会使用你的 API 密钥发送到你选择的提供商。"
   voiceDemoLabel: "语音讲解如何对应到步骤"
   voiceDemoSay: 你说
@@ -568,6 +579,7 @@ onboarding:
   starLater: 稍后再说
   doneTitle: "设置完成"
   doneMessage: "点击侧边栏中的“开始捕获”，录制第一份指南。"
+  doneMessageDesktop: "点击“开始捕获”，录制第一份指南。"
   featureAutoCapture: 自动捕获
   featureAIAssist: AI 辅助
   featureVoice: 语音讲解
@@ -712,3 +724,10 @@ transcript:
   download: 下载
   delete: "删除转写文本"
   confirmDelete: "删除这份转写文本？此操作无法撤销。"
+
+stepKind:
+  click: "点击"
+  type: "输入"
+  key: "按键"
+  navigate: "页面"
+  note: "备注"

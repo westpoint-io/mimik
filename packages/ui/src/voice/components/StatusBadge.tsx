@@ -1,6 +1,6 @@
 import { i18n } from '@mimik/core/env';
 import { Check, Mic, MicOff } from 'lucide-react';
-import type { MicrophoneStatus } from './lib/microphone-status';
+import type { MicrophoneStatus } from '../lib/microphone-status';
 
 const STATUS_STYLES: Record<MicrophoneStatus, string> = {
   allowed: 'bg-success/10 text-success',

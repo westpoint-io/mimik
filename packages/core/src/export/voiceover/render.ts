@@ -7,7 +7,7 @@ import type { VoiceoverSegment } from './script';
 
 export interface VoiceoverControls {
   signal?: AbortSignal;
-  onProgress?: (done: number, total: number) => void;
+  onProgress?: (done: number, total: number, next?: string) => void;
 }
 
 const RETRY_DELAY_MS = 1500;
@@ -62,12 +62,12 @@ export async function renderVoiceover(
   const clips = new Map<number, AudioBuffer>();
   let done = 0;
 
-  onProgress?.(0, segments.length);
+  onProgress?.(0, segments.length, segments[0]?.text);
 
   for (const segment of segments) {
     if (signal?.aborted) throw new DOMException('Voiceover was aborted', 'AbortError');
     clips.set(segment.index, await decodeClip(await clipBytes(segment, config, signal)));
-    onProgress?.(++done, segments.length);
+    onProgress?.(++done, segments.length, segments[done]?.text);
   }
 
   return clips;

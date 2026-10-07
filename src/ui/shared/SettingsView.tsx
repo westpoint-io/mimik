@@ -1,81 +1,37 @@
 import { PRESET_LABELS, type PresetKey } from '@mimik/core/blur/regexes';
-import { keyFor, migrateApiKeys } from '@mimik/core/capture/ai/keys';
-import { type AIProviderKey, providerOrDefault } from '@mimik/core/capture/ai/models';
-import { resolveVoiceApiKey } from '@mimik/core/capture/voice/api-key';
+import { KEY_PROVIDER_LABELS } from '@mimik/core/capture/ai/keys';
 import type { VoiceProvider } from '@mimik/core/capture/voice/transcribe';
 import { i18n } from '@mimik/core/env';
-import {
-  keyForVoiceoverProvider,
-  parseVoiceoverKeys,
-  resolveVoiceoverConfig,
-  type VoiceoverApiKeys,
-  voiceoverKeyPlaceholder,
-  withVoiceoverKey,
-} from '@mimik/core/export/voiceover/config';
-import {
-  DEFAULT_VOICEOVER_PROVIDER,
-  VOICEOVER_PROVIDER_KEYS,
-  VOICEOVER_PROVIDERS,
-  type VoiceoverProviderKey,
-  type VoiceoverVoice,
-  voiceoverProvider,
-} from '@mimik/core/export/voiceover/providers';
+import type { VoiceoverProviderKey } from '@mimik/core/export/voiceover/providers';
 import {
   AiSettings,
+  ApiKeysSettings,
   BrandingSettings,
-  Button,
-  KeyStatusNote,
-  ModelList,
-  SecretInput,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  MicrophonePicker,
+  MissingKeyNote,
+  ProviderSelect,
   SettingsCard,
   Switch,
+  useApiKeys,
+  VoiceoverSettings,
 } from '@mimik/ui';
-import {
-  ArrowLeft,
-  AudioLines,
-  Bug,
-  Check,
-  ChevronRight,
-  EyeOff,
-  Mic,
-  Shield,
-  Sparkles,
-  Star,
-  TriangleAlert,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { ArrowLeft, Bug, Check, ChevronRight, EyeOff, Mic, Shield, Star } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import { sendMessage } from '@/lib/messaging';
-import { useKeyCheck } from '@/ui/shared/hooks/use-key-check';
 import { useSettingsAutosave } from '@/ui/shared/hooks/use-settings-autosave';
-import { MicrophonePicker } from '@/ui/shared/MicrophonePicker';
+import { API_KEYS_ID, openApiKeys } from '@/ui/shared/lib/open-api-keys';
+import { requestMicrophoneAccess } from '@/ui/shared/lib/request-microphone-access';
+import { validateApiKey } from '@/ui/shared/lib/validate-api-key';
 
 interface SettingsViewProps {
   onBack?: () => void;
 }
 
 export function SettingsView({ onBack }: SettingsViewProps) {
-  const [provider, setProvider] = useState<AIProviderKey>('openai');
-  const [apiKey, setApiKey] = useState('');
-  const [apiKeys, setApiKeys] = useState<Record<string, string>>({});
-  const aiKeyCheck = useKeyCheck();
-  const voiceKeyCheck = useKeyCheck();
   const [loaded, setLoaded] = useState(false);
   const [voiceProvider, setVoiceProvider] = useState<VoiceProvider>('openai');
-  const [voiceApiKey, setVoiceApiKey] = useState('');
   const [voiceMicrophoneId, setVoiceMicrophoneId] = useState('');
-  const [voiceoverProviderKey, setVoiceoverProviderKey] = useState<VoiceoverProviderKey>(DEFAULT_VOICEOVER_PROVIDER);
-  const [voiceoverApiKey, setVoiceoverApiKey] = useState('');
-  const [voiceoverApiKeys, setVoiceoverApiKeys] = useState<VoiceoverApiKeys>({});
-  const [voiceoverVoiceId, setVoiceoverVoiceId] = useState(VOICEOVER_PROVIDERS.openai.defaultVoice);
-  const [voiceoverModelId, setVoiceoverModelId] = useState(VOICEOVER_PROVIDERS.openai.defaultModel);
-  const [voices, setVoices] = useState<VoiceoverVoice[]>(VOICEOVER_PROVIDERS.openai.voices);
-  const voiceoverKeyCheck = useKeyCheck();
   const [blurPresets, setBlurPresets] = useState<Record<PresetKey, boolean>>({
     email: true,
     phone: true,
@@ -86,101 +42,22 @@ export function SettingsView({ onBack }: SettingsViewProps) {
   });
 
   useEffect(() => {
-    localStorage
-      .get([
-        'aiApiKey',
-        'aiApiKeys',
-        'aiProvider',
-        'aiModel',
-        'aiBaseUrl',
-        'aiLanguage',
-        'blurPresets',
-        'voiceProvider',
-        'voiceApiKey',
-        'voiceMicrophoneId',
-        'voiceoverProvider',
-        'voiceoverApiKeys',
-        'voiceoverVoiceId',
-        'voiceoverModelId',
-      ])
-      .then((result) => {
-        const p = providerOrDefault(result.aiProvider);
-        setProvider(p);
-        const keys = migrateApiKeys(result);
-        setApiKeys(keys);
-        setApiKey(keyFor(keys, p));
-        if (result.blurPresets) setBlurPresets(result.blurPresets as Record<PresetKey, boolean>);
-        setVoiceProvider((result.voiceProvider as VoiceProvider) || 'openai');
-        if (result.voiceApiKey) setVoiceApiKey(result.voiceApiKey as string);
-        if (result.voiceMicrophoneId) setVoiceMicrophoneId(result.voiceMicrophoneId as string);
-        const vo = resolveVoiceoverConfig(result);
-        const voKeys = parseVoiceoverKeys(result.voiceoverApiKeys);
-        setVoiceoverProviderKey(vo.provider);
-        setVoiceoverApiKeys(voKeys);
-        setVoiceoverApiKey(keyForVoiceoverProvider(voKeys, vo.provider));
-        setVoiceoverVoiceId(vo.voiceId);
-        setVoiceoverModelId(vo.modelId);
-        setVoices(voiceoverProvider(vo.provider).voices);
-        setLoaded(true);
-      });
+    localStorage.get(['blurPresets', 'voiceProvider', 'voiceMicrophoneId']).then((result) => {
+      if (result.blurPresets) setBlurPresets(result.blurPresets as Record<PresetKey, boolean>);
+      setVoiceProvider(result.voiceProvider === 'groq' ? 'groq' : 'openai');
+      if (result.voiceMicrophoneId) setVoiceMicrophoneId(result.voiceMicrophoneId as string);
+      setLoaded(true);
+    });
   }, []);
 
-  const stored = {
-    blurPresets,
-    voiceProvider,
-    voiceApiKey,
-    voiceMicrophoneId,
-    voiceoverProvider: voiceoverProviderKey,
-    voiceoverApiKeys: withVoiceoverKey(voiceoverApiKeys, voiceoverProviderKey, voiceoverApiKey),
-    voiceoverVoiceId,
-    voiceoverModelId,
-  };
+  const { saved, queue } = useSettingsAutosave({ blurPresets, voiceProvider, voiceMicrophoneId }, loaded);
+  const keys = useApiKeys({ onChange: queue });
 
-  const { saved, queue } = useSettingsAutosave(stored, loaded);
-
-  const voiceKey = resolveVoiceApiKey({ voiceProvider, voiceApiKey, aiProvider: provider, aiApiKey: apiKey });
-  const voiceoverKey = resolveVoiceoverConfig({
-    voiceoverProvider: voiceoverProviderKey,
-    voiceoverApiKeys: withVoiceoverKey(voiceoverApiKeys, voiceoverProviderKey, voiceoverApiKey),
-    voiceoverVoiceId,
-    voiceoverModelId,
-    aiProvider: provider,
-    aiApiKey: apiKey,
-    aiApiKeys: apiKeys,
-  });
-
-  useEffect(() => {
-    const config = voiceoverProvider(voiceoverProviderKey);
-    const key = voiceoverApiKey.trim();
-    if (!config.catalog || !key) {
-      setVoices(config.voices);
-      return;
-    }
-    let active = true;
-    const timer = window.setTimeout(() => {
-      sendMessage('listVoices', { provider: voiceoverProviderKey, apiKey: key })
-        .then((result) => {
-          if (active && result.voices.length > 0) setVoices(result.voices);
-        })
-        .catch(() => undefined);
-    }, 600);
-    return () => {
-      active = false;
-      window.clearTimeout(timer);
-    };
-  }, [voiceoverProviderKey, voiceoverApiKey]);
-
-  const handleVoiceoverProviderChange = (next: VoiceoverProviderKey) => {
-    const keys = withVoiceoverKey(voiceoverApiKeys, voiceoverProviderKey, voiceoverApiKey);
-    const config = voiceoverProvider(next);
-    setVoiceoverApiKeys(keys);
-    setVoiceoverProviderKey(next);
-    setVoiceoverApiKey(keyForVoiceoverProvider(keys, next));
-    setVoiceoverVoiceId(config.defaultVoice);
-    setVoiceoverModelId(config.defaultModel);
-    setVoices(config.voices);
-    voiceoverKeyCheck.reset();
-  };
+  const listVoices = useCallback(
+    (provider: VoiceoverProviderKey, apiKey: string) =>
+      sendMessage('listVoices', { provider, apiKey }).then((result) => result.voices),
+    [],
+  );
 
   const BLUR_PRESET_I18N: Record<PresetKey, string> = {
     email: 'blurPresets.email',
@@ -216,15 +93,11 @@ export function SettingsView({ onBack }: SettingsViewProps) {
       </div>
 
       <div className="flex-1 px-3 py-4 space-y-3">
-        <AiSettings
-          keyCheck={aiKeyCheck}
-          onChange={(patch) => {
-            if (typeof patch.aiProvider === 'string') setProvider(patch.aiProvider as AIProviderKey);
-            if (typeof patch.aiApiKey === 'string') setApiKey(patch.aiApiKey);
-            if (patch.aiApiKeys && typeof patch.aiApiKeys === 'object')
-              setApiKeys(patch.aiApiKeys as Record<string, string>);
-          }}
-        />
+        <div id={API_KEYS_ID} className="scroll-mt-3 space-y-3">
+          <ApiKeysSettings state={keys} validate={validateApiKey} title={i18n.t('settings.apiKeys')} />
+        </div>
+
+        <AiSettings keys={keys} onOpenKeys={openApiKeys} onChange={queue} />
 
         <BrandingSettings onChange={queue} />
 
@@ -242,166 +115,36 @@ export function SettingsView({ onBack }: SettingsViewProps) {
             <label className="block text-[11px] font-semibold text-foreground mb-1">
               {i18n.t('settings.provider')}
             </label>
-            <Select
+            <ProviderSelect
               value={voiceProvider}
-              onValueChange={(v) => {
-                setVoiceProvider(v as VoiceProvider);
-                voiceKeyCheck.reset();
-              }}
-            >
-              <SelectTrigger className="h-8">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="openai">OpenAI</SelectItem>
-                <SelectItem value="groq">Groq</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.apiKey')}</label>
-            <div className="flex items-center gap-1.5">
-              <SecretInput
-                value={voiceApiKey}
-                onChange={(next) => {
-                  setVoiceApiKey(next);
-                  voiceKeyCheck.reset();
-                }}
-                placeholder={voiceProvider === 'groq' ? 'gsk_...' : 'sk-...'}
-                className="h-8 text-[13px] rounded-lg border-border"
+              onChange={setVoiceProvider}
+              onOpenKeys={openApiKeys}
+              options={(['openai', 'groq'] as const).map((key) => ({
+                value: key,
+                label: KEY_PROVIDER_LABELS[key],
+                logo: key,
+                available: Boolean(keys.keys[key]),
+              }))}
+            />
+            {!keys.keys[voiceProvider] && (
+              <MissingKeyNote
+                text={i18n.t('settings.noKeyFor', [KEY_PROVIDER_LABELS[voiceProvider]])}
+                onOpenKeys={openApiKeys}
               />
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!voiceApiKey || voiceKeyCheck.status === 'checking'}
-                onClick={() => void voiceKeyCheck.check(voiceProvider, voiceApiKey)}
-                className="h-8 shrink-0 rounded-lg bg-card text-[11px] font-semibold"
-              >
-                {i18n.t('settings.checkKey')}
-              </Button>
-            </div>
-            <KeyStatusNote status={voiceKeyCheck.status} />
-            {voiceKeyCheck.models && <ModelList models={voiceKeyCheck.models} />}
-            {voiceKey.source === 'ai' && (
-              <p className="mt-1.5 flex items-start gap-1.5 text-[10px] text-muted-foreground leading-relaxed">
-                <Sparkles size={11} className="shrink-0 mt-0.5 text-accent" />
-                <span>{i18n.t('settings.voiceUsingAiKey')}</span>
-              </p>
-            )}
-            {voiceKey.source === 'none' && (
-              <p className="mt-1.5 flex items-start gap-1.5 text-[10px] text-destructive leading-relaxed" role="alert">
-                <TriangleAlert size={11} className="shrink-0 mt-0.5" />
-                <span>{i18n.t('settings.voiceNoKey')}</span>
-              </p>
             )}
           </div>
 
           {import.meta.env.BROWSER !== 'firefox' && (
-            <MicrophonePicker value={voiceMicrophoneId} onChange={setVoiceMicrophoneId} triggerClassName="h-8" />
+            <MicrophonePicker
+              value={voiceMicrophoneId}
+              onChange={setVoiceMicrophoneId}
+              onRequestAccess={requestMicrophoneAccess}
+              triggerClassName="h-8"
+            />
           )}
         </SettingsCard>
 
-        <SettingsCard
-          icon={AudioLines}
-          title={i18n.t('settings.voiceover')}
-          hint={i18n.t('settings.voiceoverHint')}
-          action={
-            <span className="shrink-0 rounded-md bg-secondary px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-muted-foreground">
-              {i18n.t('settings.textToSpeech')}
-            </span>
-          }
-        >
-          <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">
-              {i18n.t('settings.provider')}
-            </label>
-            <Select
-              value={voiceoverProviderKey}
-              onValueChange={(v) => handleVoiceoverProviderChange(v as VoiceoverProviderKey)}
-            >
-              <SelectTrigger className="h-8">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {VOICEOVER_PROVIDER_KEYS.map((key) => (
-                  <SelectItem key={key} value={key}>
-                    {VOICEOVER_PROVIDERS[key].label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.apiKey')}</label>
-            <div className="flex items-center gap-1.5">
-              <SecretInput
-                value={voiceoverApiKey}
-                onChange={(next) => {
-                  setVoiceoverApiKey(next);
-                  voiceoverKeyCheck.reset();
-                }}
-                placeholder={voiceoverKeyPlaceholder(voiceoverProviderKey)}
-                className="h-8 text-[13px] rounded-lg border-border"
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!voiceoverApiKey || voiceoverKeyCheck.status === 'checking'}
-                onClick={() => void voiceoverKeyCheck.check(voiceoverProviderKey, voiceoverApiKey)}
-                className="h-8 shrink-0 rounded-lg bg-card text-[11px] font-semibold"
-              >
-                {i18n.t('settings.checkKey')}
-              </Button>
-            </div>
-            <KeyStatusNote status={voiceoverKeyCheck.status} />
-            {voiceoverKey.source === 'ai' && (
-              <p className="mt-1.5 flex items-start gap-1.5 text-[10px] text-muted-foreground leading-relaxed">
-                <Sparkles size={11} className="shrink-0 mt-0.5 text-accent" />
-                <span>{i18n.t('settings.voiceoverUsingAiKey')}</span>
-              </p>
-            )}
-            {voiceoverKey.source === 'none' && (
-              <p className="mt-1.5 flex items-start gap-1.5 text-[10px] text-muted-foreground leading-relaxed">
-                <TriangleAlert size={11} className="shrink-0 mt-0.5 text-destructive" />
-                <span>{i18n.t('settings.voiceoverNoKey')}</span>
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.voice')}</label>
-            <Select value={voiceoverVoiceId} onValueChange={setVoiceoverVoiceId}>
-              <SelectTrigger className="h-8">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {voices.map((voice) => (
-                  <SelectItem key={voice.id} value={voice.id}>
-                    {voice.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
-            <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.model')}</label>
-            <Select value={voiceoverModelId} onValueChange={setVoiceoverModelId}>
-              <SelectTrigger className="h-8">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {voiceoverProvider(voiceoverProviderKey).models.map((option) => (
-                  <SelectItem key={option.id} value={option.id}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </SettingsCard>
+        <VoiceoverSettings keys={keys.keys} listVoices={listVoices} onOpenKeys={openApiKeys} onChange={queue} />
 
         <SettingsCard icon={EyeOff} title={i18n.t('settings.smartBlur')} className="space-y-1 [&>*:first-child]:mb-2">
           {(Object.keys(PRESET_LABELS) as PresetKey[]).map((key, i, arr) => (

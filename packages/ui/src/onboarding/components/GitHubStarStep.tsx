@@ -1,13 +1,14 @@
-import { browser, i18n } from '#imports';
-import { MascotWithStar } from '../MascotWithStar';
-import { ProgressDots } from '../ProgressDots';
+import { i18n } from '@mimik/core/env';
+import { tabs } from '../../env';
 import type { StepProps } from '../types';
+import { MascotWithStar } from './MascotWithStar';
+import { ProgressDots } from './ProgressDots';
 
 const REPO_URL = 'https://github.com/westpoint-io/mimik';
 
 export function GitHubStarStep({ onSkip, onBack, index, total }: StepProps) {
   const handleStar = () => {
-    browser.tabs.create({ url: REPO_URL, active: true });
+    void tabs.create(REPO_URL);
   };
 
   return (

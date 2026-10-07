@@ -8,28 +8,7 @@ import fr from '@mimik/locales/fr.yml';
 import ptBR from '@mimik/locales/pt-BR.yml';
 import zhCN from '@mimik/locales/zh-CN.yml';
 import { type AppLocale, appLocale } from './lib/app-locale';
-
-async function mainFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
-  const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
-  const headers: Record<string, string> = {};
-  new Headers(init?.headers).forEach((value, key) => {
-    headers[key] = value;
-  });
-  const reply = (await window.mimik.ai.fetch({
-    url,
-    method: init?.method ?? 'GET',
-    headers,
-    body: typeof init?.body === 'string' ? init.body : undefined,
-  })) as {
-    status: number;
-    statusText: string;
-    headers: Record<string, string>;
-    body: string;
-    encoding: 'text' | 'base64';
-  };
-  const body = reply.encoding === 'base64' ? Uint8Array.from(atob(reply.body), (c) => c.charCodeAt(0)) : reply.body;
-  return new Response(body, { status: reply.status, statusText: reply.statusText, headers: reply.headers });
-}
+import { mainFetch } from './lib/main-fetch';
 
 const MESSAGES: Record<AppLocale, Messages> = {
   en: en as Messages,

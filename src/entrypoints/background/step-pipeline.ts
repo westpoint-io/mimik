@@ -1,6 +1,6 @@
 import { logger } from '@mimik/core/logger';
 import { queueDescription } from '@/core/capture/ai/description-queue';
-import { AI_KEY_SETTINGS, resolveAiKey } from '@/core/capture/ai/keys';
+import { AI_CREDENTIAL_SETTINGS, resolveAiCredentials } from '@/core/capture/ai/keys';
 import type { DOMContext } from '@/core/capture/dom/context';
 import { CaptureState } from '@/core/capture/machine';
 import { buildFallbackDescription } from '@/core/capture/step-description';
@@ -60,7 +60,7 @@ function isRecordingOrPaused(): boolean {
 }
 
 async function tryAIDescription(stepId: string, domContext: DOMContext) {
-  if (!resolveAiKey(await localStorage.get([...AI_KEY_SETTINGS])).apiKey) return;
+  if (!resolveAiCredentials(await localStorage.get([...AI_CREDENTIAL_SETTINGS]))) return;
   try {
     await clearStepAiPending(stepId, await generateAiDescription(domContext));
   } catch (err) {
@@ -82,7 +82,7 @@ export async function handleCaptureStep(data: CaptureStepData): Promise<CaptureS
   const screenshotId = await takeScreenshot(stepId, data.elementMeta);
 
   const narrationCapturing = getVoiceUpdate().phase === 'recording';
-  const hasAiKey = !!resolveAiKey(await localStorage.get([...AI_KEY_SETTINGS])).apiKey;
+  const hasAiKey = resolveAiCredentials(await localStorage.get([...AI_CREDENTIAL_SETTINGS])) !== null;
   const willUseAI = shouldQueueAiDescription({
     action: data.action,
     hasDomContext: !!data.domContext,

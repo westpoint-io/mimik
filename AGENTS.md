@@ -58,7 +58,7 @@ scripts/                 repository checks that pnpm lint runs
 | Content Script | `entrypoints/content.ts` | Injected into all tabs: CaptureSession, event listeners |
 | Side Panel | `entrypoints/sidepanel/` | Recording controls, library, guide editor, settings |
 | Full View | `entrypoints/fullview/` | Dashboard: library browse, guide viewer, Ctrl+K search |
-| Onboarding | `entrypoints/onboarding/` | First-install wizard: AI setup, smart blur, pin extension |
+| Onboarding | `entrypoints/onboarding/` | First-install wizard: AI setup, narration, smart blur, pin extension, star |
 | Options | `entrypoints/options/` | Settings page (shared SettingsView in centered card) |
 
 ## Messaging
@@ -312,7 +312,24 @@ word.
 app in `apps/desktop/dist`. The root script calls it with `run`, because `pnpm --filter … pack` is
 pnpm's own command: it wrote a tarball of the package and never built the app. `electron-builder.yml`
 targets dmg/zip, nsis and AppImage/deb, and `executableName` must stay set or the binary inherits the
-scoped package name.
+scoped package name. It is `Mimik`, capitalised, because electron-builder names the Windows install folder,
+the `.exe` and the uninstaller after it; Linux keeps `mimik`. `extraMetadata` renames the packaged app to `mimik`, display name `Mimik`, for the
+same reason: under `@mimik/desktop` the installer put it in `Programs\@mimikdesktop`, and at runtime
+it took the dev copy's name and so its settings and guides. Windows installs through the NSIS wizard,
+not one click: who to install for, the folder, and a Run Mimik box at the end, with
+`resources/installerSidebar.bmp`, the mascot on navy, beside the Welcome and Finish pages. The file is
+`Mimik-<version>.exe`.
+
+The installer carries `THIRD_PARTY_NOTICES.txt` and Mimik's own `LICENSE.txt` beside the executable,
+where Electron already puts `LICENSE.electron.txt` and `LICENSES.chromium.html`. Nearly every
+dependency's licence, MIT included, asks for its notice to travel with any copy, so the file is written
+on every build rather than kept by hand: `scripts/third-party-notices.ts` is a renderer plugin that
+lists each package the bundle pulled in, walks the `node_modules` electron-builder copies from the
+app's dependencies, adds the addon's runtime Rust crates from `cargo metadata` whenever the Windows
+addon is built, and appends two texts no package ships, kept in `apps/desktop/licenses/`: libuiohook's
+LGPL-3.0, which `uiohook-napi` compiles into its prebuilt binary, and the MIT notice of the LobeHub
+provider logos. The LGPL is satisfied because that binary is a separate file a user can replace with
+one built from its public source. `check:pipeline` fails if the file stops naming what ships.
 
 The app icon is the extension's, `public/icon.svg`, so the two products share one mark.
 `resources/icon.png` is it at 1024 px, which electron-builder turns into the macOS and Linux icons,
@@ -1042,7 +1059,10 @@ renderer names the url and main is the one holding the network. A text, JSON or 
 response comes back as text and anything else as base64, which the renderer decodes into bytes:
 voice-over audio went through the same path as JSON and arrived as mangled text. The voice-over
 client calls `coreFetch` for that reason rather than the global `fetch`, which a renderer origin
-cannot use against a provider.
+cannot use against a provider. The request's abort signal crosses too: `mainFetch` stops waiting the moment the signal fires and
+sends `mimik:ai:abort` with the request's id, and main aborts its `net.fetch`. It used to drop the
+signal, so neither the 60-second limit on a voice-over clip nor cancelling the export ever reached the
+request, and one stalled clip held the export on "Narrating step 3 of 6" forever.
 
 Ask AI and Generate description reach the model through `messages.send`, which the extension answers
 from its background worker. The desktop has no worker, and its adapter's `send` used to throw for
@@ -1346,7 +1366,7 @@ settings were on disk when it finishes.
 
 ## Desktop Settings
 
-Five sections behind one left nav: General, Capturing, AI descriptions, Export Branding, Shortcuts, and
+Six sections behind one left nav: General, Capturing, AI, Export Branding, Shortcuts and API keys, and
 the dialog opens on General, the first, as desktop settings conventionally do. General holds three cards named
 for what they hold — Language, Startup and Updates — rather than one card named after the section,
 which put "General" in the list and again as the pane's only heading. Startup and Updates are the
@@ -1354,11 +1374,40 @@ tray menu's own "Start at login" and "Check for updates", in the tray's words an
 `setOpenAtLogin` and `checkForUpdates`, so the tray and the settings cannot disagree; the update check
 does nothing in an unpackaged build, where the updater never runs. The split is the
 same one that decides where a file lives. Capturing and Shortcuts describe things the extension has
-no concept of, so they are written in `apps/desktop` against `capture-settings.json`. AI descriptions
-and Branding are identical on both surfaces, so `AiSettings` and `BrandingSettings` live in
-`packages/ui` and both apps mount them. `AiSettings` takes a `validate` function — the desktop passes
-core's `validateApiKey` directly, and the extension goes through its background messaging, which is
-the only part that differs.
+no concept of, so they are written in `apps/desktop` against `capture-settings.json`. AI descriptions,
+video voice-over, the API keys and Branding are identical on both surfaces, so `AiSettings`,
+`VoiceoverSettings`, `ApiKeysSettings` and `BrandingSettings` live in `packages/ui` and both apps mount
+them; the desktop's AI section is the first two. `ApiKeysSettings` takes a `validate` function — the
+desktop passes core's `validateApiKey` directly, and the extension goes through its background
+messaging, which is the only part that differs.
+
+**One key per provider, entered once.** Descriptions, narration and voice-over each used to keep a
+key of their own — `aiApiKeys`, `voiceApiKey` and `voiceoverApiKeys` — and borrowed OpenAI's across
+features only when both sides happened to be OpenAI, so one person pasted the same key up to three
+times. The keys now live in one `apiKeys` map, one entry per provider in `KEY_PROVIDERS`, and every
+feature reads the key of the provider it uses through `readApiKeys`. Until that map exists,
+`readApiKeys` assembles it from the three old settings, the descriptions key winning where two
+features held different OpenAI keys; once it exists, even empty, the old settings are ignored, so a
+key cleared in the new section cannot come back from an old one. The API keys section is a field per
+provider with its logo, checked when the field loses focus and on opening, with a tick, a spinner or
+the reason it failed beside it. The feature cards hold no key field at all: each picks its provider
+through `ProviderSelect`, which lists every provider the feature supports with its logo and greys out
+the ones without a key — your own server without an address — each with an Add key link to the
+keys. The link is a button inside a disabled Radix item, so it takes `pointer-events-auto` back from
+the item and closes the select itself; on the desktop it opens the API keys section, in the
+extension it scrolls to the card at the top of the page. A provider saved before its key was cleared
+stays selected and says "Add one in API keys" under the select. The logos are the monochrome marks from the MIT-licensed lobehub
+icon set, copied into `ProviderLogo`, because the set would be a dependency of hundreds of icons for
+six paths.
+
+Your own server is not a key, it is an address: the second card of the section holds its base URL,
+an optional key and whether it speaks the OpenAI or the Anthropic API, stored as `aiServerUrl`,
+`apiKeys.server` and `aiServerProtocol`, and AI descriptions picks it like any provider. The check
+for it asks the server's `/models` without a model, so Ollama or LM Studio can be confirmed before
+anything is chosen; it used to need a model and a key first, which meant typing a key a local server
+never reads. It used to be a switch that replaced the selected provider's base URL, stored in
+`aiBaseUrl`. `resolveServer` still reads that, and `useApiKeys` moves it into the new settings the
+first time the settings open.
 
 `BrandingSettings` is the extension's Brand colour card and Branding card — the colour of the click
 highlight and export accent, the logo, the footer line and the attribution — lifted out of
@@ -1376,7 +1425,8 @@ leading slash on a `file://` page is `file:///mimik-mark.png`. Neither held befo
 failing quietly returned no logo, so no desktop export ever had one. `check:pipeline` fetches it.
 
 Every card is `SettingsCard` from `packages/ui`: the border, radius, padding, white face and 28px icon
-header, with an optional hint under the title and an optional control beside it. The extension's AI,
+header, with an optional hint under the title and an optional control beside it. The header is
+optional too, for the desktop's key list, whose section name already says what it holds. The extension's AI,
 Brand colour, Export Branding, Voice narration and Smart blur cards and the desktop's `Card` all use
 it; they had been six hand-copied frames, one of them the desktop's. The desktop `Card` only adds the
 divided rows inside. Rows inside a
@@ -1387,10 +1437,10 @@ on screen at once, and matching them would mean branching that shared component 
 Capturing is two cards: Screenshots, and Typing and keys.
 
 Each kind of value has one control, and it shows the value rather than hiding it behind a click. A
-choice among a few is `Segmented`, a row of buttons with the chosen one filled; that is the capture
-mode and the zoom, which offers Automatic, 1×, 1.5×, 2×, 3×, 4× and 5× and adds the stored level as one more
-button when an older build saved one in between. An on/off is `Switch`, the same switch the AI card's
-own-server toggle is, moved into `packages/ui` so the two cannot drift. A duration is `Slider`, a
+choice among a few is `Segmented`, a row of buttons with the chosen one filled, in `packages/ui` since
+the API keys section uses it for the server's API; that is the capture mode and the zoom, which offers Automatic, 1×, 1.5×, 2×, 3×, 4× and 5× and adds the stored level as one more
+button when an older build saved one in between. An on/off is `Switch`, shared with the extension's
+cards from `packages/ui` so the two cannot drift. A duration is `Slider`, a
 native range input tinted with `accent-accent` beside a chip reading the value in ms or seconds,
 because a number field hid what the default was and drew spinner arrows on Windows. A setting that cannot apply is disabled rather than hidden, so the rows
 do not jump: outside clicks without Area mode and the typing pause without typing.
@@ -1419,19 +1469,47 @@ that genuinely differs — the extension goes through background messaging becau
 what has `host_permissions`, and the desktop calls `validateApiKey` directly on top of the main
 process fetch.
 
-The rest of `SettingsView` stayed put. Voice narration, smart blur and the microphone picker have no
-desktop meaning, and it reaches into `@/lib/browser-api/`. It mounts `BrandingSettings` where its own
-two cards were and passes the autosave's `queue` as `onChange`, which is only there to raise the
-Saved badge — the card has already written the value. Splitting it did mean the
-autosave had to change shape: the AI fields left the parent's snapshot, so `AiSettings` reports its
-own changes through `onChange` and both halves queue into the same debounced flush. `SettingsView`
-still keeps the provider and key in state for one reason — `resolveVoiceApiKey` falls back to the AI
-key when no voice key is set — and it updates them from the patches the card sends up.
+The rest of `SettingsView` stayed put. Voice narration and smart blur have no desktop card yet, and it
+reaches into `@/lib/browser-api/`. `MicrophonePicker` moved to `packages/ui/src/voice` with the
+onboarding, taking `onRequestAccess`: the extension opens its permission page, because a side panel
+cannot show the browser's microphone prompt, and the desktop calls `getUserMedia`, which Electron
+grants. It mounts the API keys card at the top,
+then `AiSettings`, `BrandingSettings` and `VoiceoverSettings` where its own cards were, and passes the
+autosave's `queue` as `onChange`, which is only there to raise the Saved badge — the card has already
+written the value. It holds `useApiKeys` itself and hands the state to every card, because the
+extension shows them on one page and a key pasted at the top has to clear the note under the
+narration provider at once; the desktop's `SettingsPanel` holds it for the same reason across
+sections.
 
 The shortcut recorder reads a keystroke and writes an Electron accelerator. It refuses a bare key,
 because a global accelerator with no modifier takes that key from every application on the machine,
 and it ignores a modifier pressed alone, because `Shift` is not a shortcut. `accelerator()` is a
 pure function over the event so it is tested without a keyboard.
+
+## First Run
+
+Both surfaces run one onboarding, `OnboardingFlow` in `packages/ui/src/onboarding`: Welcome, the
+steps the surface passes in, then Done. The extension passes AI setup, narration, smart blur, pin and
+star, and drops narration on Firefox; the desktop passes AI setup, narration and star, since smart
+blur works only on web pages and an installed app is already in the Start menu and on the taskbar,
+which is what pinning buys the extension. The steps are the extension's own, moved rather than
+copied, so the two cannot drift. What differs arrives as props — `validate` for the key check,
+`requestMicrophoneAccess`, and `onFinish`, which opens the side panel and the dashboard in the
+extension and shows the library on the desktop — and three strings that name the browser, the
+welcome, the narration hint and the Done line, have desktop versions chosen through `client()`, as
+is dropping Smart blur from Done's features.
+
+The AI and narration steps ask for a key the way Settings does, not with a field of their own: each
+picks its provider through `ProviderSelect`, with every provider enabled since this is where keys get
+added, and under it sits that provider's `ProviderKeyRow` from the API keys section, or
+`ServerSettings` for your own server. A key typed in the first step is already filled and ticked in
+the second when both use the same provider. The step opens with what the feature does rather than a
+list of keys, because most people arrive without one, and a form asking for credentials before saying
+what they buy is a screen they can only skip.
+
+Done writes `onboardingCompleted`, and the desktop `App` shows the flow until it is set, reading it
+through core's `localStorage` like every other setting. The narration step saves the provider and
+microphone the desktop's narration will read; the recording card has no microphone button yet.
 
 ## Capture Shortcuts
 
@@ -1485,6 +1563,21 @@ before `captureKey` writes anything, and it compares by parts rather than by str
 `Shift+Alt+P` and `Alt+Shift+P` are the same shortcut. `CommandOrControl` resolves to Control
 everywhere but macOS.
 
+## Desktop Input Hook and CI
+
+`uiohook-napi` needs no compiler on Windows: the package ships `prebuilds/win32-x64/uiohook-napi.node`,
+an N-API build that loads in any Electron, and pnpm never runs its `node-gyp-build` install script
+because the package is not in `onlyBuiltDependencies`.
+
+`.github/workflows/desktop.yml` runs on the `desktop` branch, which the extension's `pr-test.yml`
+does not cover: lint, typecheck, the tests, the extension build and the storage, pipeline and
+overlay checks under `xvfb-run` on Linux, then on Windows the addon, the storage and pipeline checks
+and an unsigned NSIS installer uploaded as the run's artifact. `npmRebuild` is off in
+`electron-builder.yml`: every native module the app loads is a prebuilt N-API binary, and the rebuild
+tried to compile `get-windows` with node-gyp, which needs Visual Studio the runner does not have. On
+the Ubuntu runner the job lifts AppArmor's limit on unprivileged user namespaces first, or Electron
+falls back to a SUID sandbox helper that is not set up and aborts.
+
 ## Export Formats
 
 | Format | Generator | Details |
@@ -1529,10 +1622,10 @@ WebM).
 `providers.ts` is the registry, shaped like `AI_PROVIDERS`: OpenAI (`/audio/speech`, fixed voice
 list) and ElevenLabs (`/text-to-speech/{voice}`, per-account catalog via `listVoices`). Both return
 mp3. OpenAI is the default because most users already hold that key, and `resolveVoiceoverConfig`
-borrows it from AI descriptions on the same terms `resolveVoiceApiKey` uses — both sides OpenAI, or
-nothing. **Holding a key never turns narration on**; `exportOptions.voiceover` defaults to false and
-only the user flips it. Keys are stored per provider (`voiceoverApiKeys`) so switching does not lose
-one, and a voice id is validated against the provider that issued it — an ElevenLabs id selected
+reads whichever key the API keys section holds for the chosen provider — the same one descriptions
+and narration use. **Holding a key never turns narration on**; `exportOptions.voiceover` defaults to
+false and only the user flips it. Switching provider loses nothing, since each provider keeps its own
+key, and a voice id is validated against the provider that issued it — an ElevenLabs id selected
 under OpenAI falls back to OpenAI's default rather than being sent and rejected. ElevenLabs ids are
 taken on trust, since the account catalog is larger than the shipped list.
 
@@ -1582,6 +1675,30 @@ background, next to `validateApiKey`.
 bar with no volume affordance. Narrated previews flip both — a browser will not autoplay with sound,
 so a narrated preview waits for the play button and that gesture buys it audio from the first frame,
 while a silent one still autoplays muted as before. The mute toggle is there in both cases.
+
+The player sits on the app's light background rather than a dark one, in two white cards: the video
+with its controls under it, and the step list beside it. Only the frame itself stays dark
+(`FRAME_FILL`), sized by container query units to the largest 16:9 that fits the card. The timeline
+under the video is one segment per step, sized by the step's length and filled as it plays, and each
+segment jumps to its step. The list numbers the steps the way the guide does and marks each one with
+`StepKindBadge` — Click, Type, Key, Page or Note, in the style of the AI and Basic badges. It used to
+be a coloured dot per kind, and the click dot was the accent, which became the panel's own navy when
+the palette changed, so clicks showed no dot at all and read as a different kind from typing.
+
+While the video is made, `VideoLoader` shows the stage it is in. Narrating, the mascot talks, with
+its mouth and sound waves moving, over the line being read — `renderVoiceover` reports the next
+segment's text with its progress for this. Encoding, the camera mascot films over a running strip of
+frames, over the step count. Both stages share one bar with the percentage beside it, and it is the
+export's single overall figure, so it carries on from narrating into encoding rather than starting
+again: a segmented bar for narration and a percentage for encoding read as two different loaders.
+The stage is `useVideoPreview`'s `stage`, not inferred from narration progress: with voice-over on
+it starts on `voice` and turns to `video` only on the first encoded frame, because the containers
+are probed and the clip cache read before the first clip is asked for, and a loader that took "no
+narration yet" for encoding showed the camera first. Until that first clip it reads "Preparing the
+voice-over". `LoaderMascot` carries the change as one drawing rather than swapping two: the mouth
+stops, the waves fade, the camera drops onto the cap and the film strip slides into a space kept
+for it, so nothing below it moves. The bar is `role="progressbar"` with that percentage, which is
+what the modal's tests read.
 
 The export panel shows the voice-over control under Video quality wherever video export is possible,
 not only on the video preview tab — a guide can be exported to video from the format list without

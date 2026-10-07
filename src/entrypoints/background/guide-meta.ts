@@ -1,7 +1,7 @@
 import { logger } from '@mimik/core/logger';
 import { i18n } from '#imports';
 import { resolveGuideMetaInputs } from '@/core/capture/ai/guide-description';
-import { AI_KEY_SETTINGS, resolveAiKey } from '@/core/capture/ai/keys';
+import { AI_CREDENTIAL_SETTINGS, resolveAiCredentials } from '@/core/capture/ai/keys';
 import { generateGuideMeta } from '@/core/capture/ai/meta';
 import { settleDescriptions } from '@/core/capture/ai/settle-descriptions';
 import { localStorage } from '@/core/env';
@@ -9,7 +9,7 @@ import { getGuideDomain, updateGuideDescription, updateGuideTitle } from '@/core
 import { whenNarrationSettled } from './voice';
 
 async function hasAiKey(): Promise<boolean> {
-  return Boolean(resolveAiKey(await localStorage.get([...AI_KEY_SETTINGS])).apiKey);
+  return resolveAiCredentials(await localStorage.get([...AI_CREDENTIAL_SETTINGS])) !== null;
 }
 
 async function applyFallbackTitle(guideId: string) {

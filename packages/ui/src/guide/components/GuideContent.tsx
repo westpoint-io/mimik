@@ -1,3 +1,4 @@
+import { AI_CREDENTIAL_SETTINGS, resolveAiCredentials } from '@mimik/core/capture/ai/keys';
 import { i18n, localStorage } from '@mimik/core/env';
 import { formatDate } from '@mimik/core/export/utils';
 import { isReplayable } from '@mimik/core/guideme/session';
@@ -131,7 +132,7 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
   }, [data, guideId, setGuideExportData]);
 
   useEffect(() => {
-    localStorage.get(['aiApiKey']).then((s) => desc.setHasApiKey(Boolean(s.aiApiKey)));
+    localStorage.get(AI_CREDENTIAL_SETTINGS).then((stored) => desc.setHasApiKey(resolveAiCredentials(stored) !== null));
   }, []);
 
   const handleTitleBlur = useCallback(async () => {

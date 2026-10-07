@@ -7,7 +7,6 @@ const openai: VoiceoverConfig = {
   apiKey: 'sk-test',
   voiceId: 'alloy',
   modelId: 'gpt-4o-mini-tts',
-  source: 'voiceover',
 };
 
 const eleven: VoiceoverConfig = {
@@ -15,7 +14,6 @@ const eleven: VoiceoverConfig = {
   apiKey: 'sk_test',
   voiceId: '21m00Tcm4TlvDq8ikWAM',
   modelId: 'eleven_turbo_v2_5',
-  source: 'voiceover',
 };
 
 afterEach(() => vi.unstubAllGlobals());

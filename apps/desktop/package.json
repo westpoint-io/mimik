@@ -2,6 +2,7 @@
   "name": "@mimik/desktop",
   "version": "1.1.1",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "main": "out/main/index.js",
   "scripts": {

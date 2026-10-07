@@ -120,29 +120,27 @@ describe('validateApiKey', () => {
       });
     });
 
-    it('returns model-required when no model is given and catalog is reachable', async () => {
+    it('counts a server that lists its models as reachable when no model is given', async () => {
       fetchMock.mockResolvedValueOnce(modelsBody('public-model', 'selected-model'));
       expect(await validateApiKey('openai', 'sk-key', 'https://api.example.com/v1')).toEqual({
-        valid: false,
-        reason: 'model-required',
+        valid: true,
         models: ['public-model', 'selected-model'],
       });
     });
 
-    it('returns model-required with no models when catalog fails', async () => {
+    it('reports a server it cannot reach as a network failure', async () => {
       fetchMock.mockRejectedValueOnce(new TypeError('fetch failed'));
       expect(await validateApiKey('openai', 'sk-key', 'https://api.example.com/v1')).toEqual({
         valid: false,
-        reason: 'model-required',
+        reason: 'network',
       });
     });
 
-    it('returns model-required when model is blank', async () => {
-      fetchMock.mockResolvedValueOnce(modelsBody('public-model', 'selected-model'));
+    it('reports a server that refuses the key as rejected', async () => {
+      fetchMock.mockResolvedValueOnce(errorResponse(401));
       expect(await validateApiKey('openai', 'sk-key', 'https://api.example.com/v1', '  ')).toEqual({
         valid: false,
-        reason: 'model-required',
-        models: ['public-model', 'selected-model'],
+        reason: 'rejected',
       });
     });
 

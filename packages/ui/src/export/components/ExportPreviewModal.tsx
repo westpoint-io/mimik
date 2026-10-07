@@ -21,6 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../componen
 import { type ExportFormat, useGuideExport } from '../hooks/use-guide-export';
 import { useVideoPreview } from '../hooks/use-video-preview';
 import { useVoiceoverReady } from '../hooks/use-voiceover-ready';
+import { VideoLoader } from './VideoLoader';
 
 const VideoStepPlayer = lazy(() => import('./VideoStepPlayer').then((m) => ({ default: m.VideoStepPlayer })));
 
@@ -337,7 +338,7 @@ export function ExportPreviewModal({ open, onOpenChange, guide, steps, screensho
               </div>
             )}
 
-            <div className="flex-1 bg-[#3F3F46] relative overflow-hidden">
+            <div className={`flex-1 relative overflow-hidden ${mode === 'document' ? 'bg-[#3F3F46]' : 'bg-secondary'}`}>
               {mode === 'document' ? (
                 <>
                   {doc.rendering && (
@@ -392,25 +393,12 @@ export function ExportPreviewModal({ open, onOpenChange, guide, steps, screensho
                       />
                     </Suspense>
                   ) : (
-                    <div className="flex flex-col items-center gap-2 bg-card border border-border rounded-xl px-4 py-3">
-                      <div className="text-[11px] text-muted-foreground">
-                        {video.narrating
-                          ? i18n.t('exportPreview.narrating', [
-                              String(video.narrating.done + 1),
-                              String(video.narrating.total),
-                            ])
-                          : i18n.t('exportPreview.encodingVideo')}
-                      </div>
-                      <div className="h-1.5 w-40 overflow-hidden rounded-full bg-border">
-                        <div
-                          className="h-full rounded-full bg-accent transition-[width] duration-150"
-                          style={{ width: `${Math.round(video.progress * 100)}%` }}
-                        />
-                      </div>
-                      <div className="text-[10px] font-semibold tabular-nums text-foreground">
-                        {Math.round(video.progress * 100)}%
-                      </div>
-                    </div>
+                    <VideoLoader
+                      stage={video.stage}
+                      narrating={video.narrating}
+                      progress={video.progress}
+                      stepCount={steps.length}
+                    />
                   )}
                 </div>
               )}

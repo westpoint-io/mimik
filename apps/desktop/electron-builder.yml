@@ -1,12 +1,22 @@
 appId: io.westpoint.mimik
 productName: Mimik
-executableName: mimik
+executableName: Mimik
+extraMetadata:
+  name: mimik
+  productName: Mimik
+npmRebuild: false
 directories:
   output: dist
   buildResources: resources
 files:
   - out/**
+  - "!out/THIRD_PARTY_NOTICES.txt"
   - package.json
+extraFiles:
+  - from: out/THIRD_PARTY_NOTICES.txt
+    to: THIRD_PARTY_NOTICES.txt
+  - from: ../../LICENSE
+    to: LICENSE.txt
 extraResources:
   - from: resources
     to: .
@@ -22,7 +32,16 @@ mac:
 win:
   target:
     - nsis
+nsis:
+  artifactName: ${productName}-${version}.${ext}
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  runAfterFinish: true
 linux:
+  executableName: mimik
   category: Utility
   target:
     - AppImage

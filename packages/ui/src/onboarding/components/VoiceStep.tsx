@@ -1,23 +1,29 @@
-import { SecretInput, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui';
+import type { VoiceProvider } from '@mimik/core/capture/voice/transcribe';
+import { client, i18n, localStorage } from '@mimik/core/env';
 import { Mic, MousePointerClick, Shield } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { i18n } from '#imports';
-import type { VoiceProvider } from '@/core/capture/voice/transcribe';
-import { localStorage } from '@/lib/browser-api/local-storage';
-import { MicrophonePicker } from '@/ui/shared/MicrophonePicker';
-import { ProgressDots } from '../ProgressDots';
+import { ProviderKeyRow } from '../../ai/components/ProviderKeyRow';
+import { type ProviderOption, ProviderSelect } from '../../ai/components/ProviderSelect';
+import { useApiKeys } from '../../ai/hooks/use-api-keys';
+import { MicrophonePicker } from '../../voice/components/MicrophonePicker';
 import type { StepProps } from '../types';
+import { ProgressDots } from './ProgressDots';
 
-export function VoiceStep({ onNext, onSkip, onBack, index, total }: StepProps) {
+const VOICE_PROVIDERS: ProviderOption<VoiceProvider>[] = [
+  { value: 'openai', label: 'OpenAI', logo: 'openai', available: true },
+  { value: 'groq', label: 'Groq', logo: 'groq', available: true },
+];
+
+export function VoiceStep({ onNext, onSkip, onBack, index, total, validate, requestMicrophoneAccess }: StepProps) {
   const [provider, setProvider] = useState<VoiceProvider>('openai');
-  const [apiKey, setApiKey] = useState('');
   const [microphoneId, setMicrophoneId] = useState('');
+  const keys = useApiKeys({ reloadOnFocus: true });
+  const apiKey = keys.keys[provider] ?? '';
 
   useEffect(() => {
     const load = () =>
-      localStorage.get(['voiceProvider', 'voiceApiKey', 'voiceMicrophoneId']).then((stored) => {
+      localStorage.get(['voiceProvider', 'voiceMicrophoneId']).then((stored) => {
         if (stored.voiceProvider === 'openai' || stored.voiceProvider === 'groq') setProvider(stored.voiceProvider);
-        if (typeof stored.voiceApiKey === 'string') setApiKey(stored.voiceApiKey);
         if (typeof stored.voiceMicrophoneId === 'string') setMicrophoneId(stored.voiceMicrophoneId);
       });
 
@@ -39,10 +45,7 @@ export function VoiceStep({ onNext, onSkip, onBack, index, total }: StepProps) {
     void localStorage.set({ voiceProvider: nextProvider });
   };
 
-  const handleApiKeyChange = (nextKey: string) => {
-    setApiKey(nextKey);
-    void localStorage.set({ voiceApiKey: nextKey });
-  };
+  const handleApiKeyChange = (nextKey: string) => keys.setKey(provider, nextKey);
 
   return (
     <div className="flex h-screen">
@@ -56,44 +59,44 @@ export function VoiceStep({ onNext, onSkip, onBack, index, total }: StepProps) {
           </h1>
           <p className="text-sm text-muted-foreground leading-relaxed mb-6">{i18n.t('onboarding.voiceMessage')}</p>
 
-          <div className="border border-border rounded-2xl p-4 space-y-3 mb-6">
-            <div className="flex gap-3">
-              <div className="flex-1">
-                <label className="block text-xs font-semibold text-foreground mb-1.5">
-                  {i18n.t('settings.provider')}
-                </label>
-                <Select value={provider} onValueChange={(v) => handleProviderChange(v as VoiceProvider)}>
-                  <SelectTrigger className="h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="openai">OpenAI</SelectItem>
-                    <SelectItem value="groq">Groq</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex-1">
-                <label className="block text-xs font-semibold text-foreground mb-1.5">
-                  {i18n.t('settings.apiKey')}
-                </label>
-                <SecretInput
-                  value={apiKey}
-                  onChange={handleApiKeyChange}
-                  placeholder={provider === 'groq' ? 'gsk_...' : 'sk-...'}
-                  className="w-full h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10"
-                />
-              </div>
+          <div className="space-y-4 mb-6">
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1.5">
+                {i18n.t('settings.provider')}
+              </label>
+              <ProviderSelect
+                value={provider}
+                onChange={handleProviderChange}
+                options={VOICE_PROVIDERS}
+                triggerClassName="w-full h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-foreground mb-1.5">{i18n.t('settings.apiKey')}</label>
+              <ProviderKeyRow
+                key={provider}
+                bare
+                provider={provider}
+                value={apiKey}
+                onChange={handleApiKeyChange}
+                validate={validate}
+              />
+              <p className="mt-1.5 text-[11px] text-muted-foreground">{i18n.t('onboarding.keySaved')}</p>
             </div>
 
             <MicrophonePicker
               value={microphoneId}
               onChange={handleMicrophoneChange}
+              onRequestAccess={requestMicrophoneAccess}
               triggerClassName="h-11 px-4 text-sm"
             />
 
             <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-secondary text-[11px] text-muted-foreground leading-relaxed">
               <Mic size={12} className="shrink-0 mt-0.5 text-accent" />
-              <span>{i18n.t('onboarding.voiceRecordHint')}</span>
+              <span>
+                {i18n.t(client() === 'desktop' ? 'onboarding.voiceRecordHintDesktop' : 'onboarding.voiceRecordHint')}
+              </span>
             </div>
 
             <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-secondary text-[11px] text-muted-foreground leading-relaxed">
