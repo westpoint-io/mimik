@@ -108,7 +108,7 @@ describe('renderScreenshot', () => {
     const s = makeScreenshot({ edits: { viewport: { x: 100, y: 50, width: 600, height: 400 } } });
     await renderScreenshot(s);
 
-    const [, sx, sy, sw, sh, dx, dy, dw, dh] = calls.find((c) => c.m === 'drawImage')?.a as number[];
+    const [, sx, sy, sw, sh, dx, dy, dw, dh] = calls.find((c) => c.m === 'drawImage')!.a as number[];
     expect([sx, sy, sw, sh]).toEqual([100, 50, 600, 400]);
     expect([dx, dy, dw, dh]).toEqual([0, 0, 600, 400]);
   });
