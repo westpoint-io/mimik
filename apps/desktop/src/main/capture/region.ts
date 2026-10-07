@@ -1,13 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import type { Rect } from '@mimik/core/rect';
 import { app, screen } from 'electron';
-
-export interface Region {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
 
 const MIN_REGION = { width: 60, height: 30 };
 
@@ -15,7 +9,7 @@ function file(): string {
   return join(app.getPath('userData'), 'capture-region.json');
 }
 
-export function defaultRegion(): Region {
+export function defaultRegion(): Rect {
   const { workArea } = screen.getPrimaryDisplay();
   const width = Math.round(workArea.width * 0.6);
   const height = Math.round(workArea.height * 0.6);
@@ -27,7 +21,7 @@ export function defaultRegion(): Region {
   };
 }
 
-export function clampToDisplays(region: Region): Region {
+export function clampToDisplays(region: Rect): Rect {
   const { workArea } = screen.getDisplayMatching(region);
   const width = Math.min(Math.max(region.width, MIN_REGION.width), workArea.width);
   const height = Math.min(Math.max(region.height, MIN_REGION.height), workArea.height);
@@ -39,18 +33,18 @@ export function clampToDisplays(region: Region): Region {
   };
 }
 
-export function loadRegion(): Region {
+export function loadRegion(): Rect {
   try {
-    const stored = JSON.parse(readFileSync(file(), 'utf8')) as Partial<Region>;
+    const stored = JSON.parse(readFileSync(file(), 'utf8')) as Partial<Rect>;
     const complete = (['x', 'y', 'width', 'height'] as const).every((k) => Number.isFinite(stored[k]));
     if (!complete) return defaultRegion();
-    return clampToDisplays(stored as Region);
+    return clampToDisplays(stored as Rect);
   } catch {
     return defaultRegion();
   }
 }
 
-export function saveRegion(region: Region): Region {
+export function saveRegion(region: Rect): Rect {
   const clamped = clampToDisplays(region);
   try {
     writeFileSync(file(), JSON.stringify(clamped));

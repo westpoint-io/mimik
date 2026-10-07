@@ -26,6 +26,7 @@ import { COVER_SEGMENT, stepNarration } from '@/core/export/voiceover/script';
 import { actionSteps, calloutAccent, isBlock } from '@/core/guides/blocks';
 import type { BlockType, Guide, Screenshot, Step } from '@/core/guides/types';
 import { logger } from '@/core/logger';
+import type { Rect } from '@/core/rect';
 import type { Ctx } from '@/core/screenshot/draw';
 import { drawRoundedRect, TARGET_RADIUS, TARGET_STROKE } from '@/core/screenshot/draw';
 import { clamp, resolveFrameViewport, resolveTarget } from '@/core/screenshot/geometry';
@@ -170,13 +171,6 @@ export function cursorProgress(frame: number, fps = FPS): number {
 export function easeInOut(t: number): number {
   const x = clamp(t, 0, 1);
   return x < 0.5 ? 4 * x ** 3 : 1 - (-2 * x + 2) ** 3 / 2;
-}
-
-export interface Rect {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
 }
 
 interface Size {

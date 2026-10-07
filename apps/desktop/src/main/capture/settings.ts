@@ -1,14 +1,12 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { snapZoom } from '@mimik/core/screenshot/record';
 import { app } from 'electron';
 
 export type CaptureMode = 'window' | 'screen' | 'area';
 
 const CAPTURE_MODES: CaptureMode[] = ['window', 'screen', 'area'];
 const MAX_SCREENSHOT_DELAY_MS = 2000;
-const MIN_ZOOM = 1;
-const MAX_ZOOM = 5;
-const ZOOM_STEP = 0.25;
 export const MIN_TYPING_DEBOUNCE_MS = 200;
 export const MAX_TYPING_DEBOUNCE_MS = 5000;
 
@@ -67,10 +65,6 @@ function shortcuts(input: Partial<CaptureShortcuts> | undefined): CaptureShortcu
 
 function file(): string {
   return join(app.getPath('userData'), 'capture-settings.json');
-}
-
-function snapZoom(zoom: number): number {
-  return Math.min(Math.max(Math.round(zoom / ZOOM_STEP) * ZOOM_STEP, MIN_ZOOM), MAX_ZOOM);
 }
 
 type LegacySettings = Partial<Record<'captureOutsideClicks' | 'captureKeys' | 'captureTyping', unknown>>;

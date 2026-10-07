@@ -1,3 +1,4 @@
+import type { Rect } from '@mimik/core/rect';
 import { screen } from 'electron';
 import { Monitor } from 'node-screenshots';
 
@@ -11,13 +12,6 @@ export interface Capture {
   height: number;
   scaleFactor: number;
   displayId: number;
-}
-
-export interface Rect {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
 }
 
 function monitorAt(x: number, y: number): Monitor {

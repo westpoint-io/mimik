@@ -1,4 +1,4 @@
-export interface Region {
+export interface Rect {
   x: number;
   y: number;
   width: number;

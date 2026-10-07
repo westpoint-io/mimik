@@ -1,6 +1,6 @@
 import { isLive } from '@mimik/core/capture/is-live';
 import { logger } from '@mimik/core/logger';
-import { Button, Input, TooltipProvider } from '@mimik/ui';
+import { Button, Input, TooltipProvider, VoiceNotice } from '@mimik/ui';
 import { Globe, Search, Settings, Video } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';
@@ -27,7 +27,6 @@ import { GuideMeView } from './GuideMeView';
 import { LibraryView } from './LibraryView';
 import { MascotIcon } from './MascotIcon';
 import { RecordingView } from './RecordingView';
-import { VoiceToast } from './VoiceToast';
 
 type View =
   | { name: 'library' }
@@ -39,7 +38,6 @@ type View =
 
 export function App() {
   const [isAlive, setIsAlive] = useState(false);
-  const [_isRecording, setIsRecording] = useState(false);
   const [view, setView] = useState<View>({ name: 'library' });
   const [search, setSearch] = useState('');
   const [activeUrl, setActiveUrl] = useState<string>();
@@ -69,14 +67,11 @@ export function App() {
         setPaused(isPaused);
         setPauseReason(isPaused ? (update.pauseReason ?? null) : null);
         if (live) {
-          setIsRecording(update.state === CaptureState.RECORDING);
           setAiFailure(null);
           const guideId = update.currentGuideId;
           if (guideId) {
             setView((prev) => (prev.name === 'recording' ? prev : { name: 'recording', guideId }));
           }
-        } else {
-          setIsRecording(false);
         }
       },
       onVoiceUpdate: (update) => {
@@ -137,7 +132,6 @@ export function App() {
     try {
       const res = await sendMessage('startRecording', { url });
       if (res.guideId) {
-        setIsRecording(true);
         setView({ name: 'recording', guideId: res.guideId });
       }
     } catch (err) {
@@ -149,7 +143,6 @@ export function App() {
     try {
       const res = await sendMessage('stopRecording', undefined);
       if (res.success) {
-        setIsRecording(false);
         setView(res.inserted && res.guideId ? { name: 'editor', guideId: res.guideId } : { name: 'library' });
         if (res.guideId) {
           const url = getExtensionURL(`/fullview.html?guideId=${res.guideId}`);
@@ -170,7 +163,6 @@ export function App() {
   const handleDiscardRecording = useCallback(async () => {
     try {
       await sendMessage('discardRecording', undefined);
-      setIsRecording(false);
       setView({ name: 'library' });
     } catch (err) {
       logger.error(' DISCARD_RECORDING error', err);
@@ -234,7 +226,6 @@ export function App() {
 
     return (
       <div className="min-h-screen bg-card flex flex-col">
-        {/* Header */}
         <div className="px-6 pt-6 pb-7 border-b border-border">
           <div className="flex items-center justify-between mb-5">
             <span className="text-[17px] font-bold tracking-tight text-foreground">{i18n.t('app.name')}</span>
@@ -280,7 +271,6 @@ export function App() {
           )}
         </div>
 
-        {/* Body */}
         <div className="flex-1 px-5 pt-5">
           <UpdateNotice className="mb-4" />
 
@@ -313,7 +303,12 @@ export function App() {
     <TooltipProvider>
       {renderView()}
       {import.meta.env.BROWSER !== 'firefox' && view.name !== 'recording' && (
-        <VoiceToast update={voice} confirmable={voiceStarted} onOpenSettings={() => setView({ name: 'settings' })} />
+        <VoiceNotice
+          update={voice}
+          seenLive={voiceStarted}
+          onOpenSettings={() => setView({ name: 'settings' })}
+          placement="bottom"
+        />
       )}
     </TooltipProvider>
   );

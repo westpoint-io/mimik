@@ -4,6 +4,7 @@ import { Mic, MicOff } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';
 import { hasVoiceApiKey, VOICE_KEY_SETTINGS } from '@/core/capture/voice/api-key';
+import { micToggleState } from '@/core/capture/voice/mic-toggle-state';
 import { getActiveTab } from '@/lib/browser-api/get-active-tab';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import { sendMessage } from '@/lib/messaging';
@@ -40,7 +41,7 @@ export function MicToggle({ enabled, live, paused = false, onChange }: MicToggle
     };
   }, []);
 
-  const locked = (!keyed && !enabled) || paused;
+  const { locked, labelKey } = micToggleState(enabled, keyed, paused);
 
   const toggle = useCallback(async () => {
     if (locked) return;
@@ -71,11 +72,7 @@ export function MicToggle({ enabled, live, paused = false, onChange }: MicToggle
   }, [enabled, live, locked, onChange]);
 
   const Icon = enabled ? Mic : MicOff;
-  const label = paused
-    ? i18n.t('voice.pausedWithCapture')
-    : locked
-      ? i18n.t('voice.needsApiKey')
-      : i18n.t(enabled ? 'voice.turnOff' : 'voice.turnOn');
+  const label = i18n.t(labelKey);
 
   return (
     <Tooltip>

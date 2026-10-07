@@ -4,7 +4,7 @@ import { describeStepNow, describeUnnarratedSteps } from '@mimik/core/capture/vo
 import { MicRecorder } from '@mimik/core/capture/voice/mic-recorder';
 import { narrateRecording, type VoiceRecording } from '@mimik/core/capture/voice/narrate-recording';
 import { NARRATION_SETTLE_MS } from '@mimik/core/capture/voice/narration-settle-ms';
-import { partialRecording } from '@mimik/core/capture/voice/partial-recording';
+import { NarrationSlicer } from '@mimik/core/capture/voice/narration-slicer';
 import { readTranscriptionSettings } from '@mimik/core/capture/voice/read-transcription-settings';
 import { readVoiceSettings } from '@mimik/core/capture/voice/read-voice-settings';
 import { startFailureReason } from '@mimik/core/capture/voice/start-failure-reason';
@@ -20,7 +20,7 @@ export class DesktopNarration {
   private live: Promise<MicRecorder | null> | null = null;
   private mic: MicRecorder | null = null;
   private guideId: string | null = null;
-  private flushedUpTo = 0;
+  private slicer = new NarrationSlicer();
   private narrated = 0;
   private lost = false;
   private current: VoiceUpdate = { phase: 'idle' };
@@ -46,14 +46,11 @@ export class DesktopNarration {
     deferDescription(guideId, mark.stepId, describe ?? (() => this.undescribed(mark.stepId)));
     const mic = this.mic;
     this.track(async () => {
-      const full = mic && usableRecording(mic.snapshot());
-      const closesAt = full ? (mark.timestamp - full.audioEpochMs) / 1000 : 0;
-      const slice = full && closesAt > this.flushedUpTo ? partialRecording(full, this.flushedUpTo, closesAt) : null;
+      const slice = this.slicer.forStep(mic && usableRecording(mic.snapshot()), mark.timestamp);
       if (!slice) {
         describeStepNow(guideId, mark.stepId);
         return;
       }
-      this.flushedUpTo = closesAt;
       const narrated = await this.transcribe(guideId, slice, [mark]);
       if (!narrated.includes(mark.stepId)) describeStepNow(guideId, mark.stepId);
     });
@@ -62,10 +59,10 @@ export class DesktopNarration {
   stop(): void {
     const opening = this.live;
     const guideId = this.guideId;
-    const from = this.flushedUpTo;
+    const slicer = this.slicer;
     this.live = null;
     this.mic = null;
-    this.flushedUpTo = 0;
+    this.slicer = new NarrationSlicer();
     window.mimik.capture.narration(null);
     if (!opening || !guideId) return;
     if (this.current.phase === 'recording') this.report({ phase: 'transcribing' });
@@ -75,7 +72,7 @@ export class DesktopNarration {
       const audio = mic && usableRecording(mic.stop());
       window.mimik.capture.narration(null);
       await Promise.all(inflight);
-      const tail = audio && from > 0 ? partialRecording(audio, from, audio.durationSeconds) : audio;
+      const tail = audio && slicer.tail(audio);
       const steps = await getStepsForGuide(guideId);
       if (tail && steps.length > 0) {
         await this.transcribe(
@@ -89,12 +86,12 @@ export class DesktopNarration {
     });
   }
 
-  abort(): void {
+  turnOff(): void {
     const opening = this.live;
     const guideId = this.guideId;
     this.live = null;
     this.mic = null;
-    this.flushedUpTo = 0;
+    this.slicer = new NarrationSlicer();
     window.mimik.capture.narration(null);
     void opening?.then((mic) => {
       mic?.release();

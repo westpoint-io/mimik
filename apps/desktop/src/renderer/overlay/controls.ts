@@ -1,6 +1,7 @@
 import { aiFailureNotice } from '@mimik/core/capture/ai/errors';
 import { CaptureState } from '@mimik/core/capture/machine';
 import { splitAtShortcut } from '@mimik/core/capture/split-at-shortcut';
+import { micToggleState } from '@mimik/core/capture/voice/mic-toggle-state';
 import { readVoiceSettings } from '@mimik/core/capture/voice/read-voice-settings';
 import { voiceErrorKey } from '@mimik/core/capture/voice/voice-error-key';
 import { i18n } from '@mimik/core/env';
@@ -226,13 +227,11 @@ export function controls(): void {
     }
     badge.hidden = paused || collapsed;
 
-    const micLocked = (!micKeyed && !micOn) || paused;
+    const { locked: micLocked, labelKey: micLabelKey } = micToggleState(micOn, micKeyed, paused);
     const micState = `${micOn ? 'on' : micLocked ? 'locked' : 'off'}${paused ? ':paused' : ''}`;
     if (micState !== shownMic) {
       shownMic = micState;
-      const micLabel = i18n.t(
-        paused ? 'voice.pausedWithCapture' : micLocked ? 'voice.needsApiKey' : micOn ? 'voice.turnOff' : 'voice.turnOn',
-      );
+      const micLabel = i18n.t(micLabelKey);
       mic.className = micLocked ? 'locked' : micOn ? 'on' : 'off';
       mic.title = micLabel;
       mic.setAttribute('aria-label', micLabel);

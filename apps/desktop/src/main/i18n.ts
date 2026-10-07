@@ -1,41 +1,15 @@
-import de from '@mimik/locales/de.yml';
-import en from '@mimik/locales/en.yml';
-import es from '@mimik/locales/es.yml';
-import fr from '@mimik/locales/fr.yml';
-import ptBR from '@mimik/locales/pt-BR.yml';
-import ru from '@mimik/locales/ru.yml';
-import zhCN from '@mimik/locales/zh-CN.yml';
+import { translate } from '@mimik/core/i18n/translate';
+import { type AppLocale, appLocale } from './app-locale';
+import { APP_MESSAGES } from './app-messages';
 
-type Messages = { [key: string]: string | Messages };
-
-const LOCALES: Record<string, Messages> = {
-  en: en as Messages,
-  de: de as Messages,
-  es: es as Messages,
-  fr: fr as Messages,
-  'pt-BR': ptBR as Messages,
-  'zh-CN': zhCN as Messages,
-  ru: ru as Messages,
-};
-const active = { locale: 'en' };
-
-function lookup(messages: Messages, key: string): string | undefined {
-  const found = key
-    .split('.')
-    .reduce<string | Messages | undefined>(
-      (node, part) => (typeof node === 'object' ? node[part] : undefined),
-      messages,
-    );
-  return typeof found === 'string' ? found : undefined;
-}
+const active: { locale: AppLocale } = { locale: 'en' };
 
 export const mainI18n = {
   setLocale(code: string): void {
-    const language = code.split('-')[0];
-    active.locale = LOCALES[code] ? code : (Object.keys(LOCALES).find((l) => l.split('-')[0] === language) ?? 'en');
+    active.locale = appLocale(null, code);
   },
   t(key: string, substitutions: string[] = []): string {
-    const text = lookup(LOCALES[active.locale], key) ?? lookup(LOCALES.en, key) ?? key;
-    return substitutions.reduce((out, value, i) => out.replaceAll(`$${i + 1}`, value), text);
+    const text = translate(APP_MESSAGES[active.locale], key, substitutions);
+    return text === key ? translate(APP_MESSAGES.en, key, substitutions) : text;
   },
 };
