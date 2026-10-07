@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import type { GuideDescriptionError } from '@mimik/ui/env';
+import { describe, expect, it } from 'vitest';
 import { guideDescriptionErrorMessage } from '../guide-description-error';
 
 const CASES: [GuideDescriptionError, string][] = [

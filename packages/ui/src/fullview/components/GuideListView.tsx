@@ -1,8 +1,8 @@
-import { RotateCcw, Star, Trash2 } from 'lucide-react';
 import { i18n } from '@mimik/core/env';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
 import { formatDate } from '@mimik/ui/lib/utils';
 import { useFullview } from '@mimik/ui/stores/fullview';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
+import { RotateCcw, Star, Trash2 } from 'lucide-react';
 import { navigate } from '../router';
 
 interface GuideListViewProps {

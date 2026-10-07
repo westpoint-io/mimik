@@ -1,3 +1,5 @@
+import { createOverlayRoot } from '@/core/capture/dom/overlay-root';
+
 const ELEMENT_TAG = 'mimik-guideme';
 const PAD = 6;
 
@@ -71,13 +73,9 @@ export class GuideMeOverlay {
   private resizeObserver: ResizeObserver | null = null;
 
   constructor() {
-    this.host = document.createElement(ELEMENT_TAG);
-    this.host.setAttribute('data-mimik-ignore', '');
-    this.shadow = this.host.attachShadow({ mode: 'closed' });
-
-    const style = document.createElement('style');
-    style.textContent = STYLES;
-    this.shadow.appendChild(style);
+    const { host, shadow } = createOverlayRoot(STYLES, ELEMENT_TAG);
+    this.host = host;
+    this.shadow = shadow;
 
     document.documentElement.appendChild(this.host);
   }

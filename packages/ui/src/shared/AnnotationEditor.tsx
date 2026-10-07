@@ -1,25 +1,4 @@
-import {
-  ArrowUpRight,
-  ChevronDown,
-  Circle as CircleIcon,
-  CopyPlus,
-  Crop,
-  EyeOff,
-  Minus,
-  MousePointer2,
-  MousePointerClick,
-  MoveVertical,
-  Redo2,
-  RotateCcw,
-  Square,
-  SquareDashed,
-  Trash2,
-  Type,
-  Undo2,
-} from 'lucide-react';
-import type { ComponentType, ReactNode } from 'react';
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { i18n } from '@mimik/core/env';
+import { i18n, localStorage } from '@mimik/core/env';
 import { updateScreenshotEdits } from '@mimik/core/guides/service';
 import type { Screenshot, ScreenshotBounds } from '@mimik/core/guides/types';
 import { shadeOf } from '@mimik/core/screenshot/color';
@@ -43,7 +22,6 @@ import type {
 } from '@mimik/core/screenshot/types';
 import {
   ARROW_ENDS,
-  DEFAULT_FONT_SIZE,
   DEFAULT_LINE_HEIGHT,
   DEFAULT_TARGET_COLOR,
   FONT_FAMILIES,
@@ -55,7 +33,6 @@ import {
   MIN_FONT_SIZE,
   MIN_LINE_HEIGHT,
 } from '@mimik/core/screenshot/types';
-import { localStorage } from '@mimik/core/env';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -64,6 +41,30 @@ import {
 } from '@mimik/ui/components/ui/dropdown-menu';
 import { Popover, PopoverContent, PopoverTrigger } from '@mimik/ui/components/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
+import { useEditHistory } from '@mimik/ui/shared/use-edit-history';
+import { usePointerGesture } from '@mimik/ui/shared/use-pointer-gesture';
+import { useTextStyle } from '@mimik/ui/shared/use-text-style';
+import {
+  ArrowUpRight,
+  ChevronDown,
+  Circle as CircleIcon,
+  CopyPlus,
+  Crop,
+  EyeOff,
+  Minus,
+  MousePointer2,
+  MousePointerClick,
+  MoveVertical,
+  Redo2,
+  RotateCcw,
+  Square,
+  SquareDashed,
+  Trash2,
+  Type,
+  Undo2,
+} from 'lucide-react';
+import type { ComponentType, ReactNode } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import ColorPicker, { swatchStyle } from './ColorPicker';
 
 type EditorMode = 'crop' | 'annotate' | 'redact';
@@ -99,7 +100,6 @@ const MIN_SHAPE_SIZE = 6;
 const MIN_CROP_SIZE = 20;
 const HANDLE_DISPLAY_SIZE = 10;
 const HANDLE_HIT_PX = 10;
-const HISTORY_LIMIT = 49;
 
 function clampNumber(raw: string | number, min: number, max: number): number {
   const n = Number(raw);
@@ -317,50 +317,34 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
   const [viewport, setViewport] = useState<ScreenshotBounds | undefined>(screenshot.edits?.viewport);
   const [selectedId, setSelectedId] = useState<string | null>(tool === 'target' ? TARGET_ID : null);
   const [color, setColor] = useState<string>(COLORS[0]);
-  const [draft, setDraft] = useState<Annotation | null>(null);
-  const [cropDraft, setCropDraft] = useState<ScreenshotBounds | null>(null);
+  const gesture = usePointerGesture();
   const [textEditor, setTextEditor] = useState<TextEditorState | null>(null);
   const [textValue, setTextValue] = useState('');
   const [bitmap, setBitmap] = useState<ImageBitmap | null>(null);
   const [saving, setSaving] = useState(false);
-  const [hovering, setHovering] = useState(false);
-  const [anchor, setAnchor] = useState<{ x: number; y: number } | null>(null);
   const [pulse, setPulse] = useState(0);
   const [defaultTargetColor, setDefaultTargetColor] = useState(DEFAULT_TARGET_COLOR);
-  const [grabbing, setGrabbing] = useState(false);
 
   const [fill] = useState('transparent');
   const [lineWidth] = useState<LineWidth>('ms');
   const [radius] = useState(0);
   const [arrowEnd] = useState<ArrowEnd>('arrow-solid');
-  const [fontFamily, setFontFamily] = useState<FontFamily>('sans-serif');
-  const [bold, setBold] = useState(false);
-  const [italic, setItalic] = useState(false);
-  const [fontSize, setFontSize] = useState(DEFAULT_FONT_SIZE);
-  const [lineHeight, setLineHeight] = useState(DEFAULT_LINE_HEIGHT);
-  const [past, setPast] = useState<Annotation[][]>([]);
-  const [future, setFuture] = useState<Annotation[][]>([]);
+  const text = useTextStyle();
 
   const annotationsRef = useRef(annotations);
   annotationsRef.current = annotations;
 
-  const pushHistory = useCallback(() => {
-    setPast((p) => [...p.slice(-HISTORY_LIMIT), annotationsRef.current]);
-    setFuture([]);
-  }, []);
+  const edits = useEditHistory(annotationsRef);
+  const pushHistory = edits.push;
 
   const undo = () => {
-    if (!past.length) return;
-    setFuture((f) => [annotationsRef.current, ...f]);
-    setAnnotations(past[past.length - 1]);
-    setPast((p) => p.slice(0, -1));
+    const previous = edits.undo();
+    if (previous) setAnnotations(previous);
   };
 
   const redo = () => {
-    if (!future.length) return;
-    setPast((p) => [...p, annotationsRef.current]);
-    setAnnotations(future[0]);
-    setFuture((f) => f.slice(1));
+    const next = edits.redo();
+    if (next) setAnnotations(next);
   };
 
   const mode = modeForTool(activeTool);
@@ -457,11 +441,11 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
   useEffect(() => {
     const sel = annotationsRef.current.find((a) => a.id === selectedId);
     if (!sel) {
-      setAnchor(null);
+      gesture.setAnchor(null);
       return;
     }
     const b = annotationBounds(sel);
-    setAnchor({ x: b.x + b.width / 2, y: b.y + b.height });
+    gesture.setAnchor({ x: b.x + b.width / 2, y: b.y + b.height });
   }, [selectedId]);
 
   useEffect(() => {
@@ -513,17 +497,17 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
       }
       drawAnnotation(ctx, a, 0, 0);
     }
-    if (draft) {
+    if (gesture.draft) {
       ctx.save();
       ctx.globalAlpha = 0.7;
-      drawAnnotation(ctx, draft, 0, 0);
+      drawAnnotation(ctx, gesture.draft, 0, 0);
       ctx.restore();
     }
 
     const scale = getScale();
 
     if (mode === 'crop') {
-      const frame = cropDraft ?? viewport ?? { x: 0, y: 0, width: canvas.width, height: canvas.height };
+      const frame = gesture.cropDraft ?? viewport ?? { x: 0, y: 0, width: canvas.width, height: canvas.height };
       ctx.save();
       ctx.fillStyle = 'rgba(30, 27, 75, 0.55)';
       ctx.beginPath();
@@ -564,7 +548,7 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
       }
       ctx.restore();
     }
-  }, [annotations, draft, cropDraft, selectedId, bitmap, getScale, mode, viewport, pulse]);
+  }, [annotations, gesture.draft, gesture.cropDraft, selectedId, bitmap, getScale, mode, viewport, pulse]);
 
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -576,24 +560,24 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
       const handle = hitHandle(frame, p.x, p.y, HANDLE_HIT_PX * scale);
       if (handle) {
         dragRef.current = { mode: 'cropResize', handle, rect: frame, lastX: p.x, lastY: p.y };
-        setCropDraft(frame);
+        gesture.setCropDraft(frame);
         return;
       }
       if (p.x > frame.x && p.x < frame.x + frame.width && p.y > frame.y && p.y < frame.y + frame.height) {
         dragRef.current = { mode: 'cropMove', rect: frame, lastX: p.x, lastY: p.y };
-        setCropDraft(frame);
+        gesture.setCropDraft(frame);
         return;
       }
       const rect: ScreenshotBounds = { x: p.x, y: p.y, width: 0, height: 0 };
       dragRef.current = { mode: 'crop', start: p, rect };
-      setCropDraft(rect);
+      gesture.setCropDraft(rect);
       return;
     }
 
     if (mode === 'redact') {
       const shape: Annotation = { id: DRAFT_ID, type: 'redact', x: p.x, y: p.y, w: 0, h: 0, style: 'blur' };
       dragRef.current = { mode: 'draw', start: p, shape };
-      setDraft(shape);
+      gesture.setDraft(shape);
       return;
     }
 
@@ -613,7 +597,7 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
       pushHistory();
       setSelectedId(hit.id);
       dragRef.current = { mode: 'move', id: hit.id, lastX: p.x, lastY: p.y };
-      setGrabbing(true);
+      gesture.setGrabbing(true);
       return;
     }
     setSelectedId(null);
@@ -625,7 +609,7 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
       const rect = canvasRef.current?.getBoundingClientRect();
       setTextEditor({
         x: p.x,
-        y: p.y + fontSize,
+        y: p.y + text.fontSize,
         left: rect ? e.clientX - rect.left : 0,
         top: rect ? e.clientY - rect.top : 0,
       });
@@ -652,7 +636,7 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
       shape = { id: DRAFT_ID, type: 'box', x: p.x, y: p.y, w: 0, h: 0, color, fill, lineWidth, radius };
     }
     dragRef.current = { mode: 'draw', start: p, shape };
-    setDraft(shape);
+    gesture.setDraft(shape);
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -660,7 +644,7 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
     if (!drag) {
       if (mode === 'annotate') {
         const p = toImageSpace(e);
-        setHovering(Boolean(hitTest(annotations, p.x, p.y)));
+        gesture.setHovering(Boolean(hitTest(annotations, p.x, p.y)));
       }
       return;
     }
@@ -679,7 +663,7 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
       const moved = next.find((a) => a.id === drag.id);
       if (moved) {
         const b = annotationBounds(moved);
-        setAnchor({ x: b.x + b.width / 2, y: b.y + b.height });
+        gesture.setAnchor({ x: b.x + b.width / 2, y: b.y + b.height });
       }
       return;
     }
@@ -699,7 +683,7 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
         height: Math.max(MIN_CROP_SIZE, top ? r.height - dy : r.height + dy),
       };
       drag.rect = cropTo(next, { width: screenshot.width, height: screenshot.height });
-      setCropDraft(drag.rect);
+      gesture.setCropDraft(drag.rect);
       return;
     }
 
@@ -712,7 +696,7 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
         { ...drag.rect, x: drag.rect.x + dx, y: drag.rect.y + dy },
         { width: screenshot.width, height: screenshot.height },
       );
-      setCropDraft(drag.rect);
+      gesture.setCropDraft(drag.rect);
       return;
     }
 
@@ -724,7 +708,7 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
         height: Math.abs(p.y - drag.start.y),
       };
       drag.rect = rect;
-      setCropDraft(rect);
+      gesture.setCropDraft(rect);
       return;
     }
 
@@ -744,22 +728,22 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
       next = { ...shape, points: [...shape.points, p.x, p.y] };
     }
     drag.shape = next;
-    setDraft(next);
+    gesture.setDraft(next);
   };
 
   const handlePointerUp = () => {
-    setGrabbing(false);
+    gesture.setGrabbing(false);
     const settled = annotations.find((a) => a.id === selectedId);
     if (settled) {
       const b = annotationBounds(settled);
-      setAnchor({ x: b.x + b.width / 2, y: b.y + b.height });
+      gesture.setAnchor({ x: b.x + b.width / 2, y: b.y + b.height });
     }
     const drag = dragRef.current;
     dragRef.current = null;
     if (!drag) return;
 
     if (drag.mode === 'crop' || drag.mode === 'cropResize' || drag.mode === 'cropMove') {
-      setCropDraft(null);
+      gesture.setCropDraft(null);
       const rect = drag.rect;
       if (rect.width < MIN_CROP_SIZE || rect.height < MIN_CROP_SIZE) return;
       setViewport(cropTo(rect, { width: screenshot.width, height: screenshot.height }));
@@ -767,7 +751,7 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
     }
 
     if (drag.mode === 'draw') {
-      setDraft(null);
+      gesture.setDraft(null);
       const shape = drag.shape;
       if (shape.type === 'freehand') {
         if (shape.points.length < 4) return;
@@ -786,8 +770,7 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
 
   const handlePointerCancel = () => {
     dragRef.current = null;
-    setDraft(null);
-    setCropDraft(null);
+    gesture.clear();
   };
 
   const setProp = (key: string, value: unknown) => {
@@ -801,11 +784,7 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
     size?: number;
     lineHeight?: number;
   }) => {
-    if (patch.fontFamily) setFontFamily(patch.fontFamily);
-    if (patch.bold !== undefined) setBold(patch.bold);
-    if (patch.italic !== undefined) setItalic(patch.italic);
-    if (patch.size !== undefined) setFontSize(patch.size);
-    if (patch.lineHeight !== undefined) setLineHeight(patch.lineHeight);
+    text.apply({ ...patch, fontSize: patch.size });
     if (!selected || selected.type !== 'text') return;
     const next = {
       fontFamily: patch.fontFamily ?? selected.fontFamily ?? 'sans-serif',
@@ -849,12 +828,12 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
           y: textEditor.y,
           text: textValue.trim(),
           color,
-          size: fontSize,
-          ...measureText(textValue.trim(), fontSize, fontFamily, bold, italic),
-          fontFamily,
-          bold,
-          italic,
-          lineHeight,
+          size: text.fontSize,
+          ...measureText(textValue.trim(), text.fontSize, text.fontFamily, text.bold, text.italic),
+          fontFamily: text.fontFamily,
+          bold: text.bold,
+          italic: text.italic,
+          lineHeight: text.lineHeight,
         },
       ]);
     }
@@ -881,7 +860,12 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
       annotations: annotations.filter((a) => a.id !== TARGET_ID),
       target: nextTarget,
     };
-    if (viewport) nextEdits.viewport = viewport;
+    if (viewport && viewport !== screenshot.edits?.viewport) {
+      nextEdits.viewport = viewport;
+      nextEdits.zoomLevel = undefined;
+    } else if (viewport) {
+      nextEdits.viewport = viewport;
+    }
     await updateScreenshotEdits(screenshot.id, nextEdits);
     onDone(nextEdits);
   };
@@ -895,7 +879,7 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
               <button
                 type="button"
                 onClick={undo}
-                disabled={past.length === 0}
+                disabled={!edits.canUndo}
                 className="flex items-center justify-center w-8 h-8 rounded-lg text-foreground/75 hover:bg-secondary hover:text-foreground disabled:opacity-25"
               >
                 <Undo2 size={15} />
@@ -905,7 +889,7 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
               <button
                 type="button"
                 onClick={redo}
-                disabled={future.length === 0}
+                disabled={!edits.canRedo}
                 className="flex items-center justify-center w-8 h-8 rounded-lg text-foreground/75 hover:bg-secondary hover:text-foreground disabled:opacity-25"
               >
                 <Redo2 size={15} />
@@ -955,7 +939,7 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
                 type="button"
                 onClick={() => {
                   setViewport(undefined);
-                  setCropDraft(null);
+                  gesture.setCropDraft(null);
                 }}
                 className="flex items-center gap-1.5 px-2.5 h-8 rounded-lg text-[12px] font-semibold text-foreground/75 hover:bg-secondary"
               >
@@ -988,7 +972,7 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
                 width={screenshot.width}
                 height={screenshot.height}
                 className="block max-w-full max-h-[calc(100vh-98px)] rounded-lg shadow-2xl touch-none"
-                style={{ cursor: cursorFor(mode, activeTool, hovering, grabbing) }}
+                style={{ cursor: cursorFor(mode, activeTool, gesture.hovering, gesture.grabbing) }}
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
                 onPointerUp={handlePointerUp}
@@ -1014,23 +998,23 @@ export default function AnnotationEditor({ screenshot, tool, onDone, onCancel }:
                   className="absolute z-10 rounded-[2px] border-2 border-accent bg-transparent px-1 outline-none leading-tight"
                   style={{
                     left: textEditor.left,
-                    top: textEditor.top - fontSize / getScale(),
+                    top: textEditor.top - text.fontSize / getScale(),
                     color,
-                    fontFamily: FONT_FAMILIES[fontFamily],
-                    fontSize: `${fontSize / getScale()}px`,
-                    fontWeight: bold ? 700 : 500,
-                    fontStyle: italic ? 'italic' : 'normal',
-                    lineHeight,
+                    fontFamily: FONT_FAMILIES[text.fontFamily],
+                    fontSize: `${text.fontSize / getScale()}px`,
+                    fontWeight: text.bold ? 700 : 500,
+                    fontStyle: text.italic ? 'italic' : 'normal',
+                    lineHeight: text.lineHeight,
                     width: `${Math.max(i18n.t('annotationEditor.textPlaceholder').length + 1, textValue.length + 4)}ch`,
                   }}
                 />
               )}
-              {selected && anchor && (
+              {selected && gesture.anchor && (
                 <div
                   className="absolute z-20 -translate-x-1/2 flex flex-col items-center gap-1.5"
                   style={{
-                    left: `${((anchor?.x ?? 0) / screenshot.width) * 100}%`,
-                    top: `${((anchor?.y ?? 0) / screenshot.height) * 100}%`,
+                    left: `${((gesture.anchor?.x ?? 0) / screenshot.width) * 100}%`,
+                    top: `${((gesture.anchor?.y ?? 0) / screenshot.height) * 100}%`,
                   }}
                 >
                   <div className="mt-2 flex items-center gap-1 rounded-xl bg-primary px-2 py-1.5 shadow-xl">

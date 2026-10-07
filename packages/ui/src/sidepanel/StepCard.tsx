@@ -1,17 +1,17 @@
-import { Check, Copy, Loader2, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
 import { i18n } from '@mimik/core/env';
 import { replaceScreenshot } from '@mimik/core/guides/service';
 import type { Screenshot, Step } from '@mimik/core/guides/types';
 import { imageDimensions, renderScreenshot } from '@mimik/core/screenshot/render';
-import { logger } from '@mimik/ui/lib/logger';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
+import { logger } from '@mimik/ui/lib/logger';
 import { useAskAi } from '@mimik/ui/shared/AskAi';
 import ConfirmDialog from '@mimik/ui/shared/ConfirmDialog';
 import { DragGrip, type DragHandleProps, useCardDrag } from '@mimik/ui/shared/card-drag';
 import ImagePlaceholder from '@mimik/ui/shared/ImagePlaceholder';
 import ScreenshotView from '@mimik/ui/shared/ScreenshotView';
 import StepSourceBadge from '@mimik/ui/shared/StepSourceBadge';
+import { Check, Copy, Loader2, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface StepCardProps {
   step: Step;

@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { CaptureImage } from '@mimik/core/capture/sink';
 import type { ElementMeta } from '@mimik/core/guides/types';
+import type { CursorMark } from '@mimik/core/screenshot/types';
 import { screen } from 'electron';
 import { cursorPoint } from './displays';
 import {
@@ -61,17 +62,13 @@ export interface Point {
   y: number;
 }
 
-export interface CursorMark extends Point {
-  style: CaptureSettings['cursorStyle'];
-  scale: number;
-}
-
 export interface CaptureRequest {
   action: string;
   elementMeta: ElementMeta;
   image: CaptureImage;
   inputValue?: string;
   cursor?: CursorMark;
+  zoomLevel?: number;
 }
 
 export interface RecorderHooks {
@@ -187,7 +184,7 @@ export function targetRect(element: ScreenElement | null, framed: Rect, point: P
   return inner;
 }
 
-export function centreOf(element: ScreenElement | null): Point | null {
+function centreOf(element: ScreenElement | null): Point | null {
   const rect = element?.rect;
   if (!rect) return null;
   return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 };
@@ -415,6 +412,7 @@ export class DesktopRecorder {
       ...(settings.showCursor && action === 'click'
         ? { cursor: { x: local.x, y: local.y, style: settings.cursorStyle, scale } }
         : {}),
+      ...(settings.zoomLevel === null ? {} : { zoomLevel: settings.zoomLevel }),
     });
   }
 

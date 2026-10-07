@@ -1,3 +1,6 @@
+import { i18n } from '@mimik/core/env';
+import type { StepKind, VideoChapter } from '@mimik/core/export/video-export';
+import { FRAME_FILL } from '@mimik/core/export/video-support';
 import {
   FullscreenButton,
   MediaPlayer,
@@ -8,9 +11,6 @@ import {
 } from '@vidstack/react';
 import { ChevronLeft, ChevronRight, Maximize, Minimize, Pause, Play } from 'lucide-react';
 import { useEffect, useRef } from 'react';
-import { i18n } from '@mimik/core/env';
-import type { StepKind, VideoChapter } from '@mimik/core/export/video-export';
-import { FRAME_FILL } from '@mimik/core/export/video-support';
 
 const RATES = [1, 1.25, 1.5, 2];
 
@@ -22,8 +22,11 @@ const KIND_DOT: Record<StepKind, string> = {
   note: 'bg-muted-foreground',
 };
 
+export type VideoMime = 'video/mp4' | 'video/webm';
+
 interface VideoStepPlayerProps {
   src: string;
+  type: VideoMime;
   chapters: VideoChapter[];
 }
 
@@ -144,10 +147,10 @@ function PlayerBody({ chapters }: { chapters: VideoChapter[] }) {
   );
 }
 
-export default function VideoStepPlayer({ src, chapters }: VideoStepPlayerProps) {
+export default function VideoStepPlayer({ src, type, chapters }: VideoStepPlayerProps) {
   return (
     <MediaPlayer
-      src={{ src, type: 'video/mp4' }}
+      src={{ src, type }}
       autoPlay
       muted
       playsInline

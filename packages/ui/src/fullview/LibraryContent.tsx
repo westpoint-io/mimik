@@ -1,5 +1,3 @@
-import { ArrowDownWideNarrow, ChevronDown, ChevronLeft, ChevronRight, LayoutGrid, LayoutList, Video } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
 import { i18n } from '@mimik/core/env';
 import {
   type GuideChangeEvent,
@@ -14,8 +12,18 @@ import {
   toggleStar,
 } from '@mimik/core/guides/service';
 import type { Guide, Screenshot } from '@mimik/core/guides/types';
-import { useFullview } from '@mimik/ui/stores/fullview';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
+import { useFullview } from '@mimik/ui/stores/fullview';
+import {
+  ArrowDownWideNarrow,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  LayoutGrid,
+  LayoutList,
+  Video,
+} from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import ConfirmDeleteModal from './components/ConfirmDeleteModal';
 import GuideGridView from './components/GuideGridView';
 import GuideListView from './components/GuideListView';

@@ -6,6 +6,7 @@ import SearchModal from '@mimik/ui/fullview/SearchModal';
 import TopNav from '@mimik/ui/fullview/TopNav';
 import { useEffect, useState } from 'react';
 import CaptureSheet from './CaptureSheet';
+import GuideZoom from './GuideZoom';
 import SettingsPanel from './SettingsPanel';
 
 export default function App() {
@@ -23,19 +24,34 @@ export default function App() {
   }, []);
 
   const library = route.page === 'library';
+  const [guideKey, setGuideKey] = useState(0);
 
   return (
     <TooltipProvider>
       <div className="min-h-screen flex flex-col bg-background">
-        <TopNav route={route} onSettings={library ? () => setSettingsOpen(true) : undefined} />
+        <TopNav
+          route={route}
+          onSettings={library ? () => setSettingsOpen(true) : undefined}
+          onNavigate={() => setSettingsOpen(false)}
+          guideActions={
+            route.page === 'guide' ? (
+              <GuideZoom guideId={route.guideId} onDone={() => setGuideKey((n) => n + 1)} />
+            ) : undefined
+          }
+        />
         {settingsOpen ? (
           <main className="flex-1 min-h-0">
-            <SettingsPanel onClose={() => setSettingsOpen(false)} />
+            <SettingsPanel />
           </main>
         ) : route.page === 'guide' ? (
           <main className="flex-1 py-10 px-6">
             <div className="mx-auto max-w-[780px]">
-              <GuideContent guideId={route.guideId} initialStepId={route.stepId} initialTool={route.tool} />
+              <GuideContent
+                key={guideKey}
+                guideId={route.guideId}
+                initialStepId={route.stepId}
+                initialTool={route.tool}
+              />
             </div>
           </main>
         ) : (

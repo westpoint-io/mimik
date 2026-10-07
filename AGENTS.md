@@ -320,6 +320,42 @@ resolving a scancode against a keyboard layout is a local call with nothing to w
 addon boundary when that flag is set, so a password never reaches our data even though UIAutomation
 already withholds it.
 
+## Overlays We Put In The Page
+
+Five things draw into a page someone else owns: the hover ring, the blur picker, the blur panel, the
+Guide Me overlay and the recording notification. All five are the same construction — an element
+carrying `data-mimik-ignore` with a closed shadow root and one `<style>` — and `createOverlayRoot`
+builds it.
+
+Both attributes are load-bearing and neither fails loudly. Without `data-mimik-ignore` the overlay
+becomes a capture target and a blur candidate, so recording the page records our own chrome; with an
+open shadow root the page's CSS reaches in and restyles it. Five hand-written copies meant five
+chances to forget one, and three of the five had no test at all. One function has one test, and it
+asserts both invariants by construction: a closed root reads back as `null` through `host.shadowRoot`,
+which is the assertion for `mode: 'closed'`.
+
+Reading the attribute back is `isMimikElement`, in `capture/dom/element-utils.ts`. The blur picker
+had grown a private copy of it, identical line for line.
+
+## Boundaries The Linter Holds
+
+`biome.json` covers `src`, `packages/core`, `packages/ui` and `apps/desktop`. `packages/ui` was
+missing from that list for a long time and nobody noticed, which is how forty-odd files reached it
+unchecked; adding it produced forty-one fixes on the first run.
+
+A `noRestrictedImports` override forbids anything under `packages/**` from importing `@/lib/*`,
+`@/ui/*`, `@/entrypoints/*`, `#imports` or any path through `apps/`. Shared code may never depend on
+an app. It is the rule that keeps `packages/ui` genuinely shared rather than quietly coupled to one
+surface, and it is also the licence seam: an MIT package that imports from a copyleft app is no
+longer MIT.
+
+One boundary the linter does **not** hold, and it bites: main-process code may only take `type`
+imports from `@mimik/core`. The renderer aliases the package to its source and bundles it, while
+`electron-vite`'s `externalizeDepsPlugin` leaves it external in main, so a value import resolves at
+runtime to a path with no file and the app dies on launch with `ERR_MODULE_NOT_FOUND`. That is why
+`capture/screenshot.ts` keeps its own three-line `clamp` rather than importing core's: deduplicating
+a one-liner is not worth a cross-boundary dependency that does not work.
+
 ## Which Client Is Running
 
 `configureCore` carries a `client`, `extension` or `desktop`, and `client()` reads it back. Shared
@@ -477,6 +513,16 @@ cannot interleave. For each click it hides the overlays, grabs the display, crop
 implements `CaptureSink` and writes through `@mimik/core/guides/service`, exactly as the extension's
 `step-pipeline.ts` does.
 
+The two surfaces reach that write by different routes but build the screenshot row the same way, so
+`screenshotForElement` owns it. It turns an `ElementMeta` and whatever holds the bytes — a `Blob` in
+the extension, a `src` on the desktop — into a row with the bounds in CSS pixels, the pixel ratio,
+the click point, and the dashed target scaled by that ratio. Scaling the target is the part worth
+having once: a rectangle multiplied in one surface and not the other puts the dashed box on the wrong
+thing, and nothing about that fails a build. Everything else about the two paths genuinely differs —
+voice narration, the deferred-description queue and the input finalisation exist only in the
+extension, and the cursor mark, the application name and the fire-and-forget description exist only
+on the desktop — so only the row builder is shared.
+
 Main cannot `invoke` a renderer, so `ask()` sends a request with a generated reply channel and waits
 for `ipcMain.once` on it, with a timeout. The preload's `onRequest` is the other half. Guide creation
 and step writes both ride it, because both need IndexedDB, which only the renderer has.
@@ -534,6 +580,63 @@ for the same reason — the window the click moved to the front is the one being
 control the click landed on is the one that was there before. It is capped at 1500 ms and a miss is
 `null`, never an error — a slow or unresponsive foreign application costs a step its metadata, not
 the recording.
+
+A desktop step zooms toward the click, never into it. `screenshotForElement` takes a `zoom` mode:
+`element` writes `bounds` and is what the extension keeps, `click` writes an explicit
+`edits.viewport`, and `none` writes neither.
+
+The extension's rule cannot serve both. `resolveViewport` pads `bounds` by `PAD_RATIO` of the image
+but never beyond `MAX_PAD_MULTIPLE` times the element, which suits a page where a control is a real
+fraction of the viewport and collapses on a screen grab: a 30 px window button against 2560 px gives
+a crop a few hundred pixels wide, which the card then stretches. Magnification past 1:1 cannot look
+good, because the detail is not in the file.
+
+So the zoom is a level between 1 and 5 in steps of 0.25, `snapZoom` holds it there, and
+`clickZoomViewport` divides the frame by it and centres the result on the click, clamped inside the
+edges. The level itself is `autoZoom`'s: the capture's width over the guide column's, so every step
+renders its content at the same size however it was framed. A 2560 px screen grab at 1.5× scaling
+gives 2.25, a 1200 px window gives 1, and a small one gives 1 — the same button is the same size on
+every page of the guide, which a fixed fraction of the frame cannot do. The level is stored beside
+the region in `edits.zoomLevel`, so it can be re-derived or overridden later without recapturing.
+
+A setting only seeds new recordings, so the guide view carries its own Zoom control and `rezoomEdits`
+rewrites the steps already captured. It recomputes from `clickPoint` and the frame, which every row
+already holds, so nothing is re-captured and nothing is lost. A guide therefore stores no zoom of its
+own — the level lives per screenshot and the control simply rewrites each one.
+
+Version history does not report a zoom. `snapshot-diff` counts a changed `edits.viewport` as a crop,
+and zoom writes that same field, so re-zooming a guide read back as "3 images cropped" — the history
+describing the app's own framing as the user's edit. The diff now counts it only when `zoomLevel` is
+absent on one side or the other, which is exactly when a person set the region. Cropping a step by
+hand still registers, including when it replaces an app-set zoom.
+
+Which steps it may touch is `edits.zoomLevel` itself: present means the app chose the region, absent
+means a person did. `AnnotationEditor` clears it whenever the crop tool writes a new viewport, so a
+hand-cropped step survives every later re-zoom. `rezoomEdits` returns null for those, and for a step
+already at the wanted level, so the pass writes only what changes.
+
+`guideActions` on `TopNav` is the slot it mounts into, beside Edit and Export and under the same
+`exportData` guard, so the control appears exactly when the rest of the guide toolbar does. The
+extension passes nothing.
+
+The control is a plain `SelectTrigger`, never `asChild` around a `Button`. `SelectTrigger` renders
+its own chevron beside whatever children it is given, so with `asChild` the `Slot` receives two
+children and throws `React.Children.only`, which unmounts the whole renderer — a blank window with
+the guide's name still in the title bar, and nothing in the console of the app itself. `Button` is
+not a `forwardRef` either. Anywhere a Radix trigger needs to look like a button, style the trigger.
+
+`zoomLevel` in capture settings overrides the automatic choice; `null` means derive it. Main cannot
+value-import core, so `settings.ts` carries its own three-line `snapZoom` rather than the one in
+`record.ts` — the same constraint that keeps `clamp` local in `capture/screenshot.ts`. The renderer
+has no such limit and reads `MIN_ZOOM`, `MAX_ZOOM` and `ZOOM_STEP` from core to build the picker, so
+the list of levels cannot drift from the snapping.
+
+It goes in `edits.viewport` rather than `bounds` because `resolveViewport` returns that verbatim, so
+the region is exactly what was computed rather than what the padding rule makes of it, and
+`resolveFrameViewport` gives the video exporter the same starting frame before it eases toward
+`edits.target`. The mode is written into the data rather than branched on `client()`, so a desktop
+guide frames the same way in whatever opens it, exports included, and nothing shared changes for the
+extension. `check:pipeline` asserts the viewport sits inside the frame at between 1× and 2×.
 
 `targetRect` decides what the dashed target in the screenshot encloses. The control's own rectangle
 wins when there is one, which is the whole point of reading the accessibility tree; it falls back to
@@ -618,6 +721,20 @@ rather than the placeholder the extension fills in with AI. Desktop has no AI ti
 comes from the recorded application, or a generic one where no application was identified. Without
 it the guide screen waits forever on a title that is never written.
 
+**Every AI request goes through the main process.** A renderer is an ordinary web origin, so a
+`fetch` to `api.anthropic.com` is blocked by CORS and throws — which reads as a rejected key when it
+is really a request that never left. The extension never hits this because it validates in the
+background service worker, where `host_permissions` exempts it, and that is the thing the desktop had
+no equivalent of. `CoreEnv` therefore carries an optional `fetch` and core calls it through
+`coreFetch`, so `validateApiKey`, `getAIDescription` and `generateGuideMeta` all route through
+whatever the surface supplies. The desktop supplies a wrapper over `mimik:ai:fetch`, which runs
+Electron's `net.fetch` in main. It refuses any url that is not `http:` or `https:`, because the
+renderer names the url and main is the one holding the network.
+
+A failed key check says which failure it was. `reason: 'network'` is worded "could not reach the
+provider", not "rejected" — the two are indistinguishable to a user and only one of them is their
+key's fault.
+
 Descriptions and the guide's name are written by the user's own provider key when there is one, and
 by rule when there is not. `getAIDescription` takes a serialised context string rather than a
 `DOMContext`, because the desktop has no DOM to hand it: `serializeScreenContext` writes the same
@@ -637,6 +754,58 @@ Step descriptions are only as good as the element lookup. With one, `buildFallba
 a role and an accessible name and writes the same wording it writes for the extension. Without one
 it has nothing but the action, and every step in the guide reads the same — which is what a
 `screen`-sourced recording looks like.
+
+## Feature Hooks
+
+A cluster of `useState` that moves as one thing is a hook, not a pile of state in a component.
+`ExportPreviewModal` held fourteen, of which eleven were two jobs wearing one coat: `useGuideExport`
+owns the document preview and every download, `useVideoPreview` owns the encode, its progress, its
+container and the deferral past twenty-five steps. The modal keeps three — the options, the tab, and
+nothing else.
+
+The shape repeats wherever an async job meets a component: `data`, `loading`, `error`, `progress`
+spread across four `useState` and one long effect. `useGuideDescription`, `useSnapshots`,
+`useSettingsAutosave`, `useEditHistory` and `useTextStyle` are the same extraction, and
+`useAiSettings` and `useKeyCheck` were already it before the pattern had a name.
+
+What stays a `useState` is state one component owns and nothing else reads: a dialog's open flag, an
+input draft, a hover. Grouping those into a hook adds indirection and removes nothing. The test is
+whether the values change together and are read together, not how many there are.
+
+`useSettingsAutosave` is the odd one: it holds no settings at all. The fields stay in the view
+because each is bound to its own control; what the hook owns is the machinery around them — the
+snapshot, the diff, the debounce, the flush on unmount and the saved badge — which is the part that
+was subtle and the part nobody should have to read twice.
+
+`AnnotationEditor` went from twenty-eight states to sixteen across three hooks — `useEditHistory`,
+`useTextStyle` and `usePointerGesture`, the last holding everything the pointer is doing right now:
+the shape being drawn, the crop being dragged, the hover and grab cursors and the floating toolbar's
+anchor. What is left is genuinely interdependent canvas state.
+
+How it was done matters more than the count. A regex pass over the style names rewrote object keys
+and type members as well as reads and broke the file's syntax; it was reverted and redone as a list
+of exact string replacements. Every later cluster was done the same way. A file this size does not
+take a search and replace.
+
+## Fullview Store
+
+One Zustand store, four slices — `library`, `search`, `guide`, `editor` — merged in
+`stores/fullview.ts`. Consumers see no difference: `useFullviewStore` and `useFullview` are the same
+exports they always were, and `useFullview` still wraps `useShallow`, which is what makes the
+object-returning selectors all over the fullview safe rather than a re-render trap.
+
+Slices rather than separate stores because one cross-domain write genuinely exists: opening a
+different guide has to close the editor and its history panel. As a flat store that lived inside
+`setGuideExportData` as three stray field resets and was invisible. As a slice it is
+`{ guideExportData, ...CLOSED_EDITOR }`, with `CLOSED_EDITOR` owned and named by the editor slice —
+the coupling still happens, it just says so. Four separate stores would have made it a subscription
+between stores, which is worse.
+
+Two things in here are deliberate and look wrong at a glance. `flushFocusedField` reaches for
+`document.activeElement` from inside the store, because leaving edit mode has to commit whatever is
+in the focused input before the component unmounts and the keystrokes are lost. `scrollToStep` sets
+an id and clears it 100 ms later, because it is a signal rather than state — the alternative is an
+event emitter beside the store for one interaction.
 
 ## Desktop Home Screen
 
@@ -658,7 +827,12 @@ news. It went, along with the second bar under it, which halved the chrome from 
 `TopNav` takes only a `Route` and reads the rest from `useFullview`, which `GuideContent` already
 fills, so the guide title, the step count and the export data arrive with no desktop wiring at all.
 Its one desktop-only prop is `onSettings`: the extension has a browser options page and the desktop
-does not, so the gear exists here and only on the library route. Moving it brought `SearchModal`,
+does not, so the gear exists here and only on the library route. `onNavigate` is its counterpart and
+exists for one reason: settings is a boolean laid over the route rather than a route of its own, so
+the header could navigate underneath an open settings pane — the pill moved to Trash and the pane
+stayed. Firing it on the click rather than watching the route is deliberate, because clicking the
+already-active item produces no hash change and that is exactly the click that means "get me out of
+here". Moving it brought `SearchModal`,
 `ExportPreviewModal`, `VideoStepPlayer` and two search components with it — each needed exactly two
 import rewrites, `#imports` to `@mimik/core/env` and `@/core/*` to `@mimik/core/*`, because nothing
 in them was ever extension-specific beyond how WXT resolves a module.
@@ -719,10 +893,18 @@ read by main rather than by core, because none of them mean anything to the exte
 | `captureTyping` | on | Whether typing becomes a step |
 | `typingDebounceMs` | 1200, clamped to 200–5000 | Quiet time that closes a typing session |
 | `typingSmartDetection` | on | Off means the keystroke buffer is used and the field's value is never read |
+| `zoomLevel` | automatic | How far a step zooms toward the click: `null` derives it, or 1–5 in 0.25 steps |
 | `shortcuts` | three accelerators | Global keys for start/stop, pause/resume and capture now |
 
 `normaliseSettings` runs on every read and write, so an out-of-range delay clamps and an unknown
 cursor style falls back to the platform default rather than reaching the recorder.
+
+`CursorStyle` and `CursorMark` are core's, not main's. The mark is written in main, crosses IPC, and
+is stored as `edits.cursor`, which the renderer reads through core's type — so two declarations had to
+agree by hand, and did only by luck. Main cannot value-import core, so the runtime list of styles
+still lives there, but `Record<CursorStyle, true>` makes the compiler reject it the moment core's
+union grows. That is the general shape of the fix wherever main needs one of core's closed sets: take
+the type, keep the value, let the type check the value.
 
 Electron exposes no way to read the real system cursor bitmap and a screen grab never includes the
 pointer, so the shapes are drawn as canvas paths. The cursor is an entry in `edits` beside the click
@@ -765,11 +947,47 @@ identical on both surfaces, so `AiSettings` lives in `packages/ui` and each app 
 `validate` function — the desktop passes core's `validateApiKey` directly, and the extension goes
 through its background messaging, which is the only part that differs.
 
-`SettingsView`, the extension's own 699-line settings screen, was deliberately **not** moved. It
-carries voice narration, smart blur, brand logos and a microphone picker, none of which mean
-anything on desktop, and it reaches for `@/lib/browser-api`. Moving it would have dragged all of
-that across for the sake of four fields; extracting the four was less code and leaves the extension
-untouched.
+All three sections are cards with one shell: the same border, radius, padding and 28px icon header
+`AiSettings` already had. Rows inside a desktop card stay label-left, control-right, which is right
+at this width, while the AI card keeps the stacked 11px labels it needs in 400px of side panel — the
+two are never on screen at once, and matching them would mean branching that shared component on
+`client()`. The shell alone is what makes the three read as siblings. Capturing is two cards,
+Screenshots and Keyboard, because the divider that separated those groups was already doing a card
+boundary's job.
+
+Every control in there is the shared component — `Select`, `Input`, and a checkbox carrying
+`accent-accent` — never a bare `<select>` or `<input>`. That is the difference the card shell alone
+did not fix: a native select draws the platform's own chevron and popup, a native number field draws
+spinner arrows on Windows, and a native checkbox is the browser's blue, so the section read as a form
+bolted into the app rather than part of it. `styles.css` also kills the number spinners outright,
+because `Input` is a text field's styling wrapped around a control the platform still decorates.
+
+The pane carries no heading and no close button. The left nav already names the section, so a title
+repeating the highlighted item is the same word twice on one screen; and `TopNav` stays visible and
+mounted the whole time settings is open, so All Guides, Starred, Trash and the wordmark are all exits
+already. Both were tried and removed — first a "Close" entry under the three sections, styled like
+them, which read as a fourth section that happens to quit, then an X in the pane corner, which by
+then duplicated the header it sat beneath.
+
+`AiSettings` is the extension's own AI card, lifted out of `SettingsView` rather than rewritten. A
+parallel implementation was tried first and the wording immediately drifted — the extension said
+"API key verified", the copy said "134 models available", and the spend warning was missing
+altogether, because the extension shows the verdict, the model list and the warning as three
+separate things and the copy collapsed them into one line. Two implementations of the same screen
+diverge by default; one does not.
+
+What moved with it: `KeyStatusNote`, `KeyWarningNote`, `ModelList`, `SecretInput` and `useKeyCheck`,
+all now in `key-status.tsx`. The hook takes its validator as an argument, which is the only part
+that genuinely differs — the extension goes through background messaging because a service worker is
+what has `host_permissions`, and the desktop calls `validateApiKey` directly on top of the main
+process fetch.
+
+The rest of `SettingsView` stayed put. Voice narration, smart blur, brand logos and the microphone
+picker have no desktop meaning, and it reaches for `@/lib/browser-api`. Splitting it did mean the
+autosave had to change shape: the AI fields left the parent's snapshot, so `AiSettings` reports its
+own changes through `onChange` and both halves queue into the same debounced flush. `SettingsView`
+still keeps the provider and key in state for one reason — `resolveVoiceApiKey` falls back to the AI
+key when no voice key is set — and it updates them from the patches the card sends up.
 
 The shortcut recorder reads a keystroke and writes an Electron accelerator. It refuses a bare key,
 because a global accelerator with no modifier takes that key from every application on the machine,
@@ -829,6 +1047,14 @@ everywhere but macOS.
 | DOCX | `core/export/docx-export.ts` | Lazy-imported, Word-compatible |
 | Video | `core/export/video-export.ts` | WebCodecs via mediabunny (lazy), mp4/H.264 with WebM/VP9 fallback |
 | GIF | `core/export/gif-export.ts` | gifenc (lazy), same frame timeline as the video; user picks Small/Medium/Large from `GIF_SPECS` |
+
+The preview player is told the container rather than assuming one. `pickContainer` answers `mp4`
+only when the machine can encode H.264 and falls back to WebM/VP9 otherwise, so a hardcoded
+`type: 'video/mp4'` on the player describes the file wrongly on any machine without an H.264
+encoder — a VM without GPU acceleration, typically. The export itself succeeds and the chapter list
+fills in, so the only symptom is a black frame reading 0:00 / 0:00. `VideoStepPlayer` now takes the
+mime alongside the url and `ExportPreviewModal` reads it off the blob. `check:pipeline` asserts the
+blob's type matches the extension, which is the pairing that was wrong.
 
 Video frames reuse `renderScreenshot`, so the auto-crop, click-target outline, annotations and
 redactions are already baked in. Each step holds 1.5s wide, eases into a crop around the target

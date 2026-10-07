@@ -1,19 +1,11 @@
 import { Input } from '@mimik/ui/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui/components/ui/select';
+import { useAiSettings } from '@mimik/ui/shared/use-ai-settings';
 import { Globe, Mic, MousePointerClick, Shield } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';
 import { PRESET_LABELS, type PresetKey } from '@/core/blur/regexes';
-import { type AIApiKeys, keyFor, migrateApiKeys, withKeyFor } from '@/core/capture/ai/keys';
-import {
-  AI_PROVIDERS,
-  type AIProviderKey,
-  CUSTOM_MODEL_VALUE,
-  DEFAULT_AI_PROVIDER,
-  isCustomBaseUrl,
-  isCustomModel,
-  providerOrDefault,
-} from '@/core/capture/ai/models';
+import { AI_PROVIDERS, type AIProviderKey, CUSTOM_MODEL_VALUE } from '@/core/capture/ai/models';
 import { AI_LANGUAGES, type AILanguageCode } from '@/core/capture/ai/prompts';
 import type { VoiceProvider } from '@/core/capture/voice/transcribe';
 import { localStorage, openSidebar, requestHostPermissions } from '@/lib/browser-api';
@@ -125,97 +117,24 @@ function WelcomeStep({ onNext }: { onNext: () => void }) {
 }
 
 function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
-  const [provider, setProvider] = useState<AIProviderKey>('openai');
-  const [model, setModel] = useState(AI_PROVIDERS.openai.defaultModel);
-  const [apiKey, setApiKey] = useState('');
-  const [apiKeys, setApiKeys] = useState<AIApiKeys>({});
-  const [baseUrl, setBaseUrl] = useState('');
-  const [aiLanguage, setAiLanguage] = useState<AILanguageCode>('en');
-  const [ownServer, setOwnServer] = useState(false);
-  const [customModel, setCustomModel] = useState(false);
   const aiKeyCheck = useKeyCheck();
-
-  useEffect(() => {
-    const load = () =>
-      localStorage.get(['aiProvider', 'aiModel', 'aiApiKey', 'aiApiKeys', 'aiBaseUrl', 'aiLanguage']).then((stored) => {
-        const key = providerOrDefault(stored.aiProvider);
-        setProvider(key);
-        if (typeof stored.aiModel === 'string') setModel(stored.aiModel);
-        const keys = migrateApiKeys(stored);
-        setApiKeys(keys);
-        setApiKey(keyFor(keys, key));
-        if (isCustomBaseUrl(AI_PROVIDERS[key], stored.aiBaseUrl as string)) {
-          setBaseUrl(stored.aiBaseUrl as string);
-          setOwnServer(true);
-        }
-        if (typeof stored.aiLanguage === 'string') setAiLanguage(stored.aiLanguage as AILanguageCode);
-      });
-
-    void load();
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') void load();
-    };
-    document.addEventListener('visibilitychange', onVisible);
-    return () => document.removeEventListener('visibilitychange', onVisible);
-  }, []);
-
-  const providerConfig = AI_PROVIDERS[provider] ?? AI_PROVIDERS[DEFAULT_AI_PROVIDER];
-  const usingCustomModel = customModel || isCustomModel(model, providerConfig);
-
-  const handleProviderChange = (newProvider: AIProviderKey) => {
-    const nextModel = AI_PROVIDERS[newProvider].defaultModel;
-    setProvider(newProvider);
-    setModel(nextModel);
-    setCustomModel(false);
-    setOwnServer(false);
-    setBaseUrl('');
-    const nextKey = keyFor(apiKeys, newProvider);
-    setApiKey(nextKey);
-    aiKeyCheck.reset();
-    void localStorage.set({ aiProvider: newProvider, aiModel: nextModel, aiBaseUrl: '', aiApiKey: nextKey });
-  };
-
-  const handleOwnServerToggle = () => {
-    const next = !ownServer;
-    setOwnServer(next);
-    if (!next) {
-      setBaseUrl('');
-      void localStorage.set({ aiBaseUrl: '' });
-    }
-    aiKeyCheck.reset();
-  };
-
-  const handleModelChange = (nextModel: string) => {
-    if (nextModel === CUSTOM_MODEL_VALUE) {
-      setCustomModel(true);
-      setModel('');
-      aiKeyCheck.reset();
-      return;
-    }
-    setCustomModel(false);
-    setModel(nextModel);
-    aiKeyCheck.reset();
-    void localStorage.set({ aiModel: nextModel });
-  };
-
-  const handleApiKeyChange = (nextKey: string) => {
-    setApiKey(nextKey);
-    const nextKeys = withKeyFor(apiKeys, provider, nextKey);
-    setApiKeys(nextKeys);
-    aiKeyCheck.reset();
-    void localStorage.set({ aiApiKey: nextKey, aiApiKeys: nextKeys });
-  };
-
-  const handleBaseUrlChange = (nextUrl: string) => {
-    setBaseUrl(nextUrl);
-    aiKeyCheck.reset();
-    void localStorage.set({ aiBaseUrl: nextUrl });
-  };
-
-  const handleLanguageChange = (nextLanguage: AILanguageCode) => {
-    setAiLanguage(nextLanguage);
-    void localStorage.set({ aiLanguage: nextLanguage });
-  };
+  const ai = useAiSettings({ onDirty: aiKeyCheck.reset, reloadOnFocus: true });
+  const {
+    provider,
+    model,
+    apiKey,
+    baseUrl,
+    language: aiLanguage,
+    ownServer,
+    usingCustomModel,
+    providerConfig,
+    setProvider: handleProviderChange,
+    setModel: handleModelChange,
+    setApiKey: handleApiKeyChange,
+    setBaseUrl: handleBaseUrlChange,
+    setLanguage: handleLanguageChange,
+    toggleOwnServer: handleOwnServerToggle,
+  } = ai;
 
   return (
     <div className="flex h-screen">
@@ -264,11 +183,7 @@ function AISetupStep({ onNext, onSkip, onBack, index, total }: StepProps) {
                 <Input
                   type="text"
                   value={model}
-                  onChange={(e) => {
-                    setModel(e.target.value);
-                    aiKeyCheck.reset();
-                    void localStorage.set({ aiModel: e.target.value });
-                  }}
+                  onChange={(e) => handleModelChange(e.target.value)}
                   placeholder={providerConfig.defaultModel}
                   className="w-full mt-1.5 h-11 rounded-xl px-4 text-sm focus:border-accent focus:ring-accent/10"
                 />

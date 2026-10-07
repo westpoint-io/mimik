@@ -1,186 +1,200 @@
-import { keyFor, withKeyFor } from '@mimik/core/capture/ai/keys';
-import { AI_PROVIDERS, type AIProviderKey, CUSTOM_MODEL_VALUE, DEFAULT_AI_PROVIDER } from '@mimik/core/capture/ai/models';
-import { AI_LANGUAGES } from '@mimik/core/capture/ai/prompts';
-import type { KeyValidation } from '@mimik/core/capture/ai/validate';
-import { i18n, localStorage } from '@mimik/core/env';
-import type { AIApiKeys } from '@mimik/core/capture/ai/keys';
+import { AI_PROVIDERS, type AIProviderKey, CUSTOM_MODEL_VALUE } from '@mimik/core/capture/ai/models';
+import { AI_LANGUAGES, type AILanguageCode } from '@mimik/core/capture/ai/prompts';
+import { i18n } from '@mimik/core/env';
+import { Button } from '@mimik/ui/components/ui/button';
 import { Input } from '@mimik/ui/components/ui/input';
-import { Check, Eye, EyeOff, Loader2, TriangleAlert } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui/components/ui/select';
+import {
+  type KeyStatus,
+  KeyStatusNote,
+  type KeyWarning,
+  KeyWarningNote,
+  ModelList,
+  SecretInput,
+} from '@mimik/ui/shared/key-status';
+import { useAiSettings } from '@mimik/ui/shared/use-ai-settings';
+import { Globe, Sparkles, TriangleAlert } from 'lucide-react';
 
-export type ValidateKey = (provider: string, apiKey: string, baseUrl?: string, model?: string) => Promise<KeyValidation>;
+export interface KeyCheck {
+  status: KeyStatus;
+  models: string[] | null;
+  warning: KeyWarning | null;
+  check(provider: string, apiKey: string, baseUrl?: string, model?: string): Promise<void>;
+  reset(): void;
+}
 
 interface AiSettingsProps {
-  validate: ValidateKey;
+  keyCheck: KeyCheck;
+  onChange?: (patch: Record<string, unknown>) => void;
 }
 
-const FIELD =
-  'w-full h-10 rounded-[10px] border border-border bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent/30';
-
-export default function AiSettings({ validate }: AiSettingsProps) {
-  const [provider, setProvider] = useState<AIProviderKey>(DEFAULT_AI_PROVIDER);
-  const [keys, setKeys] = useState<AIApiKeys>({});
-  const [model, setModel] = useState('');
-  const [baseUrl, setBaseUrl] = useState('');
-  const [language, setLanguage] = useState('en');
-  const [reveal, setReveal] = useState(false);
-  const [result, setResult] = useState<KeyValidation | null>(null);
-  const [checking, setChecking] = useState(false);
-
-  useEffect(() => {
-    localStorage.get(['aiProvider', 'aiApiKeys', 'aiModel', 'aiBaseUrl', 'aiLanguage']).then((stored) => {
-      const next = (stored.aiProvider as AIProviderKey) || DEFAULT_AI_PROVIDER;
-      setProvider(next);
-      setKeys((stored.aiApiKeys as AIApiKeys) ?? {});
-      setModel((stored.aiModel as string) || AI_PROVIDERS[next].defaultModel);
-      setBaseUrl((stored.aiBaseUrl as string) || '');
-      setLanguage((stored.aiLanguage as string) || 'en');
-    });
-  }, []);
-
-  const apiKey = keyFor(keys, provider);
-  const config = AI_PROVIDERS[provider];
-
-  const save = (patch: Record<string, unknown>) => {
-    void localStorage.set(patch as never);
-  };
-
-  const onProvider = (next: AIProviderKey) => {
-    setProvider(next);
-    setModel(AI_PROVIDERS[next].defaultModel);
-    setResult(null);
-    save({ aiProvider: next, aiModel: AI_PROVIDERS[next].defaultModel });
-  };
-
-  const onKey = (value: string) => {
-    const next = withKeyFor(keys, provider, value);
-    setKeys(next);
-    setResult(null);
-    save({ aiApiKeys: next });
-  };
-
-  const check = async () => {
-    setChecking(true);
-    setResult(await validate(provider, apiKey, baseUrl || undefined, model).catch(() => null));
-    setChecking(false);
-  };
+export default function AiSettings({ keyCheck: aiKeyCheck, onChange }: AiSettingsProps) {
+  const {
+    provider,
+    model,
+    apiKey,
+    baseUrl,
+    language: aiLanguage,
+    ownServer,
+    usingCustomModel,
+    providerConfig,
+    setProvider: handleProviderChange,
+    setModel: handleModelChange,
+    setApiKey: handleApiKeyChange,
+    setBaseUrl: handleBaseUrlChange,
+    setLanguage: handleLanguageChange,
+    toggleOwnServer: handleOwnServerToggle,
+  } = useAiSettings({
+    onDirty: (patch) => {
+      aiKeyCheck.reset();
+      onChange?.(patch);
+    },
+  });
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="grid grid-cols-2 gap-3.5">
-        <label className="flex flex-col gap-1.5">
-          <span className="text-[13px] font-medium">{i18n.t('settings_provider')}</span>
-          <select className={FIELD} value={provider} onChange={(e) => onProvider(e.target.value as AIProviderKey)}>
-            {Object.entries(AI_PROVIDERS).map(([id, p]) => (
-              <option key={id} value={id}>
-                {p.label}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="flex flex-col gap-1.5">
-          <span className="text-[13px] font-medium">{i18n.t('settings_model')}</span>
-          <select
-            className={FIELD}
-            value={model}
-            onChange={(e) => {
-              setModel(e.target.value);
-              save({ aiModel: e.target.value });
-            }}
-          >
-            {config.models.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.id === CUSTOM_MODEL_VALUE ? i18n.t('settings_modelCustom') : m.label}
-              </option>
-            ))}
-          </select>
-        </label>
+    <div className="border border-border rounded-[10px] p-3.5 space-y-3">
+      <div className="flex items-center gap-2.5">
+        <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center">
+          <Sparkles size={14} className="text-accent" />
+        </div>
+        <span className="text-xs font-bold text-foreground">{i18n.t('settings.aiDescriptions')}</span>
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <span className="text-[13px] font-medium">{i18n.t('settings_apiKey')}</span>
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Input
-              type={reveal ? 'text' : 'password'}
-              value={apiKey}
-              onChange={(e) => onKey(e.target.value)}
-              className="h-10 pr-10"
-            />
-            <button
-              type="button"
-              aria-label={i18n.t(reveal ? 'settings_hideKey' : 'settings_showKey')}
-              onClick={() => setReveal(!reveal)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-accent"
-            >
-              {reveal ? <EyeOff size={15} /> : <Eye size={15} />}
-            </button>
-          </div>
+      <div>
+        <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.provider')}</label>
+        <Select value={provider} onValueChange={(v) => handleProviderChange(v as AIProviderKey)}>
+          <SelectTrigger className="h-8">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {Object.entries(AI_PROVIDERS).map(([key, cfg]) => (
+              <SelectItem key={key} value={key}>
+                {cfg.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.model')}</label>
+        <Select value={usingCustomModel ? CUSTOM_MODEL_VALUE : model} onValueChange={handleModelChange}>
+          <SelectTrigger className="h-8">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {providerConfig.models.map((m) => (
+              <SelectItem key={m.id} value={m.id}>
+                {m.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {usingCustomModel && (
+          <Input
+            value={model}
+            onChange={(e) => handleModelChange(e.target.value)}
+            placeholder={providerConfig.defaultModel}
+            aria-label={i18n.t('settings.modelCustom')}
+            className="mt-1.5 h-8 text-[13px] rounded-lg border-border"
+          />
+        )}
+      </div>
+
+      <div>
+        <label className="block text-[11px] font-semibold text-foreground mb-1">{i18n.t('settings.apiKey')}</label>
+        <div className="flex items-center gap-1.5">
+          <SecretInput
+            value={apiKey}
+            onChange={handleApiKeyChange}
+            placeholder="sk-..."
+            className="h-8 text-[13px] rounded-lg border-border"
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!apiKey || aiKeyCheck.status === 'checking'}
+            onClick={() => {
+              if (aiKeyCheck.status !== 'checking') void aiKeyCheck.check(provider, apiKey, baseUrl, model);
+            }}
+            className="h-8 shrink-0 rounded-lg bg-card text-[11px] font-semibold"
+          >
+            {i18n.t('settings.checkKey')}
+          </Button>
+        </div>
+        <KeyStatusNote status={aiKeyCheck.status} />
+        <KeyWarningNote warning={aiKeyCheck.warning} />
+        {aiKeyCheck.models && <ModelList models={aiKeyCheck.models} />}
+        {!apiKey.trim() && (
+          <p className="mt-1.5 flex items-start gap-1.5 text-[10px] text-destructive leading-relaxed" role="alert">
+            <TriangleAlert size={11} className="shrink-0 mt-0.5" />
+            <span>{i18n.t('settings.aiNoKey')}</span>
+          </p>
+        )}
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between gap-3 py-0.5">
+          <span className="text-[11px] font-semibold text-foreground flex items-center gap-1">
+            <Globe size={11} className="-mt-px" />
+            {i18n.t('settings.useOwnServer')}
+          </span>
           <button
             type="button"
-            onClick={() => void check()}
-            disabled={!apiKey || checking}
-            className="h-10 rounded-[10px] bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-40"
+            role="switch"
+            aria-checked={ownServer}
+            aria-label={i18n.t('settings.useOwnServer')}
+            onClick={handleOwnServerToggle}
+            className={`w-9 h-5 rounded-full transition-colors relative shrink-0 ${
+              ownServer ? 'bg-accent' : 'bg-border'
+            }`}
           >
-            {checking ? <Loader2 size={15} className="animate-spin" /> : i18n.t('settings_checkKey')}
+            <span
+              className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform ${
+                ownServer ? 'translate-x-4' : 'translate-x-0'
+              }`}
+            />
           </button>
         </div>
-        {result && <KeyResult result={result} />}
-        {!apiKey && <p className="text-xs text-muted-foreground">{i18n.t('settings_aiNoKey')}</p>}
+        {ownServer && (
+          <div className="mt-2 space-y-1.5">
+            <Input
+              type="text"
+              value={baseUrl}
+              onChange={(e) => handleBaseUrlChange(e.target.value)}
+              placeholder={providerConfig.defaultBaseUrl}
+              aria-label={i18n.t('settings.baseUrl')}
+              className="h-8 text-[13px] rounded-lg border-border"
+            />
+            <p className="text-[10px] text-muted-foreground leading-relaxed">
+              {i18n.t(
+                providerConfig.protocol === 'anthropic'
+                  ? 'settings.ownServerHintAnthropic'
+                  : 'settings.ownServerHintOpenai',
+              )}
+            </p>
+          </div>
+        )}
       </div>
 
-      <div className="grid grid-cols-2 gap-3.5">
-        <label className="flex flex-col gap-1.5">
-          <span className="text-[13px] font-medium">{i18n.t('settings_aiLanguage')}</span>
-          <select
-            className={FIELD}
-            value={language}
-            onChange={(e) => {
-              setLanguage(e.target.value);
-              save({ aiLanguage: e.target.value });
-            }}
-          >
-            {AI_LANGUAGES.map((l) => (
-              <option key={l.code} value={l.code}>
-                {l.label}
-              </option>
+      <div>
+        <label className="block text-[11px] font-semibold text-foreground mb-1">
+          <Globe size={11} className="inline mr-1 -mt-px" />
+          {i18n.t('settings.aiLanguage')}
+        </label>
+        <Select value={aiLanguage} onValueChange={(v) => handleLanguageChange(v as AILanguageCode)}>
+          <SelectTrigger className="h-8">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {AI_LANGUAGES.map((lang) => (
+              <SelectItem key={lang.code} value={lang.code}>
+                {lang.label}
+              </SelectItem>
             ))}
-          </select>
-        </label>
-
-        <label className="flex flex-col gap-1.5">
-          <span className="text-[13px] font-medium">{i18n.t('settings_baseUrl')}</span>
-          <Input
-            value={baseUrl}
-            placeholder={config.defaultBaseUrl}
-            onChange={(e) => {
-              setBaseUrl(e.target.value);
-              save({ aiBaseUrl: e.target.value });
-            }}
-            className="h-10"
-          />
-        </label>
+          </SelectContent>
+        </Select>
       </div>
     </div>
-  );
-}
-
-function KeyResult({ result }: { result: KeyValidation }) {
-  if (result.valid) {
-    return (
-      <p className="flex items-center gap-1.5 text-xs font-medium text-success">
-        <Check size={14} />
-        {result.models?.length
-          ? i18n.t('settings_modelsFound', [String(result.models.length)])
-          : i18n.t('settings_keyValid')}
-      </p>
-    );
-  }
-  return (
-    <p className="flex items-center gap-1.5 text-xs font-medium text-destructive">
-      <TriangleAlert size={14} />
-      {i18n.t('settings_keyInvalid')}
-    </p>
   );
 }

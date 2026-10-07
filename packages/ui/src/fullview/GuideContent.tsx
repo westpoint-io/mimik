@@ -1,10 +1,7 @@
-import { History, Loader2, Play, Sparkles } from 'lucide-react';
+import { i18n, localStorage } from '@mimik/core/env';
 import { isReplayable } from '@mimik/core/guideme/session';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { TypeAnimation } from 'react-type-animation';
-import { i18n } from '@mimik/core/env';
-
 import { actionSteps } from '@mimik/core/guides/blocks';
+import { getMostCommonDomain } from '@mimik/core/guides/domain';
 import {
   deleteStep,
   getGuide,
@@ -17,20 +14,21 @@ import {
 import type { SnapshotLike } from '@mimik/core/guides/snapshot-diff';
 import type { Guide, Screenshot, Snapshot, Step } from '@mimik/core/guides/types';
 import type { ScreenshotEdits } from '@mimik/core/screenshot/types';
-import { localStorage } from '@mimik/core/env';
-import { logger } from '@mimik/ui/lib/logger';
-import { panel, send, tabs } from '@mimik/ui/env';
-import { getMostCommonDomain } from '@mimik/core/guides/domain';
-import { formatDate } from '@mimik/ui/lib/utils';
-import { useFullview } from '@mimik/ui/stores/fullview';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
+import { panel, send, tabs } from '@mimik/ui/env';
+import { logger } from '@mimik/ui/lib/logger';
+import { formatDate } from '@mimik/ui/lib/utils';
 import AnnotationEditor from '@mimik/ui/shared/AnnotationEditor';
 import { useAskAi } from '@mimik/ui/shared/AskAi';
 import FaviconImg from '@mimik/ui/shared/FaviconImg';
-import { guideDescriptionErrorMessage } from '@mimik/ui/shared/guide-description-error';
 import Toast from '@mimik/ui/shared/Toast';
+import { useFullview } from '@mimik/ui/stores/fullview';
+import { History, Loader2, Play, Sparkles } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { TypeAnimation } from 'react-type-animation';
 import GuideStepList from './components/GuideStepList';
 import VersionHistoryPanel from './components/VersionHistoryPanel';
+import { useGuideDescription } from './use-guide-description';
 
 interface GuideContentProps {
   guideId: string;
@@ -96,10 +94,10 @@ export default function GuideContent({ guideId, initialStepId, initialTool }: Gu
   const [editingTool, setEditingTool] = useState<'annotate' | 'redact' | 'crop' | 'target'>('annotate');
   const [preview, setPreview] = useState<Snapshot | null>(null);
   const [previewData, setPreviewData] = useState<PreviewData | null>(null);
-  const [description, setDescription] = useState('');
-  const [generating, setGenerating] = useState(false);
-  const [hasApiKey, setHasApiKey] = useState(false);
-  const [descriptionError, setDescriptionError] = useState<string | null>(null);
+  const applyDescription = useCallback((next: string) => {
+    setData((prev) => (prev ? { ...prev, guide: { ...prev.guide, description: next } } : prev));
+  }, []);
+  const desc = useGuideDescription(guideId, applyDescription);
   const titleRef = useRef('');
   const appliedInitialRef = useRef(false);
   const editingDescriptionRef = useRef(false);
@@ -108,7 +106,7 @@ export default function GuideContent({ guideId, initialStepId, initialTool }: Gu
     const result = await getGuide(guideId);
     if (result) {
       setData(result);
-      if (!editingDescriptionRef.current) setDescription(result.guide.description ?? '');
+      if (!editingDescriptionRef.current) desc.set(result.guide.description ?? '');
       const newTitle = result.guide.title;
       const prev = titleRef.current;
       if (
@@ -138,7 +136,7 @@ export default function GuideContent({ guideId, initialStepId, initialTool }: Gu
   }, [data, guideId, setGuideExportData]);
 
   useEffect(() => {
-    localStorage.get(['aiApiKey']).then((s) => setHasApiKey(Boolean(s.aiApiKey)));
+    localStorage.get(['aiApiKey']).then((s) => desc.setHasApiKey(Boolean(s.aiApiKey)));
   }, []);
 
   const handleTitleBlur = useCallback(async () => {
@@ -149,43 +147,14 @@ export default function GuideContent({ guideId, initialStepId, initialTool }: Gu
   }, [data, guideId, title]);
 
   const handleGuideDescriptionBlur = useCallback(async () => {
-    if (data && description !== (data.guide.description ?? '')) {
-      await updateGuideDescription(guideId, description);
-      setData((prev) => (prev ? { ...prev, guide: { ...prev.guide, description } } : prev));
+    if (data && desc.text !== (data.guide.description ?? '')) {
+      await updateGuideDescription(guideId, desc.text);
+      setData((prev) => (prev ? { ...prev, guide: { ...prev.guide, description: desc.text } } : prev));
     }
     editingDescriptionRef.current = false;
-  }, [data, guideId, description]);
+  }, [data, guideId, desc.text]);
 
-  const commitGuideDescription = useCallback(
-    (next: string) => {
-      setDescription(next);
-      void updateGuideDescription(guideId, next);
-      setData((prev) => (prev ? { ...prev, guide: { ...prev.guide, description: next } } : prev));
-    },
-    [guideId],
-  );
-
-  const askAi = useAskAi(description, commitGuideDescription, hasApiKey);
-
-  const handleGenerateDescription = useCallback(async () => {
-    setGenerating(true);
-    setDescriptionError(null);
-    try {
-      const result = await send('generateGuideDescription', { guideId });
-      if (result.error) {
-        setDescriptionError(guideDescriptionErrorMessage(result.error));
-        return;
-      }
-      const generated = result.description;
-      if (!generated) return;
-      setDescription(generated);
-      setData((prev) => (prev ? { ...prev, guide: { ...prev.guide, description: generated } } : prev));
-    } catch {
-      setDescriptionError(guideDescriptionErrorMessage('generation-failed'));
-    } finally {
-      setGenerating(false);
-    }
-  }, [guideId]);
+  const askAi = useAskAi(desc.text, desc.commit, desc.hasApiKey);
 
   const handleDescriptionChange = useCallback(async (stepId: string, description: string) => {
     await updateStepDescription(stepId, description, 'manual');
@@ -301,7 +270,7 @@ export default function GuideContent({ guideId, initialStepId, initialTool }: Gu
   const animatingTitle = preview ? null : typingTitle;
   const untitledPending =
     !preview && !typingTitle && title === i18n.t('fullview_untitledGuide') && viewSteps.length > 0;
-  const metaGenerating = (untitledPending || animatingTitle !== null) && !description;
+  const metaGenerating = (untitledPending || animatingTitle !== null) && !desc.text;
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-64px)]">
@@ -391,10 +360,10 @@ export default function GuideContent({ guideId, initialStepId, initialTool }: Gu
                         el.style.height = `${el.scrollHeight}px`;
                       }
                     }}
-                    value={description}
+                    value={desc.text}
                     rows={2}
                     onChange={(e) => {
-                      setDescription(e.target.value);
+                      desc.set(e.target.value);
                       const el = e.target;
                       el.style.height = '0';
                       el.style.height = `${el.scrollHeight}px`;
@@ -407,11 +376,11 @@ export default function GuideContent({ guideId, initialStepId, initialTool }: Gu
                     placeholder={i18n.t('editor.descriptionPlaceholder')}
                     className="flex-1 resize-none overflow-hidden bg-transparent p-0 text-[15px] leading-relaxed text-muted-foreground placeholder:text-muted-foreground/60 border-b-2 border-transparent hover:border-border focus:outline-none focus:border-accent"
                   />
-                  {hasApiKey && <span className="shrink-0 mt-0.5">{askAi.trigger}</span>}
-                  {hasApiKey &&
+                  {desc.hasApiKey && <span className="shrink-0 mt-0.5">{askAi.trigger}</span>}
+                  {desc.hasApiKey &&
                     (() => {
-                      const busy = generating || metaGenerating;
-                      const label = description
+                      const busy = desc.generating || metaGenerating;
+                      const label = desc.text
                         ? i18n.t('editor.regenerateDescription')
                         : i18n.t('editor.generateDescription');
                       return (
@@ -421,7 +390,7 @@ export default function GuideContent({ guideId, initialStepId, initialTool }: Gu
                               type="button"
                               onClick={() => {
                                 if (busy) return;
-                                void handleGenerateDescription();
+                                void desc.generate();
                               }}
                               aria-disabled={busy}
                               aria-label={label}
@@ -438,11 +407,11 @@ export default function GuideContent({ guideId, initialStepId, initialTool }: Gu
                         </Tooltip>
                       );
                     })()}
-                  <Toast message={descriptionError} onDismiss={() => setDescriptionError(null)} />
+                  <Toast message={desc.error} onDismiss={desc.clearError} />
                 </div>
               ) : (
-                description && (
-                  <p className="max-w-[720px] text-[15px] leading-relaxed text-muted-foreground">{description}</p>
+                desc.text && (
+                  <p className="max-w-[720px] text-[15px] leading-relaxed text-muted-foreground">{desc.text}</p>
                 )
               )}
             </div>
@@ -486,7 +455,7 @@ export default function GuideContent({ guideId, initialStepId, initialTool }: Gu
             onOpenEditor={handleOpenEditor}
             onReorder={(newSteps) => setData((prev) => (prev ? { ...prev, steps: newSteps } : prev))}
             readOnly={!editing || preview !== null}
-            hasApiKey={hasApiKey}
+            hasApiKey={desc.hasApiKey}
             onChanged={loadGuide}
             onInsertRecording={(targetGuideId, insertAtIndex, tabId) => {
               panel.open();

@@ -1,3 +1,5 @@
+import { createOverlayRoot } from '@/core/capture/dom/overlay-root';
+
 const ANIMATION_DURATION_MS = 4000;
 const FILL_DURATION = '2s';
 const FILL_DELAY = '0.5s';
@@ -94,13 +96,7 @@ function buildMascotSVG(): string {
 
 export function showStartNotification(): Promise<void> {
   return new Promise((resolve) => {
-    const host = document.createElement('mimik-notification');
-    host.setAttribute('data-mimik-ignore', '');
-    const shadow = host.attachShadow({ mode: 'closed' });
-
-    const style = document.createElement('style');
-    style.textContent = STYLES;
-    shadow.appendChild(style);
+    const { host, shadow } = createOverlayRoot(STYLES, 'mimik-notification');
 
     const wrap = document.createElement('div');
     wrap.className = 'wrap';

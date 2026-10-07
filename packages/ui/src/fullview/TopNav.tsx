@@ -1,3 +1,5 @@
+import { i18n } from '@mimik/core/env';
+import { createSnapshot } from '@mimik/core/guides/service';
 import { Button } from '@mimik/ui/components/ui/button';
 import type { Route } from '@mimik/ui/fullview/router';
 import { navigate } from '@mimik/ui/fullview/router';
@@ -16,14 +18,15 @@ import {
   Star,
   Trash2,
 } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { useState } from 'react';
-import { i18n } from '@mimik/core/env';
-import { createSnapshot } from '@mimik/core/guides/service';
 import ExportPreviewModal from './ExportPreviewModal';
 
 interface TopNavProps {
   route: Route;
   onSettings?: () => void;
+  onNavigate?: () => void;
+  guideActions?: ReactNode;
 }
 
 const navItems = [
@@ -34,7 +37,7 @@ const navItems = [
 
 const NAV_CONTROL = 'h-8 rounded-lg border border-border bg-card text-foreground hover:bg-secondary hover:text-accent';
 
-export default function TopNav({ route, onSettings }: TopNavProps) {
+export default function TopNav({ route, onSettings, onNavigate, guideActions }: TopNavProps) {
   const {
     counts,
     guideTitle,
@@ -77,7 +80,10 @@ export default function TopNav({ route, onSettings }: TopNavProps) {
     <header className="flex items-center gap-5 px-7 h-16 shrink-0 bg-card border-b border-border">
       {/* Brand */}
       <button
-        onClick={() => navigate({ page: 'library', category: 'all' })}
+        onClick={() => {
+          onNavigate?.();
+          navigate({ page: 'library', category: 'all' });
+        }}
         className="flex items-center gap-2 mr-4 cursor-pointer h-full"
       >
         <div className="mb-1">
@@ -111,7 +117,10 @@ export default function TopNav({ route, onSettings }: TopNavProps) {
             return (
               <button
                 key={item.key}
-                onClick={() => navigate({ page: 'library', category: item.key })}
+                onClick={() => {
+                  onNavigate?.();
+                  navigate({ page: 'library', category: item.key });
+                }}
                 className={`flex items-center gap-1.5 text-[13px] h-8 px-3 rounded-md transition-all
                 ${active ? 'bg-primary text-primary-foreground font-semibold' : 'text-foreground font-medium hover:bg-secondary'}`}
               >
@@ -143,12 +152,19 @@ export default function TopNav({ route, onSettings }: TopNavProps) {
           </span>
         </Button>
         {onSettings && (
-          <Button size="sm" variant="ghost" onClick={onSettings} aria-label={i18n.t('settings_title')} className={NAV_CONTROL}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={onSettings}
+            aria-label={i18n.t('settings_title')}
+            className={NAV_CONTROL}
+          >
             <SlidersHorizontal size={14} />
           </Button>
         )}
         {route.page === 'guide' && exportData && (
           <>
+            {guideActions}
             <Button size="sm" variant="ghost" onClick={() => toggleEditing(exportData.guideId)} className={NAV_CONTROL}>
               {editing ? <Check size={14} /> : <Pencil size={14} />}
               {editing ? i18n.t('editor.done') : i18n.t('editor.edit')}

@@ -140,6 +140,8 @@ export type Annotation =
 
 export type CursorStyle = 'arrow' | 'hand' | 'dot';
 
+export const CURSOR_STYLES: CursorStyle[] = ['arrow', 'hand', 'dot'];
+
 export interface CursorMark {
   x: number;
   y: number;
@@ -149,6 +151,7 @@ export interface CursorMark {
 
 export interface ScreenshotEdits {
   viewport?: ScreenshotBounds;
+  zoomLevel?: number;
   target?: ClickTarget | null;
   annotations?: Annotation[];
   cursor?: CursorMark | null;

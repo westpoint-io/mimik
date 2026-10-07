@@ -11,6 +11,8 @@
       "src/**/*.tsx",
       "packages/core/src/**/*.ts",
       "packages/core/src/**/*.tsx",
+      "packages/ui/src/**/*.ts",
+      "packages/ui/src/**/*.tsx",
       "apps/desktop/src/**/*.ts",
       "apps/desktop/src/**/*.tsx",
       "*.json"
@@ -62,5 +64,27 @@
         "organizeImports": "on"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["packages/**/*.ts", "packages/**/*.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/lib/*", "@/ui/*", "@/entrypoints/*", "#imports", "**/apps/**"],
+                    "message": "Shared packages must not import from an app. Move the code into the app, or the dependency the other way."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }

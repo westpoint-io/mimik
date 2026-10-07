@@ -208,6 +208,28 @@ describe('diffSnapshots', () => {
     expect(diffSnapshots(a, b)).toEqual({ ...empty, cropped: 1 });
   });
 
+  it('does not count a zoom change as cropped', () => {
+    const a = like([step('s1', 'Same', 'sc1')], {
+      screenshots: [shot('sc1', 's1', { zoomLevel: 1, viewport: { x: 0, y: 0, width: 100, height: 50 } })],
+    });
+    const b = like([step('s1', 'Same', 'sc1')], {
+      screenshots: [shot('sc1', 's1', { zoomLevel: 2, viewport: { x: 25, y: 12, width: 50, height: 25 } })],
+    });
+
+    expect(diffSnapshots(a, b)).toEqual(empty);
+  });
+
+  it('counts a hand crop over an app-set zoom as cropped', () => {
+    const a = like([step('s1', 'Same', 'sc1')], {
+      screenshots: [shot('sc1', 's1', { zoomLevel: 1, viewport: { x: 0, y: 0, width: 100, height: 50 } })],
+    });
+    const b = like([step('s1', 'Same', 'sc1')], {
+      screenshots: [shot('sc1', 's1', { viewport: { x: 10, y: 0, width: 80, height: 50 } })],
+    });
+
+    expect(diffSnapshots(a, b)).toEqual({ ...empty, cropped: 1 });
+  });
+
   it('does not count an annotation change as cropped', () => {
     const a = like([step('s1', 'Same', 'sc1')], {
       screenshots: [shot('sc1', 's1', { viewport: { x: 0, y: 0, width: 100, height: 50 }, annotations: [box] })],

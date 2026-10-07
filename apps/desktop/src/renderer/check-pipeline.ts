@@ -6,6 +6,7 @@ import { exportGuideAsMarkdown } from '@mimik/core/export/markdown-export';
 import { exportGuideAsPDF } from '@mimik/core/export/pdf-export';
 import { allScreenshotIds, getGuide, permanentlyDeleteGuide } from '@mimik/core/guides/service';
 import { elementSource } from '@mimik/core/guides/types';
+import { resolveViewport } from '@mimik/core/screenshot/geometry';
 import { renderScreenshot } from '@mimik/core/screenshot/render';
 import { DesktopCaptureSink } from './capture-sink';
 
@@ -86,6 +87,28 @@ window.mimik.onRequest('mimik:check:verify', async (payload) => {
     detail: shot ? `${shot.width} × ${shot.height}, ${shot.blob.size} bytes` : 'no screenshot',
   });
 
+  const viewport = shot ? resolveViewport(shot) : null;
+  const zoom = shot && viewport ? shot.width / viewport.width : 0;
+  results.push({
+    name: 'a desktop step zooms without upscaling',
+    ok:
+      shot !== undefined &&
+      shot.bounds === undefined &&
+      viewport !== null &&
+      viewport.x >= 0 &&
+      viewport.y >= 0 &&
+      viewport.x + viewport.width <= shot.width &&
+      viewport.y + viewport.height <= shot.height &&
+      zoom >= 1 &&
+      zoom <= 5 &&
+      (shot.edits?.zoomLevel ?? 0) >= 1 &&
+      Math.abs((shot.edits?.zoomLevel ?? 0) * 4 - Math.round((shot.edits?.zoomLevel ?? 0) * 4)) < 1e-9 &&
+      (shot.edits?.target?.width ?? 0) > 0,
+    detail: shot
+      ? `level ${shot.edits?.zoomLevel}, ${zoom.toFixed(2)}x — viewport ${viewport?.width} × ${viewport?.height} of ${shot.width} × ${shot.height}, inside the frame`
+      : 'no screenshot',
+  });
+
   results.push({
     name: 'description came from the shared heuristic',
     ok: (step?.description.length ?? 0) > 0 && step?.descriptionSource === 'heuristic',
@@ -98,6 +121,28 @@ window.mimik.onRequest('mimik:check:verify', async (payload) => {
     ['PDF', () => exportGuideAsPDF(guide, steps, screenshots)],
     ['DOCX', () => exportGuideAsDOCX(guide, steps, screenshots)],
   ];
+
+  try {
+    const { canExportVideo } = await import('@mimik/core/export/video-support');
+    if (!(await canExportVideo())) {
+      results.push({ name: 'video export', ok: true, detail: 'n/a — this build encodes no video' });
+    } else {
+      const { exportGuideAsVideo } = await import('@mimik/core/export/video-export');
+      const out = await exportGuideAsVideo(guide, steps, screenshots);
+      const mime = out.blob.type;
+      results.push({
+        name: 'video export',
+        ok: out.blob.size > 0 && mime === `video/${out.extension}` && out.chapters.length === steps.length,
+        detail: `${out.blob.size} bytes, ${mime}, .${out.extension}, ${out.chapters.length} chapter(s)`,
+      });
+    }
+  } catch (error) {
+    results.push({
+      name: 'video export',
+      ok: false,
+      detail: error instanceof Error ? error.message : String(error),
+    });
+  }
 
   for (const [name, run] of exporters) {
     try {

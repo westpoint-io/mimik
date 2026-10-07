@@ -6,6 +6,7 @@ export interface CoreEnv {
   client: ClientType;
   t: (key: string, substitutions?: string[]) => string;
   assetUrl: (path: string) => string;
+  fetch?: typeof globalThis.fetch;
   storage: {
     get<K extends SettingsKey>(keys: readonly K[]): Promise<Partial<Pick<Settings, K>>>;
     set(items: Partial<Settings>): Promise<void>;
@@ -32,6 +33,8 @@ export const i18n = {
 export const assetUrl = (path: string) => env().assetUrl(path);
 
 export const client = (): ClientType => env().client;
+
+export const coreFetch: typeof globalThis.fetch = (input, init) => (env().fetch ?? globalThis.fetch)(input, init);
 
 export const localStorage = {
   get: <K extends SettingsKey>(keys: readonly K[]) => env().storage.get(keys),

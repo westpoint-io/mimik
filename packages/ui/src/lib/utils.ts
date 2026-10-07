@@ -8,8 +8,8 @@ import 'dayjs/locale/pt-br';
 import 'dayjs/locale/fr';
 import 'dayjs/locale/de';
 import 'dayjs/locale/zh-cn';
-import { twMerge } from 'tailwind-merge';
 import { i18n } from '@mimik/core/env';
+import { twMerge } from 'tailwind-merge';
 
 dayjs.extend(relativeTime);
 
@@ -37,11 +37,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatDate(ts: number): string {
-  const locale = getDayjsLocale();
-  const d = locale ? dayjs(ts).locale(locale) : dayjs(ts);
-  return d.format('MMM D, YYYY');
-}
+export { formatDate } from '@mimik/core/export/utils';
 
 export function formatDateShort(ts: number): string {
   const locale = getDayjsLocale();

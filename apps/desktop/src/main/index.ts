@@ -1,5 +1,6 @@
 import { join } from 'node:path';
 import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, protocol, screen, shell, Tray } from 'electron';
+import { registerAiFetch } from './ai-fetch';
 import { ask } from './ask';
 import { DesktopRecorder } from './capture/recorder';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from './capture/screenshot-store';
@@ -195,6 +196,7 @@ if (!app.requestSingleInstanceLock()) {
 
   app.whenReady().then(() => {
     registerScreenshotProtocol();
+    registerAiFetch();
     ipcMain.handle('mimik:openAtLogin:get', () => opensAtLogin());
     ipcMain.handle('mimik:openAtLogin:set', (_event, enabled: boolean) => {
       setOpenAtLogin(Boolean(enabled));

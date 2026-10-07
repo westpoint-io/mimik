@@ -13,8 +13,8 @@ import {
   updateStepDescription,
   updateStepInputValue,
 } from '@/core/guides/service';
-import type { ElementMeta, Screenshot } from '@/core/guides/types';
-import { DEFAULT_TARGET_COLOR } from '@/core/screenshot/types';
+import type { ElementMeta } from '@/core/guides/types';
+import { screenshotForElement } from '@/core/screenshot/record';
 import { captureVisibleTab, localStorage } from '@/lib/browser-api';
 import type { CaptureStepData, CaptureStepResponse } from '@/lib/messaging';
 import { getActor } from './actor';
@@ -29,27 +29,18 @@ async function takeScreenshot(stepId: string, meta: ElementMeta): Promise<string
     const dataUrl = await captureVisibleTab('jpeg', 90);
     const blob = await fetch(dataUrl).then((r) => r.blob());
     const img = await createImageBitmap(blob);
-    const screenshot: Screenshot = {
-      id: crypto.randomUUID(),
-      stepId,
-      blob,
-      mimeType: 'image/jpeg',
-      width: img.width,
-      height: img.height,
-      bounds: { x: meta.rect.x, y: meta.rect.y, width: meta.rect.width, height: meta.rect.height },
-      pixelRatio: meta.devicePixelRatio,
-      clickPoint: meta.clickPoint,
-      edits: {
-        target: {
-          x: meta.rect.x * meta.devicePixelRatio,
-          y: meta.rect.y * meta.devicePixelRatio,
-          width: meta.rect.width * meta.devicePixelRatio,
-          height: meta.rect.height * meta.devicePixelRatio,
-          border: 'dashed',
-          color: (targetColor as string) || DEFAULT_TARGET_COLOR,
-        },
+    const screenshot = screenshotForElement(
+      {
+        id: crypto.randomUUID(),
+        stepId,
+        blob,
+        mimeType: 'image/jpeg',
+        width: img.width,
+        height: img.height,
+        targetColor: targetColor as string,
       },
-    };
+      meta,
+    );
     img.close();
     await saveScreenshot(screenshot);
     return screenshot.id;

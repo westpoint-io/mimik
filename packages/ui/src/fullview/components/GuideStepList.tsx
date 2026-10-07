@@ -1,19 +1,19 @@
-import { Trash2 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 import { i18n } from '@mimik/core/env';
 import { isBlock, stepNumbers } from '@mimik/core/guides/blocks';
 import { createSnapshot, deleteSteps, insertBlock, reorderSteps } from '@mimik/core/guides/service';
 import type { BlockType, Screenshot, Step } from '@mimik/core/guides/types';
 import { dominantRatio } from '@mimik/core/screenshot/geometry';
-import { logger } from '@mimik/ui/lib/logger';
-import { useFullview } from '@mimik/ui/stores/fullview';
 import { Button } from '@mimik/ui/components/ui/button';
+import { logger } from '@mimik/ui/lib/logger';
 import BlockCard from '@mimik/ui/shared/BlockCard';
 import CaptureTabDialog from '@mimik/ui/shared/CaptureTabDialog';
 import ConfirmDialog from '@mimik/ui/shared/ConfirmDialog';
 import EmptyGuideState from '@mimik/ui/shared/EmptyGuideState';
 import InsertBlockMenu from '@mimik/ui/shared/InsertBlockMenu';
 import StepCard from '@mimik/ui/sidepanel/StepCard';
+import { useFullview } from '@mimik/ui/stores/fullview';
+import { Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 interface GuideStepListProps {
   guideId: string;

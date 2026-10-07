@@ -1,8 +1,8 @@
-import { Circle, Heading, Plus, StickyNote } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 import { i18n } from '@mimik/core/env';
 import type { BlockType } from '@mimik/core/guides/types';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui/tooltip';
+import { Circle, Heading, Plus, StickyNote } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 interface InsertBlockMenuProps {
   onInsert: (blockType: BlockType) => void;

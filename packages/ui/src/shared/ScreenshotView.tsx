@@ -1,5 +1,3 @@
-import { Download, ImageUp, Pencil, Trash2, ZoomIn, ZoomOut } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 import { i18n } from '@mimik/core/env';
 import { deleteScreenshot, replaceScreenshot, updateScreenshotEdits } from '@mimik/core/guides/service';
 import type { Screenshot, ScreenshotBounds } from '@mimik/core/guides/types';
@@ -21,6 +19,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui/components/ui
 import ConfirmDialog from '@mimik/ui/shared/ConfirmDialog';
 import ImagePlaceholder from '@mimik/ui/shared/ImagePlaceholder';
 import ReplaceImageDialog from '@mimik/ui/shared/ReplaceImageDialog';
+import { Download, ImageUp, Pencil, Trash2, ZoomIn, ZoomOut } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 
 interface ScreenshotViewProps {
   screenshot: Screenshot;

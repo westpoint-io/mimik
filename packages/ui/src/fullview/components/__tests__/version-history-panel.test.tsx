@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
-import { render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import type { SnapshotLike } from '@mimik/core/guides/snapshot-diff';
 import type { Screenshot, Snapshot, Step } from '@mimik/core/guides/types';
 import type { Annotation, ScreenshotEdits } from '@mimik/core/screenshot/types';
+import { render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const getSnapshots = vi.fn();
 

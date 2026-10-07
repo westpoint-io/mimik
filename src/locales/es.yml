@@ -181,6 +181,14 @@ desktop:
   guideCount: $1 guía
   guideCountPlural: $1 guías
   shortcutsSection: "Atajos"
+  cardScreenshots: "Capturas de pantalla"
+  cardKeyboard: "Teclado"
+  cardGlobalKeys: "Teclas globales"
+  cardGlobalKeysHint: "Se toman de todas las aplicaciones mientras Mimik está en ejecución."
+  zoomLevel: "Acercar hacia el clic"
+  zoomLevelHint: "Las grabaciones nuevas empiezan aquí. Automático mantiene todos los pasos del mismo tamaño."
+  zoomAuto: "Automático"
+  zoomGuide: "Zoom"
   captureKeys: "Registrar atajos y teclas con nombre"
   captureTyping: "Registrar lo que escribes"
   typingDebounce: "Cerrar el paso de escritura tras"

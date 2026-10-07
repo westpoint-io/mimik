@@ -1,3 +1,4 @@
+import { createOverlayRoot } from '@/core/capture/dom/overlay-root';
 import { i18n } from '@/core/env';
 import type { PresetKey } from './regexes';
 import { PRESET_LABELS } from './regexes';
@@ -253,14 +254,8 @@ export class BlurPanel {
   }
 
   mount() {
-    this.host = document.createElement('div');
-    this.host.setAttribute('data-mimik-ignore', '');
-
-    const shadow = this.host.attachShadow({ mode: 'closed' });
-
-    const style = document.createElement('style');
-    style.textContent = STYLES;
-    shadow.appendChild(style);
+    const { host, shadow } = createOverlayRoot(STYLES);
+    this.host = host;
 
     this.panel = this.buildPanel();
     shadow.appendChild(this.panel);

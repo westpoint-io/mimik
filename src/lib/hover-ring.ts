@@ -1,3 +1,5 @@
+import { createOverlayRoot } from '@/core/capture/dom/overlay-root';
+
 const PAD = 3;
 const Z_INDEX = 2147483644;
 const COLOR_VAR = '--mimik-ring-color';
@@ -46,15 +48,9 @@ export class HoverRing {
   }
 
   private mount(): HTMLElement {
-    const host = document.createElement('div');
-    host.setAttribute('data-mimik-ignore', '');
+    const { host, shadow } = createOverlayRoot(STYLES);
     host.style.cssText = `position:fixed;inset:0;z-index:${Z_INDEX};pointer-events:none;`;
     host.style.setProperty(COLOR_VAR, this.color);
-
-    const shadow = host.attachShadow({ mode: 'closed' });
-    const style = document.createElement('style');
-    style.textContent = STYLES;
-    shadow.appendChild(style);
 
     const ring = document.createElement('div');
     ring.className = 'ring';

@@ -105,7 +105,8 @@ export function diffSnapshots(from: SnapshotLike, to: SnapshotLike): SnapshotDif
     const beforeEdits = beforeRow.edits ?? {};
     const afterEdits = afterRow.edits ?? {};
 
-    if (differs(beforeEdits.viewport, afterEdits.viewport)) cropped++;
+    const byHand = beforeEdits.zoomLevel === undefined || afterEdits.zoomLevel === undefined;
+    if (byHand && differs(beforeEdits.viewport, afterEdits.viewport)) cropped++;
     if (
       differs(drawings(beforeEdits), drawings(afterEdits)) ||
       differs(resolveTarget(beforeRow), resolveTarget(afterRow))

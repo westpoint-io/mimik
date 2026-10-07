@@ -21,10 +21,6 @@ export function writeScreenshot(id: string, png: Buffer): string {
   return `${SCREENSHOT_SCHEME}://${id}`;
 }
 
-export function deleteScreenshot(id: string): void {
-  rmSync(fileFor(id), { force: true });
-}
-
 export function sweepScreenshots(keep: readonly string[]): number {
   const wanted = new Set(keep);
   let removed = 0;

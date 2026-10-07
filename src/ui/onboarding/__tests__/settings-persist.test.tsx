@@ -20,7 +20,11 @@ vi.mock('@/lib/browser-api', () => ({
 
 vi.mock('@/lib/offscreen', () => ({ openMicPermissionPage: vi.fn().mockResolvedValue(undefined) }));
 
+import { fakeBrowser } from 'wxt/testing';
 import OnboardingApp from '../App';
+
+// the AI step persists through @mimik/core, which vitest.setup backs with fakeBrowser storage
+const aiStore = async () => (await fakeBrowser.storage.local.get('aiApiKey')).aiApiKey;
 
 function press(label: string) {
   fireEvent.click(screen.getAllByText(label)[0]);
@@ -39,8 +43,9 @@ function apiKeyField() {
   return screen.getByPlaceholderText('sk-...') as HTMLInputElement;
 }
 
-beforeEach(() => {
+beforeEach(async () => {
   for (const key of Object.keys(store)) delete store[key];
+  await fakeBrowser.storage.local.clear();
 });
 
 describe('onboarding keeps what was typed', () => {
@@ -59,7 +64,7 @@ describe('onboarding keeps what was typed', () => {
     fireEvent.change(apiKeyField(), { target: { value: 'sk-descriptions' } });
     press('common.skip');
 
-    await waitFor(() => expect(store.aiApiKey).toBe('sk-descriptions'));
+    await waitFor(async () => expect(await aiStore()).toBe('sk-descriptions'));
   });
 
   it('clears the narration key when the field is emptied', async () => {
@@ -73,13 +78,13 @@ describe('onboarding keeps what was typed', () => {
   });
 
   it('clears the description key when the field is emptied', async () => {
-    store.aiApiKey = 'sk-old';
+    await fakeBrowser.storage.local.set({ aiApiKey: 'sk-old' });
     await goToStep('onboarding.aiTitle');
     await waitFor(() => expect(apiKeyField().value).toBe('sk-old'));
 
     fireEvent.change(apiKeyField(), { target: { value: '' } });
 
-    await waitFor(() => expect(store.aiApiKey).toBe(''));
+    await waitFor(async () => expect(await aiStore()).toBe(''));
   });
 
   it('picks up a key changed elsewhere when the tab comes back into view', async () => {

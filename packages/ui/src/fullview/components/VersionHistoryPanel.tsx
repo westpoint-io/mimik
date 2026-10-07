@@ -1,21 +1,17 @@
-import { ChevronRight, MoreVertical, RotateCcw, X } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
 import { i18n } from '@mimik/core/env';
-import { getSnapshots, renameSnapshot, revertToSnapshot } from '@mimik/core/guides/service';
 import { diffSnapshots, type SnapshotDiff, type SnapshotLike } from '@mimik/core/guides/snapshot-diff';
 import { groupSnapshots } from '@mimik/core/guides/snapshot-groups';
 import type { Snapshot } from '@mimik/core/guides/types';
-import { formatDateTime } from '@mimik/ui/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@mimik/ui/components/ui/dropdown-menu';
-
-function isQuotaError(e: unknown): boolean {
-  return e instanceof Error && (e.name === 'QuotaExceededError' || e.name === 'DexieError2QuotaExceededError');
-}
+import { formatDateTime } from '@mimik/ui/lib/utils';
+import { ChevronRight, MoreVertical, RotateCcw, X } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSnapshots } from './use-snapshots';
 
 function changeSummary(diff: SnapshotDiff): string {
   const parts: string[] = [];
@@ -68,42 +64,18 @@ export default function VersionHistoryPanel({
   onRestored,
   onClose,
 }: VersionHistoryPanelProps) {
-  const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [restoring, setRestoring] = useState(false);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [namedOnly, setNamedOnly] = useState(false);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
-  const refreshRef = useRef(refreshKey);
   const renamingRef = useRef<string | null>(null);
+  const clearRenaming = useCallback(() => {
+    renamingRef.current = null;
+    setRenamingId(null);
+  }, []);
+  const history = useSnapshots(guideId, refreshKey, clearRenaming);
+  const snapshots = history.list;
   const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const silent = refreshRef.current !== refreshKey;
-    refreshRef.current = refreshKey;
-    let cancelled = false;
-    if (!silent) {
-      setLoading(true);
-      setError(null);
-      renamingRef.current = null;
-      setRenamingId(null);
-    }
-    getSnapshots(guideId)
-      .then((list) => {
-        if (!cancelled) setSnapshots(list);
-      })
-      .catch(() => {
-        if (!cancelled) setError(i18n.t('history.loadError'));
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [guideId, refreshKey]);
 
   useEffect(() => {
     if (renamingId) inputRef.current?.focus();
@@ -126,26 +98,13 @@ export default function VersionHistoryPanel({
   const named = useMemo(() => snapshots.filter((s) => s.name), [snapshots]);
 
   const handleRestore = async (snapshot: Snapshot) => {
-    if (restoring) return;
-    setRestoring(true);
-    setError(null);
-    try {
-      const undo = await revertToSnapshot(snapshot.id);
-      if (!undo) {
-        setError(i18n.t('history.restoreError'));
-        return;
-      }
-      setSnapshots(await getSnapshots(guideId));
+    const done = await history.restore(snapshot, () => {
       setExpanded(new Set());
-      renamingRef.current = null;
-      setRenamingId(null);
+      clearRenaming();
       onSelect(null);
       onRestored();
-    } catch (e) {
-      setError(i18n.t(isQuotaError(e) ? 'history.storageFull' : 'history.restoreError'));
-    } finally {
-      setRestoring(false);
-    }
+    });
+    if (!done) return;
   };
 
   const startRename = (snapshot: Snapshot) => {
@@ -166,12 +125,7 @@ export default function VersionHistoryPanel({
     const trimmed = draft.trim();
     const name = trimmed === '' ? undefined : trimmed;
     if (name === snapshot.name) return;
-    try {
-      await renameSnapshot(snapshot.id, trimmed);
-      setSnapshots((prev) => prev.map((s) => (s.id === snapshot.id ? { ...s, name } : s)));
-    } catch {
-      setError(i18n.t('history.renameError'));
-    }
+    await history.rename(snapshot, name);
   };
 
   const toggle = (key: string) => {
@@ -236,7 +190,7 @@ export default function VersionHistoryPanel({
             {active && (
               <button
                 type="button"
-                disabled={restoring}
+                disabled={history.restoring}
                 onClick={() => void handleRestore(snapshot)}
                 className="inline-flex items-center gap-1.5 mt-2 text-[11px] font-semibold text-accent disabled:opacity-50"
               >
@@ -280,13 +234,13 @@ export default function VersionHistoryPanel({
         <span className="text-[13px] font-semibold text-foreground">{i18n.t('history.title')}</span>
       </div>
 
-      {error && (
+      {history.error && (
         <p role="alert" className="text-[11px] text-destructive py-2">
-          {error}
+          {history.error}
         </p>
       )}
 
-      {loading ? (
+      {history.loading ? (
         <p className="text-[11px] text-muted-foreground py-2">{i18n.t('common.loading')}</p>
       ) : snapshots.length === 0 ? (
         <p className="text-[11px] text-muted-foreground py-2">{i18n.t('history.empty')}</p>
