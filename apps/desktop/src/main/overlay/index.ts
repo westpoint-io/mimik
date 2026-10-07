@@ -513,7 +513,11 @@ export class CaptureOverlay {
     if (this.starting) return;
     if (command === 'pause' && state === CaptureState.RECORDING) {
       const area = this.mode() === 'area';
-      this.capture.send({ type: 'PAUSE_CAPTURE', reason: area ? 'area' : 'manual' });
+      this.capture.send({
+        type: 'PAUSE_CAPTURE',
+        reason: area ? 'area' : 'manual',
+        narrationWasLive: this.narration !== null && !this.narration.reason,
+      });
       this.onCommand(command);
       if (area) this.edit();
     } else if (command === 'resume' && state === CaptureState.PAUSED) {

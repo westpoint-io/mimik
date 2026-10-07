@@ -4,6 +4,7 @@ import type { OverlayCommand } from './overlay';
 
 export interface DesktopStateUpdate extends CaptureStateUpdate {
   command: OverlayCommand | null;
+  narrationWasLive: boolean;
 }
 
 export type DesktopCaptureStepData = CaptureStepData & {
