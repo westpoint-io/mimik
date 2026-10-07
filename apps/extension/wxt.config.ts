@@ -12,6 +12,7 @@ export default defineConfig({
   zip: {
     sourcesRoot: '../..',
     excludeSources: [
+      "coverage/**",
       "apps/desktop/dist/**",
       "apps/desktop/out/**",
       "packages/capture-native/target/**",

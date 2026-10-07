@@ -1,6 +1,6 @@
 import { vi } from "vitest";
 import { configureCore } from "@/core/env";
-import { fakeBrowser } from "wxt/testing";
+import { fakeBrowser } from "wxt/testing/fake-browser";
 import "@testing-library/jest-dom";
 
 console.log = () => {};
@@ -83,8 +83,8 @@ vi.mock("#imports", () => ({
   defineContentScript: vi.fn(),
 }));
 
-vi.mock("wxt/testing", async () => {
-  const actual = await vi.importActual<any>("wxt/testing");
+vi.mock("wxt/testing/fake-browser", async () => {
+  const actual = await vi.importActual<any>("wxt/testing/fake-browser");
   return {
     ...actual,
     fakeBrowser: {

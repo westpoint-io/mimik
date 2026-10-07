@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fakeBrowser } from 'wxt/testing';
+import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { dataUrlToBytes, defaultFooterLine, fitLogo, loadBranding } from '@/core/export/branding';
 import { DEFAULT_TARGET_COLOR } from '@/core/screenshot/types';
 

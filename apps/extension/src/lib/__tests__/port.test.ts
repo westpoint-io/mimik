@@ -49,7 +49,7 @@ async function loadBackground() {
   connectListeners.length = 0;
   vi.resetModules();
 
-  const { fakeBrowser } = await import('wxt/testing');
+  const { fakeBrowser } = await import('wxt/testing/fake-browser');
   const onConnect = fakeBrowser.runtime.onConnect as unknown as {
     addListener: (handler: (port: FakePort) => void) => void;
   };
