@@ -141,7 +141,7 @@ export class DesktopNarration {
       this.report({ phase: 'error', reason: 'missing-api-key' });
       return null;
     }
-    const mic = new MicRecorder(assetUrl('pcm-processor.js'), {
+    const mic = new MicRecorder(assetUrl('mic-frames.js'), {
       onEpoch: () => undefined,
       onLevel: (level, speaking) => window.mimik.capture.narration({ level, speaking }),
       onStreamEnded: () => {

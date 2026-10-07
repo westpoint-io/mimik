@@ -185,10 +185,7 @@ describe('accessibility-tree sources', () => {
     expect(buildFallbackDescription('click', outside)).toBe('steps.clickHere');
   });
 
-  it('ignores host window names and bare numbers on panes', () => {
-    expect(buildFallbackDescription('click', axMeta({ role: 'pane', ariaLabel: 'Chrome Legacy Window' }))).toBe(
-      'steps.clickHere',
-    );
+  it('ignores bare numbers on panes', () => {
     expect(buildFallbackDescription('click', axMeta({ role: 'pane', textContent: '42' }))).toBe('steps.clickHere');
   });
 

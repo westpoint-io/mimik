@@ -228,7 +228,7 @@ desktop:
   modeArea: Área
   startSheetTitle: Iniciar uma captura
   permissionsTitle: "Permita que o Mimik grave"
-  permissionsIntro: "O Mimik precisa de algumas permissões para gravar."
+  permissionsIntro: "O Mimik precisa de duas permissões antes de gravar."
   permissionAccessibility: "Acessibilidade"
   permissionAccessibilityHint: "Permite que o Mimik veja onde você clica e o que digita."
   permissionScreen: "Gravação de tela"
@@ -280,8 +280,8 @@ desktop:
   captureModeHint: "Janela acompanha o app em que você clica."
   screenshotDelayHint: "Espera antes da captura, para menus com animação."
   seconds: "s"
-  shortcutStartStop: "Iniciar ou finalizar uma gravação"
-  shortcutPauseResume: "Pausar ou retomar"
+  shortcutRecord: "Iniciar ou finalizar uma gravação"
+  shortcutPause: "Pausar ou retomar"
   shortcutCapture: "Capturar uma etapa agora"
   shortcutPress: "Pressione as teclas…"
   shortcutClear: "Limpar"

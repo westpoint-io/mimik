@@ -16,7 +16,7 @@ const EXAMPLES: Record<AILanguageCode, PromptExamples> = {
       'Navigate to the Settings page',
     ],
     titles: [
-      'Review claude-code Pull Requests',
+      'Review web-app Pull Requests',
       'Configure Slack Notification Preferences',
       'Submit Expense Report in Workday',
       'Create Repository in GitHub Organization',
@@ -34,7 +34,7 @@ const EXAMPLES: Record<AILanguageCode, PromptExamples> = {
       'Ir a la página Settings',
     ],
     titles: [
-      'Revisar los Pull Requests de claude-code',
+      'Revisar los Pull Requests de web-app',
       'Configurar las notificaciones de Slack',
       'Enviar un informe de gastos en Workday',
       'Crear un repositorio en una organización de GitHub',
@@ -52,7 +52,7 @@ const EXAMPLES: Record<AILanguageCode, PromptExamples> = {
       'Aller à la page Settings',
     ],
     titles: [
-      'Examiner les Pull Requests de claude-code',
+      'Examiner les Pull Requests de web-app',
       'Configurer les notifications Slack',
       'Soumettre une note de frais dans Workday',
       'Créer un dépôt dans une organisation GitHub',
@@ -70,7 +70,7 @@ const EXAMPLES: Record<AILanguageCode, PromptExamples> = {
       'Zur Seite Settings navigieren',
     ],
     titles: [
-      'Pull Requests von claude-code prüfen',
+      'Pull Requests von web-app prüfen',
       'Slack-Benachrichtigungen konfigurieren',
       'Spesenabrechnung in Workday einreichen',
       'Repository in GitHub-Organisation erstellen',
@@ -88,7 +88,7 @@ const EXAMPLES: Record<AILanguageCode, PromptExamples> = {
       'Ir para a página Settings',
     ],
     titles: [
-      'Revisar os Pull Requests do claude-code',
+      'Revisar os Pull Requests do web-app',
       'Configurar as notificações do Slack',
       'Enviar relatório de despesas no Workday',
       'Criar repositório em organização do GitHub',
@@ -106,7 +106,7 @@ const EXAMPLES: Record<AILanguageCode, PromptExamples> = {
       '进入 Settings 页面',
     ],
     titles: [
-      '审查 claude-code 的 Pull Request',
+      '审查 web-app 的 Pull Request',
       '配置 Slack 通知偏好',
       '在 Workday 中提交报销单',
       '在 GitHub 组织中创建仓库',
@@ -124,7 +124,7 @@ const EXAMPLES: Record<AILanguageCode, PromptExamples> = {
       'Перейти на страницу Settings',
     ],
     titles: [
-      'Проверка Pull Request в claude-code',
+      'Проверка Pull Request в web-app',
       'Настройка уведомлений Slack',
       'Отправка отчёта о расходах в Workday',
       'Создание репозитория в организации GitHub',

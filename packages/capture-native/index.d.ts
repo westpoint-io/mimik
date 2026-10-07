@@ -24,8 +24,6 @@ export interface ActiveWindow {
 
 export declare function clearDeadKey(): void
 
-export declare function releaseWebContent(): void
-
 export declare function elementAtPoint(x: number, y: number): Promise<UiElement | null>
 
 export interface ElementNode {
@@ -58,6 +56,8 @@ export interface HookEvent {
 export declare function isSupported(): boolean
 
 export declare function keyLabel(keycode: number): string | null
+
+export declare function releaseWebContent(): void
 
 export declare function resolveKey(keycode: number, shift: boolean, ctrl: boolean, alt: boolean): string | null
 

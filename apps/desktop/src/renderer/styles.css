@@ -1,6 +1,5 @@
 @import "@mimik/ui/global.css";
 
-@source "../../../../packages/ui/src";
 @source ".";
 
 input[type='range'].slider {

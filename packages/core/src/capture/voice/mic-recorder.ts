@@ -3,7 +3,8 @@ import { SPEECH_RMS_THRESHOLD } from './energy-gate';
 import { openStream } from './open-stream';
 
 const TARGET_SAMPLE_RATE = 16000;
-const PCM_WORKLET_NAME = 'pcm-processor';
+const MIC_FRAMES_WORKLET = 'mic-frames';
+const FRAME_MS = 250;
 
 const ANALYSER_FFT_SIZE = 2048;
 const LEVEL_FLOOR_DB = -60;
@@ -83,7 +84,7 @@ export class MicRecorder {
     this.analyser = context.createAnalyser();
     this.analyser.fftSize = ANALYSER_FFT_SIZE;
     this.analyserFrame = new Float32Array(this.analyser.fftSize);
-    this.worklet = new AudioWorkletNode(context, PCM_WORKLET_NAME);
+    this.worklet = new AudioWorkletNode(context, MIC_FRAMES_WORKLET, { processorOptions: { frameMs: FRAME_MS } });
     this.worklet.port.onmessage = (event: MessageEvent<ArrayBuffer>) => this.appendFrame(event.data);
 
     this.source.connect(this.analyser);

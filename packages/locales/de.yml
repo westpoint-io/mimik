@@ -228,7 +228,7 @@ desktop:
   modeArea: Bereich
   startSheetTitle: Aufnahme starten
   permissionsTitle: "Mimik das Aufnehmen erlauben"
-  permissionsIntro: "Mimik braucht ein paar Berechtigungen, um aufzunehmen."
+  permissionsIntro: "Mimik braucht zwei Berechtigungen, bevor es aufnehmen kann."
   permissionAccessibility: "Bedienungshilfen"
   permissionAccessibilityHint: "Damit Mimik sieht, was du anklickst und tippst."
   permissionScreen: "Bildschirmaufnahme"
@@ -280,8 +280,8 @@ desktop:
   captureModeHint: "Fenster folgt der App, die du anklickst."
   screenshotDelayHint: "Wartezeit vor dem Screenshot, für Menüs mit Animation."
   seconds: "s"
-  shortcutStartStop: "Aufnahme starten oder beenden"
-  shortcutPauseResume: "Pausieren oder fortsetzen"
+  shortcutRecord: "Aufnahme starten oder beenden"
+  shortcutPause: "Pausieren oder fortsetzen"
   shortcutCapture: "Jetzt einen Schritt aufnehmen"
   shortcutPress: "Tasten drücken…"
   shortcutClear: "Löschen"

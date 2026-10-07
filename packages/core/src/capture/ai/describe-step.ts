@@ -2,6 +2,7 @@ import { logger } from '@/core/logger';
 import { getAIDescription } from './description';
 import { type AiFailureUpdate, describeAiFailure } from './errors';
 import { readAiCredentials } from './read-ai-credentials';
+import { readAiUse } from './read-ai-use';
 
 export interface StepDescription {
   text: string | null;
@@ -9,8 +10,8 @@ export interface StepDescription {
 }
 
 export async function describeStep(context: string, prompt?: string): Promise<StepDescription> {
-  const keys = await readAiCredentials();
-  if (!keys) return { text: null, failure: null };
+  const [keys, use] = await Promise.all([readAiCredentials(), readAiUse()]);
+  if (!keys || !use.steps) return { text: null, failure: null };
   try {
     const text = await getAIDescription(context, keys.provider, keys.model, keys.apiKey, keys.baseUrl, prompt);
     return { text: text || null, failure: null };

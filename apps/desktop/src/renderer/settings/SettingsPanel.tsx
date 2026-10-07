@@ -52,8 +52,8 @@ const MODES: { id: CaptureSettings['captureMode']; labelKey: string; Icon: typeo
   { id: 'area', labelKey: 'desktop.modeArea', Icon: Crop },
 ];
 const KEYS: { id: keyof CaptureShortcuts; labelKey: string }[] = [
-  { id: 'startStop', labelKey: 'desktop.shortcutStartStop' },
-  { id: 'pauseResume', labelKey: 'desktop.shortcutPauseResume' },
+  { id: 'record', labelKey: 'desktop.shortcutRecord' },
+  { id: 'pause', labelKey: 'desktop.shortcutPause' },
   { id: 'capture', labelKey: 'desktop.shortcutCapture' },
 ];
 

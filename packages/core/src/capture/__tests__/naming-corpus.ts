@@ -43,11 +43,6 @@ const NAMES = [
   'SaveButton',
   'fl-post-111',
   'user_name',
-  'Chrome Legacy Window',
-  'chrome_renderwidgethosthwnd',
-  'Chrome_WidgetWin_1',
-  'CefBrowserWindow',
-  'Intermediate D3D Window',
   '​Invisible⁨ marks⁩',
   'A very long label that keeps going and going well beyond what anyone would read in a step title',
 ];

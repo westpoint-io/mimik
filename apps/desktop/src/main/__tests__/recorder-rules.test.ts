@@ -74,15 +74,22 @@ describe('capture settings', () => {
       typingDebounceMs: 50,
       recordKeys: 'yes' as never,
       captureMode: 'sideways' as never,
-      shortcuts: { startStop: '  ', pauseResume: null, capture: 'Alt+F2' } as never,
+      shortcuts: { record: '  ', pause: null, capture: 'Alt+F2' } as never,
     });
     expect(knobs.screenshotDelayMs).toBe(2000);
     expect(knobs.typingDebounceMs).toBe(MIN_TYPING_DEBOUNCE_MS);
     expect(normaliseSettings({ typingDebounceMs: 90_000 }).typingDebounceMs).toBe(MAX_TYPING_DEBOUNCE_MS);
     expect(knobs.recordKeys).toBe(DEFAULT_CAPTURE_SETTINGS.recordKeys);
     expect(knobs.captureMode).toBe(DEFAULT_CAPTURE_SETTINGS.captureMode);
-    expect(knobs.shortcuts).toEqual({ startStop: null, pauseResume: null, capture: 'Alt+F2' });
-    expect(normaliseSettings({}).shortcuts.startStop).toBe(DEFAULT_CAPTURE_SETTINGS.shortcuts.startStop);
+    expect(knobs.shortcuts).toEqual({ record: null, pause: null, capture: 'Alt+F2' });
+    expect(normaliseSettings({}).shortcuts.record).toBe(DEFAULT_CAPTURE_SETTINGS.shortcuts.record);
+  });
+
+  it('keeps the shortcuts saved under their earlier names', () => {
+    const saved = normaliseSettings({
+      shortcuts: { startStop: 'Ctrl+Alt+R', pauseResume: null, capture: 'Alt+F2' } as never,
+    });
+    expect(saved.shortcuts).toEqual({ record: 'Ctrl+Alt+R', pause: null, capture: 'Alt+F2' });
   });
 });
 

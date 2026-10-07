@@ -69,7 +69,7 @@ app.whenReady().then(async () => {
     () => mode,
     {
       introFrame: async (): Promise<Rect> => overlay.region,
-      shortcuts: () => ({ startStop: 'Alt+Shift+R', capture: 'Alt+Shift+C' }),
+      shortcuts: () => ({ record: 'Alt+Shift+R', capture: 'Alt+Shift+C' }),
     },
   );
 
@@ -467,12 +467,12 @@ app.whenReady().then(async () => {
     'the controls bar is ignored, a point away from it is not',
   );
 
-  const keys = { startStop: 'Alt+Shift+F13', pauseResume: 'Alt+Shift+F14', capture: 'Alt+Shift+F15' };
+  const keys = { record: 'Alt+Shift+F13', pause: 'Alt+Shift+F14', capture: 'Alt+Shift+F15' };
   const fired: string[] = [];
   const refusedIdle = bindShortcuts(shortcutMap(keys, false), (name) => fired.push(name));
   const idleOnly =
-    globalShortcut.isRegistered(keys.startStop) &&
-    !globalShortcut.isRegistered(keys.pauseResume) &&
+    globalShortcut.isRegistered(keys.record) &&
+    !globalShortcut.isRegistered(keys.pause) &&
     !globalShortcut.isRegistered(keys.capture);
   const refusedRecording = bindShortcuts(shortcutMap(keys, true), (name) => fired.push(name));
   const allThree = Object.values(keys).every((key) => globalShortcut.isRegistered(key));
@@ -500,7 +500,7 @@ app.whenReady().then(async () => {
     'the same map is a no-op, so a shortcut never unregisters itself from inside its own handler',
   );
 
-  const clash = bindShortcuts(shortcutMap({ ...keys, startStop: 'NotAKey+@@' }, false), () => {});
+  const clash = bindShortcuts(shortcutMap({ ...keys, record: 'NotAKey+@@' }, false), () => {});
   unbindShortcuts();
   check(
     'an unusable accelerator is reported, not thrown',

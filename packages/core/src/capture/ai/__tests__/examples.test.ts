@@ -38,7 +38,7 @@ describe('resolveExamples', () => {
       const { steps, titles } = resolveExamples(code);
       expect(steps.join(' ')).toContain('Submit');
       expect(steps.join(' ')).toContain('Settings');
-      expect(titles.join(' ')).toContain('claude-code');
+      expect(titles.join(' ')).toContain('web-app');
       expect(titles.join(' ')).toContain('Workday');
     }
   });

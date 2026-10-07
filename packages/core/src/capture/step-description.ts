@@ -22,7 +22,6 @@ const ROLE_TRAITS: Record<string, readonly RoleTrait[]> = {
   application: ['endsTheSearch'],
 };
 
-const CHROMIUM_SURFACES = new Set(['chrome legacy window', 'intermediate d3d window', 'cefbrowserwindow']);
 const NAME_LIMIT = 200;
 const VALUE_LIMIT = 80;
 const INVISIBLE = /[\p{Cf}\uFFFC\uFFFD]/gu;
@@ -39,11 +38,7 @@ interface NameCandidate {
 }
 
 function nameCandidates(meta: ElementMeta): NameCandidate[] {
-  const tidy = (value: string | null | undefined) => {
-    const text = (value ?? '').replace(INVISIBLE, '').trim();
-    const lower = text.toLowerCase();
-    return lower.startsWith('chrome_') || CHROMIUM_SURFACES.has(lower) ? '' : text;
-  };
+  const tidy = (value: string | null | undefined) => (value ?? '').replace(INVISIBLE, '').trim();
   const role = meta.role;
   const shown = tidy(meta.textContent?.slice(0, VALUE_LIMIT));
   const shownIsLabel = !hasTrait(role, 'typedInto') && !(hasTrait(role, 'endsTheSearch') && DIGITS_ONLY.test(shown));

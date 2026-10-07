@@ -285,7 +285,7 @@ export function controls(): void {
       : resting
         ? i18n.t('desktop.tipPaused')
         : i18n.t('desktop.tipWaiting');
-    const key = armed ? shortcuts.startStop : shortcuts.capture;
+    const key = armed ? shortcuts.record : shortcuts.capture;
     hint.hidden = intro.hidden || resting || !key || Boolean(narration);
     voice.hidden = collapsed || !narration;
     const voiceFailed = Boolean(narration?.reason);

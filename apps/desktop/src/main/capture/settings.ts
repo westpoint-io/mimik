@@ -11,8 +11,8 @@ export const MIN_TYPING_DEBOUNCE_MS = 200;
 export const MAX_TYPING_DEBOUNCE_MS = 5000;
 
 export interface CaptureShortcuts {
-  startStop: string | null;
-  pauseResume: string | null;
+  record: string | null;
+  pause: string | null;
   capture: string | null;
 }
 
@@ -36,8 +36,8 @@ export const DEFAULT_CAPTURE_SETTINGS: CaptureSettings = {
   typingDebounceMs: 1000,
   zoomLevel: null,
   shortcuts: {
-    startStop: 'Alt+Shift+R',
-    pauseResume: 'Alt+Shift+P',
+    record: 'Alt+Shift+R',
+    pause: 'Alt+Shift+P',
     capture: 'Alt+Shift+C',
   },
 };
@@ -53,12 +53,14 @@ function accelerator(value: unknown, fallback: string | null): string | null {
   return trimmed === '' ? null : trimmed;
 }
 
-function shortcuts(input: Partial<CaptureShortcuts> | undefined): CaptureShortcuts {
+type LegacyShortcuts = Partial<Record<'startStop' | 'pauseResume', unknown>>;
+
+function shortcuts(input: (Partial<CaptureShortcuts> & LegacyShortcuts) | undefined): CaptureShortcuts {
   const given = input ?? {};
   const fallback = DEFAULT_CAPTURE_SETTINGS.shortcuts;
   return {
-    startStop: accelerator(given.startStop, fallback.startStop),
-    pauseResume: accelerator(given.pauseResume, fallback.pauseResume),
+    record: accelerator('record' in given ? given.record : given.startStop, fallback.record),
+    pause: accelerator('pause' in given ? given.pause : given.pauseResume, fallback.pause),
     capture: accelerator(given.capture, fallback.capture),
   };
 }

@@ -228,7 +228,7 @@ desktop:
   modeArea: Zone
   startSheetTitle: Démarrer une capture
   permissionsTitle: "Autoriser Mimik à enregistrer"
-  permissionsIntro: "Mimik a besoin de quelques autorisations pour enregistrer."
+  permissionsIntro: "Mimik a besoin de deux autorisations avant de pouvoir enregistrer."
   permissionAccessibility: "Accessibilité"
   permissionAccessibilityHint: "Permet à Mimik de voir où vous cliquez et ce que vous tapez."
   permissionScreen: "Enregistrement de l’écran"
@@ -280,8 +280,8 @@ desktop:
   captureModeHint: "Fenêtre suit l’application sur laquelle vous cliquez."
   screenshotDelayHint: "Attente avant la capture, pour les menus animés."
   seconds: "s"
-  shortcutStartStop: "Démarrer ou terminer un enregistrement"
-  shortcutPauseResume: "Mettre en pause ou reprendre"
+  shortcutRecord: "Démarrer ou terminer un enregistrement"
+  shortcutPause: "Mettre en pause ou reprendre"
   shortcutCapture: "Capturer une étape maintenant"
   shortcutPress: "Appuyez sur les touches…"
   shortcutClear: "Effacer"

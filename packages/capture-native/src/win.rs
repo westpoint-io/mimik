@@ -6,7 +6,9 @@ use napi::Result;
 use windows::core::{Interface, BOOL, BSTR, PCWSTR, PWSTR};
 use windows::Win32::Foundation::{CloseHandle, HWND, LPARAM, POINT, RECT};
 use windows::Win32::Graphics::Dwm::{DwmGetWindowAttribute, DWMWA_CLOAKED, DWMWA_EXTENDED_FRAME_BOUNDS};
-use windows::Win32::Graphics::Gdi::{EnumDisplayMonitors, GetMonitorInfoW, HDC, HMONITOR, MONITORINFO};
+use windows::Win32::Graphics::Gdi::{
+  GetMonitorInfoW, MonitorFromWindow, MONITORINFO, MONITOR_DEFAULTTONEAREST,
+};
 use windows::Win32::Storage::FileSystem::{GetFileVersionInfoSizeW, GetFileVersionInfoW, VerQueryValueW};
 use windows::Win32::System::Com::{
   CoCreateInstance, CoInitializeEx, CLSCTX_INPROC_SERVER, COINIT_MULTITHREADED,
@@ -23,11 +25,11 @@ use windows::Win32::UI::Input::KeyboardAndMouse::{
 use windows::Win32::UI::WindowsAndMessaging::{
   EnumWindows, GetAncestor, GetClassNameW, GetForegroundWindow, GetWindow, GetWindowLongPtrW, GetWindowRect,
   GetWindowTextW, GetWindowThreadProcessId, IsWindowVisible, WindowFromPoint, GA_ROOT, GWL_EXSTYLE,
-  GWL_STYLE, GW_OWNER, WS_CAPTION, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_POPUP, WS_SYSMENU,
+  GWL_STYLE, GW_OWNER, WS_CAPTION, WS_CHILD, WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_POPUP, WS_SYSMENU,
 };
 
 use crate::hit::smallest_under;
-use crate::window::{covers_most_of_the_screen, is_popup, Traits};
+use crate::window::{fills, is_popup, names_its_surface, Edges, Traits};
 use crate::{ActiveWindow, ElementNode, ElementRect, UiElement};
 
 const ROLES: &[(UIA_CONTROLTYPE_ID, &str)] = &[
@@ -131,10 +133,27 @@ fn rect_of(element: &IUIAutomationElement) -> Option<ElementRect> {
   })
 }
 
+fn shown_name(element: &IUIAutomationElement, control: UIA_CONTROLTYPE_ID) -> Option<String> {
+  let name = text(unsafe { element.CurrentName() })?;
+  let class = text(unsafe { element.CurrentClassName() }).unwrap_or_default();
+  let container = [
+    UIA_PaneControlTypeId,
+    UIA_DocumentControlTypeId,
+    UIA_WindowControlTypeId,
+  ]
+  .contains(&control);
+  let hidden_caption = unsafe { element.CurrentNativeWindowHandle() }
+    .ok()
+    .filter(|window| !window.is_invalid() && style(*window) & WS_CHILD.0 != 0)
+    .and_then(|window| text_of(|buffer| unsafe { GetWindowTextW(window, buffer) }));
+  (!names_its_surface(&name, &class, container, hidden_caption.as_deref())).then_some(name)
+}
+
 fn describe(found: &IUIAutomationElement) -> UiElement {
+  let control = unsafe { found.CurrentControlType() }.unwrap_or_default();
   UiElement {
-    role: role(unsafe { found.CurrentControlType() }.unwrap_or_default()),
-    name: text(unsafe { found.CurrentName() }),
+    role: role(control),
+    name: shown_name(found, control),
     automation_id: text(unsafe { found.CurrentAutomationId() }),
     value: value_of(found),
     help_text: text(unsafe { found.CurrentHelpText() }),
@@ -153,9 +172,10 @@ const TAB_DRAG_LAYER: &str = "TabDragContextImpl";
 const MAX_CHILDREN: usize = 12;
 
 fn node(element: &IUIAutomationElement) -> ElementNode {
+  let control = unsafe { element.CurrentControlType() }.unwrap_or_default();
   ElementNode {
-    role: role(unsafe { element.CurrentControlType() }.unwrap_or_default()),
-    name: text(unsafe { element.CurrentName() }),
+    role: role(control),
+    name: shown_name(element, control),
   }
 }
 
@@ -376,28 +396,22 @@ fn frame_rect(window: HWND) -> Option<RECT> {
   }
 }
 
-fn monitor_areas() -> Vec<f64> {
-  unsafe extern "system" fn collect(monitor: HMONITOR, _: HDC, _: *mut RECT, data: LPARAM) -> BOOL {
-    let areas = unsafe { &mut *(data.0 as *mut Vec<f64>) };
-    let mut info = MONITORINFO {
-      cbSize: size_of::<MONITORINFO>() as u32,
-      ..Default::default()
-    };
-    if unsafe { GetMonitorInfoW(monitor, &mut info) }.as_bool() {
-      areas.push(area(&info.rcMonitor));
-    }
-    true.into()
+fn edges(rect: &RECT) -> Edges {
+  Edges {
+    left: rect.left,
+    top: rect.top,
+    right: rect.right,
+    bottom: rect.bottom,
   }
-  let mut areas: Vec<f64> = Vec::new();
-  let _ = unsafe {
-    EnumDisplayMonitors(
-      None,
-      None,
-      Some(collect),
-      LPARAM(&mut areas as *mut Vec<f64> as isize),
-    )
+}
+
+fn fills_its_monitor(window: HWND, bounds: &RECT) -> bool {
+  let monitor = unsafe { MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST) };
+  let mut info = MONITORINFO {
+    cbSize: size_of::<MONITORINFO>() as u32,
+    ..Default::default()
   };
-  areas
+  unsafe { GetMonitorInfoW(monitor, &mut info) }.as_bool() && fills(edges(bounds), edges(&info.rcWork))
 }
 
 fn text_of(read: impl FnOnce(&mut [u16]) -> i32) -> Option<String> {
@@ -550,10 +564,7 @@ fn framed(front: HWND) -> Option<ActiveWindow> {
   }
   let process = process_of(front);
   let bounds = frame_rect(front)?;
-  let monitors = monitor_areas();
-  let largest = monitors.iter().copied().fold(0.0, f64::max);
-  let desktop: f64 = monitors.iter().sum();
-  let window = if !covers_most_of_the_screen(area(&bounds), largest, desktop) && popup(front) {
+  let window = if !fills_its_monitor(front, &bounds) && popup(front) {
     main_window_of(process).unwrap_or(front)
   } else {
     front
