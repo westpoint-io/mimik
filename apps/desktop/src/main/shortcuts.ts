@@ -5,8 +5,8 @@ export type ShortcutName = keyof CaptureShortcuts;
 
 export function shortcutMap(shortcuts: CaptureShortcuts, recording: boolean): Record<ShortcutName, string | null> {
   return {
-    startStop: shortcuts.startStop,
-    pauseResume: recording ? shortcuts.pauseResume : null,
+    record: shortcuts.record,
+    pause: recording ? shortcuts.pause : null,
     capture: recording ? shortcuts.capture : null,
   };
 }
@@ -18,7 +18,7 @@ export function sameShortcuts(
   a: Record<ShortcutName, string | null> | null,
   b: Record<ShortcutName, string | null>,
 ): boolean {
-  return a !== null && a.startStop === b.startStop && a.pauseResume === b.pauseResume && a.capture === b.capture;
+  return a !== null && a.record === b.record && a.pause === b.pause && a.capture === b.capture;
 }
 
 export function unbindShortcuts(): void {

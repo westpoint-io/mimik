@@ -50,7 +50,7 @@ export interface OverlayProgress {
 }
 
 interface OverlayShortcuts {
-  startStop: string | null;
+  record: string | null;
   capture: string | null;
 }
 
@@ -96,7 +96,7 @@ const BORDER = 3;
 const CONTROLS = { width: 300, height: 190, margin: 24 };
 const INTRO_LIMIT_MS = 6000;
 const HIDE_SETTLE_MS = 60;
-const NO_SHORTCUTS: OverlayShortcuts = { startStop: null, capture: null };
+const NO_SHORTCUTS: OverlayShortcuts = { record: null, capture: null };
 
 function rendererFile(): string {
   return join(__dirname, '../renderer/overlay.html');

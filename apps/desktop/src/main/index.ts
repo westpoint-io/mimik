@@ -287,7 +287,7 @@ function applyShortcuts(): void {
 function onShortcut(name: ShortcutName): void {
   if (!overlay) return;
   const state = capture.getSnapshot().value;
-  if (name === 'startStop') {
+  if (name === 'record') {
     if (state === CaptureState.IDLE) {
       whenPermitted(() => {
         insert = null;
@@ -299,7 +299,7 @@ function onShortcut(name: ShortcutName): void {
     overlay.run(state === CaptureState.ARMED ? 'start' : 'stop');
     return;
   }
-  if (name === 'pauseResume') {
+  if (name === 'pause') {
     if (state === CaptureState.RECORDING) overlay.run('pause');
     else if (state === CaptureState.PAUSED) overlay.run('resume');
     return;
@@ -477,7 +477,7 @@ if (!app.requestSingleInstanceLock()) {
         },
         shortcuts: () => {
           const { shortcuts } = captureSettings ?? loadSettings();
-          return { startStop: labelOf(shortcuts.startStop), capture: labelOf(shortcuts.capture) };
+          return { record: labelOf(shortcuts.record), capture: labelOf(shortcuts.capture) };
         },
       },
     );

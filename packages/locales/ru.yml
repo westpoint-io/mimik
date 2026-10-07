@@ -280,8 +280,8 @@ desktop:
   captureModeHint: "«Окно» следует за приложением, в котором вы кликаете."
   screenshotDelayHint: "Подождать перед скриншотом, для меню с анимацией."
   seconds: с
-  shortcutStartStop: Начать или закончить запись
-  shortcutPauseResume: Пауза или продолжение
+  shortcutRecord: Начать или закончить запись
+  shortcutPause: Пауза или продолжение
   shortcutCapture: Записать шаг сейчас
   shortcutPress: Нажмите клавиши…
   shortcutClear: Очистить
