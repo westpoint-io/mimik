@@ -192,7 +192,8 @@ settings:
   modelsFound: "Доступно моделей: $1"
   smartBlur: Умное размытие
   privacyNotice: Ваши ключи и аудио отправляются только выбранному вами провайдеру. Больше ничего не покидает ваш браузер.
-  bugReport: Нашли баг? Сообщите на GitHub
+  reportBug: "Сообщить об ошибке"
+  aboutSection: "О Mimik"
   starCtaTitle: "Нравится то, что вы видите?"
   starCtaMessage: "Звезда на GitHub помогает другим находить Mimik и поддерживает нас!"
   starOnGithub: Поставить звезду на GitHub
@@ -229,8 +230,8 @@ desktop:
   modeWindow: Окно
   modeScreen: Экран
   modeArea: Область
-  startSheetTitle: Начать запись
   drawArea: "Потяните, чтобы выделить область записи"
+  startSheetTitle: Начать запись
   permissionsTitle: Разрешите Mimik записывать
   permissionsIntro: "Mimik нужны два разрешения, прежде чем начать запись."
   permissionAccessibility: Универсальный доступ
@@ -256,10 +257,6 @@ desktop:
   version: Версия $1
   versionHint: Mimik проверяет обновления при каждом запуске.
   checkUpdates: Проверить обновления
-  cardGithub: "Mimik на GitHub"
-  bugTitle: "Нашли ошибку?"
-  bugHint: "Расскажите, что произошло, и мы разберёмся."
-  reportBug: "Сообщить об ошибке"
   trayQuit: Выйти из Mimik
   trayRecording: "Mimik записывает. Нажмите, чтобы закончить."
   cannotRecord: Mimik не может записывать

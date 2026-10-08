@@ -192,7 +192,8 @@ settings:
   modelsFound: "$1 models available"
   smartBlur: "Smart blur"
   privacyNotice: "Keys and audio go only to the provider you choose."
-  bugReport: "Found a bug? Report it on GitHub"
+  reportBug: "Report a bug"
+  aboutSection: "About"
   starCtaTitle: "Like what you see?"
   starCtaMessage: "A GitHub star helps other people find Mimik."
   starOnGithub: Star on GitHub
@@ -229,8 +230,8 @@ desktop:
   modeWindow: Window
   modeScreen: Screen
   modeArea: Area
-  startSheetTitle: Start a capture
   drawArea: "Drag to draw the capture area"
+  startSheetTitle: Start a capture
   permissionsTitle: "Allow Mimik to record"
   permissionsIntro: "Mimik needs two permissions before it can record."
   permissionAccessibility: "Accessibility"
@@ -256,10 +257,6 @@ desktop:
   version: "Version $1"
   versionHint: "Mimik looks for updates each time it starts."
   checkUpdates: "Check for updates"
-  cardGithub: "Mimik on GitHub"
-  bugTitle: "Found a bug?"
-  bugHint: "Tell us what happened and we'll look into it."
-  reportBug: "Report a bug"
   trayQuit: "Quit Mimik"
   trayRecording: "Mimik is recording. Click to finish."
   cannotRecord: "Mimik cannot record"

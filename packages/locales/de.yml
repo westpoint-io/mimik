@@ -178,7 +178,8 @@ settings:
   saved: Gespeichert
   smartBlur: Smart Blur
   privacyNotice: "Schlüssel und Audio gehen nur an den gewählten Anbieter."
-  bugReport: "Fehler gefunden? Melde ihn auf GitHub"
+  reportBug: "Fehler melden"
+  aboutSection: "Über Mimik"
   starCtaTitle: "Gefällt dir, was du siehst?"
   starCtaMessage: "Ein Stern auf GitHub hilft anderen, Mimik zu finden."
   starOnGithub: "Auf GitHub mit Stern markieren"
@@ -229,8 +230,8 @@ desktop:
   modeWindow: Fenster
   modeScreen: Bildschirm
   modeArea: Bereich
-  startSheetTitle: Aufnahme starten
   drawArea: "Ziehen, um den Aufnahmebereich zu zeichnen"
+  startSheetTitle: Aufnahme starten
   permissionsTitle: "Mimik das Aufnehmen erlauben"
   permissionsIntro: "Mimik braucht zwei Berechtigungen, bevor es aufnehmen kann."
   permissionAccessibility: "Bedienungshilfen"
@@ -256,10 +257,6 @@ desktop:
   version: "Version $1"
   versionHint: "Mimik sucht bei jedem Start nach Updates."
   checkUpdates: "Nach Updates suchen"
-  cardGithub: "Mimik auf GitHub"
-  bugTitle: "Einen Fehler gefunden?"
-  bugHint: "Beschreib, was passiert ist, und wir sehen es uns an."
-  reportBug: "Fehler melden"
   trayQuit: "Mimik beenden"
   trayRecording: "Mimik nimmt auf. Zum Beenden klicken."
   cannotRecord: "Mimik kann nicht aufnehmen"

@@ -192,7 +192,8 @@ settings:
   modelsFound: "$1 modèles disponibles"
   smartBlur: Flou intelligent
   privacyNotice: "Les clés et l'audio ne vont qu'au fournisseur choisi."
-  bugReport: "Un bug ? Signalez-le sur GitHub"
+  reportBug: "Signaler un bug"
+  aboutSection: "À propos"
   starCtaTitle: "Vous aimez Mimik ?"
   starCtaMessage: "Une étoile sur GitHub aide d'autres personnes à découvrir Mimik."
   starOnGithub: "Mettre une étoile sur GitHub"
@@ -229,8 +230,8 @@ desktop:
   modeWindow: Fenêtre
   modeScreen: Écran
   modeArea: Zone
-  startSheetTitle: Démarrer une capture
   drawArea: "Faites glisser pour tracer la zone de capture"
+  startSheetTitle: Démarrer une capture
   permissionsTitle: "Autoriser Mimik à enregistrer"
   permissionsIntro: "Mimik a besoin de deux autorisations avant de pouvoir enregistrer."
   permissionAccessibility: "Accessibilité"
@@ -256,10 +257,6 @@ desktop:
   version: "Version $1"
   versionHint: "Mimik recherche les mises à jour à chaque démarrage."
   checkUpdates: "Rechercher des mises à jour"
-  cardGithub: "Mimik sur GitHub"
-  bugTitle: "Vous avez trouvé un bug ?"
-  bugHint: "Dites-nous ce qui s'est passé et nous regarderons."
-  reportBug: "Signaler un bug"
   trayQuit: "Quitter Mimik"
   trayRecording: "Mimik enregistre. Cliquez pour terminer."
   cannotRecord: "Mimik ne peut pas enregistrer"

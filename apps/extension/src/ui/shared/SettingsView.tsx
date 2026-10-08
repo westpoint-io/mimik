@@ -148,6 +148,7 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
       </SettingsCard>
     ),
     'api-keys': <ApiKeysSettings state={keys} validate={validateApiKey} title={i18n.t('settings.apiKeys')} />,
+    about: <SettingsFooter />,
   };
 
   if (layout === 'sections') {
