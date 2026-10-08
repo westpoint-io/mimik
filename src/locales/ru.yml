@@ -3,16 +3,16 @@ meta:
 
 app:
   name: Mimik
-  store_title: "Mimik: пошаговые гайды и инструкции"
-  description: "Записывайте любой сценарий в браузере как пошаговый гайд. Редактируйте, озвучивайте, экспортируйте в видео, PDF или DOCX. Данные не покидают браузер, открытый исходный код."
+  store_title: "Mimik: пошаговые инструкции и руководства"
+  description: "Записывайте действия в браузере в пошаговые инструкции. Редактирование, озвучка, экспорт в видео, PDF и DOCX. Данные — локально."
 
 common:
-  loading: Загрузка...
+  loading: Загрузка…
   cancel: Отмена
   save: Сохранить
   delete: Удалить
   back: Назад
-  continue: Далее
+  continue: Продолжить
   skip: Пропустить
   export: Экспорт
   close: Закрыть
@@ -20,70 +20,70 @@ common:
   star: В избранное
   unstar: Убрать из избранного
   restore: Восстановить
-  updated: "Обновлено до v$1"
+  updated: "Обновлено до версии $1"
   whatsNew: Что нового
 
 sidepanel:
   connected: Подключено
-  connecting: Подключение...
-  heroTitle: Что хотите записать?
-  heroSubtitle: Автоматически записывайте любой сценарий
+  connecting: Подключение…
+  heroTitle: Что будем записывать?
+  heroSubtitle: Автоматическая запись действий в браузере
   startCapture: Начать запись
-  searchPlaceholder: Поиск гайдов...
+  searchPlaceholder: Поиск инструкций…
   recentLabel: Недавние
   notRecordable: Откройте сайт, чтобы начать запись
 
 library:
-  noGuidesTitle: Пока нет гайдов
-  noGuidesSub: Начните запись, чтобы создать первый гайд
-  noStarredTitle: Нет избранных гайдов
-  noStarredSub: Добавьте гайд в избранное, чтобы быстро находить его
+  noGuidesTitle: Здесь появятся ваши инструкции
+  noGuidesSub: Начните запись, чтобы создать первую инструкцию
+  noStarredTitle: В избранном пока пусто
+  noStarredSub: Добавьте инструкцию в избранное для быстрого доступа
   trashEmptyTitle: Корзина пуста
-  trashEmptySub: Совсем пусто!
-  noMatchingGuides: Нет подходящих гайдов
+  trashEmptySub: Всё в порядке!
+  noMatchingGuides: Подходящих инструкций пока нет
   moveToTrash: Переместить в корзину
-  deletePermanently: Удалить безвозвратно
+  deletePermanently: Удалить без восстановления
   openInFullView: Открыть на весь экран
-  openDashboard: "Открыть дашборд"
-  openDashboardHint: "Там можно просматривать, импортировать и экспортировать гайды"
-  duplicate: Дублировать
+  openDashboard: Открыть библиотеку
+  openDashboardHint: Просмотр, импорт и экспорт инструкций
+  duplicate: Создать копию
   copyOfTitle: "Копия: $1"
-  duplicateFailed: Не удалось дублировать гайд
+  duplicateFailed: Не удалось создать копию. Попробуйте ещё раз.
 
 guideme:
-  live: Live
-  roadblock: "Не получается продолжить. Выполните действие на экране, чтобы двигаться дальше."
-  manualStep: "Этот шаг был отредактирован, поэтому определить его автоматически нельзя. Нажмите «Далее», когда выполните его."
+  live: На странице
+  roadblock: Не удалось найти элемент этого шага на странице. Выполните шаг вручную, чтобы продолжить.
+  manualStep: Изменённые шаги не определяются автоматически. Выполните шаг и нажмите «Далее».
   stepOf: "Шаг $1 из $2"
-  noDescription: Нет описания
+  noDescription: Без описания
   prev: Назад
   next: Далее
-  finish: "Готово"
-  exitTitle: Уходите?
-  exitMessage: Демонстрация остановится, а оверлей будет удалён со страницы.
-  stay: Остаться
+  finish: Завершить
+  exitTitle: Завершить прохождение?
+  exitMessage: Пошаговый режим и подсказки на странице будут закрыты.
+  stay: Продолжить
   exit: Выйти
-  guideNotFound: Гайд не найден
+  guideNotFound: Инструкция не найдена
 
 guidemeCompletion:
-  title: "Всё выполнено!"
-  stepsCompleted: "Все $1 шаг выполнен."
-  stepsCompletedPlural: "Все $1 шагов выполнены."
-  allDone: Всё готово
-  runAgain: Запустить снова
+  title: Отлично, всё готово!
+  stepsCompleted: "Выполнен $1 шаг."
+  stepsCompletedPlural: "Все шаги выполнены: $1."
+  allDone: Готово
+  runAgain: Пройти ещё раз
 
 recording:
-  capturePaused: Запись приостановлена
-  capturePausedBlur: "Умное размытие · запись приостановлена"
+  capturePaused: Запись на паузе
+  capturePausedBlur: Размытие · запись на паузе
   pauseCapture: Приостановить запись
   resumeCapture: Продолжить запись
   recording: "Запись · $1 шаг"
-  recordingPlural: "Запись · $1 шагов"
-  readyTitle: Готовы к записи!
-  readySub: Кликните по странице, чтобы начать
+  recordingPlural: "Запись · шагов: $1"
+  readyTitle: Всё готово к записи
+  readySub: Нажмите на элемент страницы, чтобы начать
   finishRecording: Завершить запись
   smartBlur: Умное размытие
-  discard: Отклонить
+  discard: Не сохранять
   deleteStep: Удалить шаг
   justNow: Только что
   secondsAgo: "$1 с назад"
@@ -94,367 +94,366 @@ settings:
   aiDescriptions: AI-описания
   provider: Провайдер
   model: Модель
-  modelCustom: Своя модель
+  modelCustom: Другая модель
   baseUrl: Базовый URL
   useOwnServer: Использовать свой сервер
-  ownServerHintOpenai: "Работает с Ollama, LM Studio, vLLM или любым сервером, совместимым с OpenAI."
-  ownServerHintAnthropic: "Работает с прокси LiteLLM или любым сервером, совместимым с Anthropic."
+  ownServerHintOpenai: Подходит для Ollama, LM Studio, vLLM и других серверов с совместимым с OpenAI API.
+  ownServerHintAnthropic: Подходит для прокси LiteLLM и других серверов с совместимым с Anthropic API.
   apiKey: API-ключ
   showKey: Показать ключ
   hideKey: Скрыть ключ
+  clearKey: Очистить ключ
   aiLanguage: Язык описаний
-  voiceNarration: Озвучка
-  voiceUsingAiKey: "Ключ озвучки не задан, поэтому Mimik использует ключ OpenAI из раздела «AI-описания» выше."
-  aiNoKey: "API-ключ не задан, поэтому для шагов будут использоваться простые описания по правилам."
-  voiceNoKey: "API-ключ не задан, поэтому ваши записи не будут озвучены."
+  voiceover: Озвучивание видео
+  textToSpeech: текст → речь
+  voiceoverHint: Mimik читает текст каждого шага в экспортируемом видео.
+  voiceoverUsingAiKey: Используется ключ OpenAI из раздела «AI-описания».
+  voiceoverNoKey: Добавьте API-ключ для озвучивания видео.
+  voice: Голос
+  speechToText: речь → текст
+  voiceNarrationHint: Комментируйте свои действия, и Mimik превратит ваши слова в описания шагов.
+  voiceNarration: Голосовые комментарии
+  voiceUsingAiKey: Используется ключ OpenAI из раздела «AI-описания».
+  aiNoKey: Без API-ключа создаются простые описания шагов по шаблонам.
+  voiceNoKey: Добавьте API-ключ для распознавания голосовых комментариев.
   microphone: Микрофон
   microphoneDefault: Системный по умолчанию
   microphoneNeedsAccess: Разрешите доступ к микрофону, чтобы увидеть названия устройств.
   microphoneGrantAccess: Разрешить доступ к микрофону
-  microphoneNone: Микрофон не найден. Подключите его — он появится здесь.
+  microphoneNone: Подключите микрофон, чтобы он появился в списке.
   microphoneUnavailable: Микрофон недоступен
-  microphoneMissing: Выбранный микрофон сейчас недоступен, поэтому Mimik использует системный по умолчанию.
+  microphoneMissing: Выбранный микрофон не подключён. Используется системный по умолчанию.
   microphoneTest: Проверить микрофон
   microphoneStatusAllowed: Разрешён
-  microphoneStatusBlocked: Заблокирован
-  microphoneStatusPending: Ещё не разрешён
-  microphoneBlocked: Браузер блокирует микрофон для Mimik. Откройте настройки сайта по значку слева от адресной строки и выберите «Разрешить» для микрофона.
-  microphoneUnblockHow: Как снять блокировку?
-  microphoneTestStop: Остановить проверку
-  microphoneTestFailed: Не удалось открыть этот микрофон. Выберите другой и попробуйте снова.
-  targetColor: "Корпоративный цвет"
-  targetColorHint: "Подсветка кликов и акценты в экспорте"
-  branding: "Брендинг экспорта"
-  brandLogo: "Логотип"
-  uploadLogo: "Загрузить логотип"
-  replaceLogo: "Заменить"
-  removeLogo: "Удалить логотип"
-  footerLine: "Футер"
-  footerLinePlaceholder: "Например: Конфиденциально — только для внутреннего использования"
-  footerPresetConfidential: "Конфиденциально — только для внутреннего использования"
-  footerPresetNoDistribute: "Не распространять"
-  attribution: 'Показывать "Made with Mimik"'
+  microphoneStatusBlocked: Не разрешён
+  microphoneStatusPending: Ожидает разрешения
+  microphoneBlocked: Доступ к микрофону не разрешён. Нажмите значок слева от адресной строки и выберите «Микрофон» → «Разрешить».
+  microphoneUnblockHow: Как разрешить доступ?
+  microphoneTestStop: Завершить проверку
+  microphoneTestFailed: Не удалось подключить этот микрофон. Попробуйте другой.
+  targetColor: Фирменный цвет
+  targetColorHint: Выделение нажатий и акценты при экспорте
+  branding: Оформление экспорта
+  brandLogo: Логотип
+  uploadLogo: Загрузить логотип
+  replaceLogo: Заменить
+  removeLogo: Удалить логотип
+  footerLine: Нижний колонтитул
+  footerLinePlaceholder: Например, «Конфиденциально · Для внутреннего использования»
+  footerPresetConfidential: Конфиденциально · Для внутреннего использования
+  footerPresetNoDistribute: Не для распространения
+  attribution: Показывать «Создано в Mimik»
   saveSettings: Сохранить настройки
   saved: Сохранено
-  validatingKey: "Проверка ключа…"
-  keyValid: API-ключ подтверждён.
-  keyInvalid: Этот API-ключ отклонён. Проверьте его и попробуйте снова.
-  keyModelRequired: Выберите модель, прежде чем проверять этот ключ.
+  validatingKey: Проверка ключа…
+  keyValid: API-ключ проверен.
+  keyInvalid: Провайдер не принял ключ. Проверьте его и повторите попытку.
+  keyModelRequired: Перед проверкой ключа выберите модель.
   keyModelInvalid: Выбранная модель недоступна у этого провайдера.
   checkKey: Проверить ключ
-  keyCannotSpend: "На этом ключе нет кредитов, поэтому будут работать только бесплатные модели."
-  keyUnreachable: Не удалось подключиться к провайдеру. Проверьте соединение и попробуйте снова.
+  keyCannotSpend: Для этого ключа доступно только использование бесплатных моделей. Пополните баланс для остальных.
+  keyUnreachable: Не удалось подключиться к провайдеру. Проверьте соединение.
   modelsFound: "Доступно моделей: $1"
   smartBlur: Умное размытие
-  privacyNotice: "Ваши ключи и аудио отправляются только выбранному вами провайдеру. Больше ничего не покидает ваш браузер."
-  bugReport: "Нашли баг? Сообщите на GitHub"
-  starCtaTitle: "Нравится то, что вы видите?"
-  starCtaMessage: Звезда на GitHub помогает другим находить Mimik и поддерживает нас!
+  privacyNotice: Ключи и аудио передаются только выбранному провайдеру.
+  bugReport: Сообщить об ошибке на GitHub
+  starCtaTitle: Нравится Mimik?
+  starCtaMessage: Звезда на GitHub помогает другим людям узнать о Mimik.
   starOnGithub: Поставить звезду на GitHub
-  clearKey: Удалить ключ
-  voiceover: "Закадровый голос для видео"
-  textToSpeech: "текст → речь"
-  voiceoverHint: "Mimik зачитывает текст каждого шага поверх экспортированного видео."
-  voiceoverUsingAiKey: "Используется ключ OpenAI из раздела «AI-описания»."
-  voiceoverNoKey: "Добавьте API-ключ, чтобы озвучивать видео."
-  voice: "Голос"
-  speechToText: "речь → текст"
-  voiceNarrationHint: "Проговаривайте свои действия, и Mimik напишет каждый шаг по вашим словам."
 
 blurPresets:
   email: Электронная почта
-  phoneNumbers: Телефонные номера
-  ssn: Номер соцстрахования
-  creditCard: Банковская карта
-  ipAddress: IP-адрес
-  macAddress: MAC-адрес
+  phoneNumbers: Номера телефонов
+  ssn: SSN (США)
+  creditCard: Банковские карты
+  ipAddress: IP-адреса
+  macAddress: MAC-адреса
 
 fullview:
-  allGuides: Все гайды
+  allGuides: Все инструкции
   starred: Избранное
   trash: Корзина
-  searchPlaceholder: Поиск гайдов...
-  guideMe: Покажи, как
-  untitledGuide: Гайд без названия
-  writingTitle: Придумываю название по вашим записанным шагам...
-  writingDescription: "Пишу описание…"
-  guideNotFound: "Гайд не найден."
+  searchPlaceholder: Поиск инструкций…
+  guideMe: Пройти по шагам
+  untitledGuide: Инструкция без названия
+  writingTitle: Создание названия по записанным шагам…
+  writingDescription: Создание описания…
+  guideNotFound: Инструкция не найдена
   stepCount: "$1 шаг"
-  stepCountPlural: "$1 шагов"
+  stepCountPlural: "Шагов: $1"
   pageOf: "$1 / $2"
 
 sort:
   recentFirst: Сначала новые
-  oldestFirst: Сначала старые
-  alphaAZ: "А — Я"
-  mostSteps: Больше всего шагов
-  gridView: Сетка
+  oldestFirst: Сначала ранние
+  alphaAZ: По алфавиту
+  mostSteps: По числу шагов
+  gridView: Плитка
   listView: Список
 
 search:
-  startTyping: Начните вводить, чтобы найти гайд
-  noMatchingGuides: Нет подходящих гайдов
-  noGuidesYet: Пока нет гайдов
+  startTyping: Начните вводить название инструкции
+  noMatchingGuides: Подходящих инструкций пока нет
+  noGuidesYet: Здесь появятся ваши инструкции
 
 keyboard:
-  navigate: навигация
+  navigate: перемещение
   open: открыть
   close: закрыть
 
 confirmDelete:
-  title: "Удалить гайд?"
-  message: Этот гайд будет удалён безвозвратно. Отменить это действие нельзя.
-  confirm: Удалить безвозвратно
+  title: Удалить инструкцию?
+  message: Инструкция будет удалена без возможности восстановления.
+  confirm: Удалить без восстановления
 
 editor:
-  backToLibrary: Назад к библиотеке
+  backToLibrary: Вернуться в библиотеку
   openInDashboard: Открыть
-  openInDashboardHint: Откройте в дашборде, чтобы редактировать или экспортировать
-  guideMe: Покажи, как
-  guideMeUnavailable: В этом гайде нет шагов для воспроизведения
-  deleteThisStep: "Удалить этот шаг?"
+  openInDashboardHint: Открыть в библиотеке для редактирования или экспорта
+  guideMe: Пройти по шагам
+  guideMeUnavailable: В этой инструкции пока нет шагов для прохождения
+  deleteThisStep: Удалить этот шаг?
   selectStep: Выбрать шаг
   selectedCount: "Выбрано: $1"
   deleteSelectedStep: "Удалить выбранный шаг ($1)?"
   deleteSelectedSteps: "Удалить выбранные шаги ($1)?"
-  copyScreenshot: Копировать скриншот
-  noScreenshot: Нет скриншота
+  copyScreenshot: Копировать снимок экрана
+  noScreenshot: Без снимка экрана
   edit: Редактировать
   done: Готово
   versionHistory: История версий
-  moreActions: Ещё действия
-  generateDescription: Сгенерировать описание
-  regenerateDescription: Сгенерировать заново
-  generatingDescription: "Генерация…"
+  moreActions: Другие действия
+  generateDescription: Создать описание
+  regenerateDescription: Создать описание заново
+  generatingDescription: Создание…
   descriptionPlaceholder: Добавьте описание
-  descriptionErrorNoApiKey: Добавьте AI API-ключ в настройках, чтобы генерировать описания.
-  descriptionErrorNoSteps: В этом гайде нет описанных шагов, которые можно было бы обобщить.
-  descriptionErrorFailed: Не удалось сгенерировать описание. Попробуйте ещё раз.
-  descriptionErrorSaveFailed: Описание сгенерировано, но не сохранилось. Попробуйте ещё раз.
-  writingStepDescription: "Пишу описание…"
-  transcribingStepDescription: "Распознаю вашу речь…"
-  rewriteAskAi: Спросить AI
-  rewritePlaceholder: "Расскажите AI, как отредактировать этот текст…"
+  descriptionErrorNoApiKey: Добавьте API-ключ в разделе «AI-описания» в настройках.
+  descriptionErrorNoSteps: Сначала добавьте описания шагов для создания общего описания.
+  descriptionErrorFailed: Не удалось создать описание. Попробуйте ещё раз.
+  descriptionErrorSaveFailed: Не удалось сохранить новое описание. Попробуйте ещё раз.
+  writingStepDescription: Создание описания…
+  transcribingStepDescription: Распознавание ваших слов…
+  rewriteAskAi: Обратиться к AI
+  rewritePlaceholder: Напишите, как изменить этот текст…
   rewriteEnter: Enter
-  rewriteShorter: Коротче
+  rewriteShorter: Короче
   rewriteDetail: Подробнее
-  rewriteGrammar: Исправить грамматику
-  rewriteFormal: Формальнее
-  rewriteCasual: Неформальнее
+  rewriteGrammar: Проверить грамматику
+  rewriteFormal: Более официально
+  rewriteCasual: Более разговорно
   rewriteReplace: Заменить
-  rewriteDiscard: Отклонить
-  rewriteErrorNoApiKey: Добавьте AI API-ключ в настройках, чтобы переписывать текст.
-  rewriteErrorFailed: Не удалось переписать выделенный текст. Попробуйте ещё раз.
-  rewriteErrorStale: Текст изменился. Выделите его снова.
-  restoreSpoken: Вернуть сказанное
+  rewriteDiscard: Не применять
+  rewriteErrorNoApiKey: Добавьте API-ключ в настройках для редактирования текста с AI.
+  rewriteErrorFailed: Не удалось изменить выделенный текст. Попробуйте ещё раз.
+  rewriteErrorStale: Текст изменился. Выделите его заново.
+  restoreSpoken: Восстановить сказанное
 
 capture:
   recordSteps: Записать шаги
-  moreStepsTitle: Записать ещё шаги
-  moreStepsBody: Новые шаги будут вставлены сюда. Выберите вкладку, в которой записывать.
+  moreStepsTitle: Записать дополнительные шаги
+  moreStepsBody: Новые шаги будут добавлены сюда. Выберите вкладку для записи.
   startCapture: Начать запись
-  noRecordableTabs: В этом окне нет вкладок, пригодных для записи.
+  noRecordableTabs: Откройте в этом окне вкладку с сайтом для записи.
 
 blocks:
   add: Добавить блок
   heading: Заголовок
   callout: Примечание
   headingPlaceholder: Название раздела
-  calloutPlaceholder: Напишите примечание
-  deleteHeading: "Удалить этот заголовок?"
-  deleteCallout: "Удалить это примечание?"
+  calloutPlaceholder: Добавьте примечание
+  deleteHeading: Удалить этот заголовок?
+  deleteCallout: Удалить это примечание?
   variantInfo: Информация
-  variantWarning: Предупреждение
+  variantWarning: Внимание
   variantError: Ошибка
-  variantSuccess: Успех
-  variantCustom: Свой
+  variantSuccess: Успешно
+  variantCustom: Свой вариант
 
 history:
   title: История версий
   current: Текущая
   restore: Восстановить
-  unchangedVersions: "Без изменений ($1)"
-  readOnlyBanner: "Вы смотрите предыдущую версию. Закройте «Историю версий», чтобы вернуться к текущему гайду."
+  unchangedVersions: "Версии без изменений ($1)"
+  readOnlyBanner: Вы просматриваете предыдущую версию. Закройте историю версий, чтобы вернуться.
   loadError: Не удалось загрузить историю версий. Попробуйте ещё раз.
-  restoreError: Не удалось восстановить. Попробуйте через минуту.
-  storageFull: Не хватает места для точки отката. Удалите гайд и попробуйте снова.
-  empty: Пока нет предыдущих версий. Они появятся здесь, когда вы начнёте редактировать гайд.
-  nameVersion: Назвать эту версию
+  restoreError: Не удалось восстановить версию. Повторите попытку чуть позже.
+  storageFull: Для сохранения точки отмены нужно больше места. Удалите ненужную инструкцию и повторите попытку.
+  empty: Предыдущих версий пока нет. Они появятся после редактирования инструкции.
+  nameVersion: Назвать версию
   namePlaceholder: Название версии
   allVersions: Все версии
-  namedOnly: Только названные версии
-  emptyNamed: Пока нет названных версий. Назовите одну, чтобы найти её позже.
+  namedOnly: Только с названием
+  emptyNamed: Версий с названием пока нет.
   renameError: Не удалось сохранить название. Попробуйте ещё раз.
   changeTitle: Название изменено
-  changeStepAdded: "Добавлен шаг: $1"
+  changeStepAdded: "Добавлен $1 шаг"
   changeStepsAdded: "Добавлено шагов: $1"
-  changeStepRemoved: "Удалён шаг: $1"
+  changeStepRemoved: "Удалён $1 шаг"
   changeStepsRemoved: "Удалено шагов: $1"
-  changeStepEdited: "Отредактирован шаг: $1"
-  changeStepsEdited: "Отредактировано шагов: $1"
-  changeStepReordered: Шаги переставлены
-  changeLink: "Изменена ссылка: $1"
+  changeStepEdited: "Изменён $1 шаг"
+  changeStepsEdited: "Изменено шагов: $1"
+  changeStepReordered: Порядок шагов изменён
+  changeLink: "Изменена $1 ссылка"
   changeLinks: "Изменено ссылок: $1"
-  changeImageReplaced: "Заменено изображение: $1"
+  changeImageReplaced: "Заменено $1 изображение"
   changeImagesReplaced: "Заменено изображений: $1"
-  changeImageCropped: "Обрезано изображение: $1"
+  changeImageCropped: "Обрезано $1 изображение"
   changeImagesCropped: "Обрезано изображений: $1"
-  changeImageAnnotated: "Аннотировано изображение: $1"
-  changeImagesAnnotated: "Аннотировано изображений: $1"
-  changeImageBlurred: "Заштриховано изображение: $1"
-  changeImagesBlurred: "Заштриховано изображений: $1"
-  changeAltText: Отредактирован альт-текст
+  changeImageAnnotated: "Пометки добавлены на $1 изображение"
+  changeImagesAnnotated: "Изображений с новыми пометками: $1"
+  changeImageBlurred: "Размытие добавлено на $1 изображение"
+  changeImagesBlurred: "Изображений с новым размытием: $1"
+  changeAltText: Текстовое описание изображения изменено
 
 emptyGuide:
-  title: Этот гайд пуст
-  subtitle: Запишите несколько шагов, чтобы оживить его
+  title: В этой инструкции пока нет шагов
+  subtitle: Начните запись, чтобы добавить их
 
 blurPanel:
   title: Умное размытие
   manualMode: Ручной режим
   selectElements: Выберите элементы для размытия
   done: Готово
-  doneResume: "Готово · Продолжить запись"
+  doneResume: Готово · Продолжить запись
   resetAll: Сбросить всё
 
 screenshotView:
-  zoomIn: Приблизить
-  zoomOut: Отдалить
+  zoomIn: Увеличить
+  zoomOut: Уменьшить
   saved: Сохранено
-  editMenu: Редактировать скриншот
-  downloadEdited: "Отредактированное изображение"
-  downloadOriginal: "Оригинальное изображение"
-  edit: "Редактировать"
+  editMenu: Редактировать снимок
+  downloadEdited: С изменениями
+  downloadOriginal: Исходное изображение
+  edit: Редактировать
   addImage: Добавить изображение
   replaceImage: Заменить изображение
-  replaceHint: "Выберите новое изображение для этого шага"
-  replaceDrop: "Кликните, чтобы выбрать, или перетащите изображение сюда"
-  replaceFormats: "PNG, JPG или WebP"
+  replaceHint: Выберите новое изображение для этого шага
+  replaceDrop: Нажмите для выбора или перетащите изображение сюда
+  replaceFormats: PNG, JPG или WebP
   download: Скачать
   deleteImage: Удалить изображение
-  deleteConfirm: "Удалить этот скриншот? Отменить действие нельзя."
+  deleteConfirm: Удалить этот снимок экрана? Восстановить его будет нельзя.
   imageDeleted: Изображение удалено
   altButton: ALT
-  altLabel: Альт-текст
-  altPlaceholder: Опишите это изображение для скринридеров
+  altLabel: Текстовое описание
+  altPlaceholder: Опишите изображение для программ экранного доступа
 
 annotationEditor:
-  title: Редактировать скриншот
+  title: Редактировать снимок
   toolBox: Прямоугольник
   toolArrow: Стрелка
   toolText: Текст
-  toolSelect: "Выделение"
-  addTarget: "Добавить цель клика"
-  toolRedact: Заштриховать
+  toolSelect: Выбрать
+  addTarget: Добавить область нажатия
+  toolRedact: Скрыть данные
   toolCrop: Обрезать
   colorLabel: Цвет
-  textPlaceholder: Введите текст...
-  targetBorder: Стиль рамки
-  modeAnnotate: "Аннотации"
-  toolLine: "Линия"
-  duplicate: "Дублировать"
-  toolEllipse: "Эллипс"
-  lineColor: "Цвет линии"
-  fillColor: "Цвет заполнения"
-  lineWidth: "Толщина линии"
-  cornerRadius: "Радиус углов"
-  font: "Шрифт"
-  bold: "Полужирный"
-  italic: "Курсив"
-  lineHeight: "Межстрочный интервал"
-  width_none: "Без обводки"
-  width_xs: "Очень тонкая"
-  width_sm: "Тонкая"
-  width_ms: "Средне-тонкая"
-  width_md: "Средняя"
-  width_ml: "Средне-толстая"
-  width_lg: "Толстая"
-  width_xl: "Очень толстая"
-  zoom: "Масштаб"
-  cropHint: "Потяните, чтобы обрезать, или за угол — чтобы изменить размер"
-  resetCrop: "Сбросить обрезку"
-  arrowEnd: "Наконечник стрелки"
-  fontSize: "Размер шрифта"
-  undo: "Отменить"
-  redo: "Вернуть"
-  end_none: "Нет"
-  end_bar: "Черта"
-  end_arrow: "Стрелка"
-  end_arrow_solid: "Стрелка закрашенная"
-  end_circle: "Круг"
-  end_circle_solid: "Круг закрашенный"
-  end_square: "Квадрат"
-  end_square_solid: "Квадрат закрашенный"
+  textPlaceholder: Введите текст…
+  targetBorder: Стиль границы
+  modeAnnotate: Пометки
+  toolLine: Линия
+  duplicate: Создать копию
+  toolEllipse: Эллипс
+  lineColor: Цвет линии
+  fillColor: Цвет заливки
+  lineWidth: Толщина линии
+  cornerRadius: Радиус скругления
+  font: Шрифт
+  bold: Полужирный
+  italic: Курсив
+  lineHeight: Межстрочный интервал
+  width_none: Без контура
+  width_xs: Очень тонкая
+  width_sm: Тонкая
+  width_ms: Чуть тоньше средней
+  width_md: Средняя
+  width_ml: Чуть толще средней
+  width_lg: Толстая
+  width_xl: Очень толстая
+  zoom: Масштаб
+  cropHint: Выделите область обрезки или потяните за угол, чтобы изменить её размер
+  resetCrop: Сбросить обрезку
+  arrowEnd: Наконечник
+  fontSize: Размер шрифта
+  undo: Отменить
+  redo: Повторить
+  end_none: Без наконечника
+  end_bar: Черта
+  end_arrow: Стрелка
+  end_arrow_solid: Закрашенная стрелка
+  end_circle: Круг
+  end_circle_solid: Закрашенный круг
+  end_square: Квадрат
+  end_square_solid: Закрашенный квадрат
   done: Готово
 
 exportPreview:
-  stepDescriptions: "Подписи шагов"
-  stepDescriptionsHint: "Наносить текст шагов на каждый кадр видео"
-  resolution: "Качество видео"
-  gifQuality: "Качество GIF"
-  gif_low: "Низкое"
-  gif_medium: "Среднее"
-  gif_high: "Высокое"
-  res_720p: "720p"
-  res_1080p: "1080p"
-  title: "Предпросмотр экспорта"
-  cover: "Титульная страница"
-  coverHint: "Отдельный первый лист с названием и деталями"
-  screenshots: "Скриншоты"
-  screenshotsHint: "Выключите, чтобы получить компактный документ только с текстом"
-  stepUrls: "Ссылки шагов"
-  stepUrlsHint: "Показывать адрес страницы, на которой выполнялся шаг"
-  imageScale: "Размер скриншотов"
-  scale_small: "Маленький"
-  scale_medium: "Средний"
-  scale_large: "Большой"
-  download: "Экспортировать в $1"
-  rendering: "Обновляю предпросмотр"
-  videoReady: "$1 шагов · видео примерно $2 мин"
-  videoReadyHint: "Длинные гайды не кодируются автоматически. В предпросмотре есть каждый шаг."
-  videoGenerate: "Сгенерировать предпросмотр"
-  modeDocument: "Документ"
-  modeVideo: "Видео"
-  encodingVideo: "Кодирование предпросмотра видео"
-  videoFailed: "Не удалось создать предпросмотр видео"
-  bundle: "Файл Mimik"
-  bundleHint: "Файл .mimik, который можно импортировать и редактировать"
-  bundleStripInputs: "Удалить введённый текст"
-  bundleStripInputsHint: "Удаляет его из текста шагов и ссылок. На скриншотах останется то, что было на экране."
-  bundleUrls: "Детализация ссылок"
-  url_origin: "Сайт"
-  url_path: "Страница"
-  url_full: "Полная"
-  bundleRedactionNote: "Заштрихованные области удаляются из изображений до того, как они покинут ваш браузер."
-  bundleTypedWarning: "На $1 скриншоте всё ещё виден введённый вами текст. Заштрихуйте его перед отправкой, если это важно."
-  bundleTypedWarningPlural: "На $1 скриншотах всё ещё виден введённый вами текст. Заштрихуйте их перед отправкой, если это важно."
-  voiceover: "Закадровый голос"
-  voiceoverHint: "Каждый шаг зачитывается вслух. Шаг остаётся на экране, пока голос не закончит."
-  audio: "Звук"
-  audioSilent: "Без звука"
-  audioNarrated: "С озвучкой"
-  voiceoverNoKey: "Добавьте ключ OpenAI или ElevenLabs в настройках, чтобы озвучивать видео."
-  videoLength: "Длина видео $1"
-  videoLengthVoice: "Длина видео $1 → $2 с закадровым голосом"
-  voiceoverCost: "Фрагментов: $1 · около $2 символов для синтеза"
-  voiceoverFailed: "Не удалось озвучить видео. Проверьте API-ключ в настройках."
-  voiceoverNoAudioCodec: "Видео без звука. Этот браузер не умеет добавлять звук в видео."
-  voiceoverNoKeySkip: "Видео без звука. Добавьте API-ключ для закадрового голоса в настройках."
-  voiceoverNothingToSay: "Видео без звука. В этом гайде нет текста, который можно зачитать."
+  voiceover: Озвучивание
+  voiceoverHint: Читать текст каждого шага вслух. Шаг остаётся на экране до окончания озвучивания.
+  audio: Звук
+  audioSilent: Без звука
+  audioNarrated: С озвучиванием
+  voiceoverNoKey: Добавьте ключ OpenAI или ElevenLabs в настройках для озвучивания видео.
+  videoLength: "Длительность видео: $1"
+  videoLengthVoice: "Длительность видео: $1 → $2 с озвучиванием"
+  voiceoverCost: "Фрагментов: $1 · примерно $2 символов для озвучивания"
+  voiceoverFailed: Видео создано без звука — не удалось создать озвучивание. Проверьте API-ключ в настройках.
+  voiceoverNoAudioCodec: Видео создано без звука. Этот браузер не поддерживает добавление аудио в видео.
+  voiceoverNoKeySkip: Видео создано без звука. Добавьте API-ключ для озвучивания в настройках.
+  voiceoverNothingToSay: Видео создано без звука. В инструкции пока нет текста для озвучивания.
   narrating: "Озвучивание шага $1 из $2"
-
+  stepDescriptions: Подписи шагов
+  stepDescriptionsHint: Показывать текст шага на кадрах видео
+  resolution: Качество видео
+  gifQuality: Качество GIF
+  gif_low: Низкое
+  gif_medium: Среднее
+  gif_high: Высокое
+  res_720p: 720p
+  res_1080p: 1080p
+  title: Предпросмотр экспорта
+  cover: Титульная страница
+  coverHint: Отдельная первая страница с названием и сведениями
+  screenshots: Снимки экрана
+  screenshotsHint: Отключите для компактного документа только с текстом
+  stepUrls: Ссылки шагов
+  stepUrlsHint: Показывать адрес страницы для каждого шага
+  imageScale: Размер снимков
+  scale_small: Маленький
+  scale_medium: Средний
+  scale_large: Большой
+  download: "Экспорт $1"
+  rendering: Обновление предпросмотра
+  videoReady: "Шагов: $1 · примерно $2 мин видео"
+  videoReadyHint: Для длинных инструкций предпросмотр нужно запустить вручную. Он охватывает все шаги.
+  videoGenerate: Создать предпросмотр
+  modeDocument: Документ
+  modeVideo: Видео
+  encodingVideo: Создание предпросмотра видео
+  videoFailed: Не удалось создать предпросмотр видео
+  bundle: Файл Mimik
+  bundleHint: Файл .mimik для импорта и редактирования другим пользователем
+  bundleStripInputs: Убрать введённый текст
+  bundleStripInputsHint: Убирает введённый текст из описаний шагов и ссылок. На снимках остаётся содержимое экрана.
+  bundleUrls: Полнота ссылок
+  url_origin: Сайт
+  url_path: Страница
+  url_full: Полный адрес
+  bundleRedactionNote: Содержимое размытых областей удаляется из экспортируемых изображений.
+  bundleTypedWarning: "На снимке ($1) виден введённый вами текст. Размойте его перед отправкой."
+  bundleTypedWarningPlural: "Снимков с введённым вами текстом: $1. Размойте его перед отправкой."
 videoPlayer:
-  stepCount: "$1 шагов"
-  previousStep: "Предыдущий шаг"
-  nextStep: "Следующий шаг"
-  speed: "Скорость воспроизведения"
-  mute: "Выключить звук"
-  unmute: "Включить звук"
-  spoken: "Озвученный шаг"
-  play: "Воспроизвести"
-  pause: "Пауза"
-  fullscreen: "Во весь экран"
-  exitFullscreen: "Выйти из полноэкранного режима"
+  stepCount: "Шагов: $1"
+  previousStep: Предыдущий шаг
+  nextStep: Следующий шаг
+  speed: Скорость воспроизведения
+  mute: Выключить звук
+  unmute: Включить звук
+  spoken: Озвученный шаг
+  play: Воспроизвести
+  pause: Пауза
+  fullscreen: На весь экран
+  exitFullscreen: Выйти из полноэкранного режима
 
 exportMenu:
   docx: DOCX
@@ -464,186 +463,185 @@ exportMenu:
   gif: GIF
   video: Видео
   cancelProgress: "Отмена · $1%"
-  bundle: "Файл Mimik"
+  bundle: Файл Mimik
 
 onboarding:
   welcomeBadge: Добро пожаловать
-  welcomeTitle: "Mimik успешно установлен!"
-  welcomeMessage: "Всего пара шагов — и вы сможете автоматически записывать сценарии в браузере и создавать пошаговые гайды. Аккаунт не нужен — всё остаётся в вашем браузере."
+  welcomeTitle: Mimik успешно установлен!
+  welcomeMessage: Настройте Mimik за несколько шагов, чтобы записывать действия в браузере и создавать инструкции. Учётная запись не нужна, инструкции хранятся в браузере.
   getStarted: Начать
   stepOf: "Шаг $1 из $2"
   aiTitle: AI-описания
-  aiMessage: Подключите свой API-ключ, чтобы получать AI-описания шагов. Это необязательно, позже можно изменить в настройках.
-  aiGenerated: Сгенерировано AI
-  aiGeneratedDescription: Описание, сгенерированное AI
-  voiceTitle: Сначала скажите, потом сделайте
-  voiceMessage: Скажите, что собираетесь сделать, и сделайте это. Mimik привязывает вашу речь к следующему за ней действию, поэтому порядок важнее всего.
-  voiceRecordHint: Озвучка остаётся выключенной, пока вы не включите её. Используйте кнопку микрофона в боковой панели во время записи — так вы решите для каждого гайда.
-  voiceDataNotice: Ваше аудио отправляется выбранному здесь провайдеру с вашим собственным API-ключом. Больше ничего в Mimik не покидает ваш браузер.
-  voiceDemoLabel: Как приземляется озвучка
+  aiMessage: Добавьте свой API-ключ, чтобы AI создавал описания шагов. Это необязательно; выбор можно изменить в настройках.
+  aiGenerated: Создано AI
+  aiGeneratedDescription: Описание, созданное AI
+  voiceTitle: Сначала скажите, затем сделайте
+  voiceMessage: Скажите, что собираетесь сделать, затем выполните действие. Mimik добавит ваши слова к следующему шагу.
+  voiceRecordHint: Голосовые комментарии по умолчанию отключены. Включайте их для нужной инструкции кнопкой микрофона на боковой панели.
+  voiceDataNotice: Аудио передаётся выбранному провайдеру с использованием вашего API-ключа.
+  voiceDemoLabel: Как комментарий связывается с действием
   voiceDemoSay: Вы говорите
-  voiceDemoQuote: "Теперь я открою настройки биллинга"
-  voiceDemoAct: Затем кликаете
-  voiceDemoAction: Клик по вкладке «Биллинг»
-  voiceDemoBadge: Из вашего голоса
+  voiceDemoQuote: Сейчас открою настройки оплаты
+  voiceDemoAct: Затем нажимаете
+  voiceDemoAction: Нажать вкладку Billing
+  voiceDemoBadge: Из вашего комментария
   blurTitle: Умное размытие
-  blurMessage: Автоматически размывайте конфиденциальную информацию на скриншотах. Выберите, какие паттерны распознавать.
-  screenshotPreview: Предпросмотр скриншота
+  blurMessage: Автоматическое размытие личных данных на снимках экрана. Выберите категории для распознавания.
+  screenshotPreview: Предпросмотр снимка
   notEnabled: Не включено
-  categoriesProtected: "Защищено категорий: $1"
+  categoriesProtected: "Категорий с размытием: $1"
   pinTitle: Закрепите Mimik
-  pinMessage: Закрепите расширение на панели инструментов для быстрого доступа. Нажмите на значок пазла в Chrome, затем закрепите Mimik.
-  pinStep1Title: Нажмите на значок пазла
-  pinStep1Sub: Справа сверху на панели инструментов браузера
+  pinMessage: Закрепите Mimik на панели браузера для быстрого доступа.
+  pinStep1Title: Нажмите значок пазла
+  pinStep1Sub: В правом верхнем углу панели браузера
   pinStep2Title: Найдите Mimik
-  pinStep2Sub: В выпадающем списке расширений
-  pinStep3Title: Нажмите на значок закрепления
-  pinStep3Sub: Mimik появится на панели инструментов
-  pinScreenshotAlt: Закрепить расширение Mimik
-  starTitle: Поставите нам звёздочку?
-  starMessage: "Mimik бесплатен и имеет открытый исходный код. Звезда — самый простой способ сказать спасибо, и она помогает другим находить нас."
+  pinStep2Sub: В списке расширений
+  pinStep3Title: Нажмите значок закрепления
+  pinStep3Sub: Mimik появится на панели браузера
+  pinScreenshotAlt: Закрепление расширения Mimik
+  starTitle: Поддержите нас звездой
+  starMessage: Mimik — бесплатный проект с открытым кодом. Звезда помогает другим людям узнать о нём.
   starAction: Поставить звезду на GitHub
-  starLater: Может быть, позже
-  doneTitle: "Всё готово!"
-  doneMessage: "Mimik готов записывать ваши сценарии. Нажмите «Начать запись» в расширении, чтобы записать первый гайд."
-  featureAutoCapture: Автозапись
-  featureAIAssist: AI-помощник
-  featureVoice: Озвучка
-  featureAnnotate: "Аннотации и штриховка"
-  featureExports: "Экспорт куда угодно"
+  starLater: Позже
+  doneTitle: Всё готово
+  doneMessage: Нажмите «Начать запись» на боковой панели, чтобы создать первую инструкцию.
+  featureAutoCapture: Автоматическая запись
+  featureAIAssist: Помощь AI
+  featureVoice: Голосовые комментарии
+  featureAnnotate: Пометки и скрытие данных
+  featureExports: Экспорт в PDF, видео и другие форматы
   featureSmartBlur: Умное размытие
   openMimik: Открыть Mimik
 
 steps:
-  pressKey: "Нажмите $1 на $2"
-  toggleCheckbox: "Переключите $1"
+  pressKey: "Нажмите $1 в $2"
+  toggleCheckbox: "Переключите флажок $1"
   selectRadio: "Выберите $1"
-  toggleSwitch: "Переключите $1"
-  clickLink: 'Кликните по ссылке "$1"'
-  click: "Кликните $1"
-  typeIntoField: "Введите $1 в поле $2"
-  typeInto: "Введите в $1"
-  typeSecret: "Введите пароль"
+  toggleSwitch: "Измените положение переключателя $1"
+  clickLink: "Нажмите ссылку «$1»"
+  click: "Нажмите $1"
+  typeIntoField: "Введите данные в поле типа $1 $2"
+  typeInto: "Введите данные в $1"
+  typeSecret: Введите пароль
+  typeValueInto: 'Введите "$1" в $2'
+  clearField: "Очистите $1"
+  textField: текстовое поле
   copyFrom: "Скопируйте из $1"
   pasteInto: "Вставьте в $1"
   cutFrom: "Вырежьте из $1"
   drag: "Перетащите $1"
-  navigate: Перейти на страницу
-  defaultAction: "$1: $2"
-  typeValueInto: 'Введите "$1" в $2'
-  clearField: "Очистите $1"
-  textField: "текстовое поле"
+  navigate: Перейдите на страницу
+  defaultAction: "$1 $2"
 
 export:
-  guideLabel: "ГАЙД"
-  endLabel: "ГАЙД ЗАВЕРШЁН"
+  guideLabel: ИНСТРУКЦИЯ
+  endLabel: ИНСТРУКЦИЯ ЗАВЕРШЕНА
   stepsRange: "Шаги $1–$2 из $3"
   stepOf: "Шаг $1 из $2"
-  madeWith: "Made with Mimik"
-  created: Создан
+  madeWith: Создано в Mimik
+  created: Создано
   source: Источник
   step: Шаг
   steps: Шаги
   stepLabel: "Шаг $1"
-  stepsCount: "$1 шагов"
-  createdLabel: "Создан: $1"
+  stepsCount: "Шагов: $1"
+  createdLabel: "Создано $1"
   sourceLabel: "Источник: $1"
 
 background:
-  guideOnDomain: "Гайд на $1"
-  newGuide: Новый гайд
+  guideOnDomain: "Инструкция для $1"
+  newGuide: Новая инструкция
 
 voice:
-  turnOn: Включить озвучку
-  turnOff: Выключить озвучку
-  needsApiKey: Добавьте API-ключ транскрипции в настройках, чтобы озвучивать
-  pausedWithCapture: Озвучка приостановлена вместе с записью
-  micStarting: Запускаю микрофон...
-  micHearing: Вас слышно
-  micQuiet: Тишина
-  nextRecording: Озвучка включена и стартует с вашей следующей записи.
-  orderHint: Скажите, что собираетесь сделать, и сделайте это. Ваши слова привязываются к следующему действию.
-  transcribing: Распознаю вашу речь...
-  transcribingHint: Описания шагов обновятся сами, когда это закончится.
-  narrated: "Озвучка добавлена к $1 шагу."
-  narratedPlural: "Озвучка добавлена к $1 шагам."
-  narratedNone: Озвучка не совпала ни с одним шагом, описания не изменились.
-  guideSafe: Ваш гайд и скриншоты в порядке. Потеряна только озвучка.
+  turnOn: Включить голосовые комментарии
+  turnOff: Выключить голосовые комментарии
+  needsApiKey: Добавьте API-ключ распознавания речи в настройках
+  pausedWithCapture: Голосовые комментарии на паузе вместе с записью
+  micStarting: Включение микрофона…
+  micHearing: Слышу вас
+  micQuiet: Ожидание звука
+  nextRecording: Голосовые комментарии включены и начнут записываться вместе со следующей инструкцией.
+  orderHint: Скажите, что собираетесь сделать, затем выполните действие. Ваши слова будут добавлены к следующему шагу.
+  transcribing: Распознавание голосовых комментариев…
+  transcribingHint: Описания шагов обновятся после завершения.
+  narrated: "Комментарий добавлен к $1 шагу."
+  narratedPlural: "Шагов с добавленными комментариями: $1."
+  narratedNone: Не удалось автоматически связать комментарии с шагами.
+  guideSafe: Инструкция и снимки экрана сохранены без изменений.
   openSettings: Открыть настройки
-  errorPermissionDenied: Доступ к микрофону заблокирован, поэтому ничего не было озвучено.
-  errorNoDevice: Микрофон не найден, поэтому ничего не было озвучено.
-  errorNoAudio: Микрофон не записал звука, поэтому транскрибировать было нечего.
-  errorMissingApiKey: Для озвучки нужен провайдер транскрипции и API-ключ.
-  errorStreamEnded: Микрофон остановился посреди записи, поэтому озвучка закончилась раньше.
-  errorNotRecording: Озвучка не работала, поэтому транскрибировать было нечего.
-  errorAlreadyRecording: Озвучка уже работала, поэтому эта запись не была озвучена.
-  errorUnsupported: Этот браузер не поддерживает запись озвучки.
-  errorUnknown: Озвучка неожиданно остановилась.
+  errorPermissionDenied: Разрешите доступ к микрофону.
+  errorNoDevice: Подключите микрофон.
+  errorNoAudio: Микрофон не записал звук. Проверьте выбранное устройство.
+  errorMissingApiKey: Для голосовых комментариев нужен API-ключ распознавания речи.
+  errorStreamEnded: Соединение с микрофоном прервалось во время записи.
+  errorNotRecording: Голосовые комментарии не записывались.
+  errorAlreadyRecording: Голосовые комментарии уже записываются.
+  errorUnsupported: В этом браузере запись голосовых комментариев не поддерживается.
+  errorUnknown: Запись голосовых комментариев остановилась. Проверьте настройки.
 
 micPermission:
-  title: Разрешить доступ к микрофону
-  checkingMessage: Проверяем, есть ли у Mimik уже доступ к микрофону...
-  promptingMessage: Браузер запрашивает разрешение. Выберите «Разрешить», чтобы Mimik мог записывать вашу озвучку во время записи гайда. Эта вкладка закроется сама.
+  title: Разрешите доступ к микрофону
+  checkingMessage: Проверка доступа к микрофону…
+  promptingMessage: Выберите «Разрешить» в запросе браузера, чтобы Mimik мог записывать голосовые комментарии. Эта вкладка закроется автоматически.
   grantedTitle: Микрофон готов
-  grantedMessage: Возвращаем вас к тому, что вы делали.
-  deniedTitle: Доступ к микрофону заблокирован
-  deniedMessage: Браузер блокирует микрофон для Mimik, поэтому озвучка не может записывать. Откройте настройки сайта по значку слева от адресной строки, выберите «Разрешить» для микрофона и попробуйте снова. Запись гайдов работает и без этого.
-  retry: Попробовать снова
-  privacy: Аудио хранится в памяти только во время записи и отправляется настроенному вами провайдеру транскрипции. Mimik никогда его не сохраняет.
+  grantedMessage: Возвращаемся к записи.
+  deniedTitle: Доступ к микрофону не разрешён
+  deniedMessage: Нажмите значок слева от адресной строки, выберите «Микрофон» → «Разрешить» и повторите попытку. Запись действий доступна и без микрофона.
+  retry: Повторить
+  privacy: Аудио временно хранится в памяти и передаётся выбранному провайдеру распознавания речи. Mimik не сохраняет аудиозаписи.
 
 aiStatus:
-  rejected: "$1 отклонил ваш API-ключ."
-  noCredits: "На вашем аккаунте $1 нет кредитов."
-  rateLimited: "$1 ограничивает частоту запросов от Mimik."
-  modelInvalid: "$1 не предоставляет эту модель вашему аккаунту."
-  quota: "Этот запрос слишком большой для этой модели."
-  network: "Mimik не может подключиться к $1."
-  unknown: "$1 отклонил запрос."
-  actionCheckKey: "Проверьте ключ в настройках."
-  actionAddCredits: "Пополните баланс и проверьте ключ снова."
-  actionWait: "Подождите немного перед новой записью."
-  actionPickModel: "Выберите другую модель в настройках."
-  actionConnection: "Проверьте соединение."
+  rejected: "$1 не принял API-ключ."
+  noCredits: "Пополните баланс аккаунта $1."
+  rateLimited: "$1 временно ограничивает частоту запросов Mimik."
+  modelInvalid: "$1 не предоставляет вашему аккаунту доступ к этой модели."
+  quota: Объём запроса превышает возможности этой модели.
+  network: "Не удалось подключиться к $1."
+  unknown: "$1 не обработал запрос."
+  actionCheckKey: Проверьте ключ в настройках.
+  actionAddCredits: Пополните баланс и снова проверьте ключ.
+  actionWait: Подождите немного перед продолжением записи.
+  actionPickModel: Выберите другую модель в настройках.
+  actionConnection: Проверьте соединение.
 
 stepSource:
-  ai: "AI"
-  voice: "Голос"
-  basic: "Базовое"
-  edited: "Отредактировано"
-  hint: "Откуда взялось это описание"
+  ai: AI
+  voice: Голос
+  basic: Шаблон
+  edited: Изменено
+  hint: Источник описания шага
 
 import:
-  title: "Импорт гайда"
-  dialogDescription: "Осмотрите файл гайда перед добавлением в библиотеку"
-  button: "Импортировать"
-  dropHere: "Перетащите файл .mimik, чтобы импортировать"
-  reading: "Читаю файл"
-  confirm: "Добавить в библиотеку"
-  cancel: "Отмена"
-  guideMeHint: "Этот гайд записан на $1. «Покажи, как» воспроизводит его только на этом сайте."
-  noteRedacted: "Заштрихованные области были удалены автором и не восстанавливаются."
-  noteInputs: "Введённый в поля текст не включён."
-  noteUrls: "Ссылки сокращены до адреса страницы."
-  noteUrlsOrigin: "Ссылки сокращены до адреса сайта."
-  errorUnreadable: "Этот файл не открывается. Возможно, он повреждён или неполный."
-  errorNotABundle: "Это не файл Mimik. Выберите файл, экспортированный из Mimik."
-  errorVersion: "Этот файл создан в более новой версии Mimik. Обновите Mimik и попробуйте снова."
-  errorEmpty: "В этом файле нет шагов."
-  errorFailed: "Не удалось сохранить гайд в вашу библиотеку. Попробуйте импортировать его снова."
-
+  title: Импорт инструкции
+  dialogDescription: Просмотрите файл инструкции перед добавлением в библиотеку
+  button: Импорт
+  dropHere: Перетащите файл .mimik для импорта
+  reading: Чтение файла
+  confirm: Добавить в библиотеку
+  cancel: Отмена
+  guideMeHint: "Записано на $1. Пошаговое прохождение доступно только на этом сайте."
+  noteRedacted: Автор удалил содержимое размытых областей. Восстановить его из этого файла нельзя.
+  noteInputs: Введённый в поля текст не включён в файл.
+  noteUrls: Ссылки сокращены до адреса страницы.
+  noteUrlsOrigin: Ссылки сокращены до адреса сайта.
+  errorUnreadable: Не удалось открыть файл. Проверьте, что он загружен полностью и экспортирован из Mimik.
+  errorNotABundle: Выберите файл .mimik, экспортированный из Mimik.
+  errorVersion: Файл создан в более новой версии Mimik. Обновите расширение и повторите попытку.
+  errorEmpty: В этом файле пока нет шагов.
+  errorFailed: Не удалось добавить инструкцию в библиотеку. Повторите импорт.
 transcript:
-  title: Расшифровка
-  empty: В этой записи ничего не было сказано.
+  title: Расшифровка речи
+  empty: В этой записи пока нет голосовых комментариев.
   loadError: Не удалось загрузить расшифровку. Попробуйте ещё раз.
   filterAll: "Все ($1)"
-  filterUnused: "Неиспользованные ($1)"
-  privacyNote: "Хранится только на этом устройстве. Никогда не попадает в экспортированные гайды и удаляется вместе с гайдом."
+  filterUnused: "Без шага ($1)"
+  privacyNote: Хранится только на этом устройстве, не включается в экспортируемые инструкции и удаляется вместе с инструкцией.
   usedInStep: "Шаг $1"
-  readOnlyHint: Включите «Редактировать» на верхней панели, чтобы добавить эти строки к шагу.
-  notUsed: Не использовано
-  filteredOut: Скрыто фильтром
+  readOnlyHint: Включите редактирование на верхней панели, чтобы добавить эти строки к шагу.
+  notUsed: Без шага
+  filteredOut: Отфильтровано
   addToStep: "Добавить к шагу $1"
   copyAll: Копировать всё
   download: Скачать
   delete: Удалить расшифровку
-  confirmDelete: "Удалить эту расшифровку? Это действие нельзя отменить."
+  confirmDelete: Удалить эту расшифровку? Восстановить её будет нельзя.

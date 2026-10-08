@@ -82,7 +82,7 @@ src/
 │   ├── fullview/            # Full-page dashboard mount
 │   ├── onboarding/          # First-install wizard
 │   └── options/             # Settings page mount
-├── locales/                 # YAML translation files (en, de, es, fr, pt-BR, zh-CN)
+├── locales/                 # YAML translation files (en, de, es, fr, pt-BR, ru, zh-CN)
 ├── lib/                     # Shared utilities (messaging, port, browser API)
 ├── stores/                  # Zustand state stores
 └── ui/                      # React components

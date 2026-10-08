@@ -59,7 +59,7 @@ const EXPECTED: Record<AILanguageCode, { step: string; title: string }> = {
   de: { step: 'Auf die Schaltfläche Submit klicken', title: 'Slack-Benachrichtigungen konfigurieren' },
   'pt-BR': { step: 'Clicar no botão Submit', title: 'Configurar as notificações do Slack' },
   'zh-CN': { step: '点击 Submit 按钮', title: '配置 Slack 通知偏好' },
-  ru: { step: 'Нажать кнопку Submit', title: 'Настройка уведомлений Slack' },
+  ru: { step: 'Нажмите кнопку Submit', title: 'Настройка уведомлений Slack' },
 };
 
 describe.each(CODES)('rendered prompts for %s', (code) => {

@@ -4,7 +4,7 @@
 
 # Mimik
 
-**English** · [Español](./README.es.md) · [Português (BR)](./README.pt-BR.md) · [Français](./README.fr.md) · [简体中文](./README.zh-CN.md)
+**English** · [Español](./README.es.md) · [Português (BR)](./README.pt-BR.md) · [Français](./README.fr.md) · [简体中文](./README.zh-CN.md) · [Русский](./README.ru.md)
 
 **Auto-capture any browser workflow into a step-by-step guide. No account, no cloud, no tracking.**
 
@@ -73,7 +73,7 @@ Need the recording to look away for a moment? **Pause** stops capture without en
 | Firefox | [![Firefox Version][firefox-version-shield]][firefox-link] | [Firefox Add-ons][firefox-link]  |
 | Edge    | [![Edge Version][edge-version-shield]][edge-link]          | [Microsoft Edge Add-ons][edge-link] |
 
-Available in English, Spanish, Brazilian Portuguese, French, German, and Simplified Chinese. The AI description language is set separately, so you can run Mimik in English and generate guides in Spanish, or any combination.
+Available in English, Spanish, Brazilian Portuguese, French, German, Simplified Chinese, and Russian. The AI description language is set separately, so you can run Mimik in English and generate guides in Spanish, or any combination.
 
 > \[!IMPORTANT]
 >
@@ -134,7 +134,7 @@ Blur applies from the moment you enter the mode onward. Screenshots already capt
 
 Bring your own API key (OpenAI or Anthropic) and Mimik generates human-readable step descriptions like *"Click the **Submit** button to save changes"* instead of the rule-based `Click Submit`.
 
-Descriptions are generated from a lightweight DOM context (~50-100 tokens), not screenshots. Roughly 15-30x cheaper than vision models. Choose the language you want descriptions in (English, Spanish, Portuguese, French, German, Chinese).
+Descriptions are generated from a lightweight DOM context (~50-100 tokens), not screenshots. Roughly 15-30x cheaper than vision models. Choose the language you want descriptions in (English, Spanish, Portuguese, French, German, Chinese, Russian).
 
 <img src="https://github.com/user-attachments/assets/3540cbd5-133f-46fd-a9b6-ffce9b4d422a" alt="AI descriptions" width="800" />
 
