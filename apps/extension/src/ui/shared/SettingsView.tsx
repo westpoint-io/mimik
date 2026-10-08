@@ -151,11 +151,13 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
   };
 
   if (layout === 'sections') {
-    const current = SETTINGS_SECTIONS.find((entry) => entry.id === section) ?? SETTINGS_SECTIONS[0];
     return (
       <div className="mx-auto flex w-full max-w-[960px] gap-8 px-8 py-10">
         <nav className="flex w-[220px] shrink-0 flex-col gap-0.5">
-          <h1 className="mb-4 ml-3 text-[22px] font-bold text-foreground">{i18n.t('settings.title')}</h1>
+          <div className="mb-4 ml-3 flex items-center">
+            <h1 className="text-[22px] font-bold text-foreground">{i18n.t('settings.title')}</h1>
+            {savedBadge}
+          </div>
           {SETTINGS_SECTIONS.map(({ id, label, Icon }) => (
             <button
               key={id}
@@ -164,8 +166,8 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
               onClick={() => showSection(id)}
               className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-left text-[13px] transition-colors ${
                 id === section
-                  ? 'bg-card font-semibold text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:bg-card/60 hover:text-foreground'
+                  ? 'bg-secondary font-semibold text-foreground'
+                  : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground'
               }`}
             >
               <Icon size={15} className="shrink-0" />
@@ -173,13 +175,7 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
             </button>
           ))}
         </nav>
-        <main className="min-w-0 flex-1 space-y-3">
-          <div className="flex h-10 items-center">
-            <h2 className="text-base font-bold text-foreground">{i18n.t(current.label)}</h2>
-            {savedBadge}
-          </div>
-          {sections[section]}
-        </main>
+        <main className="min-w-0 flex-1 space-y-3">{sections[section]}</main>
       </div>
     );
   }
