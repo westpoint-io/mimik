@@ -1,0 +1,27 @@
+@import "tailwindcss" source(none);
+@import "@mimik/ui/theme.css";
+
+@source "../blur";
+@source "../guideme";
+@source "../../../../packages/ui/src/common/components/Switch.tsx";
+@source "../../../../packages/ui/src/components/ui/button.tsx";
+
+@theme {
+  --spacing: 4px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --text-xs: 12px;
+  --text-sm: 14px;
+}
+
+:host {
+  all: initial;
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  pointer-events: none;
+  font-family: "Poppins", system-ui, sans-serif;
+  color: var(--color-foreground);
+}

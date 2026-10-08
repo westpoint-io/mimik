@@ -49,7 +49,7 @@
     {
       "name": "content script",
       "path": ".output/chrome-mv3/content-scripts/*.js",
-      "limit": "40 kB"
+      "limit": "110 kB"
     },
     {
       "name": "pages",

@@ -1,11 +1,11 @@
 import { logger } from '@mimik/core/logger';
 import { browser } from '#imports';
 import { findElement } from '@/core/guideme/finder';
-import { GuideMeOverlay } from '@/core/guideme/overlay';
 import type { GuideMeSession } from '@/core/guideme/session';
 import { BLOCKED_KEY, MANUAL_KEY, SESSION_KEY, STEP_KEY } from '@/core/guideme/session';
 import type { Step } from '@/core/guides/types';
 import { sendMessage } from '@/lib/messaging';
+import { GuideMeOverlay } from './guide-me-overlay';
 
 const MAX_RETRIES = 5;
 const RETRY_INTERVAL_MS = 1000;

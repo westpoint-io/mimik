@@ -19,11 +19,8 @@ vi.mock('#imports', () => ({
 
 vi.mock('@/lib/messaging', () => ({ sendMessage: vi.fn(async () => undefined) }));
 
-vi.mock('@/core/blur/panel', () => ({
-  BlurPanel: class {
-    mount() {}
-    unmount() {}
-  },
+vi.mock('../mount-blur-panel', () => ({
+  mountBlurPanel: () => () => {},
 }));
 
 function recordingDetector() {

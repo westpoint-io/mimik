@@ -1,17 +1,17 @@
 import { browser } from '#imports';
 import type { BlurDetector } from '@/core/blur/detector';
-import { BlurPanel } from '@/core/blur/panel';
 import { DEFAULT_PRESETS, type PresetKey } from '@/core/blur/patterns';
 import { PageRedactor } from '@/core/blur/redactor';
 import { addRedactStyles, removeRedactStyles } from '@/core/blur/styles';
 import { sendMessage } from '@/lib/messaging';
 import { ElementPicker } from './element-picker';
+import { mountBlurPanel } from './mount-blur-panel';
 
 const EVENTS = ['mimik-blur:update-presets', 'mimik-blur:start-picker', 'mimik-blur:reset', 'mimik-blur:done'] as const;
 
 export class BlurManager {
   private picker = new ElementPicker();
-  private panel: BlurPanel | null = null;
+  private unmountPanel: (() => void) | null = null;
   private active = false;
   private generation = 0;
 
@@ -30,9 +30,8 @@ export class BlurManager {
     const activeKeys = (Object.entries(presets) as [PresetKey, boolean][]).filter(([, on]) => on).map(([k]) => k);
 
     this.detector.start(activeKeys);
-    this.panel?.unmount();
-    this.panel = new BlurPanel(presets);
-    this.panel.mount();
+    this.unmountPanel?.();
+    this.unmountPanel = mountBlurPanel(presets);
 
     for (const event of EVENTS) document.addEventListener(event, this.handleEvent);
   }
@@ -50,8 +49,8 @@ export class BlurManager {
 
   private teardown() {
     this.active = false;
-    this.panel?.unmount();
-    this.panel = null;
+    this.unmountPanel?.();
+    this.unmountPanel = null;
     this.detector.detach();
     this.picker.stop();
     for (const event of EVENTS) document.removeEventListener(event, this.handleEvent);
