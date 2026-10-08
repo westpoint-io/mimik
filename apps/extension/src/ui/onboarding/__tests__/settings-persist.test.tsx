@@ -26,6 +26,8 @@ vi.mock('@/lib/offscreen/open-mic-permission-page', () => ({
 import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { OnboardingApp } from '../App';
 
+const saved = async (key: string) => (await fakeBrowser.storage.local.get(key))[key];
+
 const savedKeys = async () =>
   ((await fakeBrowser.storage.local.get('apiKeys')).apiKeys ?? {}) as Record<string, string | undefined>;
 
@@ -33,13 +35,12 @@ function press(label: string) {
   fireEvent.click(screen.getAllByText(label)[0]!);
 }
 
-async function goToStep(title: string) {
+async function openAiSetup() {
   render(<OnboardingApp />);
   press('onboarding.getStarted');
-  await screen.findByText('onboarding.aiTitle');
-  if (title === 'onboarding.aiTitle') return;
-  press('common.continue');
-  await screen.findByText(title);
+  await screen.findByText('onboarding.writeTitle');
+  press('onboarding.aiChoiceTitle');
+  await screen.findByPlaceholderText('sk-...');
 }
 
 function apiKeyField() {
@@ -52,37 +53,26 @@ beforeEach(async () => {
 });
 
 describe('onboarding keeps what was typed', () => {
-  it('holds on to the narration key when the step is left through Skip', async () => {
-    await goToStep('onboarding.voiceTitle');
-
-    fireEvent.change(apiKeyField(), { target: { value: 'sk-narration' } });
-    press('common.skip');
-
-    await waitFor(async () => expect((await savedKeys()).openai).toBe('sk-narration'));
-  });
-
-  it('holds on to the description key when the step is left through Skip', async () => {
-    await goToStep('onboarding.aiTitle');
+  it('saves the description key as it is typed and turns AI on for steps', async () => {
+    await openAiSetup();
 
     fireEvent.change(apiKeyField(), { target: { value: 'sk-descriptions' } });
-    press('common.skip');
 
     await waitFor(async () => expect((await savedKeys()).openai).toBe('sk-descriptions'));
+    expect(await saved('aiForSteps')).toBe(true);
   });
 
-  it('clears the narration key when the field is emptied', async () => {
-    await fakeBrowser.storage.local.set({ voiceApiKey: 'sk-old' });
-    await goToStep('onboarding.voiceTitle');
-    await waitFor(() => expect(apiKeyField().value).toBe('sk-old'));
+  it('turns AI off for steps when basic titles are picked', async () => {
+    await openAiSetup();
 
-    fireEvent.change(apiKeyField(), { target: { value: '' } });
+    press('onboarding.basicTitle');
 
-    await waitFor(async () => expect((await savedKeys()).openai).toBeUndefined());
+    await waitFor(async () => expect(await saved('aiForSteps')).toBe(false));
   });
 
   it('clears the description key when the field is emptied', async () => {
     await fakeBrowser.storage.local.set({ aiApiKey: 'sk-old' });
-    await goToStep('onboarding.aiTitle');
+    await openAiSetup();
     await waitFor(() => expect(apiKeyField().value).toBe('sk-old'));
 
     fireEvent.change(apiKeyField(), { target: { value: '' } });
@@ -90,8 +80,17 @@ describe('onboarding keeps what was typed', () => {
     await waitFor(async () => expect(await fakeBrowser.storage.local.get('apiKeys')).toEqual({ apiKeys: {} }));
   });
 
+  it('narrates with the same OpenAI key once narration is switched on', async () => {
+    await openAiSetup();
+
+    fireEvent.click(screen.getByRole('switch', { name: 'onboarding.voiceToggleTitle' }));
+
+    await waitFor(async () => expect(await saved('voiceEnabled')).toBe(true));
+    expect(await saved('voiceProvider')).toBe('openai');
+  });
+
   it('picks up a key changed elsewhere when the tab comes back into view', async () => {
-    await goToStep('onboarding.voiceTitle');
+    await openAiSetup();
 
     await fakeBrowser.storage.local.set({ apiKeys: { openai: 'sk-set-in-settings' } });
     fireEvent(document, new Event('visibilitychange'));

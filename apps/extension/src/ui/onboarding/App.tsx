@@ -1,21 +1,18 @@
-import { AISetupStep, GitHubStarStep, OnboardingFlow, VoiceStep } from '@mimik/ui';
+import { OnboardingFlow } from '@mimik/ui';
 import { requestMicrophoneAccess } from '@/ui/shared/lib/request-microphone-access';
 import { validateApiKey } from '@/ui/shared/lib/validate-api-key';
 import { openMimik } from './lib/open-mimik';
-import { PinExtensionStep } from './steps/PinExtensionStep';
-import { SmartBlurStep } from './steps/SmartBlurStep';
-
-const CONFIG_STEPS =
-  import.meta.env.BROWSER === 'firefox'
-    ? [AISetupStep, SmartBlurStep, PinExtensionStep, GitHubStarStep]
-    : [AISetupStep, VoiceStep, SmartBlurStep, PinExtensionStep, GitHubStarStep];
+import { BlurRow } from './steps/BlurRow';
+import { PinCard } from './steps/PinCard';
 
 export function OnboardingApp() {
   return (
     <OnboardingFlow
-      steps={CONFIG_STEPS}
       validate={validateApiKey}
       requestMicrophoneAccess={requestMicrophoneAccess}
+      voice={import.meta.env.BROWSER !== 'firefox'}
+      extraRows={<BlurRow />}
+      readyAside={<PinCard />}
       onFinish={() => void openMimik()}
     />
   );

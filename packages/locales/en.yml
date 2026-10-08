@@ -583,56 +583,79 @@ exportMenu:
   bundle: "Mimik file"
 
 onboarding:
-  welcomeBadge: Welcome
-  welcomeTitle: "You've successfully installed Mimik!"
-  welcomeMessage: "With just a few steps, you'll be ready to auto-capture browser workflows and generate step-by-step guides. No account needed \u2014 everything stays in your browser."
-  welcomeMessageDesktop: "With just a few steps, you'll be ready to auto-capture workflows on your computer and generate step-by-step guides. No account needed — everything stays on your computer."
   getStarted: Get started
-  stepOf: "Step $1 of $2"
-  aiTitle: "AI descriptions"
-  aiMessage: Connect your own API key to get AI-generated step descriptions. This is optional and can be changed later in settings.
-  keySaved: "Saved with your other keys in Settings › API keys."
-  aiGenerated: AI-generated
-  aiGeneratedDescription: AI-generated description
-  voiceTitle: Talk, then act
-  voiceMessage: "Say what you're about to do, then do it. Mimik attaches your words to the next action."
-  voiceRecordHint: "Narration is off by default. Turn it on per guide with the microphone button in the side panel."
-  voiceRecordHintDesktop: "Narration is off by default. Turn it on per guide with the microphone button on the recording card."
-  voiceDataNotice: "Audio goes to the provider you choose, using your API key."
-  voiceDemoLabel: How narration is matched
-  voiceDemoSay: You say
-  voiceDemoQuote: "Now I'll open the billing settings"
-  voiceDemoAct: Then you click
-  voiceDemoAction: Click the Billing tab
-  voiceDemoBadge: From your voice
   blurTitle: "Smart blur"
-  blurMessage: Automatically blur sensitive information in screenshots. Choose which patterns to detect.
-  screenshotPreview: Screenshot preview
-  notEnabled: Not enabled
-  categoriesProtected: "$1 categories protected"
-  pinTitle: Pin Mimik
-  pinMessage: "Pin Mimik to your toolbar for quick access."
-  pinStep1Title: Click the puzzle icon
-  pinStep1Sub: In the top-right of your browser toolbar
-  pinStep2Title: Find Mimik
-  pinStep2Sub: In the extensions dropdown
-  pinStep3Title: Click the pin icon
-  pinStep3Sub: Mimik will appear in your toolbar
-  pinScreenshotAlt: Pin Mimik extension
-  starTitle: Mind giving us a star?
-  starMessage: "Mimik is free and open source. A star helps other people find it."
-  starAction: Star on GitHub
-  starLater: Maybe later
-  doneTitle: "You're all set"
-  doneMessage: "Click \"Start capture\" in the side panel to record your first guide."
-  doneMessageDesktop: "Click \"Start capture\" to record your first guide."
-  featureAutoCapture: Auto-capture
-  featureAIAssist: AI assist
-  featureVoice: Voice narration
-  featureAnnotate: Annotate & redact
-  featureExports: "Export to PDF, video & more"
-  featureSmartBlur: Smart blur
   openMimik: Open Mimik
+  letterHello: "One more thing 👋"
+  letterThanks: "We have to say it: $1 Over the last couple of weeks, Mimik's GitHub stars have exploded, and that's all because of you. You've been sharing it with friends, teammates and communities, and we're blown away."
+  letterThankYou: "thank you."
+  letterWorld: "The best part of building Mimik has been seeing how people all over the world use it. We hope it keeps saving you time and money and keeps your data where it belongs: with you. Got an idea, a feature request or feedback? $1. We read every single one."
+  letterSayHi: "Come say hi on GitHub"
+  letterNewsTitle: "🚀 Big news: Mimik Desktop is here!"
+  letterNewsBody: "Everything you love about the Mimik extension, now right on your desktop. Available now for Mac and Windows."
+  letterNewsAction: "Download Mimik Desktop"
+  letterPromiseTitle: "First, a promise"
+  letterPromise: "Mimik will always be free and MIT licensed. No catches or paywalls down the road. That's our promise to you and to the amazing community growing around it."
+  letterAskTitle: "And a small ask 🙏"
+  letterAskIntro: "You're the reason Mimik is growing, so please keep it going:"
+  letterAskWrite: "Write about it on your blog, newsletter or socials (Reddit especially, we love Reddit!)"
+  letterAskVideo: "Make a tutorial or walkthrough on YouTube"
+  letterAskFriend: "Tell a friend or teammate who'd love it"
+  letterSponsor: "Every article, video and shout-out helps more people find Mimik, and we notice and love every one. Want to go even further? You can $1. Every bit of support, big or small, helps keep the project thriving."
+  letterSponsorLink: "sponsor Mimik on GitHub"
+  letterSignoff: "With lots of love,"
+  letterTeam: "The Westpoint team ❤️"
+  helloTitle: "Thanks for installing Mimik!"
+  helloMessage: "Do a task once, the way you usually would, and Mimik turns every click into a step with a screenshot. Let's set it up, it takes a minute."
+  chipDevice: "Runs on your device"
+  chipAccount: "No account"
+  chipFree: "Free & MIT"
+  loginWelcome: "Welcome back"
+  loginReady: "Mimik is ready"
+  writeTitle: "How should Mimik write your steps?"
+  writeMessage: "Every click becomes a step with a screenshot. Pick how its text is written. You can change this any time in Settings."
+  basicTitle: "Basic titles"
+  basicMessage: "Clear titles from what you clicked. Works right away, nothing to set up."
+  basicBest: "Best to try Mimik now"
+  basicExample: "Click \"Billing\""
+  aiChoiceTitle: "AI descriptions"
+  aiChoiceMessage: "Full sentences from your AI provider, with your own key. Unlocks voice narration too."
+  aiChoiceMessageNoVoice: "Full sentences from your AI provider, with your own key."
+  aiBest: "Best for guides you share"
+  aiExample: "Open Billing to see your invoices and plan"
+  exampleMeta: "Step 2 · Billing"
+  keyPrivacy: "Your key stays on this device and only goes to the provider you pick."
+  voiceToggleTitle: "Voice narration"
+  voiceToggleHint: "Say what you're doing; Mimik attaches it to the next step."
+  voiceNeedsKey: "Narration uses OpenAI or Groq for speech to text. Add a key for one of them."
+  makeTitle: "Make it yours"
+  makeMessage: "All optional. You can change any of it later in Settings."
+  brandTitle: "Your brand on exports"
+  brandHint: "Your logo and color on every PDF and HTML guide you export."
+  blurHint: "Blur sensitive details in screenshots before anything leaves your device."
+  readyTitle: "You're ready to capture"
+  readyStepOpen: "Open Mimik"
+  readyStepStart: "Click Start capture"
+  readyStepClick: "Click through your task"
+  readyStepGuide: "Get a step-by-step guide"
+  pinHere: "Pin it here"
+  pinCardTitle: "Pin Mimik for easy access"
+  pinCardMessage: "Click the puzzle icon next to the address bar and pin Mimik to your toolbar."
+  pinMenuTitle: "Extensions"
+  trayTitle: "Mimik lives in your tray"
+  trayMessage: "Start a capture from the Mimik icon next to the clock, or press $1 from any app."
+  menuBarTitle: "Mimik lives in your menu bar"
+  menuBarMessage: "Start a capture from the Mimik icon at the top of your screen, or press $1 from any app."
+  starCardTitle: "Free & MIT, forever"
+  starCardMessage: "No account, no paywalls. A GitHub star helps other people find Mimik."
+  demoApp: "Acme Admin"
+  demoTitle: "Invite a teammate"
+  demoField: "Email"
+  demoButton: "Send invite"
+  demoStepType: "Type \"ana@acme.com\" in Email"
+  demoStepClick: "Click \"Send invite\""
+  demoPlusStep: "+1 step"
+  demoGuideMeta: "2 steps · just now"
 
 steps:
   pressKey: 'Press $1 on "$2"'

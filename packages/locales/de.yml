@@ -513,56 +513,79 @@ exportMenu:
   bundle: "Mimik-Datei"
 
 onboarding:
-  welcomeBadge: Willkommen
-  welcomeTitle: "Du hast Mimik erfolgreich installiert!"
-  welcomeMessage: "Mit nur wenigen Schritten bist du bereit, Browser-Workflows automatisch aufzunehmen und Schritt-für-Schritt-Anleitungen zu erstellen. Kein Konto nötig — alles bleibt in deinem Browser."
-  welcomeMessageDesktop: "Mit nur wenigen Schritten bist du bereit, Workflows auf deinem Computer automatisch aufzunehmen und Schritt-für-Schritt-Anleitungen zu erstellen. Kein Konto nötig — alles bleibt auf deinem Computer."
   getStarted: Loslegen
-  stepOf: "Schritt $1 von $2"
-  aiTitle: KI-Beschreibungen
-  aiMessage: Verbinde deinen eigenen API-Schlüssel, um KI-generierte Schrittbeschreibungen zu erhalten. Das ist optional und kann später in den Einstellungen geändert werden.
-  keySaved: "Wird mit deinen anderen Schlüsseln unter Einstellungen › API-Schlüssel gespeichert."
-  aiGenerated: KI-generiert
-  aiGeneratedDescription: KI-generierte Beschreibung
-  voiceTitle: Sprich, dann handle
-  voiceMessage: "Sag, was du als Nächstes tust, und tu es dann. Mimik ordnet deine Worte der nächsten Aktion zu."
-  voiceRecordHint: "Sprachkommentar ist standardmäßig aus. Aktiviere ihn pro Anleitung per Mikrofon in der Seitenleiste."
-  voiceRecordHintDesktop: "Sprachkommentar ist standardmäßig aus. Aktiviere ihn pro Anleitung per Mikrofon auf der Aufnahmekarte."
-  voiceDataNotice: "Audio geht mit deinem API-Schlüssel an den gewählten Anbieter."
-  voiceDemoLabel: "So wird dein Sprachkommentar zugeordnet"
-  voiceDemoSay: Du sagst
-  voiceDemoQuote: "Jetzt öffne ich die Zahlungseinstellungen"
-  voiceDemoAct: Dann klickst du
-  voiceDemoAction: "Tab „Zahlungen“ anklicken"
-  voiceDemoBadge: Aus deiner Stimme
   blurTitle: Smart Blur
-  blurMessage: "Sensible Daten in Screenshots automatisch unkenntlich machen. Wähle, was erkannt wird."
-  screenshotPreview: Screenshot-Vorschau
-  notEnabled: Nicht aktiviert
-  categoriesProtected: "$1 Kategorien geschützt"
-  pinTitle: Mimik anpinnen
-  pinMessage: "Pinne Mimik an deine Symbolleiste für schnellen Zugriff."
-  pinStep1Title: Klicke auf das Puzzle-Symbol
-  pinStep1Sub: Oben rechts in deiner Browser-Symbolleiste
-  pinStep2Title: Finde Mimik
-  pinStep2Sub: "Im Erweiterungsmenü"
-  pinStep3Title: Klicke auf das Pin-Symbol
-  pinStep3Sub: Mimik erscheint dann in deiner Symbolleiste
-  pinScreenshotAlt: Mimik-Erweiterung anpinnen
-  starTitle: "Magst du uns einen Stern geben?"
-  starMessage: "Mimik ist kostenlos und quelloffen. Ein Stern hilft anderen, es zu finden."
-  starAction: Auf GitHub mit Stern markieren
-  starLater: "Vielleicht später"
-  doneTitle: "Alles bereit"
-  doneMessage: "Klicke in der Seitenleiste auf „Aufnahme starten“, um deine erste Anleitung aufzunehmen."
-  doneMessageDesktop: "Klicke auf „Aufnahme starten“, um deine erste Anleitung aufzunehmen."
-  featureAutoCapture: Auto-Aufnahme
-  featureAIAssist: KI-Assistent
-  featureVoice: "Sprachkommentar"
-  featureAnnotate: "Markieren & schwärzen"
-  featureExports: "Export als PDF, Video & mehr"
-  featureSmartBlur: Smart Blur
   openMimik: Mimik öffnen
+  letterHello: "Noch eine Sache 👋"
+  letterThanks: "Das müssen wir einfach loswerden: $1 In den letzten Wochen sind die GitHub-Sterne von Mimik regelrecht explodiert, und das verdanken wir ganz allein euch. Ihr habt Mimik mit Freunden, Teams und Communitys geteilt, und wir sind überwältigt."
+  letterThankYou: "Danke."
+  letterWorld: "Das Schönste an der Arbeit an Mimik ist zu sehen, wie Menschen auf der ganzen Welt es nutzen. Wir hoffen, dass es euch weiter Zeit und Geld spart und eure Daten dort lässt, wo sie hingehören: bei euch. Ihr habt eine Idee, einen Feature-Wunsch oder Feedback? $1. Wir lesen jede einzelne Nachricht."
+  letterSayHi: "Sagt Hallo auf GitHub"
+  letterNewsTitle: "🚀 Große Neuigkeiten: Mimik Desktop ist da!"
+  letterNewsBody: "Alles, was ihr an der Mimik-Erweiterung liebt, jetzt direkt auf eurem Desktop. Ab sofort für Mac und Windows."
+  letterNewsAction: "Mimik Desktop herunterladen"
+  letterPromiseTitle: "Zuerst ein Versprechen"
+  letterPromise: "Mimik bleibt immer kostenlos und MIT-lizenziert. Keine Haken und keine Bezahlschranken, auch nicht später. Das versprechen wir euch und der großartigen Community, die rund um Mimik wächst."
+  letterAskTitle: "Und eine kleine Bitte 🙏"
+  letterAskIntro: "Ihr seid der Grund, warum Mimik wächst, also macht bitte weiter so:"
+  letterAskWrite: "Schreibt darüber in eurem Blog, Newsletter oder auf Social Media (vor allem auf Reddit, wir lieben Reddit!)"
+  letterAskVideo: "Macht ein Tutorial oder einen Rundgang auf YouTube"
+  letterAskFriend: "Erzählt Freunden oder Kollegen davon, denen es gefallen würde"
+  letterSponsor: "Jeder Artikel, jedes Video und jede Erwähnung hilft mehr Menschen, Mimik zu finden, und wir sehen und lieben jeden einzelnen Beitrag. Ihr wollt noch weiter gehen? Ihr könnt $1. Jede Unterstützung, ob groß oder klein, hält das Projekt lebendig."
+  letterSponsorLink: "Mimik auf GitHub sponsern"
+  letterSignoff: "Mit ganz viel Liebe"
+  letterTeam: "Euer Westpoint-Team ❤️"
+  helloTitle: "Danke, dass du Mimik installiert hast!"
+  helloMessage: "Erledige eine Aufgabe einmal so wie immer, und Mimik macht aus jedem Klick einen Schritt mit Screenshot. Lass uns alles einrichten, das dauert nur eine Minute."
+  chipDevice: "Läuft auf deinem Gerät"
+  chipAccount: "Kein Konto"
+  chipFree: "Kostenlos & MIT"
+  loginWelcome: "Willkommen zurück"
+  loginReady: "Mimik ist bereit"
+  writeTitle: "Wie soll Mimik deine Schritte schreiben?"
+  writeMessage: "Jeder Klick wird zu einem Schritt mit Screenshot. Wähle, wie sein Text geschrieben wird. Du kannst das jederzeit in den Einstellungen ändern."
+  basicTitle: "Einfache Titel"
+  basicMessage: "Klare Titel aus dem, was du angeklickt hast. Funktioniert sofort, ganz ohne Einrichtung."
+  basicBest: "Ideal, um Mimik gleich auszuprobieren"
+  basicExample: "\"Abrechnung\" anklicken"
+  aiChoiceTitle: "KI-Beschreibungen"
+  aiChoiceMessage: "Ganze Sätze von deinem KI-Anbieter, mit deinem eigenen Schlüssel. Schaltet auch den Sprachkommentar frei."
+  aiChoiceMessageNoVoice: "Ganze Sätze von deinem KI-Anbieter, mit deinem eigenen Schlüssel."
+  aiBest: "Ideal für Anleitungen, die du teilst"
+  aiExample: "Öffne Abrechnung, um deine Rechnungen und deinen Tarif zu sehen"
+  exampleMeta: "Schritt 2 · Abrechnung"
+  keyPrivacy: "Dein Schlüssel bleibt auf diesem Gerät und geht nur an den Anbieter, den du wählst."
+  voiceToggleTitle: "Sprachkommentar"
+  voiceToggleHint: "Sag, was du tust, und Mimik ordnet es dem nächsten Schritt zu."
+  voiceNeedsKey: "Der Sprachkommentar nutzt OpenAI oder Groq für die Spracherkennung. Füge einen Schlüssel für einen der beiden hinzu."
+  makeTitle: "Ganz nach deinem Geschmack"
+  makeMessage: "Alles optional. Du kannst alles später in den Einstellungen ändern."
+  brandTitle: "Deine Marke auf Exporten"
+  brandHint: "Dein Logo und deine Farbe auf jeder PDF- und HTML-Anleitung, die du exportierst."
+  blurHint: "Mach sensible Details in Screenshots unkenntlich, bevor etwas dein Gerät verlässt."
+  readyTitle: "Du bist bereit für die Aufnahme"
+  readyStepOpen: "Mimik öffnen"
+  readyStepStart: "Auf „Aufnahme starten“ klicken"
+  readyStepClick: "Deine Aufgabe durchklicken"
+  readyStepGuide: "Eine Schritt-für-Schritt-Anleitung erhalten"
+  pinHere: "Hier anpinnen"
+  pinCardTitle: "Pinne Mimik für schnellen Zugriff an"
+  pinCardMessage: "Klicke auf das Puzzle-Symbol neben der Adressleiste und pinne Mimik an deine Symbolleiste."
+  pinMenuTitle: "Erweiterungen"
+  trayTitle: "Mimik wohnt in deinem Infobereich"
+  trayMessage: "Starte eine Aufnahme über das Mimik-Symbol neben der Uhr oder drücke $1 in jeder App."
+  menuBarTitle: "Mimik wohnt in deiner Menüleiste"
+  menuBarMessage: "Starte eine Aufnahme über das Mimik-Symbol oben auf deinem Bildschirm oder drücke $1 in jeder App."
+  starCardTitle: "Kostenlos & MIT, für immer"
+  starCardMessage: "Kein Konto, keine Bezahlschranken. Ein Stern auf GitHub hilft anderen, Mimik zu finden."
+  demoApp: "Acme Admin"
+  demoTitle: "Teammitglied einladen"
+  demoField: "E-Mail"
+  demoButton: "Einladung senden"
+  demoStepType: "\"ana@acme.com\" in E-Mail eingeben"
+  demoStepClick: "\"Einladung senden\" anklicken"
+  demoPlusStep: "+1 Schritt"
+  demoGuideMeta: "2 Schritte · gerade eben"
 
 steps:
   pressKey: '$1 auf "$2" drücken'
