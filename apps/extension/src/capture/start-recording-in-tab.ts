@@ -1,3 +1,4 @@
+import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import { logger } from '@mimik/core/logger';
 import { focusWindow } from '@/lib/browser-api/focus-window';
 import { getTab } from '@/lib/browser-api/get-tab';
@@ -6,11 +7,7 @@ import { updateTab } from '@/lib/browser-api/update-tab';
 import { sendMessage } from '@/lib/messaging';
 import { isRecordableUrl } from './recordable-tabs';
 
-export async function startInsertRecording(
-  guideId: string,
-  insertAtIndex: number,
-  tabId: number,
-): Promise<string | null> {
+export async function startRecordingInTab(tabId: number, insert?: CaptureInsert): Promise<string | null> {
   if (!(await requestHostPermissions())) {
     logger.warn('Host permissions not granted, cannot start recording');
     return null;
@@ -28,8 +25,7 @@ export async function startInsertRecording(
   try {
     const res = await sendMessage('startRecording', {
       url: tab?.url || '',
-      insertTargetGuideId: guideId,
-      insertAtIndex,
+      ...(insert && { insertTargetGuideId: insert.insertTargetGuideId, insertAtIndex: insert.insertAtIndex }),
     });
     return res.guideId ?? null;
   } catch (err) {

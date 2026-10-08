@@ -365,6 +365,7 @@ capture:
   recordSteps: "Gravar passos"
   moreStepsTitle: "Capturar mais passos"
   moreStepsBody: "Os novos passos entram aqui. Escolha a aba que quer gravar."
+  newCaptureBody: Escolha a aba em que gravar.
   startCapture: "Começar a capturar"
   noRecordableTabs: Nenhuma aba gravável está aberta nesta janela.
 

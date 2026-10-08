@@ -365,6 +365,7 @@ capture:
   recordSteps: "Schritte aufnehmen"
   moreStepsTitle: Weitere Schritte aufnehmen
   moreStepsBody: "Neue Schritte werden hier eingefügt. Wähle den Tab für die Aufnahme."
+  newCaptureBody: Wähle den Tab, in dem aufgenommen werden soll.
   startCapture: Aufnahme starten
   noRecordableTabs: "In diesem Fenster ist kein Tab zum Aufnehmen offen."
 

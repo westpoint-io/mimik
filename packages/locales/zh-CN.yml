@@ -365,6 +365,7 @@ capture:
   recordSteps: 录制步骤
   moreStepsTitle: 捕获更多步骤
   moreStepsBody: 新步骤会插入到这里。请选择要录制的标签页。
+  newCaptureBody: 选择要录制的标签页。
   startCapture: 开始捕获
   noRecordableTabs: 当前窗口没有可录制的标签页。
 

@@ -6,11 +6,12 @@ import { getRecordableTabs, type RecordableTab } from '@/capture/recordable-tabs
 
 interface CaptureTabDialogProps {
   open: boolean;
+  inserting: boolean;
   onCancel: () => void;
   onStart: (tabId: number) => void;
 }
 
-export function CaptureTabDialog({ open, onCancel, onStart }: CaptureTabDialogProps) {
+export function CaptureTabDialog({ open, inserting, onCancel, onStart }: CaptureTabDialogProps) {
   const [tabs, setTabs] = useState<RecordableTab[]>([]);
   const [selected, setSelected] = useState<number | null>(null);
 
@@ -24,8 +25,10 @@ export function CaptureTabDialog({ open, onCancel, onStart }: CaptureTabDialogPr
     <Dialog open={open} onOpenChange={(next) => !next && onCancel()}>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle>{i18n.t('capture.moreStepsTitle')}</DialogTitle>
-          <DialogDescription>{i18n.t('capture.moreStepsBody')}</DialogDescription>
+          <DialogTitle>{i18n.t(inserting ? 'capture.moreStepsTitle' : 'capture.startCapture')}</DialogTitle>
+          <DialogDescription>
+            {i18n.t(inserting ? 'capture.moreStepsBody' : 'capture.newCaptureBody')}
+          </DialogDescription>
         </DialogHeader>
         <div className="max-h-[240px] overflow-y-auto flex flex-col gap-1.5">
           {tabs.length === 0 ? (

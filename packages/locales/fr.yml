@@ -365,6 +365,7 @@ capture:
   recordSteps: "Enregistrer des étapes"
   moreStepsTitle: "Capturer d'autres étapes"
   moreStepsBody: "Les nouvelles étapes sont insérées ici. Choisissez l'onglet à enregistrer."
+  newCaptureBody: "Choisissez l'onglet à enregistrer."
   startCapture: "Lancer la capture"
   noRecordableTabs: "Aucun onglet enregistrable n'est ouvert dans cette fenêtre."
 

@@ -365,6 +365,7 @@ capture:
   recordSteps: Record steps
   moreStepsTitle: Capture more steps
   moreStepsBody: New steps are inserted here. Choose the tab to record in.
+  newCaptureBody: Choose the tab to record in.
   startCapture: Start capture
   noRecordableTabs: No recordable tabs are open in this window.
 

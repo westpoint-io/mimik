@@ -365,6 +365,7 @@ capture:
   recordSteps: Записать шаги
   moreStepsTitle: Записать ещё шаги
   moreStepsBody: "Новые шаги будут вставлены сюда. Выберите вкладку, в которой записывать."
+  newCaptureBody: Выберите вкладку для записи.
   startCapture: Начать запись
   noRecordableTabs: "В этом окне нет вкладок, пригодных для записи."
 
