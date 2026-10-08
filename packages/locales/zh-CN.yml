@@ -157,8 +157,10 @@ settings:
   microphoneUnblockHow: 如何解除阻止？
   microphoneTestStop: 停止测试
   microphoneTestFailed: "无法打开该麦克风，请换一个试试。"
-  targetColor: "品牌颜色"
-  targetColorHint: "用于点击高亮和导出内容中的强调色。"
+  targetColor: "点击高亮"
+  brandColor: "品牌颜色"
+  targetColorHint: "围绕你所点击内容绘制的轮廓。"
+  brandColorHint: "导出指南中的强调色。"
   branding: "导出品牌设置"
   logoAndFooter: "徽标和页脚"
   logoAndFooterHint: "显示在你导出的每份指南上。"

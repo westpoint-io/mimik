@@ -157,8 +157,10 @@ settings:
   microphoneUnblockHow: How do I unblock it?
   microphoneTestStop: Stop test
   microphoneTestFailed: "Couldn't open that microphone. Try another one."
-  targetColor: "Brand color"
-  targetColorHint: "Colors the click highlight and the accents in exports."
+  targetColor: "Click highlight"
+  brandColor: "Brand color"
+  targetColorHint: "The outline drawn around what you clicked."
+  brandColorHint: "Accents in exported guides."
   branding: "Export branding"
   logoAndFooter: "Logo and footer"
   logoAndFooterHint: "Shown on every guide you export."

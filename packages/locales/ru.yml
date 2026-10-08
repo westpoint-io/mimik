@@ -157,8 +157,10 @@ settings:
   microphoneUnblockHow: Как снять блокировку?
   microphoneTestStop: Остановить проверку
   microphoneTestFailed: Не удалось открыть этот микрофон. Выберите другой и попробуйте снова.
-  targetColor: Корпоративный цвет
-  targetColorHint: Цвет подсветки кликов и акцентов в экспорте.
+  targetColor: "Подсветка клика"
+  brandColor: "Корпоративный цвет"
+  targetColorHint: "Рамка вокруг того, на что вы нажали."
+  brandColorHint: "Акценты в экспортированных гайдах."
   branding: Брендинг экспорта
   logoAndFooter: Логотип и подпись
   logoAndFooterHint: Показываются в каждом экспортированном гайде.

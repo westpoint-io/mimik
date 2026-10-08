@@ -1,10 +1,14 @@
 import { assetUrl, localStorage } from '@/core/env';
 import { blobToDataUrl } from '@/core/export/utils';
 import { normalizeHex } from '@/core/screenshot/color';
-import { DEFAULT_TARGET_COLOR } from '@/core/screenshot/types';
+import { DEFAULT_TARGET_COLOR, TARGET_COLORS } from '@/core/screenshot/types';
 
 const BRAND_LOGO_MAX_WIDTH = 320;
 const FALLBACK_LOGO_PATH = '/mimik-mark.png';
+
+export const DEFAULT_BRAND_COLOR = '#1E1B4B';
+
+export const BRAND_COLORS = [DEFAULT_BRAND_COLOR, ...TARGET_COLORS] as const;
 
 export const defaultFooterLine = () => `© ${new Date().getFullYear()}`;
 
@@ -44,15 +48,21 @@ async function loadFallbackLogo(): Promise<BrandLogo | null> {
   }
 }
 
+export function brandColorFrom(stored: { brandColor?: unknown; targetColor?: unknown }): string {
+  const hex = (value: unknown) => (typeof value === 'string' && normalizeHex(value)) || null;
+  const legacy = hex(stored.targetColor);
+  return hex(stored.brandColor) ?? (legacy && legacy !== DEFAULT_TARGET_COLOR ? legacy : DEFAULT_BRAND_COLOR);
+}
+
 export async function loadBranding(): Promise<Branding> {
-  const stored = await localStorage.get(['brandLogo', 'brandFooter', 'brandAttribution', 'targetColor']);
-  const accent = (typeof stored.targetColor === 'string' && normalizeHex(stored.targetColor)) || DEFAULT_TARGET_COLOR;
+  const stored = await localStorage.get(['brandLogo', 'brandFooter', 'brandAttribution', 'brandColor', 'targetColor']);
+  const accent = brandColorFrom(stored);
   return {
     logo: parseLogo(stored.brandLogo) ?? (await loadFallbackLogo()),
     footer: typeof stored.brandFooter === 'string' ? stored.brandFooter.trim() : defaultFooterLine(),
     attribution: stored.brandAttribution !== false,
     accent,
-    custom: accent !== DEFAULT_TARGET_COLOR,
+    custom: accent !== DEFAULT_BRAND_COLOR,
   };
 }
 

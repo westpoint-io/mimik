@@ -129,7 +129,7 @@ export async function exportGuideAsPDF(
   const numbers = stepNumbers(steps);
   const domain = extractDomain(steps);
   const brand = await loadBranding();
-  const accent = hexToRgb(brand.accent) ?? [79, 70, 229];
+  const accent = hexToRgb(brand.accent) ?? [30, 27, 75];
   const logo = brand.logo ? fitLogo(brand.logo, LOGO_MAX_W, LOGO_MAX_H) : null;
   const headLogo = !opts.cover && brand.logo ? fitLogo(brand.logo, HEAD_LOGO_W, HEAD_LOGO_H) : null;
   const headRight = headLogo ? RIGHT - headLogo.width - 4 : RIGHT;

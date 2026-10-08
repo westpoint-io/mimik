@@ -157,8 +157,10 @@ settings:
   microphoneUnblockHow: Comment le débloquer ?
   microphoneTestStop: "Arrêter le test"
   microphoneTestFailed: "Impossible d'ouvrir ce micro. Essayez-en un autre."
-  targetColor: "Couleur de marque"
-  targetColorHint: "Colore la mise en évidence des clics et les accents des exports."
+  targetColor: "Mise en évidence des clics"
+  brandColor: "Couleur de marque"
+  targetColorHint: "Le contour tracé autour de l'élément cliqué."
+  brandColorHint: "Accents des guides exportés."
   branding: "Image de marque des exports"
   logoAndFooter: "Logo et pied de page"
   logoAndFooterHint: "Apparaît sur chaque guide que vous exportez."

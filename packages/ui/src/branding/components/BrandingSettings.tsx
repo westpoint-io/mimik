@@ -1,18 +1,20 @@
 import { i18n } from '@mimik/core/env';
+import { BRAND_COLORS } from '@mimik/core/export/branding';
 import { TARGET_COLORS } from '@mimik/core/screenshot/types';
-import { ChevronDown, ImageIcon, Target, Trash2 } from 'lucide-react';
+import { ImageIcon, Palette, Target, Trash2 } from 'lucide-react';
 import { useRef } from 'react';
-import { ColorPicker } from '../../annotation/components/ColorPicker';
 import { SettingsCard } from '../../common/components/SettingsCard';
 import { Switch } from '../../common/components/Switch';
 import { Input } from '../../components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '../../components/ui/popover';
 import { useBrandingSettings } from '../hooks/use-branding-settings';
 import { footerPresets } from '../lib/footer-presets';
+import { ColorField } from './ColorField';
 
 export function BrandingSettings({ onChange }: { onChange?: (patch: Record<string, unknown>) => void }) {
   const {
     targetColor,
+    brandColor,
+    setBrandColor,
     brandLogo,
     brandFooter,
     brandAttribution,
@@ -27,29 +29,17 @@ export function BrandingSettings({ onChange }: { onChange?: (patch: Record<strin
   return (
     <>
       <SettingsCard
+        icon={Palette}
+        title={i18n.t('settings.brandColor')}
+        hint={i18n.t('settings.brandColorHint')}
+        action={<ColorField value={brandColor} presets={BRAND_COLORS} onChange={setBrandColor} />}
+      />
+
+      <SettingsCard
         icon={Target}
         title={i18n.t('settings.targetColor')}
         hint={i18n.t('settings.targetColorHint')}
-        action={
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                type="button"
-                className="flex items-center gap-2 shrink-0 border border-border rounded-lg px-2 py-1.5 text-[11px] text-foreground hover:border-accent"
-              >
-                <span
-                  className="w-[22px] h-[22px] rounded-full border border-foreground/15"
-                  style={{ backgroundColor: targetColor }}
-                />
-                <code className="tabular-nums">{targetColor.toUpperCase()}</code>
-                <ChevronDown size={12} className="opacity-60" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="w-56 p-2.5">
-              <ColorPicker value={targetColor} presets={TARGET_COLORS} onChange={setTargetColor} />
-            </PopoverContent>
-          </Popover>
-        }
+        action={<ColorField value={targetColor} presets={TARGET_COLORS} onChange={setTargetColor} />}
       />
 
       <SettingsCard
