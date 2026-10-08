@@ -87,6 +87,7 @@ recording:
   readyTitle: "Bereit zur Aufnahme"
   readySub: Klicke auf die Seite, um zu starten
   finishRecording: Aufnahme beenden
+  finish: Fertig
   smartBlur: Smart Blur
   discard: Verwerfen
   deleteStep: Schritt löschen
@@ -104,7 +105,8 @@ settings:
   microphoneAccess: "Mikrofonzugriff"
   microphoneAccessAsk: "Dein Browser fragt einmal, bevor Mimik dich hören kann."
   microphoneAccessAllow: "Erlauben"
-  targetColorHint: "Färbt die Klickmarkierung und die Akzente in Exporten."
+  targetColorHint: "Der Rahmen um das, was du angeklickt hast."
+  brandColorHint: "Akzente in exportierten Anleitungen."
   branding: "Export-Branding"
   logoAndFooter: "Logo und Fußzeile"
   logoAndFooterHint: "Erscheint in jeder Anleitung, die du exportierst."
@@ -117,7 +119,8 @@ settings:
   footerPresetConfidential: "Vertraulich · Nur intern"
   footerPresetNoDistribute: "Nicht weitergeben"
   attribution: "„Made with Mimik“ anzeigen"
-  targetColor: "Markenfarbe"
+  targetColor: "Klickmarkierung"
+  brandColor: "Markenfarbe"
   title: Einstellungen
   aiDescriptions: "Schrittbeschreibungen"
   aiDescriptionsHint: "Mimik schreibt den Text jedes Schritts und benennt deine Anleitung mit deinem KI-Anbieter."
@@ -175,7 +178,8 @@ settings:
   saved: Gespeichert
   smartBlur: Smart Blur
   privacyNotice: "Schlüssel und Audio gehen nur an den gewählten Anbieter."
-  bugReport: "Fehler gefunden? Melde ihn auf GitHub"
+  reportBug: "Fehler melden"
+  aboutSection: "Über Mimik"
   starCtaTitle: "Gefällt dir, was du siehst?"
   starCtaMessage: "Ein Stern auf GitHub hilft anderen, Mimik zu finden."
   starOnGithub: "Auf GitHub mit Stern markieren"
@@ -226,6 +230,7 @@ desktop:
   modeWindow: Fenster
   modeScreen: Bildschirm
   modeArea: Bereich
+  drawArea: "Ziehen, um den Aufnahmebereich zu zeichnen"
   startSheetTitle: Aufnahme starten
   permissionsTitle: "Mimik das Aufnehmen erlauben"
   permissionsIntro: "Mimik braucht zwei Berechtigungen, bevor es aufnehmen kann."
@@ -252,10 +257,6 @@ desktop:
   version: "Version $1"
   versionHint: "Mimik sucht bei jedem Start nach Updates."
   checkUpdates: "Nach Updates suchen"
-  cardGithub: "Mimik auf GitHub"
-  bugTitle: "Einen Fehler gefunden?"
-  bugHint: "Beschreib, was passiert ist, und wir sehen es uns an."
-  reportBug: "Fehler melden"
   trayQuit: "Mimik beenden"
   trayRecording: "Mimik nimmt auf. Zum Beenden klicken."
   cannotRecord: "Mimik kann nicht aufnehmen"
@@ -365,6 +366,7 @@ capture:
   recordSteps: "Schritte aufnehmen"
   moreStepsTitle: Weitere Schritte aufnehmen
   moreStepsBody: "Neue Schritte werden hier eingefügt. Wähle den Tab für die Aufnahme."
+  newCaptureBody: Wähle den Tab, in dem aufgenommen werden soll.
   startCapture: Aufnahme starten
   noRecordableTabs: "In diesem Fenster ist kein Tab zum Aufnehmen offen."
 
@@ -675,7 +677,7 @@ screenshotView:
 voice:
   turnOn: Sprachkommentar einschalten
   turnOff: Sprachkommentar ausschalten
-  needsApiKey: "Füge in den Einstellungen einen Transkriptions-API-Schlüssel hinzu, um den Sprachkommentar zu nutzen"
+  needsApiKey: "Sprachkommentar braucht einen API-Schlüssel"
   pausedWithCapture: "Der Sprachkommentar ist mit der Aufnahme pausiert"
   micStarting: "Mikrofon wird gestartet…"
   micHearing: Ich höre dich

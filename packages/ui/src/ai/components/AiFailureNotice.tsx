@@ -1,15 +1,10 @@
+import { type AiFailureUpdate, aiFailureNotice } from '@mimik/core/capture/ai/errors';
 import { TriangleAlert } from 'lucide-react';
-import { aiFailureNotice } from '@/core/capture/ai/errors';
-import type { PanelAiUpdate } from '@/lib/port/types';
 
-interface AiStatusProps {
-  update: PanelAiUpdate | null;
-}
+export function AiFailureNotice({ failure }: { failure: AiFailureUpdate | null }) {
+  if (!failure) return null;
 
-export function AiStatus({ update }: AiStatusProps) {
-  if (!update) return null;
-
-  const { headline, action } = aiFailureNotice(update.reason, update.provider);
+  const { headline, action } = aiFailureNotice(failure.reason, failure.provider);
 
   return (
     <div className="px-4 pt-2.5 flex items-start gap-2" role="status">

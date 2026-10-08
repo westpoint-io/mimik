@@ -2,7 +2,7 @@ import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import { AppFrame, GuidePage, LibraryContent, SearchModal, TooltipProvider, UpdateNotice, useRoute } from '@mimik/ui';
 import { useState } from 'react';
 import { browser } from '#imports';
-import { startInsertRecording } from '@/capture/start-insert-recording';
+import { startRecordingInTab } from '@/capture/start-recording-in-tab';
 import { openSidebar } from '@/lib/browser-api/open-sidebar';
 import { sendMessage } from '@/lib/messaging';
 import { useUpdateNotice } from '@/ui/shared/hooks/use-update-notice';
@@ -11,14 +11,14 @@ import { CaptureTabDialog } from './components/CaptureTabDialog';
 
 export function FullViewApp() {
   const route = useRoute();
-  const [pendingInsert, setPendingInsert] = useState<CaptureInsert | null>(null);
+  const [pendingCapture, setPendingCapture] = useState<{ insert?: CaptureInsert } | null>(null);
   const updateNotice = useUpdateNotice();
 
   return (
     <TooltipProvider>
       <AppFrame
         route={route}
-        onStartCapture={openSidebar}
+        onStartCapture={() => setPendingCapture({})}
         onSettings={() => browser.runtime.openOptionsPage()}
         settingsExternal
       >
@@ -36,7 +36,7 @@ export function FullViewApp() {
             guideId={route.guideId}
             initialStepId={route.stepId}
             initialTool={route.tool}
-            onCaptureMore={setPendingInsert}
+            onCaptureMore={(insert) => setPendingCapture({ insert })}
             onGuideMe={(guideId) => {
               openSidebar();
               void sendMessage('startGuideMe', { guideId });
@@ -45,14 +45,15 @@ export function FullViewApp() {
         )}
 
         <CaptureTabDialog
-          open={pendingInsert !== null}
-          onCancel={() => setPendingInsert(null)}
+          open={pendingCapture !== null}
+          inserting={pendingCapture?.insert !== undefined}
+          onCancel={() => setPendingCapture(null)}
           onStart={(tabId) => {
-            const target = pendingInsert;
-            setPendingInsert(null);
+            const target = pendingCapture;
+            setPendingCapture(null);
             if (!target) return;
             openSidebar();
-            void startInsertRecording(target.insertTargetGuideId, target.insertAtIndex, tabId);
+            void startRecordingInTab(tabId, target.insert);
           }}
         />
 

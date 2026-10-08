@@ -1,12 +1,10 @@
 import { i18n } from '@mimik/core/env';
-import { Button, Switch } from '@mimik/ui';
-import { Bug, Languages, Power, RefreshCw, Star } from 'lucide-react';
+import { Button, GitHubCard, Switch } from '@mimik/ui';
+import { Languages, Power, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AppLanguage } from './AppLanguage';
 import { Card } from './Card';
 import { Row } from './Row';
-
-const REPO_URL = 'https://github.com/westpoint-io/mimik';
 
 const LOGIN_HINT = navigator.userAgent.includes('Mac') ? 'desktop.startAtLoginHintMac' : 'desktop.startAtLoginHint';
 
@@ -49,20 +47,7 @@ export function GeneralSettings({ onSaved }: { onSaved: () => void }) {
         </Row>
       </Card>
 
-      <Card icon={Star} title={i18n.t('desktop.cardGithub')}>
-        <Row label={i18n.t('settings.starCtaTitle')} hint={i18n.t('settings.starCtaMessage')}>
-          <Button variant="outline" size="sm" onClick={() => window.open(REPO_URL, '_blank')}>
-            <Star size={14} />
-            {i18n.t('settings.starOnGithub')}
-          </Button>
-        </Row>
-        <Row label={i18n.t('desktop.bugTitle')} hint={i18n.t('desktop.bugHint')}>
-          <Button variant="outline" size="sm" onClick={() => window.open(`${REPO_URL}/issues`, '_blank')}>
-            <Bug size={14} />
-            {i18n.t('desktop.reportBug')}
-          </Button>
-        </Row>
-      </Card>
+      <GitHubCard />
     </>
   );
 }

@@ -94,6 +94,7 @@ export interface Settings {
   voiceoverModelId: string;
   blurPresets: Record<string, boolean>;
   targetColor: string;
+  brandColor: string;
   brandLogo: BrandLogo | null;
   brandFooter: string;
   brandAttribution: boolean;

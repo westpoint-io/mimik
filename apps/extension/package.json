@@ -18,6 +18,7 @@
     "postinstall": "wxt prepare"
   },
   "dependencies": {
+    "@fontsource/poppins": "^5.3.0",
     "@mimik/core": "workspace:*",
     "@mimik/ui": "workspace:*",
     "@webext-core/messaging": "^2.3.0",
@@ -37,6 +38,7 @@
     "size-limit": "^14.1.0",
     "typescript": "^5.9.3",
     "vite": "^8.0.3",
+    "web-ext": "^10.7.0",
     "wxt": "^0.21.4"
   },
   "size-limit": [
@@ -48,7 +50,7 @@
     {
       "name": "content script",
       "path": ".output/chrome-mv3/content-scripts/*.js",
-      "limit": "40 kB"
+      "limit": "110 kB"
     },
     {
       "name": "pages",

@@ -63,6 +63,9 @@
         ],
         "project": [
           "src/**/*.{ts,tsx}"
+        ],
+        "ignoreDependencies": [
+          "@fontsource/poppins"
         ]
       },
       "apps/desktop": {

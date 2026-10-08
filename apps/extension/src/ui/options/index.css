@@ -4,5 +4,5 @@ html, body {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  background: var(--color-secondary);
+  background: var(--color-background);
 }

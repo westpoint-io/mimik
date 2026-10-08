@@ -87,6 +87,7 @@ recording:
   readyTitle: "Prêt à capturer"
   readySub: Cliquez sur la page pour commencer
   finishRecording: "Terminer l'enregistrement"
+  finish: Terminer
   smartBlur: Flou intelligent
   discard: Abandonner
   deleteStep: "Supprimer l'étape"
@@ -157,8 +158,10 @@ settings:
   microphoneUnblockHow: Comment le débloquer ?
   microphoneTestStop: "Arrêter le test"
   microphoneTestFailed: "Impossible d'ouvrir ce micro. Essayez-en un autre."
-  targetColor: "Couleur de marque"
-  targetColorHint: "Colore la mise en évidence des clics et les accents des exports."
+  targetColor: "Mise en évidence des clics"
+  brandColor: "Couleur de marque"
+  targetColorHint: "Le contour tracé autour de l'élément cliqué."
+  brandColorHint: "Accents des guides exportés."
   branding: "Image de marque des exports"
   logoAndFooter: "Logo et pied de page"
   logoAndFooterHint: "Apparaît sur chaque guide que vous exportez."
@@ -189,7 +192,8 @@ settings:
   modelsFound: "$1 modèles disponibles"
   smartBlur: Flou intelligent
   privacyNotice: "Les clés et l'audio ne vont qu'au fournisseur choisi."
-  bugReport: "Un bug ? Signalez-le sur GitHub"
+  reportBug: "Signaler un bug"
+  aboutSection: "À propos"
   starCtaTitle: "Vous aimez Mimik ?"
   starCtaMessage: "Une étoile sur GitHub aide d'autres personnes à découvrir Mimik."
   starOnGithub: "Mettre une étoile sur GitHub"
@@ -226,6 +230,7 @@ desktop:
   modeWindow: Fenêtre
   modeScreen: Écran
   modeArea: Zone
+  drawArea: "Faites glisser pour tracer la zone de capture"
   startSheetTitle: Démarrer une capture
   permissionsTitle: "Autoriser Mimik à enregistrer"
   permissionsIntro: "Mimik a besoin de deux autorisations avant de pouvoir enregistrer."
@@ -252,10 +257,6 @@ desktop:
   version: "Version $1"
   versionHint: "Mimik recherche les mises à jour à chaque démarrage."
   checkUpdates: "Rechercher des mises à jour"
-  cardGithub: "Mimik sur GitHub"
-  bugTitle: "Vous avez trouvé un bug ?"
-  bugHint: "Dites-nous ce qui s'est passé et nous regarderons."
-  reportBug: "Signaler un bug"
   trayQuit: "Quitter Mimik"
   trayRecording: "Mimik enregistre. Cliquez pour terminer."
   cannotRecord: "Mimik ne peut pas enregistrer"
@@ -365,6 +366,7 @@ capture:
   recordSteps: "Enregistrer des étapes"
   moreStepsTitle: "Capturer d'autres étapes"
   moreStepsBody: "Les nouvelles étapes sont insérées ici. Choisissez l'onglet à enregistrer."
+  newCaptureBody: "Choisissez l'onglet à enregistrer."
   startCapture: "Lancer la capture"
   noRecordableTabs: "Aucun onglet enregistrable n'est ouvert dans cette fenêtre."
 
@@ -675,7 +677,7 @@ export:
 voice:
   turnOn: "Activer la narration vocale"
   turnOff: "Désactiver la narration vocale"
-  needsApiKey: "Ajoutez une clé API de transcription dans les Paramètres pour narrer"
+  needsApiKey: "La narration nécessite une clé API"
   pausedWithCapture: "La narration est en pause avec la capture"
   micStarting: "Démarrage du micro…"
   micHearing: "Mimik vous entend"

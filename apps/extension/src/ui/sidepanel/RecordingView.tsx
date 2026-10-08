@@ -1,14 +1,16 @@
 import { extractDomain } from '@mimik/core/guides/domain';
 import {
-  Button,
+  AiFailureNotice,
   CameraMascot,
+  FinishButton,
+  RecordingIconButton,
   ScreenshotView,
   StepSourceBadge,
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@mimik/ui';
-import { Check, EyeOff, Loader2, Pause, Play, Trash2, X } from 'lucide-react';
+import { EyeOff, Loader2, Pause, Play, Trash2, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { i18n } from '#imports';
 import type { PauseReason } from '@/core/capture/machine';
@@ -18,7 +20,6 @@ import { getActiveTab } from '@/lib/browser-api/get-active-tab';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import { sendMessage } from '@/lib/messaging';
 import type { PanelAiUpdate, PanelVoiceUpdate } from '@/lib/port/types';
-import { AiStatus } from './AiStatus';
 import { timeAgo } from './lib/time-ago';
 import { MicToggle } from './MicToggle';
 import { VoiceStatus } from './VoiceStatus';
@@ -210,13 +211,10 @@ export function RecordingView({
       </div>
 
       <div className="shrink-0 border-t border-border">
-        <AiStatus update={aiFailure} />
+        <AiFailureNotice failure={aiFailure} />
         {import.meta.env.BROWSER !== 'firefox' && <VoiceStatus update={voice} enabled={voiceEnabled} paused={paused} />}
         <div className="px-4 py-2.5 flex items-center gap-1.5">
-          <Button onClick={onStop} className="flex-1 min-w-0 h-9 rounded-full font-semibold text-[13px]">
-            <Check size={16} strokeWidth={3} />
-            <span className="truncate">{i18n.t('recording.finishRecording')}</span>
-          </Button>
+          <FinishButton onClick={onStop} />
           {import.meta.env.BROWSER !== 'firefox' && (
             <MicToggle
               enabled={voiceEnabled}
@@ -225,46 +223,19 @@ export function RecordingView({
               onChange={setVoiceEnabled}
             />
           )}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="shrink-0">
-                <button
-                  onClick={handleBlur}
-                  disabled={paused}
-                  className="w-9 h-9 shrink-0 rounded-full border border-border flex items-center justify-center transition-colors text-muted-foreground hover:border-accent hover:text-accent disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <EyeOff size={16} />
-                </button>
-              </span>
-            </TooltipTrigger>
-            <TooltipContent>{i18n.t('recording.smartBlur')}</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={paused ? handleResume : handlePause}
-                className={`w-9 h-9 shrink-0 rounded-full border flex items-center justify-center transition-colors ${
-                  paused
-                    ? 'border-accent text-accent hover:bg-secondary'
-                    : 'border-border text-muted-foreground hover:border-accent hover:text-accent'
-                }`}
-              >
-                {paused ? <Play size={16} /> : <Pause size={16} />}
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>{i18n.t(paused ? 'recording.resumeCapture' : 'recording.pauseCapture')}</TooltipContent>
-          </Tooltip>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                onClick={onDiscard}
-                className="w-9 h-9 shrink-0 rounded-full border border-border flex items-center justify-center transition-colors text-purple hover:border-destructive/30 hover:text-destructive"
-              >
-                <Trash2 size={16} />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent align="end">{i18n.t('recording.discard')}</TooltipContent>
-          </Tooltip>
+          <RecordingIconButton label={i18n.t('recording.smartBlur')} disabled={paused} onClick={handleBlur}>
+            <EyeOff />
+          </RecordingIconButton>
+          <RecordingIconButton
+            label={i18n.t(paused ? 'recording.resumeCapture' : 'recording.pauseCapture')}
+            tone={paused ? 'on' : 'default'}
+            onClick={paused ? handleResume : handlePause}
+          >
+            {paused ? <Play /> : <Pause />}
+          </RecordingIconButton>
+          <RecordingIconButton label={i18n.t('recording.discard')} tone="danger" onClick={onDiscard}>
+            <Trash2 />
+          </RecordingIconButton>
         </div>
       </div>
     </div>

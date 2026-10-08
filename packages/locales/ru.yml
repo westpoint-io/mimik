@@ -87,6 +87,7 @@ recording:
   readyTitle: "Готовы к записи!"
   readySub: "Кликните по странице, чтобы начать"
   finishRecording: Завершить запись
+  finish: Готово
   smartBlur: Умное размытие
   discard: Отклонить
   deleteStep: Удалить шаг
@@ -157,8 +158,10 @@ settings:
   microphoneUnblockHow: Как снять блокировку?
   microphoneTestStop: Остановить проверку
   microphoneTestFailed: Не удалось открыть этот микрофон. Выберите другой и попробуйте снова.
-  targetColor: Корпоративный цвет
-  targetColorHint: Цвет подсветки кликов и акцентов в экспорте.
+  targetColor: "Подсветка клика"
+  brandColor: "Корпоративный цвет"
+  targetColorHint: "Рамка вокруг того, на что вы нажали."
+  brandColorHint: "Акценты в экспортированных гайдах."
   branding: Брендинг экспорта
   logoAndFooter: Логотип и подпись
   logoAndFooterHint: Показываются в каждом экспортированном гайде.
@@ -189,7 +192,8 @@ settings:
   modelsFound: "Доступно моделей: $1"
   smartBlur: Умное размытие
   privacyNotice: Ваши ключи и аудио отправляются только выбранному вами провайдеру. Больше ничего не покидает ваш браузер.
-  bugReport: Нашли баг? Сообщите на GitHub
+  reportBug: "Сообщить об ошибке"
+  aboutSection: "О Mimik"
   starCtaTitle: "Нравится то, что вы видите?"
   starCtaMessage: "Звезда на GitHub помогает другим находить Mimik и поддерживает нас!"
   starOnGithub: Поставить звезду на GitHub
@@ -226,6 +230,7 @@ desktop:
   modeWindow: Окно
   modeScreen: Экран
   modeArea: Область
+  drawArea: "Потяните, чтобы выделить область записи"
   startSheetTitle: Начать запись
   permissionsTitle: Разрешите Mimik записывать
   permissionsIntro: "Mimik нужны два разрешения, прежде чем начать запись."
@@ -252,10 +257,6 @@ desktop:
   version: Версия $1
   versionHint: Mimik проверяет обновления при каждом запуске.
   checkUpdates: Проверить обновления
-  cardGithub: "Mimik на GitHub"
-  bugTitle: "Нашли ошибку?"
-  bugHint: "Расскажите, что произошло, и мы разберёмся."
-  reportBug: "Сообщить об ошибке"
   trayQuit: Выйти из Mimik
   trayRecording: "Mimik записывает. Нажмите, чтобы закончить."
   cannotRecord: Mimik не может записывать
@@ -365,6 +366,7 @@ capture:
   recordSteps: Записать шаги
   moreStepsTitle: Записать ещё шаги
   moreStepsBody: "Новые шаги будут вставлены сюда. Выберите вкладку, в которой записывать."
+  newCaptureBody: Выберите вкладку для записи.
   startCapture: Начать запись
   noRecordableTabs: "В этом окне нет вкладок, пригодных для записи."
 
@@ -675,7 +677,7 @@ export:
 voice:
   turnOn: Включить озвучку
   turnOff: Выключить озвучку
-  needsApiKey: "Добавьте API-ключ транскрипции в настройках, чтобы озвучивать"
+  needsApiKey: "Для озвучки нужен API-ключ"
   pausedWithCapture: Озвучка приостановлена вместе с записью
   micStarting: Запускаю микрофон...
   micHearing: Вас слышно

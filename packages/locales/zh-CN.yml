@@ -87,6 +87,7 @@ recording:
   readyTitle: "已准备好捕获"
   readySub: 点击页面开始
   finishRecording: 完成录制
+  finish: 完成
   smartBlur: 智能模糊
   discard: 丢弃
   deleteStep: 删除步骤
@@ -157,8 +158,10 @@ settings:
   microphoneUnblockHow: 如何解除阻止？
   microphoneTestStop: 停止测试
   microphoneTestFailed: "无法打开该麦克风，请换一个试试。"
-  targetColor: "品牌颜色"
-  targetColorHint: "用于点击高亮和导出内容中的强调色。"
+  targetColor: "点击高亮"
+  brandColor: "品牌颜色"
+  targetColorHint: "围绕你所点击内容绘制的轮廓。"
+  brandColorHint: "导出指南中的强调色。"
   branding: "导出品牌设置"
   logoAndFooter: "徽标和页脚"
   logoAndFooterHint: "显示在你导出的每份指南上。"
@@ -189,7 +192,8 @@ settings:
   modelsFound: "$1 个可用模型"
   smartBlur: 智能模糊
   privacyNotice: "密钥和音频只会发送给你选择的提供商。"
-  bugReport: "发现问题？在 GitHub 上报告"
+  reportBug: "报告问题"
+  aboutSection: "关于"
   starCtaTitle: "喜欢 Mimik 吗？"
   starCtaMessage: "在 GitHub 上加星能帮助更多人发现 Mimik。"
   starOnGithub: 在 GitHub 上加星
@@ -226,6 +230,7 @@ desktop:
   modeWindow: 窗口
   modeScreen: 屏幕
   modeArea: 区域
+  drawArea: "拖动以绘制捕获区域"
   startSheetTitle: 开始捕获
   permissionsTitle: "允许 Mimik 录制"
   permissionsIntro: "Mimik 需要两项权限才能开始录制。"
@@ -252,10 +257,6 @@ desktop:
   version: "版本 $1"
   versionHint: "Mimik 每次启动时都会检查更新。"
   checkUpdates: "检查更新"
-  cardGithub: "GitHub 上的 Mimik"
-  bugTitle: "发现问题？"
-  bugHint: "告诉我们发生了什么，我们会跟进处理。"
-  reportBug: "报告问题"
   trayQuit: "退出 Mimik"
   trayRecording: "Mimik 正在录制。点击即可完成。"
   cannotRecord: "Mimik 无法录制"
@@ -365,6 +366,7 @@ capture:
   recordSteps: 录制步骤
   moreStepsTitle: 捕获更多步骤
   moreStepsBody: 新步骤会插入到这里。请选择要录制的标签页。
+  newCaptureBody: 选择要录制的标签页。
   startCapture: 开始捕获
   noRecordableTabs: 当前窗口没有可录制的标签页。
 
@@ -675,7 +677,7 @@ export:
 voice:
   turnOn: 开启语音讲解
   turnOff: 关闭语音讲解
-  needsApiKey: 在设置中添加转写 API 密钥以使用语音讲解
+  needsApiKey: "语音讲解需要 API 密钥"
   pausedWithCapture: 语音讲解已随捕获一起暂停
   micStarting: 正在启动麦克风…
   micHearing: 正在听你说话

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fakeBrowser } from 'wxt/testing/fake-browser';
-import { dataUrlToBytes, defaultFooterLine, fitLogo, loadBranding } from '@/core/export/branding';
+import { DEFAULT_BRAND_COLOR, dataUrlToBytes, defaultFooterLine, fitLogo, loadBranding } from '@/core/export/branding';
 import { DEFAULT_TARGET_COLOR } from '@/core/screenshot/types';
 
 describe('loadBranding', () => {
@@ -22,7 +22,7 @@ describe('loadBranding', () => {
       logo: null,
       footer: defaultFooterLine(),
       attribution: true,
-      accent: DEFAULT_TARGET_COLOR,
+      accent: DEFAULT_BRAND_COLOR,
       custom: false,
     });
   });
@@ -42,14 +42,20 @@ describe('loadBranding', () => {
   it('ignores an unparseable accent rather than emitting it into the document', async () => {
     await fakeBrowser.storage.local.set({ targetColor: 'not-a-colour' });
     const brand = await loadBranding();
-    expect(brand.accent).toBe(DEFAULT_TARGET_COLOR);
+    expect(brand.accent).toBe(DEFAULT_BRAND_COLOR);
     expect(brand.custom).toBe(false);
   });
 
-  it('treats the default accent as not custom so the stock palette is preserved', async () => {
+  it('gives exports the navy brand color when only the default click highlight was saved', async () => {
     await fakeBrowser.storage.local.set({ targetColor: DEFAULT_TARGET_COLOR.toLowerCase() });
     const brand = await loadBranding();
+    expect(brand.accent).toBe(DEFAULT_BRAND_COLOR);
     expect(brand.custom).toBe(false);
+  });
+
+  it('uses the brand color over the click highlight once one is saved', async () => {
+    await fakeBrowser.storage.local.set({ targetColor: '#F43F5E', brandColor: '#14b8a6' });
+    expect((await loadBranding()).accent).toBe('#14B8A6');
   });
 
   it('trims the footer line and keeps attribution on unless explicitly disabled', async () => {
