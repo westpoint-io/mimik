@@ -1,6 +1,5 @@
 import { logger } from '@mimik/core/logger';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui';
-import { Mic, MicOff } from 'lucide-react';
+import { MicButton } from '@mimik/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';
 import { hasVoiceApiKey, VOICE_KEY_SETTINGS } from '@/core/capture/voice/api-key';
@@ -71,29 +70,5 @@ export function MicToggle({ enabled, live, paused = false, onChange }: MicToggle
     });
   }, [enabled, live, locked, onChange]);
 
-  const Icon = enabled ? Mic : MicOff;
-  const label = i18n.t(labelKey);
-
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <button
-          onClick={() => void toggle()}
-          aria-pressed={enabled}
-          aria-disabled={locked}
-          aria-label={label}
-          className={`w-9 h-9 shrink-0 rounded-full border flex items-center justify-center transition-colors ${
-            locked
-              ? 'border-dashed border-border text-muted-foreground opacity-60 cursor-not-allowed'
-              : enabled
-                ? 'border-accent bg-secondary text-accent'
-                : 'border-border text-muted-foreground hover:border-accent hover:text-accent'
-          }`}
-        >
-          <Icon size={16} />
-        </button>
-      </TooltipTrigger>
-      <TooltipContent>{label}</TooltipContent>
-    </Tooltip>
-  );
+  return <MicButton enabled={enabled} locked={locked} label={i18n.t(labelKey)} onClick={() => void toggle()} />;
 }

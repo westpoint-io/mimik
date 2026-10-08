@@ -87,6 +87,7 @@ recording:
   readyTitle: "Bereit zur Aufnahme"
   readySub: Klicke auf die Seite, um zu starten
   finishRecording: Aufnahme beenden
+  finish: Fertig
   smartBlur: Smart Blur
   discard: Verwerfen
   deleteStep: Schritt löschen
@@ -678,7 +679,7 @@ screenshotView:
 voice:
   turnOn: Sprachkommentar einschalten
   turnOff: Sprachkommentar ausschalten
-  needsApiKey: "Füge in den Einstellungen einen Transkriptions-API-Schlüssel hinzu, um den Sprachkommentar zu nutzen"
+  needsApiKey: "Sprachkommentar braucht einen API-Schlüssel"
   pausedWithCapture: "Der Sprachkommentar ist mit der Aufnahme pausiert"
   micStarting: "Mikrofon wird gestartet…"
   micHearing: Ich höre dich

@@ -87,6 +87,7 @@ recording:
   readyTitle: "已准备好捕获"
   readySub: 点击页面开始
   finishRecording: 完成录制
+  finish: 完成
   smartBlur: 智能模糊
   discard: 丢弃
   deleteStep: 删除步骤
@@ -678,7 +679,7 @@ export:
 voice:
   turnOn: 开启语音讲解
   turnOff: 关闭语音讲解
-  needsApiKey: 在设置中添加转写 API 密钥以使用语音讲解
+  needsApiKey: "语音讲解需要 API 密钥"
   pausedWithCapture: 语音讲解已随捕获一起暂停
   micStarting: 正在启动麦克风…
   micHearing: 正在听你说话

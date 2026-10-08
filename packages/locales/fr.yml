@@ -87,6 +87,7 @@ recording:
   readyTitle: "Prêt à capturer"
   readySub: Cliquez sur la page pour commencer
   finishRecording: "Terminer l'enregistrement"
+  finish: Terminer
   smartBlur: Flou intelligent
   discard: Abandonner
   deleteStep: "Supprimer l'étape"
@@ -678,7 +679,7 @@ export:
 voice:
   turnOn: "Activer la narration vocale"
   turnOff: "Désactiver la narration vocale"
-  needsApiKey: "Ajoutez une clé API de transcription dans les Paramètres pour narrer"
+  needsApiKey: "La narration nécessite une clé API"
   pausedWithCapture: "La narration est en pause avec la capture"
   micStarting: "Démarrage du micro…"
   micHearing: "Mimik vous entend"

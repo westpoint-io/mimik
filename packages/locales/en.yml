@@ -87,6 +87,7 @@ recording:
   readyTitle: "Ready to capture"
   readySub: Click on the page to start
   finishRecording: "Finish recording"
+  finish: Finish
   smartBlur: "Smart blur"
   discard: Discard
   deleteStep: Delete step
@@ -678,7 +679,7 @@ export:
 voice:
   turnOn: Turn on voice narration
   turnOff: Turn off voice narration
-  needsApiKey: Add a transcription API key in Settings to narrate
+  needsApiKey: "Narration needs an API key"
   pausedWithCapture: Narration is paused with the capture
   micStarting: Starting microphone…
   micHearing: Hearing you

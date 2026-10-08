@@ -87,6 +87,7 @@ recording:
   readyTitle: "Pronto para gravar"
   readySub: "Clique na página para começar"
   finishRecording: Terminar gravação
+  finish: Concluir
   smartBlur: Desfoque inteligente
   discard: Descartar
   deleteStep: Excluir passo
@@ -678,7 +679,7 @@ export:
 voice:
   turnOn: "Ligar narração por voz"
   turnOff: "Desligar narração por voz"
-  needsApiKey: "Adicione uma chave de API de transcrição em Ajustes para narrar"
+  needsApiKey: "A narração precisa de uma chave de API"
   pausedWithCapture: "A narração está em pausa junto com a captura"
   micStarting: "Ligando o microfone…"
   micHearing: "Ouvindo você"

@@ -87,6 +87,7 @@ recording:
   readyTitle: "Готовы к записи!"
   readySub: "Кликните по странице, чтобы начать"
   finishRecording: Завершить запись
+  finish: Готово
   smartBlur: Умное размытие
   discard: Отклонить
   deleteStep: Удалить шаг
@@ -678,7 +679,7 @@ export:
 voice:
   turnOn: Включить озвучку
   turnOff: Выключить озвучку
-  needsApiKey: "Добавьте API-ключ транскрипции в настройках, чтобы озвучивать"
+  needsApiKey: "Для озвучки нужен API-ключ"
   pausedWithCapture: Озвучка приостановлена вместе с записью
   micStarting: Запускаю микрофон...
   micHearing: Вас слышно

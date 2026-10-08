@@ -1,3 +1,4 @@
+export { AiFailureNotice } from './ai/components/AiFailureNotice';
 export { AiSettings } from './ai/components/AiSettings';
 export { ApiKeysSettings } from './ai/components/ApiKeysSettings';
 export { KeyStatusNote } from './ai/components/KeyStatusNote';
@@ -45,6 +46,9 @@ export { VoiceStep } from './onboarding/components/VoiceStep';
 export type { StepProps } from './onboarding/types';
 export { SearchModal } from './search/components/SearchModal';
 export { useFullview } from './stores/use-fullview';
+export { FinishButton } from './recording/components/FinishButton';
+export { MicButton } from './recording/components/MicButton';
+export { RecordingIconButton } from './recording/components/RecordingIconButton';
 export { MicrophoneAccessRow } from './voice/components/MicrophoneAccessRow';
 export { NarrationSettings } from './voice/components/NarrationSettings';
 export { VoiceNotice } from './voice/components/VoiceNotice';
