@@ -144,6 +144,9 @@ importers:
 
   apps/extension:
     dependencies:
+      '@fontsource/poppins':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@mimik/core':
         specifier: workspace:*
         version: link:../../packages/core

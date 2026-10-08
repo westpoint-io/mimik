@@ -18,6 +18,7 @@
     "postinstall": "wxt prepare"
   },
   "dependencies": {
+    "@fontsource/poppins": "^5.3.0",
     "@mimik/core": "workspace:*",
     "@mimik/ui": "workspace:*",
     "@webext-core/messaging": "^2.3.0",
