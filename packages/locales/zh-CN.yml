@@ -583,56 +583,79 @@ exportMenu:
   bundle: "Mimik 文件"
 
 onboarding:
-  welcomeBadge: 欢迎
-  welcomeTitle: "你已成功安装 Mimik！"
-  welcomeMessage: "只需几步即可开始自动捕获浏览器工作流并生成分步指南。无需账号，一切都保留在你的浏览器中。"
-  welcomeMessageDesktop: "只需几步即可开始自动捕获电脑上的工作流并生成分步指南。无需账号，一切都保留在你的电脑上。"
   getStarted: 开始使用
-  stepOf: "第 $1 步，共 $2 步"
-  aiTitle: AI 描述
-  aiMessage: 连接你自己的 API 密钥，即可获得 AI 生成的步骤描述。此功能可选，也可以稍后在设置中更改。
-  keySaved: "与其他密钥一起保存在“设置 › API 密钥”中。"
-  aiGenerated: AI 生成
-  aiGeneratedDescription: AI 生成的描述
-  voiceTitle: 先说，再操作
-  voiceMessage: "先说出你要做什么，再去做。Mimik 会把你的话关联到下一个动作。"
-  voiceRecordHint: "语音讲解默认关闭。录制时可通过侧边栏的麦克风按钮为每份指南单独开启。"
-  voiceRecordHintDesktop: "语音讲解默认关闭。录制时可通过录制卡片上的麦克风按钮为每份指南单独开启。"
-  voiceDataNotice: "音频会使用你的 API 密钥发送到你选择的提供商。"
-  voiceDemoLabel: "语音讲解如何对应到步骤"
-  voiceDemoSay: 你说
-  voiceDemoQuote: "现在我要打开账单设置"
-  voiceDemoAct: 然后你点击
-  voiceDemoAction: 点击账单标签页
-  voiceDemoBadge: 来自你的语音
   blurTitle: 智能模糊
-  blurMessage: 自动模糊截图中的敏感信息。请选择要检测的模式。
-  screenshotPreview: 截图预览
-  notEnabled: 未启用
-  categoriesProtected: "已保护 $1 个类别"
-  pinTitle: 固定 Mimik
-  pinMessage: "将 Mimik 固定到工具栏以便快速访问。"
-  pinStep1Title: 点击拼图图标
-  pinStep1Sub: 位于浏览器工具栏右上角
-  pinStep2Title: 找到 Mimik
-  pinStep2Sub: 在扩展下拉菜单中
-  pinStep3Title: 点击固定图标
-  pinStep3Sub: Mimik 会出现在工具栏中
-  pinScreenshotAlt: 固定 Mimik 扩展
-  starTitle: "愿意给我们加个星吗？"
-  starMessage: "Mimik 免费开源。加星能帮助更多人发现它。"
-  starAction: 在 GitHub 上加星
-  starLater: 稍后再说
-  doneTitle: "设置完成"
-  doneMessage: "点击侧边栏中的“开始捕获”，录制第一份指南。"
-  doneMessageDesktop: "点击“开始捕获”，录制第一份指南。"
-  featureAutoCapture: 自动捕获
-  featureAIAssist: AI 辅助
-  featureVoice: 语音讲解
-  featureAnnotate: 标注与遮盖
-  featureExports: "导出为 PDF、视频等格式"
-  featureSmartBlur: 智能模糊
   openMimik: 打开 Mimik
+  letterHello: "还有一件事 👋"
+  letterThanks: "有句话我们一定要说：$1过去几周，Mimik 在 GitHub 上的星标数一路暴涨，这全靠你们。你们把它分享给朋友、同事和各个社区，我们真的又惊又喜。"
+  letterThankYou: "谢谢你们！"
+  letterWorld: "打造 Mimik 最开心的事，就是看到世界各地的人都在用它。希望它继续帮你们省时省钱，也让你们的数据留在该在的地方：你们自己手里。有想法、功能需求或反馈？$1，每一条我们都会认真看。"
+  letterSayHi: "来 GitHub 打个招呼"
+  letterNewsTitle: "🚀 好消息：Mimik Desktop 来了！"
+  letterNewsBody: "你们喜爱的 Mimik 扩展，现在直接来到桌面。现已支持 Mac 和 Windows。"
+  letterNewsAction: "下载 Mimik Desktop"
+  letterPromiseTitle: "首先，一个承诺"
+  letterPromise: "Mimik 将永远免费，并采用 MIT 许可。以后也不会有任何套路或付费墙。这是我们对你们，以及围绕它成长起来的出色社区的承诺。"
+  letterAskTitle: "还有一个小请求 🙏"
+  letterAskIntro: "Mimik 的成长离不开你们，请继续支持我们："
+  letterAskWrite: "在你的博客、邮件通讯或社交媒体上聊聊它（特别是 Reddit，我们超爱 Reddit！）"
+  letterAskVideo: "在 YouTube 上做一期教程或演示"
+  letterAskFriend: "推荐给会喜欢它的朋友或同事"
+  letterSponsor: "每一篇文章、每一个视频、每一次推荐，都能帮更多人发现 Mimik，我们都看在眼里，也都非常珍惜。还想多出一份力？你可以$1。无论支持大小，都能让这个项目持续成长。"
+  letterSponsorLink: "在 GitHub 上赞助 Mimik"
+  letterSignoff: "满怀爱意，"
+  letterTeam: "Westpoint 团队 ❤️"
+  helloTitle: "感谢安装 Mimik！"
+  helloMessage: "像平常一样完成一次任务，Mimik 会把每次点击变成带截图的步骤。我们来设置一下，只需一分钟。"
+  chipDevice: "在你的设备上运行"
+  chipAccount: "无需账号"
+  chipFree: "免费且 MIT 开源"
+  loginWelcome: "欢迎回来"
+  loginReady: "Mimik 已就绪"
+  writeTitle: "Mimik 该如何撰写你的步骤？"
+  writeMessage: "每次点击都会成为一个带截图的步骤。选择步骤文字的写法。你可以随时在设置中更改。"
+  basicTitle: "基础标题"
+  basicMessage: "根据你点击的内容生成清晰的标题。立即可用，无需设置。"
+  basicBest: "最适合马上试用 Mimik"
+  basicExample: "点击“账单”"
+  aiChoiceTitle: "AI 描述"
+  aiChoiceMessage: "由你的 AI 提供商写出完整句子，使用你自己的密钥。还能解锁语音讲解。"
+  aiChoiceMessageNoVoice: "由你的 AI 提供商写出完整句子，使用你自己的密钥。"
+  aiBest: "最适合要分享的指南"
+  aiExample: "打开账单，查看你的发票和套餐"
+  exampleMeta: "第 2 步 · 账单"
+  keyPrivacy: "你的密钥保存在本设备上，只会发送给你选择的提供商。"
+  voiceToggleTitle: "语音讲解"
+  voiceToggleHint: "说出你正在做什么，Mimik 会把它关联到下一个步骤。"
+  voiceNeedsKey: "语音讲解使用 OpenAI 或 Groq 进行语音转文字。请为其中之一添加密钥。"
+  makeTitle: "打造你的专属风格"
+  makeMessage: "全部可选。之后都可以在设置中更改。"
+  brandTitle: "导出时使用你的品牌"
+  brandHint: "你导出的每份 PDF 和 HTML 指南上都会显示你的 Logo 和颜色。"
+  blurHint: "在任何内容离开你的设备之前，模糊截图中的敏感信息。"
+  readyTitle: "一切就绪，可以开始捕获了"
+  readyStepOpen: "打开 Mimik"
+  readyStepStart: "点击“开始捕获”"
+  readyStepClick: "照常点击完成你的任务"
+  readyStepGuide: "获得一份分步指南"
+  pinHere: "固定在这里"
+  pinCardTitle: "固定 Mimik，方便随时使用"
+  pinCardMessage: "点击地址栏旁边的拼图图标，将 Mimik 固定到工具栏。"
+  pinMenuTitle: "扩展程序"
+  trayTitle: "Mimik 常驻在托盘中"
+  trayMessage: "点击时钟旁边的 Mimik 图标开始捕获，或在任意应用中按 $1。"
+  menuBarTitle: "Mimik 常驻在菜单栏中"
+  menuBarMessage: "点击屏幕顶部的 Mimik 图标开始捕获，或在任意应用中按 $1。"
+  starCardTitle: "永久免费，MIT 许可"
+  starCardMessage: "无需账号，没有付费墙。在 GitHub 上加星能帮助更多人发现 Mimik。"
+  demoApp: "Acme Admin"
+  demoTitle: "邀请队友"
+  demoField: "邮箱"
+  demoButton: "发送邀请"
+  demoStepType: "在邮箱中输入“ana@acme.com”"
+  demoStepClick: "点击“发送邀请”"
+  demoPlusStep: "+1 个步骤"
+  demoGuideMeta: "2 个步骤 · 刚刚"
 
 steps:
   pressKey: '在“$2”上按 $1'

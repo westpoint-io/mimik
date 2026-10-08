@@ -38,6 +38,136 @@ input[type="checkbox"]:not(:disabled) {
   92% { opacity: 0.7; }
 }
 
+@keyframes ripple {
+  from { opacity: 0.9; transform: scale(0.3); }
+  to { opacity: 0; transform: scale(1.4); }
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
+}
+
+@keyframes ob-cur-in {
+  0% { opacity: 0; transform: translate(26px, 30px); }
+  10% { opacity: 1; }
+  22% { transform: none; }
+  26% { transform: scale(0.85); }
+  30%, 90% { opacity: 1; transform: none; }
+  100% { opacity: 0; }
+}
+
+@keyframes ob-mark {
+  0%, 26% { opacity: 0; transform: scale(1.4); }
+  32%, 92% { opacity: 1; transform: none; }
+  100% { opacity: 0; }
+}
+
+@keyframes ob-text-basic {
+  0%, 32% { opacity: 0; transform: translateY(4px); }
+  40%, 92% { opacity: 1; transform: none; }
+  100% { opacity: 0; }
+}
+
+@keyframes ob-text-ai {
+  0%, 52% { opacity: 0; transform: translateY(4px); }
+  60%, 92% { opacity: 1; transform: none; }
+  100% { opacity: 0; }
+}
+
+@keyframes ob-shimmer {
+  0%, 30% { opacity: 0; background-position: 100% 0; }
+  33% { opacity: 1; }
+  52% { opacity: 1; background-position: -100% 0; }
+  55%, 100% { opacity: 0; }
+}
+
+@keyframes ob-scan {
+  0%, 10% { top: 0; opacity: 0; }
+  15% { opacity: 0.5; }
+  45% { top: 100%; opacity: 0.5; }
+  50%, 100% { top: 100%; opacity: 0; }
+}
+
+@keyframes ob-blur {
+  0%, 15% { filter: none; }
+  35%, 92% { filter: blur(2.5px); }
+  100% { filter: none; }
+}
+
+@keyframes ob-fill-x {
+  0%, 10% { transform: scaleX(0); }
+  30%, 92% { transform: scaleX(1); }
+  100% { transform: scaleX(0); }
+}
+
+@keyframes ob-pop {
+  0%, 30% { transform: scale(0); }
+  38%, 92% { transform: scale(1); }
+  100% { transform: scale(0); }
+}
+
+@keyframes ob-pin-menu {
+  0%, 22% { opacity: 0; transform: translateY(-4px); }
+  28%, 62% { opacity: 1; transform: none; }
+  68%, 100% { opacity: 0; transform: translateY(-4px); }
+}
+
+@keyframes ob-pin-cursor-a {
+  0% { opacity: 0; transform: translate(-40px, 40px); }
+  6% { opacity: 1; }
+  18% { transform: none; }
+  22% { transform: scale(0.85); }
+  25% { opacity: 1; transform: none; }
+  30%, 100% { opacity: 0; transform: none; }
+}
+
+@keyframes ob-pin-cursor-b {
+  0%, 30% { opacity: 0; transform: translate(14px, -30px); }
+  34% { opacity: 1; }
+  44% { transform: none; }
+  48% { transform: scale(0.85); }
+  51% { opacity: 1; transform: none; }
+  62%, 100% { opacity: 0; transform: none; }
+}
+
+@keyframes ob-pin-fill {
+  0%, 53% { color: var(--color-muted-foreground); }
+  54%, 67% { color: var(--color-foreground); }
+  68%, 100% { color: var(--color-muted-foreground); }
+}
+
+@keyframes ob-pinned {
+  0%, 58% { width: 0; opacity: 0; }
+  64%, 94% { width: 20px; opacity: 1; }
+  100% { width: 0; opacity: 0; }
+}
+
+@keyframes ob-login-out {
+  0%, 34% { opacity: 1; transform: none; }
+  42%, 92% { opacity: 0; transform: scale(0.94); }
+  100% { opacity: 1; transform: none; }
+}
+
+@keyframes ob-dot {
+  0%, 8% { opacity: 0; }
+  10%, 34% { opacity: 1; }
+  36%, 100% { opacity: 0; }
+}
+
+@keyframes ob-tray-in {
+  0%, 44% { transform: scale(0); }
+  50% { transform: scale(1.25); }
+  54%, 92% { transform: scale(1); }
+  100% { transform: scale(0); }
+}
+
+@keyframes ob-toast {
+  0%, 54% { opacity: 0; transform: translateY(4px); }
+  60%, 88% { opacity: 1; transform: none; }
+  94%, 100% { opacity: 0; }
+}
+
 @keyframes shutter {
   0%, 100% { opacity: 0; }
   20% { opacity: 0.95; }

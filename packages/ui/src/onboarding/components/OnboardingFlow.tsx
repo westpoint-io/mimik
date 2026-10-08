@@ -1,54 +1,62 @@
-import { type ComponentType, type ReactNode, useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import type { ValidateKey } from '../../ai/types';
-import type { StepProps } from '../types';
-import { DoneStep } from './DoneStep';
+import { MascotIcon } from '../../common/components/MascotIcon';
+import { LetterStep } from './LetterStep';
+import { MakeItYoursStep } from './MakeItYoursStep';
+import { ReadyStep } from './ReadyStep';
 import { WelcomeStep } from './WelcomeStep';
+import { WriteStepsStep } from './WriteStepsStep';
 
 interface OnboardingFlowProps {
-  steps: ComponentType<StepProps>[];
   validate: ValidateKey;
   requestMicrophoneAccess: () => Promise<void>;
   microphoneAccess?: ReactNode;
   microphoneLocked?: boolean;
+  voice?: boolean;
+  extraRows?: ReactNode;
+  readyAside: ReactNode;
   onFinish: () => void;
 }
 
-const KEYFRAMES =
-  '@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}@keyframes sparkle{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.1)}}';
-
 export function OnboardingFlow({
-  steps,
   validate,
   requestMicrophoneAccess,
   microphoneAccess,
   microphoneLocked,
+  voice = true,
+  extraRows,
+  readyAside,
   onFinish,
 }: OnboardingFlowProps) {
   const [step, setStep] = useState(0);
-
-  const lastStep = steps.length + 1;
-  const next = () => setStep((s) => Math.min(s + 1, lastStep));
+  const next = () => setStep((s) => Math.min(s + 1, 4));
   const back = () => setStep((s) => Math.max(s - 1, 0));
-  const CurrentStep = steps[step - 1];
 
   return (
-    <div className="min-h-screen bg-card text-foreground">
-      <style>{KEYFRAMES}</style>
-      {step === 0 && <WelcomeStep onNext={next} />}
-      {CurrentStep && (
-        <CurrentStep
-          onNext={next}
-          onSkip={next}
-          onBack={back}
-          index={step}
-          total={steps.length}
-          validate={validate}
-          requestMicrophoneAccess={requestMicrophoneAccess}
-          microphoneAccess={microphoneAccess}
-          microphoneLocked={microphoneLocked}
-        />
-      )}
-      {step === lastStep && <DoneStep onOpen={onFinish} />}
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <header className="flex items-center gap-2 px-6 pt-5 text-[17px] font-bold">
+        <MascotIcon size={32} />
+        Mimik
+      </header>
+      <main
+        className={`mx-auto flex w-full flex-1 flex-col justify-center gap-3.5 px-4 py-6 ${step === 3 ? 'max-w-[1040px]' : 'max-w-[640px]'}`}
+      >
+        {step === 0 && <WelcomeStep onNext={next} />}
+        {step === 1 && (
+          <WriteStepsStep
+            onNext={next}
+            onBack={back}
+            validate={validate}
+            voice={voice}
+            requestMicrophoneAccess={requestMicrophoneAccess}
+            microphoneAccess={microphoneAccess}
+            microphoneLocked={microphoneLocked}
+          />
+        )}
+        {step === 2 && <MakeItYoursStep onNext={next} onBack={back} extraRows={extraRows} />}
+        {step === 3 && <ReadyStep aside={readyAside} onNext={next} />}
+        {step === 4 && <LetterStep onFinish={onFinish} />}
+      </main>
     </div>
   );
 }
