@@ -230,6 +230,7 @@ desktop:
   modeScreen: Écran
   modeArea: Zone
   startSheetTitle: Démarrer une capture
+  drawArea: "Faites glisser pour tracer la zone de capture"
   permissionsTitle: "Autoriser Mimik à enregistrer"
   permissionsIntro: "Mimik a besoin de deux autorisations avant de pouvoir enregistrer."
   permissionAccessibility: "Accessibilité"

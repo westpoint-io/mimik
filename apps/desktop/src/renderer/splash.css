@@ -1,94 +1,24 @@
-@import '@fontsource/poppins/700.css';
+@import "@mimik/ui/global.css";
 
-:root {
-  --accent: #1e1b4b;
-  --deep: #1e1b4b;
-  --lavender: #c7d2fe;
-  --violet-mid: #3730a3;
-  --mascot: #4f46e5;
-}
+@source ".";
 
 html,
-body {
-  margin: 0;
+body,
+body > div {
   height: 100%;
-  background: transparent;
+  margin: 0;
   overflow: hidden;
+  background: transparent;
   user-select: none;
 }
 
-#splash {
-  box-sizing: border-box;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  border: 1px solid var(--lavender);
-  border-radius: 14px;
-  background: #f5f6fb;
-  font-family: 'Poppins', system-ui, sans-serif;
-}
-
-#mascot {
-  display: flex;
-}
-
-#mascot path:nth-of-type(4) {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: wink 3.2s ease infinite;
-}
-
-#wordmark {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--deep);
-}
-
-#meter {
-  position: relative;
-  width: 140px;
-  height: 3px;
-  border-radius: 3px;
-  background: var(--lavender);
-  overflow: hidden;
-}
-
-#meter span {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 40%;
-  height: 3px;
-  border-radius: 3px;
-  background: var(--accent);
-  animation: sweep 1.6s ease-in-out infinite;
-}
-
 @keyframes wink {
-  0%,
-  70% {
-    transform: scaleY(1);
-  }
-  74%,
-  76% {
-    transform: scaleY(0.05);
-  }
-  80%,
-  100% {
-    transform: scaleY(1);
-  }
+  0%, 70% { transform: scaleY(1); }
+  74%, 76% { transform: scaleY(0.05); }
+  80%, 100% { transform: scaleY(1); }
 }
 
 @keyframes sweep {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(250%);
-  }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
 }

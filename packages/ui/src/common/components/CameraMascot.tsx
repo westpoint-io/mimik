@@ -8,7 +8,18 @@ import {
   MASCOT_SEAM,
 } from '../lib/mascot-shapes';
 
-export function CameraMascot({ size = 64 }: { size?: number }) {
+const FLASH = {
+  loop: 'animate-[cam-flash_3s_ease_infinite]',
+  off: 'opacity-0',
+  shutter: 'opacity-0 animate-[shutter_0.4s_ease-out]',
+} as const;
+
+interface CameraMascotProps {
+  size?: number;
+  flash?: keyof typeof FLASH;
+}
+
+export function CameraMascot({ size = 64, flash = 'loop' }: CameraMascotProps) {
   const face = MASCOT_FACES.happy;
   const camera = CAMERA_MASCOT_PARTS;
   return (
@@ -40,7 +51,7 @@ export function CameraMascot({ size = 64 }: { size?: number }) {
       <circle {...camera.lens} fill="#080818" />
       <circle {...camera.glint} className="fill-lavender" opacity={0.4} />
       <rect {...camera.flashUnit} className="fill-lavender" opacity={0.7} />
-      <circle {...camera.flash} className="fill-lavender animate-[cam-flash_3s_ease_infinite]" />
+      <circle {...camera.flash} className={`fill-lavender ${FLASH[flash]}`} />
       <circle {...camera.light} className="fill-mascot" />
       {camera.hands.map((hand) => (
         <ellipse key={hand.cx} {...hand} className="fill-primary" />

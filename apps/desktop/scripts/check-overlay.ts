@@ -199,13 +199,13 @@ app.whenReady().then(async () => {
       : 'content protection applied after show, so no hide is needed',
   );
   const drawn = await windowWithHash('controls')?.webContents.executeJavaScript(
-    "JSON.stringify({ paths: document.querySelectorAll('#mascot svg path').length, flash: document.querySelectorAll('#mascot svg .flash').length, visible: !document.querySelector('#intro').hidden, hint: document.querySelector('#keyHint').textContent })",
+    "JSON.stringify({ paths: document.querySelectorAll('#mascot svg path').length, circles: document.querySelectorAll('#mascot svg circle').length, visible: !document.querySelector('#intro').hidden, hint: document.querySelector('#keyHint').textContent })",
   );
-  const mascot = JSON.parse(String(drawn ?? '{}')) as { paths?: number; flash?: number; visible?: boolean; hint?: string };
+  const mascot = JSON.parse(String(drawn ?? '{}')) as { paths?: number; circles?: number; visible?: boolean; hint?: string };
   check(
     'the armed card draws the camera mascot and the start shortcut',
-    mascot.paths === 4 && mascot.flash === 1 && mascot.visible === true && mascot.hint === 'Tip: you can press Alt+Shift+R to start and stop.',
-    `${mascot.paths} mascot paths, ${mascot.flash} flash, intro visible: ${mascot.visible}, hint: ${mascot.hint}`,
+    mascot.paths === 4 && mascot.circles === 5 && mascot.visible === true && mascot.hint === 'Tip: you can press Alt+Shift+R to start and stop.',
+    `${mascot.paths} mascot paths, ${mascot.circles} circles, intro visible: ${mascot.visible}, hint: ${mascot.hint}`,
   );
 
   const evaluate = (script: string) => windowWithHash('controls')?.webContents.executeJavaScript(script);
@@ -223,7 +223,7 @@ app.whenReady().then(async () => {
   pause();
   await settle();
   const resting = await card(
-    "tip: document.querySelector('#tip').textContent, intro: !document.querySelector('#intro').hidden, resting: document.body.classList.contains('resting'), hint: document.querySelector('#keyHint').hidden",
+    "tip: document.querySelector('#tip').textContent, intro: !document.querySelector('#intro').hidden, resting: document.querySelector('#card').hasAttribute('data-resting'), hint: document.querySelector('#keyHint').hidden",
   );
   record();
   await settle();
@@ -324,12 +324,12 @@ app.whenReady().then(async () => {
       printed.percent === '60',
     `${veil.text}, printer shown: ${veil.printer}, remove hidden: ${veil.remove}, last screenshot: ${veil.shot}, count: ${printed.percent}%`,
   );
-  const unaimed = await card("aim: !document.querySelector('#aim').hidden, developing: document.querySelector('#photo').classList.contains('developing')");
+  const unaimed = await card("aim: !document.querySelector('#aim').hidden, developing: document.querySelector('#photo').hasAttribute('data-developing')");
   overlay.setPrint({ aim: { x: 0.25, y: 0.5, aspect: 2 } });
   overlay.setPrint({ src });
   await settle();
   const aimed = await card(
-    "aim: !document.querySelector('#aim').hidden, left: document.querySelector('#aim').style.left, developing: document.querySelector('#photo').classList.contains('developing'), src: document.querySelector('#photo img').getAttribute('src')",
+    "aim: !document.querySelector('#aim').hidden, left: document.querySelector('#aim').style.left, developing: document.querySelector('#photo').hasAttribute('data-developing'), src: document.querySelector('#photo img').getAttribute('src')",
   );
   check(
     'the photo marks where the click was, and shows the screenshot once it is saved',
@@ -394,7 +394,7 @@ app.whenReady().then(async () => {
   );
   check(
     'Finish leads the footer, with the mic, Pause and Discard after it',
-    /^\["primary:Finish recording","mic:","secondary:","discard:"\]$/.test(String(order)),
+    /^\["primary:Finish","mic:","secondary:","discard:"\]$/.test(String(order)),
     String(order),
   );
   check(
@@ -408,7 +408,7 @@ app.whenReady().then(async () => {
   await settle();
   const framed = overlayWindows();
   const active = await windowWithHash('controls')?.webContents.executeJavaScript(
-    "document.querySelector('button.mode.active')?.dataset.mode ?? 'none'",
+    "document.querySelector('#modes [aria-pressed=\"true\"]')?.dataset.mode ?? 'none'",
   );
   check(
     'whole-screen mode drops the boundary',
@@ -419,7 +419,7 @@ app.whenReady().then(async () => {
   const editorWindows = () => webContents.getAllWebContents().filter((wc) => wc.getURL().includes('#editor'));
   const inEditor = (script: string) => editorWindows()[0]?.executeJavaScript(script);
   const pickArea = () =>
-    windowWithHash('controls')?.webContents.executeJavaScript("document.querySelector('button.mode[data-mode=\"area\"]').click()");
+    windowWithHash('controls')?.webContents.executeJavaScript("document.querySelector('#modes [data-mode=\"area\"]').click()");
   pause();
   await settle();
   await pickArea();
@@ -428,16 +428,16 @@ app.whenReady().then(async () => {
   const look = JSON.parse(
     String(
       (await inEditor(
-        "JSON.stringify({ buttons: [...document.querySelectorAll('#bar button')].map((b) => b.textContent.trim()), edge: getComputedStyle(document.querySelector('#region'), '::after').borderTopStyle, corner: getComputedStyle(document.querySelector('.handle[data-handle=\"nw\"]')).borderTopColor })",
+        "JSON.stringify({ buttons: [...document.querySelectorAll('#bar button')].map((b) => b.textContent.trim()), edge: getComputedStyle(document.querySelector('#region'), '::after').borderTopStyle, corner: getComputedStyle(document.querySelector('[data-handle=\"nw\"]')).borderTopColor })",
       )) ?? '{}',
     ),
   ) as { buttons?: string[]; edge?: string; corner?: string };
-  await inEditor("setTimeout(() => document.querySelector('#bar button.secondary').click())");
+  await inEditor("setTimeout(() => document.querySelector('#cancel').click())");
   await settle();
   const cancelled = { state: overlay.isEditing ? 'editor' : overlay.state, editors: editorWindows().length, sent: commands.at(-1) };
   await pickArea();
   await settle();
-  await inEditor("setTimeout(() => document.querySelector('#bar button.primary').click())");
+  await inEditor("setTimeout(() => document.querySelector('#done').click())");
   await settle();
   const confirmed = { state: overlay.isEditing ? 'editor' : overlay.state, editors: editorWindows().length, sent: commands.at(-1) };
   check(

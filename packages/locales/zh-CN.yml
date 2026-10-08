@@ -230,6 +230,7 @@ desktop:
   modeScreen: 屏幕
   modeArea: 区域
   startSheetTitle: 开始捕获
+  drawArea: "拖动以绘制捕获区域"
   permissionsTitle: "允许 Mimik 录制"
   permissionsIntro: "Mimik 需要两项权限才能开始录制。"
   permissionAccessibility: "辅助功能"

@@ -230,6 +230,7 @@ desktop:
   modeScreen: Pantalla
   modeArea: Área
   startSheetTitle: Iniciar una captura
+  drawArea: "Arrastra para dibujar el área de captura"
   permissionsTitle: "Permite que Mimik grabe"
   permissionsIntro: "Mimik necesita dos permisos antes de poder grabar."
   permissionAccessibility: "Accesibilidad"

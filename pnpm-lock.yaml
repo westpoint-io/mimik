@@ -132,9 +132,6 @@ importers:
       js-yaml:
         specifier: ^4.1.0
         version: 4.3.2
-      lucide:
-        specifier: ^1.52.0
-        version: 1.52.0
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -4831,9 +4828,6 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
-
-  lucide@1.52.0:
-    resolution: {integrity: sha512-XlP0U+m3seobjTPfT0Ybg9YqJeTwSxx1I6R2Ty7vwpA/4HtibMbV28p9tW7AnIwb77YkTboK9x/OPBEqGAzCFg==}
 
   lz-string@1.5.0:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
@@ -10782,8 +10776,6 @@ snapshots:
       react: 19.3.0
     optionalDependencies:
       '@types/react': 19.3.0
-
-  lucide@1.52.0: {}
 
   lz-string@1.5.0: {}
 

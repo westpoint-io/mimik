@@ -230,6 +230,7 @@ desktop:
   modeScreen: Экран
   modeArea: Область
   startSheetTitle: Начать запись
+  drawArea: "Потяните, чтобы выделить область записи"
   permissionsTitle: Разрешите Mimik записывать
   permissionsIntro: "Mimik нужны два разрешения, прежде чем начать запись."
   permissionAccessibility: Универсальный доступ

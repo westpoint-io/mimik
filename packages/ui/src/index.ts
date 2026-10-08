@@ -8,6 +8,7 @@ export { useKeyCheck } from './ai/hooks/use-key-check';
 export { BrandingSettings } from './branding/components/BrandingSettings';
 export { CameraMascot } from './common/components/CameraMascot';
 export { FaviconImg } from './common/components/FaviconImg';
+export { MascotIcon } from './common/components/MascotIcon';
 export { SavedBadge } from './common/components/SavedBadge';
 export { Segmented } from './common/components/Segmented';
 export { SettingsCard } from './common/components/SettingsCard';

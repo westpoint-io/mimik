@@ -230,6 +230,7 @@ desktop:
   modeScreen: Bildschirm
   modeArea: Bereich
   startSheetTitle: Aufnahme starten
+  drawArea: "Ziehen, um den Aufnahmebereich zu zeichnen"
   permissionsTitle: "Mimik das Aufnehmen erlauben"
   permissionsIntro: "Mimik braucht zwei Berechtigungen, bevor es aufnehmen kann."
   permissionAccessibility: "Bedienungshilfen"

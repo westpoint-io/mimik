@@ -230,6 +230,7 @@ desktop:
   modeScreen: Screen
   modeArea: Area
   startSheetTitle: Start a capture
+  drawArea: "Drag to draw the capture area"
   permissionsTitle: "Allow Mimik to record"
   permissionsIntro: "Mimik needs two permissions before it can record."
   permissionAccessibility: "Accessibility"

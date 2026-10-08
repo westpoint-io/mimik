@@ -38,6 +38,11 @@
   --color-mascot: #4F46E5;
   --color-lavender: #C7D2FE;
   --color-purple: #1E1B4B;
+@keyframes shutter {
+  0%, 100% { opacity: 0; }
+  20% { opacity: 0.95; }
+}
+
   --color-deep: #1E1B4B;
   --color-success: #059669;
 }
