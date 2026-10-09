@@ -49,9 +49,7 @@ Le das a grabar, haces lo tuyo, y obtienes una guía pulida con capturas anotada
 
 ## 📺 Demo
 
-<div align="center">
-<img src="https://github.com/user-attachments/assets/9de20b45-2256-4127-8242-141cf1802f39" alt="Demo de Mimik" width="800" />
-</div>
+https://github.com/user-attachments/assets/f71f5898-ee5e-4b22-b9fd-d5b45af73459
 
 ## 👋 Empezar
 
@@ -120,7 +118,7 @@ El difuminado aplica desde el momento en que entras al modo. Las capturas tomada
 
 </details>
 
-<img src="https://github.com/user-attachments/assets/968d2518-c561-4d68-92a6-3d5f569fe38a" alt="Desenfoque inteligente" width="800" />
+https://github.com/user-attachments/assets/f30fbcde-a705-45aa-b7bd-374e4762e6be
 
 <div align="right">
 
@@ -134,7 +132,7 @@ Trae tu propia API key (OpenAI o Anthropic) y Mimik genera descripciones natural
 
 Las descripciones se generan a partir de un contexto ligero del DOM (~50-100 tokens), no desde capturas. Unas 15-30 veces más barato que los modelos con visión. Elige el idioma de las descripciones (inglés, español, portugués, francés, alemán, chino).
 
-<img src="https://github.com/user-attachments/assets/3540cbd5-133f-46fd-a9b6-ffce9b4d422a" alt="Descripciones con IA" width="800" />
+https://github.com/user-attachments/assets/ce797986-56d1-4f72-b149-17463684cdd7
 
 <div align="right">
 
@@ -146,7 +144,7 @@ Las descripciones se generan a partir de un contexto ligero del DOM (~50-100 tok
 
 Reproduce cualquier guía en vivo sobre una página real. Mimik resalta el siguiente elemento, marca tu progreso paso a paso, y avanza solo conforme vas interactuando. Ideal para formar a un compañero o para guiarte a ti mismo.
 
-<img src="https://github.com/user-attachments/assets/56ffca1d-5074-491f-8571-dd70782d4b05" alt="Reproducción con Guíame" width="800" />
+https://github.com/user-attachments/assets/8df5662f-e5e1-4a79-9c84-6f38becc4d03
 
 <div align="right">
 
@@ -166,7 +164,7 @@ cualquiera de ellas a un paso. Editar un paso tampoco destruye el original habla
 siempre puede restaurar lo que dijiste. La transcripción se queda en tu dispositivo, nunca forma
 parte de una guía exportada y se elimina junto con la guía.
 
-<img src="https://github.com/user-attachments/assets/061fddc7-da65-4641-8b39-d30b80c36531" alt="Narración por voz" width="800" />
+https://github.com/user-attachments/assets/41ef17fd-0d02-4e17-81c6-30ba2b7c47d0
 
 <div align="right">
 
@@ -180,7 +178,7 @@ Arregla una guía después sin volver a grabar. Recorta, anota y censura cualqui
 un paso con IA sin salir del editor, mete títulos y notas entre pasos, reordena o borra en lote, y
 vuelve atrás con el historial de versiones.
 
-<img src="https://github.com/user-attachments/assets/62d3a01e-b129-44c8-8ba3-e9b97ff08d7e" alt="Editor de guías" width="800" />
+https://github.com/user-attachments/assets/b7eb0f6f-8957-4dbc-ab23-e23747719244
 
 <div align="right">
 
@@ -198,6 +196,14 @@ exportar la misma guía no cueste nada.
 
 Desactivada por defecto: tener una clave nunca activa la narración; lo haces tú.
 
+https://github.com/user-attachments/assets/e82132e4-caf1-49db-9077-d6eade210a89
+
+<div align="right">
+
+[![Back to top][back-to-top]](#readme-top)
+
+</div>
+
 ### 📤 Exportación multi-formato
 
 Comparte tus guías en el formato que mejor encaje con tu flujo:
@@ -211,7 +217,7 @@ Comparte tus guías en el formato que mejor encaje con tu flujo:
 
 Todas las exportaciones se generan del lado del cliente. Nada pasa por un servidor.
 
-<img src="https://github.com/user-attachments/assets/e7584527-7d68-4f3f-9261-8380ee08dfb4" alt="Exportación multi-formato" width="800" />
+https://github.com/user-attachments/assets/2a91221b-0f77-484d-9a47-74938a4ee585
 
 <div align="right">
 

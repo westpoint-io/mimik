@@ -49,9 +49,7 @@
 
 ## 📺 演示
 
-<div align="center">
-<img src="https://github.com/user-attachments/assets/9de20b45-2256-4127-8242-141cf1802f39" alt="Mimik 演示" width="800" />
-</div>
+https://github.com/user-attachments/assets/f71f5898-ee5e-4b22-b9fd-d5b45af73459
 
 ## 👋 开始使用
 
@@ -120,7 +118,7 @@ Mimik 可以在几秒内把任何重复性的浏览器任务变成一份可分�
 
 </details>
 
-<img src="https://github.com/user-attachments/assets/968d2518-c561-4d68-92a6-3d5f569fe38a" alt="智能模糊" width="800" />
+https://github.com/user-attachments/assets/f30fbcde-a705-45aa-b7bd-374e4762e6be
 
 <div align="right">
 
@@ -134,7 +132,7 @@ Mimik 可以在几秒内把任何重复性的浏览器任务变成一份可分�
 
 描述会根据轻量 DOM 上下文生成（约 50-100 tokens），不是根据截图生成。相比视觉模型大约便宜 15-30 倍。你可以选择描述语言（英语、西班牙语、葡萄牙语、法语、德语、中文）。
 
-<img src="https://github.com/user-attachments/assets/3540cbd5-133f-46fd-a9b6-ffce9b4d422a" alt="AI 描述" width="800" />
+https://github.com/user-attachments/assets/ce797986-56d1-4f72-b149-17463684cdd7
 
 <div align="right">
 
@@ -146,7 +144,7 @@ Mimik 可以在几秒内把任何重复性的浏览器任务变成一份可分�
 
 在真实页面上实时回放任何指南。Mimik 会高亮下一步要点击的元素，逐步跟踪进度，并在你完成操作后自动前进。它很适合团队入门培训，也适合自己跟着流程走一遍。
 
-<img src="https://github.com/user-attachments/assets/56ffca1d-5074-491f-8571-dd70782d4b05" alt="引导我回放" width="800" />
+https://github.com/user-attachments/assets/8df5662f-e5e1-4a79-9c84-6f38becc4d03
 
 <div align="right">
 
@@ -160,7 +158,7 @@ Mimik 可以在几秒内把任何重复性的浏览器任务变成一份可分�
 
 完整的转写文本都会保留下来，而不只是进入步骤的那部分。在指南里打开 **转写文本**，就能看到你说过的全部内容，包括没有匹配到任何步骤的那些，并把其中任意一句加到某个步骤上。编辑步骤也不会毁掉原始口述内容 —— 步骤编辑器始终可以把你真正说过的话放回去。转写文本只留在你的设备上，不会出现在导出的指南里，并会随指南一起删除。
 
-<img src="https://github.com/user-attachments/assets/061fddc7-da65-4641-8b39-d30b80c36531" alt="语音讲解" width="800" />
+https://github.com/user-attachments/assets/41ef17fd-0d02-4e17-81c6-30ba2b7c47d0
 
 <div align="right">
 
@@ -172,7 +170,7 @@ Mimik 可以在几秒内把任何重复性的浏览器任务变成一份可分�
 
 录制后可以直接修正指南，不需要重新录制。你可以裁剪、标注和遮挡任意截图，使用 AI 在编辑器里改写步骤，在步骤之间插入标题和备注，重新排序或批量删除，并通过版本历史回滚。
 
-<img src="https://github.com/user-attachments/assets/62d3a01e-b129-44c8-8ba3-e9b97ff08d7e" alt="指南编辑器" width="800" />
+https://github.com/user-attachments/assets/b7eb0f6f-8957-4dbc-ab23-e23747719244
 
 <div align="right">
 
@@ -188,6 +186,14 @@ Mimik 可以在几秒内把任何重复性的浏览器任务变成一份可分�
 
 默认关闭：拥有密钥并不会自动开启配音，需要你手动开启。
 
+https://github.com/user-attachments/assets/e82132e4-caf1-49db-9077-d6eade210a89
+
+<div align="right">
+
+[![Back to top][back-to-top]](#readme-top)
+
+</div>
+
 ### 📤 多格式导出
 
 你可以按工作流需要，用不同格式分享指南：
@@ -201,7 +207,7 @@ Mimik 可以在几秒内把任何重复性的浏览器任务变成一份可分�
 
 所有导出都在客户端生成。没有任何内容经过服务器。
 
-<img src="https://github.com/user-attachments/assets/e7584527-7d68-4f3f-9261-8380ee08dfb4" alt="多格式导出" width="800" />
+https://github.com/user-attachments/assets/2a91221b-0f77-484d-9a47-74938a4ee585
 
 <div align="right">
 

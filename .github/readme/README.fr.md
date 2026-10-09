@@ -49,9 +49,7 @@ Clique sur enregistrer, fais ce que tu as à faire, et récupère un guide soign
 
 ## 📺 Démo
 
-<div align="center">
-<img src="https://github.com/user-attachments/assets/9de20b45-2256-4127-8242-141cf1802f39" alt="Démo de Mimik" width="800" />
-</div>
+https://github.com/user-attachments/assets/f71f5898-ee5e-4b22-b9fd-d5b45af73459
 
 ## 👋 Pour commencer
 
@@ -120,7 +118,7 @@ Le floutage s'applique à partir du moment où tu entres dans le mode. Les captu
 
 </details>
 
-<img src="https://github.com/user-attachments/assets/968d2518-c561-4d68-92a6-3d5f569fe38a" alt="Flou intelligent" width="800" />
+https://github.com/user-attachments/assets/f30fbcde-a705-45aa-b7bd-374e4762e6be
 
 <div align="right">
 
@@ -134,7 +132,7 @@ Apporte ta propre clé API (OpenAI ou Anthropic) et Mimik génère des descripti
 
 Les descriptions sont générées à partir d'un contexte léger du DOM (~50-100 tokens), pas des captures. Environ 15-30x moins cher que les modèles vision. Choisis la langue des descriptions (anglais, espagnol, portugais, français, allemand, chinois).
 
-<img src="https://github.com/user-attachments/assets/3540cbd5-133f-46fd-a9b6-ffce9b4d422a" alt="Descriptions par IA" width="800" />
+https://github.com/user-attachments/assets/ce797986-56d1-4f72-b149-17463684cdd7
 
 <div align="right">
 
@@ -146,7 +144,7 @@ Les descriptions sont générées à partir d'un contexte léger du DOM (~50-100
 
 Rejoue n'importe quel guide en direct sur une vraie page. Mimik met en évidence l'élément suivant, suit ta progression étape par étape, et avance tout seul au fur et à mesure. Parfait pour former un collègue ou se guider soi-même dans un process.
 
-<img src="https://github.com/user-attachments/assets/56ffca1d-5074-491f-8571-dd70782d4b05" alt="Lecture avec Guidez-moi" width="800" />
+https://github.com/user-attachments/assets/8df5662f-e5e1-4a79-9c84-6f38becc4d03
 
 <div align="right">
 
@@ -166,7 +164,7 @@ rien, et ajoute celles que tu veux à une étape. Modifier une étape ne détrui
 l'original parlé : l'éditeur peut toujours remettre ce que tu as réellement dit. La transcription
 reste sur ton appareil, ne fait jamais partie d'un guide exporté et est supprimée avec le guide.
 
-<img src="https://github.com/user-attachments/assets/061fddc7-da65-4641-8b39-d30b80c36531" alt="Narration vocale" width="800" />
+https://github.com/user-attachments/assets/41ef17fd-0d02-4e17-81c6-30ba2b7c47d0
 
 <div align="right">
 
@@ -180,7 +178,7 @@ Corrige un guide après coup sans réenregistrer. Recadre, annote et masque n'im
 réécris une étape avec l'IA sans quitter l'éditeur, ajoute des titres et des notes entre les étapes,
 réordonne ou supprime en lot, et reviens en arrière via l'historique de versions.
 
-<img src="https://github.com/user-attachments/assets/62d3a01e-b129-44c8-8ba3-e9b97ff08d7e" alt="Éditeur de guides" width="800" />
+https://github.com/user-attachments/assets/b7eb0f6f-8957-4dbc-ab23-e23747719244
 
 <div align="right">
 
@@ -198,6 +196,14 @@ guide ne coûte rien.
 
 Désactivée par défaut : posséder une clé n'active jamais la narration, c'est vous qui l'activez.
 
+https://github.com/user-attachments/assets/e82132e4-caf1-49db-9077-d6eade210a89
+
+<div align="right">
+
+[![Back to top][back-to-top]](#readme-top)
+
+</div>
+
 ### 📤 Export multi-format
 
 Partage tes guides dans le format qui colle à ton flux :
@@ -211,7 +217,7 @@ Partage tes guides dans le format qui colle à ton flux :
 
 Tous les exports sont générés côté client. Rien ne passe par un serveur.
 
-<img src="https://github.com/user-attachments/assets/e7584527-7d68-4f3f-9261-8380ee08dfb4" alt="Export multi-format" width="800" />
+https://github.com/user-attachments/assets/2a91221b-0f77-484d-9a47-74938a4ee585
 
 <div align="right">
 
