@@ -198,6 +198,12 @@ guide ne coûte rien.
 
 Désactivée par défaut : posséder une clé n'active jamais la narration, c'est vous qui l'activez.
 
+<div align="right">
+
+[![Back to top][back-to-top]](#readme-top)
+
+</div>
+
 ### 📤 Export multi-format
 
 Partage tes guides dans le format qui colle à ton flux :

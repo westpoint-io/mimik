@@ -198,6 +198,12 @@ exportar la misma guía no cueste nada.
 
 Desactivada por defecto: tener una clave nunca activa la narración; lo haces tú.
 
+<div align="right">
+
+[![Back to top][back-to-top]](#readme-top)
+
+</div>
+
 ### 📤 Exportación multi-formato
 
 Comparte tus guías en el formato que mejor encaje con tu flujo:

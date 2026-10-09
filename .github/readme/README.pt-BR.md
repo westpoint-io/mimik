@@ -197,6 +197,12 @@ nada é cortado, e os clipes ficam em cache local para que reexportar o mesmo gu
 
 Desligada por padrão: ter uma chave nunca liga a narração; você liga.
 
+<div align="right">
+
+[![Back to top][back-to-top]](#readme-top)
+
+</div>
+
 ### 📤 Exportação multi-formato
 
 Compartilha os guias no formato que melhor cabe no teu fluxo:

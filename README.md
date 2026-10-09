@@ -199,6 +199,12 @@ cut off, and clips are cached locally so re-exporting the same guide costs nothi
 
 Off by default: holding a key never turns narration on, you do.
 
+<div align="right">
+
+[![Back to top][back-to-top]](#readme-top)
+
+</div>
+
 ### 📤 Multi-format export
 
 Share guides in whatever format fits your workflow:
