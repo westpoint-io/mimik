@@ -51,9 +51,7 @@ Click record, do the thing, get a polished guide with annotated screenshots. Nar
 
 ## 📺 Demo
 
-<div align="center">
-<img src="https://github.com/user-attachments/assets/9de20b45-2256-4127-8242-141cf1802f39" alt="Mimik demo" width="800" />
-</div>
+https://github.com/user-attachments/assets/f71f5898-ee5e-4b22-b9fd-d5b45af73459
 
 ## 👋 Getting Started
 
@@ -122,7 +120,7 @@ Blur applies from the moment you enter the mode onward. Screenshots already capt
 
 </details>
 
-<img src="https://github.com/user-attachments/assets/968d2518-c561-4d68-92a6-3d5f569fe38a" alt="Smart blur" width="800" />
+https://github.com/user-attachments/assets/f30fbcde-a705-45aa-b7bd-374e4762e6be
 
 <div align="right">
 
@@ -136,7 +134,7 @@ Bring your own API key (OpenAI or Anthropic) and Mimik generates human-readable 
 
 Descriptions are generated from a lightweight DOM context (~50-100 tokens), not screenshots. Roughly 15-30x cheaper than vision models. Choose the language you want descriptions in (English, Spanish, Portuguese, French, German, Chinese).
 
-<img src="https://github.com/user-attachments/assets/3540cbd5-133f-46fd-a9b6-ffce9b4d422a" alt="AI descriptions" width="800" />
+https://github.com/user-attachments/assets/ce797986-56d1-4f72-b149-17463684cdd7
 
 <div align="right">
 
@@ -148,7 +146,7 @@ Descriptions are generated from a lightweight DOM context (~50-100 tokens), not 
 
 Replay any guide live on a real page. Mimik highlights the next element to click, tracks your progress step by step, and advances automatically as you interact. Perfect for onboarding teammates or walking through a process yourself.
 
-<img src="https://github.com/user-attachments/assets/56ffca1d-5074-491f-8571-dd70782d4b05" alt="Guide Me replay" width="800" />
+https://github.com/user-attachments/assets/8df5662f-e5e1-4a79-9c84-6f38becc4d03
 
 <div align="right">
 
@@ -168,7 +166,7 @@ a step. Editing a step never destroys the spoken original either — the step ed
 back what you actually said. The transcript stays on your device, is never part of an exported guide, and is
 deleted with the guide.
 
-<img src="https://github.com/user-attachments/assets/061fddc7-da65-4641-8b39-d30b80c36531" alt="Voice narration" width="800" />
+https://github.com/user-attachments/assets/41ef17fd-0d02-4e17-81c6-30ba2b7c47d0
 
 <div align="right">
 
@@ -182,7 +180,7 @@ Fix a guide after the fact without re-recording. Crop, annotate and redact any s
 step with AI inline, drop headings and notes between steps, reorder or bulk-delete, and roll back
 through version history.
 
-<img src="https://github.com/user-attachments/assets/62d3a01e-b129-44c8-8ba3-e9b97ff08d7e" alt="Guide editor" width="800" />
+https://github.com/user-attachments/assets/b7eb0f6f-8957-4dbc-ab23-e23747719244
 
 <div align="right">
 
@@ -198,6 +196,8 @@ server, whose key stays there) — there is nothing else to sign up for. Narrate
 cut off, and clips are cached locally so re-exporting the same guide costs nothing.
 
 Off by default: holding a key never turns narration on, you do.
+
+https://github.com/user-attachments/assets/e82132e4-caf1-49db-9077-d6eade210a89
 
 <div align="right">
 
@@ -220,7 +220,7 @@ Share guides in whatever format fits your workflow:
 
 All exports are generated client-side. Nothing touches a server.
 
-<img src="https://github.com/user-attachments/assets/e7584527-7d68-4f3f-9261-8380ee08dfb4" alt="Multi-format export" width="800" />
+https://github.com/user-attachments/assets/2a91221b-0f77-484d-9a47-74938a4ee585
 
 <div align="right">
 
