@@ -98,6 +98,24 @@ const EXAMPLES: Record<AILanguageCode, PromptExamples> = {
       'Configurar quais canais do Slack enviam notificações na área de trabalho e definir um horário de não perturbar.',
     ],
   },
+  nl: {
+    steps: [
+      'Klik op de knop Submit',
+      'E-mailadres invoeren in het veld Email',
+      '"Admin" selecteren in de vervolgkeuzelijst Role',
+      'Navigeren naar de pagina Settings',
+    ],
+    titles: [
+      'Pull Requests van claude-code beoordelen',
+      'Slack-meldingsinstellingen configureren',
+      'Onkostendeclaratie indienen in Workday',
+      'Repository aanmaken in GitHub-organisatie',
+    ],
+    descriptions: [
+      'Het wachtwoord van een vergrendelde gebruiker resetten via het Okta-beheerpaneel. Voor IT-ondersteuningsmedewerkers.',
+      'Instellen welke Slack-kanalen desktopnotificaties sturen en een niet-storen-schema instellen.',
+    ],
+  },
   'zh-CN': {
     steps: [
       '点击 Submit 按钮',

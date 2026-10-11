@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-export const LOCALES = ['en', 'zh-CN', 'es', 'fr', 'de', 'pt-BR', 'ru'] as const;
+export const LOCALES = ['en', 'zh-CN', 'es', 'fr', 'de', 'pt-BR', 'ru', 'nl'] as const;
 
 export type Locale = (typeof LOCALES)[number];
 

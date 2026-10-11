@@ -66,6 +66,7 @@ export const AI_LANGUAGES = [
   { code: 'fr', label: 'Français' },
   { code: 'de', label: 'Deutsch' },
   { code: 'ru', label: 'Русский' },
+  { code: 'nl', label: 'Nederlands' },
 ] as const;
 
 export type AILanguageCode = (typeof AI_LANGUAGES)[number]['code'];
@@ -89,6 +90,7 @@ const LANGUAGE_INSTRUCTIONS: Record<Exclude<AILanguageCode, 'en'>, string> = {
   de: '\nWICHTIG: Schreibe die Ausgabe auf Deutsch. Übersetze keine Schaltflächen-, Feld- oder Seitennamen.',
   'zh-CN': '\n重要：请用中文输出。不要翻译按钮、字段和页面的名称。',
   ru: '\nВАЖНО: пиши результат на русском языке. Не переводи названия кнопок, полей и страниц.',
+  nl: "\nBELANGRIJK: schrijf de uitvoer in het Nederlands. Vertaal geen namen van knoppen, velden of pagina's.",
 };
 
 export function getLanguageSuffix(locale: string): string {
