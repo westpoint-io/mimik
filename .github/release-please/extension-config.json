@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "component": "extension",
+      "include-component-in-tag": false,
+      "changelog-path": "apps/extension/CHANGELOG.md",
+      "exclude-paths": ["apps/desktop", "packages/capture-native"],
+      "extra-files": [
+        {
+          "type": "json",
+          "path": "apps/extension/package.json",
+          "jsonpath": "$.version"
+        }
+      ]
+    }
+  }
+}

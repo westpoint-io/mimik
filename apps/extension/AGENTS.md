@@ -51,3 +51,13 @@ Guide changes cross contexts on the `mimik-guides` BroadcastChannel. The message
   the fix.
 - Smart Blur cannot reach iframes, shadow DOM, canvas, pseudo-elements, `<select>` or attribute
   values. The five READMEs say so, and they need updating with any change to the scanner.
+
+## Releasing
+
+`release.yml` keeps a release PR open against `main`. It works out the next version from the
+`feat` and `fix` commits since the last `v` tag, skipping commits that only touch `apps/desktop` or
+`packages/capture-native`, and writes the changelog into `apps/extension/CHANGELOG.md`. Merging
+that PR tags `v<version>`, publishes the GitHub release from the changelog and attaches the Chrome,
+Firefox and sources zips. Uploading to the stores stays manual. The workflow then hands GitHub's
+Latest flag back to the newest `desktop-v` release, because the desktop updater reads `latest.yml`
+from whichever release holds it. The config is in `.github/release-please/`.

@@ -1,0 +1,72 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release-pr:
+    name: Release PR
+    runs-on: ubuntu-latest
+    outputs:
+      extension: ${{ steps.extension.outputs.release_created }}
+      extension-tag: ${{ steps.extension.outputs.tag_name }}
+    steps:
+      - id: app
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - id: extension
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ steps.app.outputs.token }}
+          target-branch: main
+          config-file: .github/release-please/extension-config.json
+          manifest-file: .github/release-please/extension-manifest.json
+
+  extension:
+    name: Extension packages
+    needs: release-pr
+    if: needs.release-pr.outputs.extension == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm zip:all
+
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.release-pr.outputs.extension-tag }}
+        run: |
+          gh release upload "$TAG" \
+            apps/extension/.output/*-chrome.zip \
+            apps/extension/.output/*-firefox.zip \
+            apps/extension/.output/*-sources.zip
+          desktop=$(gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/tags/desktop-v" -q '.[].ref' | sed 's|^refs/tags/||' | sort -V | tail -1)
+          if [ -n "$desktop" ]; then
+            gh release edit "$desktop" --latest
+          fi
