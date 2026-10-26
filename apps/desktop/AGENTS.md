@@ -65,3 +65,13 @@ macOS (`desktop-windows.yml`, `desktop-macos.yml`) when desktop or shared code c
 
 Only `desktop-windows-release.yml` signs, through `electron-builder.signed.yml`. Every other build
 is unsigned, so the base config never gets signing options.
+
+## Releasing
+
+`release.yml` keeps a desktop release PR open against `main` beside the extension's. It works out
+the next version from the `feat` and `fix` commits since the last `desktop-v` tag, skipping commits
+that only touch `apps/extension`, and writes the changelog into `apps/desktop/CHANGELOG.md`.
+Merging that PR tags `desktop-v<version>` and opens a draft release. The signed Windows build waits
+for approval in the `desktop-production` environment, then attaches the installer, its blockmap and
+`latest.yml` and publishes the release as Latest, because the updater reads `latest.yml` from
+whichever release holds that flag. The config is in `.github/release-please/`.
