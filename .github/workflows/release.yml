@@ -22,6 +22,8 @@ jobs:
     outputs:
       extension: ${{ steps.extension.outputs.release_created }}
       extension-tag: ${{ steps.extension.outputs.tag_name }}
+      desktop: ${{ steps.desktop.outputs.release_created }}
+      desktop-tag: ${{ steps.desktop.outputs.tag_name }}
     steps:
       - id: extension
         uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
@@ -29,6 +31,37 @@ jobs:
           target-branch: main
           config-file: .github/release-please/extension-config.json
           manifest-file: .github/release-please/extension-manifest.json
+
+      - id: desktop
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          target-branch: main
+          config-file: .github/release-please/desktop-config.json
+          manifest-file: .github/release-please/desktop-manifest.json
+
+  desktop-windows:
+    needs: release-pr
+    if: needs.release-pr.outputs.desktop == 'true'
+    uses: $/.github/workflows/desktop-windows-release.yml
+
+  desktop:
+    name: Desktop installers
+    needs: [release-pr, desktop-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: mimik-windows-signed
+          path: dist
+
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.release-pr.outputs.desktop-tag }}
+        run: |
+          gh release upload "$TAG" dist/* --repo "$GITHUB_REPOSITORY"
+          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest
 
   extension:
     name: Extension packages
