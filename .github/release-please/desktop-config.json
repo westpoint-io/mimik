@@ -5,7 +5,6 @@
     ".": {
       "release-type": "simple",
       "component": "desktop",
-      "release-as": "1.0.0",
       "changelog-path": "apps/desktop/CHANGELOG.md",
       "exclude-paths": ["apps/extension"],
       "draft": true,
