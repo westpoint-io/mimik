@@ -22,3 +22,22 @@ if (problems.length > 0) {
   console.error(`\n${problems.length} translation key(s) use _ where both surfaces write a dot`);
   process.exit(1);
 }
+
+const LOCALES = 'packages/locales';
+const STORE_LIMITS = { store_title: 45, description: 132 };
+
+const tooLong = readdirSync(LOCALES)
+  .filter((name) => name.endsWith('.yml'))
+  .flatMap((name) => {
+    const app = readFileSync(join(LOCALES, name), 'utf8').match(/^app:\n((?: {2}.*\n)+)/m)?.[1] ?? '';
+    return Object.entries(STORE_LIMITS).flatMap(([key, max]) => {
+      const value = app.match(new RegExp(`^ {2}${key}: "?(.*?)"?$`, 'm'))?.[1] ?? '';
+      const length = [...value].length;
+      return length > max ? [`${name} app.${key} is ${length} characters, the store limit is ${max}`] : [];
+    });
+  });
+
+if (tooLong.length > 0) {
+  console.error(tooLong.join('\n'));
+  process.exit(1);
+}
