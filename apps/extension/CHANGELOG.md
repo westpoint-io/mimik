@@ -12,35 +12,35 @@
 
 ### Features
 
-* Russian, for the interface and for AI step descriptions
-* a redesigned onboarding, and a thank-you letter that opens once for existing users
-* choose whether AI writes step descriptions, guide titles, or both
-* settings to record keyboard shortcuts and what you type, both off by default
-* typing steps name the field you typed in
-* discard a recording instead of finishing it
-* capture more kinds of steps
-* the dashboard moves to a sidebar, with a fuller library page and thumbnails
-* search opens near the top with your recent guides
-* the options page shows one section at a time, with an About section and a GitHub card
-* narration and voice-over are grouped under AI in settings, with a live microphone meter
-* API key checks show as pills in the field, and a provider with no key is flagged
-* the version shows beside Settings, and the top bar fits narrow windows
+* Russian interface, with step descriptions written in Russian
+* A redesigned onboarding, and existing users see the thank-you letter once
+* You choose whether AI writes step descriptions, guide titles or both
+* Settings to record keyboard shortcuts and what you type, both off by default
+* Typing steps name the field you typed in
+* A recording can be discarded instead of finished
+* More kinds of steps are captured
+* The dashboard moves to a sidebar, and the library and its thumbnails fill the page
+* Search opens near the top and lists your recent guides
+* The options page shows one section at a time and has an About section and a GitHub card
+* Narration and voice-over settings sit under AI, with a live microphone meter
+* API key checks show as pills inside the field, and a provider with no key is flagged
+* The version appears beside Settings, and the top bar fits narrow windows
 
 ### Bug Fixes
 
-* nothing is sent to the AI provider for steps when AI is off for steps
-* page overlays are built from elements instead of HTML strings, and the blur picker button is translated
-* typing, key and colour settings apply to a recording that is already running
-* shortcut steps are named with the held keys, as Ctrl+K
-* a click made just before pause or finish is kept
-* a new step is numbered from the steps that exist, so a deleted one leaves no gap
-* exports get their own brand colour, separate from the click highlight
-* Russian dates, AI instructions and prompt examples
-* the extension never injects into the Chrome Web Store
-* the dashboard's Start capture button starts a new capture
-* a narration that heard nothing ends with the calm note, and narration switches off when the microphone is refused
-* naming and merging wait for narration to finish
-* fflate, the AI SDK and DOMPurify are updated past their security advisories
+* Nothing is sent to the AI provider for steps when AI is off for steps
+* Page overlays no longer build HTML from strings, and the blur picker button is translated
+* Typing, key and colour settings apply to a recording that is already running
+* Shortcut steps are named with the held keys, as Ctrl+K
+* A click made just before pausing or finishing is kept
+* A new step is numbered from the steps that exist, so deleting one leaves no gap
+* Exports get their own brand colour, separate from the click highlight
+* Russian has its own date format, AI instructions and prompt examples
+* Mimik never injects into the Chrome Web Store
+* The dashboard's Start capture button starts a new capture
+* A narration that hears nothing ends with a calm note, and narration turns off when the microphone is refused
+* Naming and merging steps wait for narration to finish
+* Security updates for fflate, the AI SDK and DOMPurify
 
 ## [1.3.0](https://github.com/westpoint-io/mimik/compare/v1.2.0...v1.3.0) (2026-09-29)
 
