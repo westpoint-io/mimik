@@ -15,6 +15,7 @@ export interface GuideMeta {
 }
 
 const MAX_BARE_TITLE_LENGTH = 100;
+const GUIDE_META_TIMEOUT_MS = 45_000;
 const FENCE = /^```(?:json)?\s*|\s*```$/g;
 
 const guideMetaSchema = jsonSchema<{ title: string; description?: string | null }>({
@@ -74,6 +75,8 @@ export async function generateGuideMeta(
       .replace('{{descriptionExamples}}', formatExamples(examples.descriptions))
       .replace('{{steps}}', () => formatted) + getLanguageSuffix(locale);
   const aiModel = createModel(provider, model, apiKey, baseUrl);
+  const deadline = new AbortController();
+  const timer = setTimeout(() => deadline.abort(), GUIDE_META_TIMEOUT_MS);
 
   try {
     const { object } = await generateObject({
@@ -81,7 +84,9 @@ export async function generateGuideMeta(
       schema: guideMetaSchema,
       prompt,
       maxOutputTokens: 200,
+      abortSignal: deadline.signal,
     });
+    clearTimeout(timer);
     return toGuideMeta(object.title, object.description);
   } catch (err) {
     logger.warn('Structured guide meta failed, retrying as plain text', err);
@@ -92,11 +97,14 @@ export async function generateGuideMeta(
       model: aiModel,
       prompt: prompt + GUIDE_META_JSON_SUFFIX,
       maxOutputTokens: 200,
+      abortSignal: deadline.signal,
     });
     return parseGuideMeta(text);
   } catch (err) {
     logger.error('Guide meta generation failed', err);
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
