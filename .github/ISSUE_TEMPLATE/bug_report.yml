@@ -1,7 +1,7 @@
 name: Bug report
 description: Something in Mimik does not work
 title: "[Bug] "
-labels: [bug, needs-triage]
+labels: [bug]
 body:
   - type: checkboxes
     id: preflight
