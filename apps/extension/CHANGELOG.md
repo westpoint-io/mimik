@@ -12,82 +12,32 @@
 
 ### Features
 
-* add discard to the desktop recording card with a trash icon on both apps, and match the extension on capture more and mic resume ([6c2da28](https://github.com/westpoint-io/mimik/commit/6c2da28842b7d7d2db5f3b822b9ee837f2e1d98b))
-* add github cards to desktop settings and record what you type to the extension ([2a3c2f7](https://github.com/westpoint-io/mimik/commit/2a3c2f7b04bcd06dad979963c3182bc0c6f94b51))
-* add russian to the desktop app and bring the russian strings up to this branch ([e6fbb64](https://github.com/westpoint-io/mimik/commit/e6fbb64e671ed73cf54bf40061e54b23b1857a12))
-* add the record keys setting to the extension, off by default like the desktop ([732194e](https://github.com/westpoint-io/mimik/commit/732194ef0c795f13e14b509d9fe9a89ef6134bd3))
-* choose whether ai writes step descriptions and guide titles ([97d2bf6](https://github.com/westpoint-io/mimik/commit/97d2bf68b1d754e22734e50a8d2c3b8fc0f63624))
-* **core:** give the capture machine an armed state, step removal and an area pause ([e139779](https://github.com/westpoint-io/mimik/commit/e13977960e9c5cb76ed6620b6ec350287a3b4fef))
-* **desktop:** ask for macOS permissions first, open the guide on finish and trim the tray menu ([464d00f](https://github.com/westpoint-io/mimik/commit/464d00ffe5f3b15aceb7477c5fd286230d8790c6))
-* **desktop:** capture the focused window, the whole screen or a drawn area ([1e41792](https://github.com/westpoint-io/mimik/commit/1e4179234abc52e3e1237f2b716259cabac9ccf8))
-* **desktop:** general settings, branding cards and the navy palette ([6b7d307](https://github.com/westpoint-io/mimik/commit/6b7d3078dc00f7a0e8d09fbabfeafc85037133ff))
-* **desktop:** keep screenshots as files behind a swappable guide store ([8f2c656](https://github.com/westpoint-io/mimik/commit/8f2c656131a750f6cc0461c34af9df8c7f58f622))
-* **desktop:** narrate recordings, and rewrite smart blur and step naming ([bf0ef44](https://github.com/westpoint-io/mimik/commit/bf0ef449eeba16a0d4c39e0abb9ce9130454d5db))
-* **desktop:** read controls, typing and shortcuts from the accessibility tree ([b159e79](https://github.com/westpoint-io/mimik/commit/b159e79ccf1ccf1bcbc909b4ee41eace19e0ca92))
-* **desktop:** record on macOS, ask for its permissions and open .mimik files ([3c7de34](https://github.com/westpoint-io/mimik/commit/3c7de34cd4894791cf0e39a551653b3496f69e56))
-* **desktop:** recording card, tray state, area editor and loading screen ([b889a02](https://github.com/westpoint-io/mimik/commit/b889a02ee48f9faedafaea8b1a8eddead180bd32))
-* **desktop:** show shortcuts with macOS symbols and in a chip inside key steps ([199be3a](https://github.com/westpoint-io/mimik/commit/199be3aec020fdda57f996538ed94d23060caf15))
-* **desktop:** show what's new after an update, with the extension's notice now shared ([c1a9320](https://github.com/westpoint-io/mimik/commit/c1a9320dc4b544946c48186a30b4cf55c086f254))
-* **desktop:** take screenshots natively so Wayland sessions work ([ca5755f](https://github.com/westpoint-io/mimik/commit/ca5755f4c99dcb340f711ebc4ef8bcac77eed715))
-* **desktop:** Windows installer, desktop CI, one key per provider and shared onboarding ([960511c](https://github.com/westpoint-io/mimik/commit/960511c87d38de314c2af8e4186f273a1591d445))
-* **desktop:** zoom steps toward the click, with shared settings cards and state hooks ([74ffcd5](https://github.com/westpoint-io/mimik/commit/74ffcd511612188064ee52208f5b856a12d1c34b))
-* discard on desktop, a choice of what AI does, Russian and hardened builds ([1b07042](https://github.com/westpoint-io/mimik/commit/1b07042b999d793b56dc8d4284a2a0463ab8dc09))
-* **extension:** open the thank-you letter once for existing users ([ad27128](https://github.com/westpoint-io/mimik/commit/ad27128fe2e3d71e2f0d58d94efe36dd034a72a2))
-* give the options page a section list, one section at a time ([d73b10e](https://github.com/westpoint-io/mimik/commit/d73b10e294141914edf7ab07938be99d22843ecb))
-* **i18n:** add Russian localization for UI and AI descriptions ([a8bed0c](https://github.com/westpoint-io/mimik/commit/a8bed0ceb6d190abf4b2b152e409a5340671dce1))
-* name the field in typing step titles on both apps ([bef3fe9](https://github.com/westpoint-io/mimik/commit/bef3fe964347b027552b15dbad9ee1f3146979a2))
-* redesign the onboarding for the extension and desktop ([a9c44b0](https://github.com/westpoint-io/mimik/commit/a9c44b0396b1af8d094664f396b07ab7ae1f4f9d))
-* share one GitHub card and add an About section to the options page ([e560d14](https://github.com/westpoint-io/mimik/commit/e560d1408ce355ae2327631fbf7140b40a43f2f3))
-* share the description queue, capture more steps and move the dashboard to a sidebar ([c11b56d](https://github.com/westpoint-io/mimik/commit/c11b56d6083e8e2c06796ea751aedeb35e64df08))
-* share the saved badge and the guide page, and group narration and voice-over under ai in the extension settings ([5a7b14f](https://github.com/westpoint-io/mimik/commit/5a7b14fc1e636b337a868462ef5564fc06e0891d))
-* show sites' favicons and apps' own icons on the desktop, and a dash where a guide has no place ([57aa5a9](https://github.com/westpoint-io/mimik/commit/57aa5a94264f3f72f01b5628d0e2b6f1a25696fe))
-* **ui:** compact the top bar to fit narrow windows ([1d48b2c](https://github.com/westpoint-io/mimik/commit/1d48b2ca98b9e8384c445d2f5c1e4592fd4ee879))
-* **ui:** fill the library page and its thumbnails ([65c0a99](https://github.com/westpoint-io/mimik/commit/65c0a999969fa58f5f6809d145e718b53b2261da))
-* **ui:** line up the API key rows and put the check after the provider's name ([24608e1](https://github.com/westpoint-io/mimik/commit/24608e18510fe9eb21d7e250012b22a82507f3eb))
-* **ui:** open search near the top with recent guides and library-style rows ([4ceb748](https://github.com/westpoint-io/mimik/commit/4ceb7480de3346923df5a2a1a237586a26fdc353))
-* **ui:** share the voice narration card with an access row and a live meter ([bbe1490](https://github.com/westpoint-io/mimik/commit/bbe14900d0b3e3baab43fb1b1f36af03d548ebb9))
-* **ui:** show key checks as pills in the field and flag a provider with no key ([f5301c1](https://github.com/westpoint-io/mimik/commit/f5301c1b5e3fbdae391c9319250a0ddfd9745874))
-* **ui:** show the app's version beside Settings in the sidebar ([c3f1d20](https://github.com/westpoint-io/mimik/commit/c3f1d20beb92d64c702f328eb23871311d7e01e9))
-
+* Russian, for the interface and for AI step descriptions
+* a redesigned onboarding, and a thank-you letter that opens once for existing users
+* choose whether AI writes step descriptions, guide titles, or both
+* settings to record keyboard shortcuts and what you type, both off by default
+* typing steps name the field you typed in
+* discard a recording instead of finishing it
+* capture more kinds of steps
+* the dashboard moves to a sidebar, with a fuller library page and thumbnails
+* search opens near the top with your recent guides
+* the options page shows one section at a time, with an About section and a GitHub card
+* narration and voice-over are grouped under AI in settings, with a live microphone meter
+* API key checks show as pills in the field, and a provider with no key is flagged
+* the version shows beside Settings, and the top bar fits narrow windows
 
 ### Bug Fixes
 
-* **ai:** send nothing to the provider for steps when AI is off for steps ([6be35e8](https://github.com/westpoint-io/mimik/commit/6be35e8fe879dd3c3fbf3b0f601dabf9390fa33b))
-* build page overlays from elements instead of html strings and translate the blur picker button ([0e3ddd5](https://github.com/westpoint-io/mimik/commit/0e3ddd57463b7ffa9326a1a34369a9e01f8bb059))
-* **capture-native:** look past chromium's empty tab-strip layer to the control under a click on macOS ([aef0a98](https://github.com/westpoint-io/mimik/commit/aef0a98f66777ae1380feea713a0a39f5af0892f))
-* **capture:** apply typing, key and colour settings to a running recording in the extension ([c295bc8](https://github.com/westpoint-io/mimik/commit/c295bc83f4c49075a348efca05f5b68dd486948f))
-* **capture:** name shortcut steps with the held keys on both apps, as Ctrl+K ([8afc202](https://github.com/westpoint-io/mimik/commit/8afc2021f424ca11f550db4f7d8185471d9864df))
-* **deps:** clear the critical dompurify advisory blocking ci ([1baecde](https://github.com/westpoint-io/mimik/commit/1baecdeb957f58314bb384924a717efd0b884971))
-* **desktop:** ask macOS for the microphone in onboarding's voice step ([6e31b3d](https://github.com/westpoint-io/mimik/commit/6e31b3da80d31cbc5e5f803d4a729c3ab9f2a25f))
-* **desktop:** install into Programs\Mimik as Mimik.exe ([761c3ae](https://github.com/westpoint-io/mimik/commit/761c3ae37f56f1a5c0525dfb1974d856a1bb0cc6))
-* **desktop:** keep whether the mic was on before a pause on the state machine ([fccd017](https://github.com/westpoint-io/mimik/commit/fccd01719d5c8e919d41a7721e0198ee8e0a097b))
-* **desktop:** list the poppins font the overlay and splash import ([4076c20](https://github.com/westpoint-io/mimik/commit/4076c2009d451a3735a89b1606433fa275327884))
-* **desktop:** macOS fixes for framing, typing, icons, the Dock and narrow windows ([c58ae79](https://github.com/westpoint-io/mimik/commit/c58ae79f3afadf82dcb106d94c8a97cc76777115))
-* **desktop:** name a guide after the app most of its steps happened in ([931e8c3](https://github.com/westpoint-io/mimik/commit/931e8c318dd82c58cffe8b04989b97ad68937ea5))
-* **desktop:** narrate and finish a guide the way the extension does ([dbbad57](https://github.com/westpoint-io/mimik/commit/dbbad574b12e4fb54985d2f6e478e41834195144))
-* **desktop:** package the app as Mimik, not the workspace's scoped name ([69d54a1](https://github.com/westpoint-io/mimik/commit/69d54a10533bb1914d9702fd5b651f9145d1b50d))
-* **desktop:** reword the macOS permission cards ([1b3ede8](https://github.com/westpoint-io/mimik/commit/1b3ede8d497458625c6f758eac4907c15ed68b4a))
-* **desktop:** reword the permissions intro ([2a141cd](https://github.com/westpoint-io/mimik/commit/2a141cd5849944fd80377a6ac0cb2f3d888e972e))
-* **desktop:** translate the recording card and give its buttons the extension's words ([fed5ddf](https://github.com/westpoint-io/mimik/commit/fed5ddfd056f3afca3e59bf975be71ab3ab662b4))
-* drop the repeated section heading and match the dashboard background in settings ([e5b5f54](https://github.com/westpoint-io/mimik/commit/e5b5f548049b98ca14c38c30931f95971da2042f))
-* **extension:** declare Poppins so dev mode loads the font ([79e2bb9](https://github.com/westpoint-io/mimik/commit/79e2bb95b1763a4cde50c2a71079bfcea3716b6c))
-* **extension:** keep a click made just before pause or finish ([75f2e46](https://github.com/westpoint-io/mimik/commit/75f2e4697dfad1afaa47cc76358dc5623a69dc69))
-* **extension:** make discard delete the recording instead of finishing it ([6d93708](https://github.com/westpoint-io/mimik/commit/6d93708cf5b028471ced539e359b396dbdfd9de0))
-* **extension:** number a new step from the steps that exist, so a deleted one leaves no gap ([02a50e7](https://github.com/westpoint-io/mimik/commit/02a50e7018d38b24b23a4752b298c683d732898b))
-* give exports their own brand color, separate from the click highlight ([7de05ce](https://github.com/westpoint-io/mimik/commit/7de05ce2a61fd28148499688766e81ad70baa64f))
-* **i18n:** add the missing Russian strings and cover Russian in the locale check ([10d1529](https://github.com/westpoint-io/mimik/commit/10d1529a71a4047bfe11544f6f2e39ed89613721))
-* **i18n:** format dates in Russian ([94ef80d](https://github.com/westpoint-io/mimik/commit/94ef80d3a46a07371e6d15cfea5ff95b4c3356ad))
-* **i18n:** give Russian its own AI instruction and prompt examples ([8e0d180](https://github.com/westpoint-io/mimik/commit/8e0d18074c322a21abb955d41b6a25e94b36518d))
-* **i18n:** say mac is coming in the desktop announcement ([b999c02](https://github.com/westpoint-io/mimik/commit/b999c02c0556a7eb8fba2a0fa950970c6cbb9e28))
-* make shortcut steps, quick clicks, mic refusal, settings and what's new match on both apps ([bf225ff](https://github.com/westpoint-io/mimik/commit/bf225ff9350e41de924c8f50bbfecaf91e4c8a1f))
-* never inject into the Chrome Web Store ([73e7638](https://github.com/westpoint-io/mimik/commit/73e763836e069386a5029702efd911788486e409))
-* point the readme language links at .github/readme ([4d91d6c](https://github.com/westpoint-io/mimik/commit/4d91d6cae9128e33f5cb839a31cc393e2e5a0d6d))
-* settle what testing the desktop branch turned up on both apps ([3764269](https://github.com/westpoint-io/mimik/commit/37642694e40498eedd2ff5fce510aafed8ba8abe))
-* start a new capture from the dashboard's Start capture button ([23f1371](https://github.com/westpoint-io/mimik/commit/23f1371d338cd7cec9110c9d3dc6fadf75bfd1de))
-* **ui:** let the shared stylesheet find its own classes from either app ([df883d7](https://github.com/westpoint-io/mimik/commit/df883d76fbccefc8be7ae084b5b997eb30255a72))
-* **ui:** list state setters as hook dependencies and mark the key checks that run once ([2c4b56e](https://github.com/westpoint-io/mimik/commit/2c4b56ef95855d7a3e66877e843f3be0abfeba20))
-* **ui:** move the API key status under the provider name in narrow cards ([6f81eb9](https://github.com/westpoint-io/mimik/commit/6f81eb9542729ae96993b5da0d5f08ce21361826))
-* update fflate and the ai sdk past their security advisories ([4a1b44b](https://github.com/westpoint-io/mimik/commit/4a1b44ba30a777fa7dd297ddd186344a678cfee7))
-* **voice:** end a narration that heard nothing with the calm note on the extension too ([42b49d1](https://github.com/westpoint-io/mimik/commit/42b49d1c123bc6ee333bde03f502f591817e99e9))
-* **voice:** switch narration off in the extension when the microphone is refused, as the desktop does ([b50fa7a](https://github.com/westpoint-io/mimik/commit/b50fa7ac00ecf12987db8732934f056bfdd7c616))
-* wait for narration before naming or merging, share narration handling in core and let the background turn the mic off ([f388a30](https://github.com/westpoint-io/mimik/commit/f388a309cd7c5b44324182c4caf1256fc53af7c7))
+* nothing is sent to the AI provider for steps when AI is off for steps
+* page overlays are built from elements instead of HTML strings, and the blur picker button is translated
+* typing, key and colour settings apply to a recording that is already running
+* shortcut steps are named with the held keys, as Ctrl+K
+* a click made just before pause or finish is kept
+* a new step is numbered from the steps that exist, so a deleted one leaves no gap
+* exports get their own brand colour, separate from the click highlight
+* Russian dates, AI instructions and prompt examples
+* the extension never injects into the Chrome Web Store
+* the dashboard's Start capture button starts a new capture
+* a narration that heard nothing ends with the calm note, and narration switches off when the microphone is refused
+* naming and merging wait for narration to finish
+* fflate, the AI SDK and DOMPurify are updated past their security advisories
