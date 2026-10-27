@@ -65,7 +65,7 @@ jobs:
           TAG: ${{ needs.release-pr.outputs.desktop-tag }}
         run: |
           gh release upload "$TAG" dist/* --repo "$GITHUB_REPOSITORY"
-          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest
+          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest --title "Desktop ${TAG#desktop-}"
 
   extension:
     name: Extension packages
@@ -97,6 +97,7 @@ jobs:
             apps/extension/.output/*-chrome.zip \
             apps/extension/.output/*-firefox.zip \
             apps/extension/.output/*-sources.zip
+          gh release edit "$TAG" --title "Extension $TAG"
           desktop=$(gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/tags/desktop-v" -q '.[].ref' | sed 's|^refs/tags/||' | sort -V | tail -1)
           if [ -n "$desktop" ]; then
             gh release edit "$desktop" --latest
