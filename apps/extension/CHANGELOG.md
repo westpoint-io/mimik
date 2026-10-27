@@ -41,3 +41,48 @@
 * a narration that heard nothing ends with the calm note, and narration switches off when the microphone is refused
 * naming and merging wait for narration to finish
 * fflate, the AI SDK and DOMPurify are updated past their security advisories
+
+## [1.3.0](https://github.com/westpoint-io/mimik/compare/v1.2.0...v1.3.0) (2026-09-29)
+
+
+* Guides can be exported as a `.mimik` file and imported into someone else's Mimik
+* Blurred areas are erased from a shared guide's images, and text you typed is stripped from it
+* Video exports can be narrated with an OpenAI or ElevenLabs voice
+* Narration keeps its full transcript, and a step can get back what you said after you edit it
+* The transcript can be deleted on its own, and never leaves your browser
+* Guides can be duplicated
+* Recording can be paused and resumed
+* Speech while recording is paused no longer lands on the next step
+* Pages that load during blur mode no longer start capturing on their own
+* Checkboxes and radio buttons are captured in the state you clicked them into
+* Dropdown options built from ARIA roles are captured as clicks
+* Typing descriptions follow the interface language
+* Guide titles stay on one line
+* Without an AI key, the guide title appears as soon as recording stops
+* Blurs cover text to their edges
+* The video player in the export preview has its own controls, with play, mute and fullscreen
+
+## [1.2.0](https://github.com/westpoint-io/mimik/compare/v1.1.1...v1.2.0) (2026-09-17)
+
+
+* Added DeepSeek and OpenRouter as AI providers
+* Any AI provider can now point at your own OpenAI-compatible server
+* API keys are stored per provider instead of one key shared across all of them
+* Checking an API key lists the models that provider offers, and says when the key has no credits left
+* An API key can be revealed in settings, so a wrong one can be fixed without retyping it
+* A step description that fails now says why, instead of silently retrying
+* Each step shows where its description came from
+* Guides can be exported as an animated GIF
+* Simplified Chinese interface
+* PDF export draws non-Latin text with the system fonts, so Chinese, Japanese and Korean characters are no longer clipped
+* Typed passwords no longer reach the guide
+* Values of blurred fields no longer reach the guide
+* Smart Blur matches UK phone numbers, and no longer mistakes reference numbers for them
+* A blurred field reveals on click instead of on hover
+* Guide Me waits for a real change on input steps that have no saved value
+* Settings controls share one height and one text size
+
+## [1.1.1](https://github.com/westpoint-io/mimik/releases/tag/v1.1.1) (2026-08-25)
+
+
+* Mimik now tells you when it has updated itself, with a link to what changed
