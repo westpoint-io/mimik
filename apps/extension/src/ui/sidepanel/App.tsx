@@ -52,6 +52,7 @@ export function App() {
   const [pauseReason, setPauseReason] = useState<PauseReason | null>(null);
 
   useEffect(() => {
+    let wasLive = false;
     const disconnect = connectToBackground({
       onConnect: () => {
         setIsAlive(true);
@@ -70,8 +71,9 @@ export function App() {
         const isPaused = update.state === CaptureState.PAUSED;
         setPaused(isPaused);
         setPauseReason(isPaused ? (update.pauseReason ?? null) : null);
+        if (live && !wasLive) setAiFailure(null);
+        wasLive = live;
         if (live) {
-          setAiFailure(null);
           const guideId = update.currentGuideId;
           if (guideId) {
             setView((prev) => (prev.name === 'recording' ? prev : { name: 'recording', guideId }));
