@@ -10,6 +10,7 @@ import {
   getGuide,
   hasTranscript,
   onGuidesChanged,
+  replaceGuideHost,
   updateGuideDescription,
   updateGuideTitle,
   updateStepDescription,
@@ -307,6 +308,19 @@ export function GuideContent({
   const metaGenerating = (untitledPending || animatingTitle !== null) && !desc.text;
   const readOnly = !editing || preview !== null;
 
+  const handleHostCommit = (input: HTMLInputElement) => {
+    const value = input.value.trim();
+    if (!value || value === domain) return;
+    try {
+      const origin = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`).origin;
+      replaceGuideHost(guideId, domain, origin)
+        .then(loadGuide)
+        .catch((err) => logger.error(' Guide host change failed', err));
+    } catch {
+      input.value = domain;
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-[calc(100vh-64px)]">
       {editingStepId && editingScreenshot && (
@@ -481,7 +495,24 @@ export function GuideContent({
                 {domain && (
                   <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground bg-card border border-border pl-1.5 pr-2.5 py-0.5 rounded-full">
                     <FaviconImg domain={domain} size={14} className="rounded-full" />
-                    {domain}
+                    {readOnly ? (
+                      domain
+                    ) : (
+                      <input
+                        key={domain}
+                        defaultValue={domain}
+                        size={Math.max(domain.length, 1)}
+                        aria-label={i18n.t('editor.guideHost')}
+                        onInput={(e) => {
+                          e.currentTarget.size = Math.max(e.currentTarget.value.length, 1);
+                        }}
+                        onBlur={(e) => handleHostCommit(e.currentTarget)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') e.currentTarget.blur();
+                        }}
+                        className="field-sizing-content bg-transparent focus:outline-none"
+                      />
+                    )}
                   </span>
                 )}
                 {onGuideMe && !editing && !preview && viewSteps.some(isReplayable) && (
