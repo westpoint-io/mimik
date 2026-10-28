@@ -798,3 +798,14 @@ stepKind:
   key: "Touche"
   navigate: "Page"
   note: "Note"
+outline:
+  title: Sommaire
+  untitledStep: Étape sans titre
+  moreSelected: "+$1"
+  instructions: Appuyez sur Espace pour saisir une étape. Déplacez-la avec les flèches, déposez-la avec Espace ou annulez avec Échap.
+  pickedUp: "$1 saisie"
+  movedOver: "$1 déplacée sur $2"
+  droppedOver: "$1 déposée sur $2"
+  dropped: "$1 déposée"
+  cancelled: "Déplacement de $1 annulé"
+  selected: Sélectionnée

@@ -798,3 +798,14 @@ stepKind:
   key: "按键"
   navigate: "页面"
   note: "备注"
+outline:
+  title: 目录
+  untitledStep: 未命名步骤
+  moreSelected: "+$1"
+  instructions: 按空格键拿起步骤，用方向键移动，再按空格键放下，或按 Esc 取消。
+  pickedUp: "已拿起 $1"
+  movedOver: "$1 移到 $2 上方"
+  droppedOver: "$1 已放到 $2"
+  dropped: "$1 已放下"
+  cancelled: "已取消移动 $1"
+  selected: 已选择

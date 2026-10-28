@@ -798,3 +798,14 @@ stepKind:
   key: Клавиша
   navigate: Страница
   note: Примечание
+outline:
+  title: Содержание
+  untitledStep: Шаг без названия
+  moreSelected: "+$1"
+  instructions: Нажмите Пробел, чтобы взять шаг. Перемещайте его стрелками, отпустите Пробелом или отмените клавишей Escape.
+  pickedUp: "Взят: $1"
+  movedOver: "$1 над $2"
+  droppedOver: "$1 перемещён на место $2"
+  dropped: "$1 отпущен"
+  cancelled: "Перемещение $1 отменено"
+  selected: Выбран

@@ -798,3 +798,14 @@ stepKind:
   key: "Taste"
   navigate: "Seite"
   note: "Notiz"
+outline:
+  title: Inhalt
+  untitledStep: Unbenannter Schritt
+  moreSelected: "+$1"
+  instructions: Mit der Leertaste nimmst du einen Schritt auf. Mit den Pfeiltasten verschieben, mit der Leertaste ablegen, mit Escape abbrechen.
+  pickedUp: "$1 aufgenommen"
+  movedOver: "$1 über $2 verschoben"
+  droppedOver: "$1 über $2 abgelegt"
+  dropped: "$1 abgelegt"
+  cancelled: "Verschieben von $1 abgebrochen"
+  selected: Ausgewählt

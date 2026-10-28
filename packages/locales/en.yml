@@ -798,3 +798,14 @@ stepKind:
   key: "Key"
   navigate: "Page"
   note: "Note"
+outline:
+  title: Contents
+  untitledStep: Untitled step
+  moreSelected: "+$1"
+  instructions: Press Space to pick up a step. Use the arrow keys to move it, Space to drop it, or Escape to cancel.
+  pickedUp: "Picked up $1"
+  movedOver: "$1 moved over $2"
+  droppedOver: "$1 dropped over $2"
+  dropped: "$1 dropped"
+  cancelled: "Moving $1 cancelled"
+  selected: Selected

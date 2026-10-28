@@ -798,3 +798,14 @@ stepKind:
   key: "Tecla"
   navigate: "Página"
   note: "Nota"
+outline:
+  title: Contenido
+  untitledStep: Paso sin título
+  moreSelected: "+$1"
+  instructions: Pulsa Espacio para tomar un paso. Muévelo con las flechas, suéltalo con Espacio o cancela con Escape.
+  pickedUp: "$1 tomado"
+  movedOver: "$1 movido sobre $2"
+  droppedOver: "$1 soltado sobre $2"
+  dropped: "$1 soltado"
+  cancelled: "Movimiento de $1 cancelado"
+  selected: Seleccionado
