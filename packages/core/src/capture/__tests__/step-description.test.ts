@@ -53,9 +53,14 @@ describe('buildFallbackDescription', () => {
     expect(result).toBe('steps.toggleSwitch[Dark mode]');
   });
 
-  it('generates type description with input type', () => {
+  it('names a typing step after the field alone once the field has a name', () => {
     const result = buildFallbackDescription('input', makeMeta({ inputType: 'email', placeholder: 'Email' }));
-    expect(result).toBe('steps.typeIntoField[email,Email]');
+    expect(result).toBe('steps.typeInto[Email]');
+  });
+
+  it('falls back to the input type when the field has no name', () => {
+    const result = buildFallbackDescription('input', makeMeta({ inputType: 'email' }));
+    expect(result).toMatch(/^steps\.typeIntoField\[email,/);
   });
 
   it('generates generic type description without input type', () => {
