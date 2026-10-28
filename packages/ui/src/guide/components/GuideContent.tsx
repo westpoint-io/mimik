@@ -31,8 +31,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/too
 import { TranscriptPanel } from '../../history/components/TranscriptPanel';
 import { VersionHistoryPanel } from '../../history/components/VersionHistoryPanel';
 import { useFullview } from '../../stores/use-fullview';
+import { useWideLayout } from '../hooks/use-wide-layout';
 import { buildPreview } from '../lib/build-preview';
 import type { PreviewData } from '../types';
+import { GuideOutline } from './GuideOutline';
 import { GuideStepList } from './GuideStepList';
 
 interface GuideContentProps {
@@ -63,6 +65,7 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
     transcriptOpen,
     setTranscriptOpen,
     setHasTranscript,
+    clearStepSelection,
   } = useFullview((s) => ({
     setGuideTitle: s.setGuideTitle,
     setGuideStepCount: s.setGuideStepCount,
@@ -76,8 +79,10 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
     transcriptOpen: s.transcriptOpen,
     setTranscriptOpen: s.setTranscriptOpen,
     setHasTranscript: s.setHasTranscript,
+    clearStepSelection: s.clearStepSelection,
   }));
 
+  const wide = useWideLayout();
   const [data, setData] = useState<GuideData | null>(null);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState('');
@@ -123,6 +128,9 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
     loadGuide();
     return onGuidesChanged(() => loadGuide());
   }, [loadGuide]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: clears the selection when the guide changes
+  useEffect(() => clearStepSelection, [guideId, clearStepSelection]);
 
   useEffect(() => {
     if (data) setGuideExportData({ guideId, ...data });
@@ -243,7 +251,7 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
 
   if (loading)
     return (
-      <div>
+      <div className="mx-auto max-w-[720px]">
         <div className="h-10 w-2/3 rounded-lg bg-border/50 animate-pulse" />
         <div className="h-4 w-48 rounded bg-border/30 animate-pulse mt-3 mb-8" />
         <div className="space-y-6">
@@ -274,6 +282,7 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
   const animatingTitle = preview ? null : typingTitle;
   const untitledPending = !preview && !typingTitle && title === i18n.t('guide.untitled') && viewSteps.length > 0;
   const metaGenerating = (untitledPending || animatingTitle !== null) && !desc.text;
+  const readOnly = !editing || preview !== null;
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-64px)]">
@@ -286,84 +295,51 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
         />
       )}
 
-      <div className={sidePanelOpen ? 'flex items-start gap-6' : ''}>
-        <div className={sidePanelOpen ? 'flex-1 min-w-0' : ''}>
-          {preview && (
-            <div className="flex items-center gap-2 rounded-lg bg-secondary border border-border px-4 py-3 mb-4">
-              <History size={15} className="text-accent shrink-0" />
-              <span className="text-[12px] text-foreground">{i18n.t('history.readOnlyBanner')}</span>
-            </div>
-          )}
+      <div className="flex items-start justify-center gap-10">
+        <GuideOutline
+          guideId={guideId}
+          steps={viewSteps}
+          readOnly={readOnly}
+          wide={wide && !sidePanelOpen}
+          onReorder={(newSteps) => setData((prev) => (prev ? { ...prev, steps: newSteps } : prev))}
+        />
+        <div className={`flex-1 min-w-0 ${sidePanelOpen ? 'max-w-[1032px]' : 'max-w-[720px]'}`}>
+          <div className={sidePanelOpen ? 'flex items-start gap-6' : ''}>
+            <div className={sidePanelOpen ? 'flex-1 min-w-0' : ''}>
+              {preview && (
+                <div className="flex items-center gap-2 rounded-lg bg-secondary border border-border px-4 py-3 mb-4">
+                  <History size={15} className="text-accent shrink-0" />
+                  <span className="text-[12px] text-foreground">{i18n.t('history.readOnlyBanner')}</span>
+                </div>
+              )}
 
-          <div className={untitledPending ? 'min-h-[88px]' : ''}>
-            {untitledPending ? (
-              <div className="text-[32px] font-extrabold leading-tight animate-gradient-text bg-[length:300%_100%] bg-clip-text text-transparent bg-gradient-to-r from-muted-foreground via-violet to-muted-foreground max-w-[480px]">
-                {i18n.t('guide.writingTitle')}
-              </div>
-            ) : animatingTitle ? (
-              <div className="relative text-[32px] font-extrabold leading-tight">
-                <div className="invisible" aria-hidden="true">
-                  {animatingTitle}
-                </div>
-                <div className="absolute inset-0 text-foreground">
-                  <TypeAnimation
-                    sequence={[
-                      animatingTitle,
-                      () => {
-                        titleRef.current = animatingTitle;
-                        setTitle(animatingTitle);
-                        setTypingTitle(null);
-                      },
-                    ]}
-                    speed={70}
-                    cursor={false}
-                  />
-                  <span className="inline-block w-[3px] h-[30px] bg-violet ml-0.5 align-text-bottom animate-blink" />
-                </div>
-              </div>
-            ) : editing && !preview ? (
-              <textarea
-                ref={(el) => {
-                  if (el) {
-                    el.style.height = '0';
-                    el.style.height = `${el.scrollHeight}px`;
-                  }
-                }}
-                value={title}
-                rows={1}
-                onChange={(e) => {
-                  const next = stripTitleLineBreaks(e.target.value);
-                  setTitle(next);
-                  setGuideTitle(next);
-                  const el = e.target;
-                  el.value = next;
-                  el.style.height = '0';
-                  el.style.height = `${el.scrollHeight}px`;
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
-                    e.preventDefault();
-                    e.currentTarget.blur();
-                  }
-                }}
-                onBlur={handleTitleBlur}
-                className="text-[32px] font-extrabold bg-transparent border-b-2 border-transparent hover:border-border focus:outline-none focus:border-accent w-full p-0 text-foreground resize-none leading-tight overflow-hidden"
-              />
-            ) : (
-              <h1 className="text-[32px] font-extrabold leading-tight text-foreground whitespace-pre-wrap break-words">
-                {preview ? preview.title : title}
-              </h1>
-            )}
-          </div>
-
-          {!preview && (
-            <div className="mt-3">
-              {metaGenerating ? (
-                <div className="max-w-[720px] text-[15px] leading-relaxed animate-gradient-text bg-[length:300%_100%] bg-clip-text text-transparent bg-gradient-to-r from-muted-foreground via-violet to-muted-foreground">
-                  {i18n.t('guide.writingDescription')}
-                </div>
-              ) : editing ? (
-                <div className="flex items-start gap-2 max-w-[720px]">
+              <div className={untitledPending ? 'min-h-[88px]' : ''}>
+                {untitledPending ? (
+                  <div className="text-[32px] font-extrabold leading-tight animate-gradient-text bg-[length:300%_100%] bg-clip-text text-transparent bg-gradient-to-r from-muted-foreground via-violet to-muted-foreground max-w-[480px]">
+                    {i18n.t('guide.writingTitle')}
+                  </div>
+                ) : animatingTitle ? (
+                  <div className="relative text-[32px] font-extrabold leading-tight">
+                    <div className="invisible" aria-hidden="true">
+                      {animatingTitle}
+                    </div>
+                    <div className="absolute inset-0 text-foreground">
+                      <TypeAnimation
+                        sequence={[
+                          animatingTitle,
+                          () => {
+                            titleRef.current = animatingTitle;
+                            setTitle(animatingTitle);
+                            setTypingTitle(null);
+                          },
+                        ]}
+                        speed={70}
+                        cursor={false}
+                      />
+                      <span className="inline-block w-[3px] h-[30px] bg-violet ml-0.5 align-text-bottom animate-blink" />
+                    </div>
+                  </div>
+                ) : editing && !preview ? (
                   <textarea
                     ref={(el) => {
                       if (el) {
@@ -371,130 +347,173 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
                         el.style.height = `${el.scrollHeight}px`;
                       }
                     }}
-                    value={desc.text}
-                    rows={2}
+                    value={title}
+                    rows={1}
                     onChange={(e) => {
-                      desc.set(e.target.value);
+                      const next = stripTitleLineBreaks(e.target.value);
+                      setTitle(next);
+                      setGuideTitle(next);
                       const el = e.target;
+                      el.value = next;
                       el.style.height = '0';
                       el.style.height = `${el.scrollHeight}px`;
                     }}
-                    onFocus={() => {
-                      editingDescriptionRef.current = true;
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+                        e.preventDefault();
+                        e.currentTarget.blur();
+                      }
                     }}
-                    onSelect={askAi.onSelect}
-                    onBlur={handleGuideDescriptionBlur}
-                    placeholder={i18n.t('editor.descriptionPlaceholder')}
-                    className="flex-1 resize-none overflow-hidden bg-transparent p-0 text-[15px] leading-relaxed text-muted-foreground placeholder:text-muted-foreground/60 border-b-2 border-transparent hover:border-border focus:outline-none focus:border-accent"
+                    onBlur={handleTitleBlur}
+                    className="text-[32px] font-extrabold bg-transparent border-b-2 border-transparent hover:border-border focus:outline-none focus:border-accent w-full p-0 text-foreground resize-none leading-tight overflow-hidden"
                   />
-                  {desc.hasApiKey && <span className="shrink-0 mt-0.5">{askAi.trigger}</span>}
-                  {desc.hasApiKey &&
-                    (() => {
-                      const busy = desc.generating || metaGenerating;
-                      const label = desc.text
-                        ? i18n.t('editor.regenerateDescription')
-                        : i18n.t('editor.generateDescription');
-                      return (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (busy) return;
-                                void desc.generate();
-                              }}
-                              aria-disabled={busy}
-                              aria-label={label}
-                              className="shrink-0 mt-0.5 p-1 rounded-md text-muted-foreground hover:text-accent hover:bg-secondary transition-colors aria-disabled:cursor-not-allowed aria-disabled:hover:text-muted-foreground aria-disabled:hover:bg-transparent"
-                            >
-                              {busy ? (
-                                <Loader2 size={15} className="animate-spin text-accent" />
-                              ) : (
-                                <Sparkles size={15} />
-                              )}
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent>{label}</TooltipContent>
-                        </Tooltip>
-                      );
-                    })()}
-                  <Toast message={desc.error} onDismiss={desc.clearError} />
-                </div>
-              ) : (
-                desc.text && (
-                  <p className="max-w-[720px] text-[15px] leading-relaxed text-muted-foreground">{desc.text}</p>
-                )
-              )}
-            </div>
-          )}
+                ) : (
+                  <h1 className="text-[32px] font-extrabold leading-tight text-foreground whitespace-pre-wrap break-words">
+                    {preview ? preview.title : title}
+                  </h1>
+                )}
+              </div>
 
-          <div className="flex items-center gap-1.5 mt-2 mb-4 flex-wrap">
-            <span className="inline-flex items-center text-[11px] font-medium text-muted-foreground bg-card border border-border px-2.5 py-0.5 rounded-full">
-              {formatDate(data.guide.createdAt)}
-            </span>
-            <span className="inline-flex items-center text-[11px] font-medium text-muted-foreground bg-card border border-border px-2.5 py-0.5 rounded-full">
-              {actionCount !== 1
-                ? i18n.t('guide.stepCountPlural', [String(actionCount)])
-                : i18n.t('guide.stepCount', [String(actionCount)])}
-            </span>
-            {domain && (
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground bg-card border border-border pl-1.5 pr-2.5 py-0.5 rounded-full">
-                <FaviconImg domain={domain} size={14} className="rounded-full" />
-                {domain}
-              </span>
+              {!preview && (
+                <div className="mt-3">
+                  {metaGenerating ? (
+                    <div className="max-w-[720px] text-[15px] leading-relaxed animate-gradient-text bg-[length:300%_100%] bg-clip-text text-transparent bg-gradient-to-r from-muted-foreground via-violet to-muted-foreground">
+                      {i18n.t('guide.writingDescription')}
+                    </div>
+                  ) : editing ? (
+                    <div className="flex items-start gap-2 max-w-[720px]">
+                      <textarea
+                        ref={(el) => {
+                          if (el) {
+                            el.style.height = '0';
+                            el.style.height = `${el.scrollHeight}px`;
+                          }
+                        }}
+                        value={desc.text}
+                        rows={2}
+                        onChange={(e) => {
+                          desc.set(e.target.value);
+                          const el = e.target;
+                          el.style.height = '0';
+                          el.style.height = `${el.scrollHeight}px`;
+                        }}
+                        onFocus={() => {
+                          editingDescriptionRef.current = true;
+                        }}
+                        onSelect={askAi.onSelect}
+                        onBlur={handleGuideDescriptionBlur}
+                        placeholder={i18n.t('editor.descriptionPlaceholder')}
+                        className="flex-1 resize-none overflow-hidden bg-transparent p-0 text-[15px] leading-relaxed text-muted-foreground placeholder:text-muted-foreground/60 border-b-2 border-transparent hover:border-border focus:outline-none focus:border-accent"
+                      />
+                      {desc.hasApiKey && <span className="shrink-0 mt-0.5">{askAi.trigger}</span>}
+                      {desc.hasApiKey &&
+                        (() => {
+                          const busy = desc.generating || metaGenerating;
+                          const label = desc.text
+                            ? i18n.t('editor.regenerateDescription')
+                            : i18n.t('editor.generateDescription');
+                          return (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (busy) return;
+                                    void desc.generate();
+                                  }}
+                                  aria-disabled={busy}
+                                  aria-label={label}
+                                  className="shrink-0 mt-0.5 p-1 rounded-md text-muted-foreground hover:text-accent hover:bg-secondary transition-colors aria-disabled:cursor-not-allowed aria-disabled:hover:text-muted-foreground aria-disabled:hover:bg-transparent"
+                                >
+                                  {busy ? (
+                                    <Loader2 size={15} className="animate-spin text-accent" />
+                                  ) : (
+                                    <Sparkles size={15} />
+                                  )}
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent>{label}</TooltipContent>
+                            </Tooltip>
+                          );
+                        })()}
+                      <Toast message={desc.error} onDismiss={desc.clearError} />
+                    </div>
+                  ) : (
+                    desc.text && (
+                      <p className="max-w-[720px] text-[15px] leading-relaxed text-muted-foreground">{desc.text}</p>
+                    )
+                  )}
+                </div>
+              )}
+
+              <div className="flex items-center gap-1.5 mt-2 mb-4 flex-wrap">
+                <span className="inline-flex items-center text-[11px] font-medium text-muted-foreground bg-card border border-border px-2.5 py-0.5 rounded-full">
+                  {formatDate(data.guide.createdAt)}
+                </span>
+                <span className="inline-flex items-center text-[11px] font-medium text-muted-foreground bg-card border border-border px-2.5 py-0.5 rounded-full">
+                  {actionCount !== 1
+                    ? i18n.t('guide.stepCountPlural', [String(actionCount)])
+                    : i18n.t('guide.stepCount', [String(actionCount)])}
+                </span>
+                {domain && (
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground bg-card border border-border pl-1.5 pr-2.5 py-0.5 rounded-full">
+                    <FaviconImg domain={domain} size={14} className="rounded-full" />
+                    {domain}
+                  </span>
+                )}
+                {onGuideMe && !editing && !preview && viewSteps.some(isReplayable) && (
+                  <button
+                    onClick={() => onGuideMe(guideId)}
+                    className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary-foreground bg-primary hover:bg-primary/90 px-3 py-0.5 rounded-full transition-colors ml-auto"
+                  >
+                    <Play size={11} />
+                    {i18n.t('guide.guideMe')}
+                  </button>
+                )}
+              </div>
+
+              <GuideStepList
+                guideId={guideId}
+                steps={viewSteps}
+                screenshots={viewScreenshots}
+                onDescriptionChange={handleDescriptionChange}
+                onDelete={handleDeleteStep}
+                onOpenEditor={handleOpenEditor}
+                readOnly={readOnly}
+                hasApiKey={desc.hasApiKey}
+                onChanged={loadGuide}
+                onCaptureMore={onCaptureMore}
+              />
+            </div>
+
+            {transcriptOpen && (
+              <TranscriptPanel
+                guideId={guideId}
+                guideTitle={data.guide.title}
+                steps={data.steps}
+                readOnly={readOnly}
+                refreshKey={dataVersion}
+                onClose={() => setTranscriptOpen(false)}
+                onChanged={loadGuide}
+              />
             )}
-            {onGuideMe && !editing && !preview && viewSteps.some(isReplayable) && (
-              <button
-                onClick={() => onGuideMe(guideId)}
-                className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary-foreground bg-primary hover:bg-primary/90 px-3 py-0.5 rounded-full transition-colors ml-auto"
-              >
-                <Play size={11} />
-                {i18n.t('guide.guideMe')}
-              </button>
+
+            {historyOpen && (
+              <VersionHistoryPanel
+                guideId={guideId}
+                selectedId={preview?.id ?? null}
+                refreshKey={historyRefreshKey}
+                live={live}
+                onSelect={(snapshot) => {
+                  setPreview(snapshot);
+                  if (snapshot) setEditing(false);
+                }}
+                onRestored={loadGuide}
+                onClose={() => setHistoryOpen(false)}
+              />
             )}
           </div>
-
-          <GuideStepList
-            guideId={guideId}
-            steps={viewSteps}
-            screenshots={viewScreenshots}
-            onDescriptionChange={handleDescriptionChange}
-            onDelete={handleDeleteStep}
-            onOpenEditor={handleOpenEditor}
-            onReorder={(newSteps) => setData((prev) => (prev ? { ...prev, steps: newSteps } : prev))}
-            readOnly={!editing || preview !== null}
-            hasApiKey={desc.hasApiKey}
-            onChanged={loadGuide}
-            onCaptureMore={onCaptureMore}
-          />
         </div>
-
-        {transcriptOpen && (
-          <TranscriptPanel
-            guideId={guideId}
-            guideTitle={data.guide.title}
-            steps={data.steps}
-            readOnly={!editing || preview !== null}
-            refreshKey={dataVersion}
-            onClose={() => setTranscriptOpen(false)}
-            onChanged={loadGuide}
-          />
-        )}
-
-        {historyOpen && (
-          <VersionHistoryPanel
-            guideId={guideId}
-            selectedId={preview?.id ?? null}
-            refreshKey={historyRefreshKey}
-            live={live}
-            onSelect={(snapshot) => {
-              setPreview(snapshot);
-              if (snapshot) setEditing(false);
-            }}
-            onRestored={loadGuide}
-            onClose={() => setHistoryOpen(false)}
-          />
-        )}
       </div>
     </div>
   );

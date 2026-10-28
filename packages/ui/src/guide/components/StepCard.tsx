@@ -9,9 +9,6 @@ import { useEffect, useState } from 'react';
 import { useAskAi } from '../../ai/hooks/use-ask-ai';
 import { ConfirmDialog } from '../../common/components/ConfirmDialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
-import { useCardDrag } from '../hooks/use-card-drag';
-import type { DragHandleProps } from '../types';
-import { DragGrip } from './DragGrip';
 import { ImagePlaceholder } from './ImagePlaceholder';
 import { ScreenshotView } from './ScreenshotView';
 import { StepSourceBadge } from './StepSourceBadge';
@@ -22,7 +19,6 @@ interface StepCardProps {
   screenshot: Screenshot | undefined;
   onDescriptionChange?: (stepId: string, description: string) => void;
   onDelete?: (stepId: string) => void;
-  dragHandleProps?: DragHandleProps;
   onOpenEditor?: (stepId: string, tool: 'annotate' | 'redact' | 'crop' | 'target') => void;
   onCopy?: (stepId: string) => void;
   placeholderRatio?: number;
@@ -38,7 +34,6 @@ export function StepCard({
   screenshot,
   onDescriptionChange,
   onDelete,
-  dragHandleProps,
   onOpenEditor,
   placeholderRatio,
   frameRatio,
@@ -48,10 +43,8 @@ export function StepCard({
 }: StepCardProps) {
   const [description, setDescription] = useState(step.description);
   const shortcut = splitAtShortcut(step.description, step.action);
-  const [dragOver, setDragOver] = useState(false);
   const [copied, setCopied] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const cardDrag = useCardDrag(dragHandleProps);
 
   useEffect(() => {
     setDescription(step.description);
@@ -102,23 +95,8 @@ export function StepCard({
     onChanged?.();
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(true);
-    dragHandleProps?.onDragOver(e);
-  };
-
   return (
-    <div
-      {...cardDrag}
-      onDragOver={handleDragOver}
-      onDragLeave={() => setDragOver(false)}
-      onDragEnd={() => {
-        setDragOver(false);
-        dragHandleProps?.onDragEnd();
-      }}
-      className={`rounded-xl mb-3 overflow-hidden transition-shadow border border-border bg-card ${dragOver ? 'ring-2 ring-accent' : ''}`}
-    >
+    <div className="rounded-xl mb-3 overflow-hidden transition-shadow border border-border bg-card">
       {screenshot ? (
         <ScreenshotView
           screenshot={screenshot}
@@ -141,7 +119,6 @@ export function StepCard({
 
       <div className="px-3 pt-2 pb-2">
         <div className="flex items-center gap-2">
-          {dragHandleProps && <DragGrip />}
           <span className="flex items-center justify-center w-[22px] h-[22px] rounded-full text-[11px] font-bold shrink-0 bg-primary text-primary-foreground">
             {number}
           </span>
