@@ -96,10 +96,11 @@ export async function handleFinalizeInputStep(
   stepId: string,
   elementMeta: ElementMeta,
   domContext: DOMContext | undefined,
+  typed: boolean,
 ) {
   if (!isLive(getActor().getSnapshot().value)) return;
   const screenshotId = await takeScreenshot(stepId, elementMeta);
-  await updateStepCapture(stepId, elementMeta, screenshotId);
+  await updateStepCapture(stepId, elementMeta, screenshotId, typed ? undefined : 'click');
 
   const guideId = (await getStep(stepId))?.guideId;
   if (domContext && guideId) queueDescription(guideId, () => describeDomStep(stepId, domContext));

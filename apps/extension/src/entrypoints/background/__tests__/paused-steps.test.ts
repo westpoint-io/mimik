@@ -79,17 +79,27 @@ describe('step writes while PAUSED', () => {
     const { handleFinalizeInputStep } = await import('../step-pipeline');
     state = CaptureState.PAUSED;
 
-    await handleFinalizeInputStep('step-1', meta, undefined);
+    await handleFinalizeInputStep('step-1', meta, undefined, true);
 
     expect(captureVisibleTab).toHaveBeenCalled();
-    expect(updateStepCapture).toHaveBeenCalledWith('step-1', meta, undefined);
+    expect(updateStepCapture).toHaveBeenCalledWith('step-1', meta, undefined, undefined);
+  });
+
+  it('turns a field that was clicked but never typed into a click step', async () => {
+    captureVisibleTab.mockRejectedValue(new Error('no tab in this harness'));
+    const { handleFinalizeInputStep } = await import('../step-pipeline');
+    state = CaptureState.RECORDING;
+
+    await handleFinalizeInputStep('step-1', meta, undefined, false);
+
+    expect(updateStepCapture).toHaveBeenCalledWith('step-1', meta, undefined, 'click');
   });
 
   it('refuses a finalize once the recording has ended', async () => {
     const { handleFinalizeInputStep } = await import('../step-pipeline');
     state = CaptureState.IDLE;
 
-    await handleFinalizeInputStep('step-1', meta, undefined);
+    await handleFinalizeInputStep('step-1', meta, undefined, true);
 
     expect(captureVisibleTab).not.toHaveBeenCalled();
     expect(updateStepCapture).not.toHaveBeenCalled();

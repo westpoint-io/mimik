@@ -93,3 +93,50 @@ describe('InputSession describes typing through i18n', () => {
     expect(update.inputValue).toBeUndefined();
   });
 });
+
+describe('InputSession reports whether anything was typed', () => {
+  const finalizeInputStep = sink.finalizeInputStep as ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    finalizeInputStep.mockClear();
+    document.body.innerHTML = '';
+  });
+
+  it('marks a field that was clicked and left as untyped', async () => {
+    const s = new InputSession('guide-1', sink);
+    await s.start(field(''));
+    await s.finalize();
+    expect(finalizeInputStep).toHaveBeenCalledWith(expect.objectContaining({ typed: false }));
+  });
+
+  it('marks a field that received input as typed', async () => {
+    const s = new InputSession('guide-1', sink);
+    const input = field('');
+    await s.start(input);
+    input.value = 'bonjour';
+    s.update(input);
+    await s.finalize();
+    expect(finalizeInputStep).toHaveBeenCalledWith(expect.objectContaining({ typed: true }));
+  });
+});
+
+describe('InputSession titles a field as a click until something is typed', () => {
+  beforeEach(() => {
+    updateInputStep.mockClear();
+    document.body.innerHTML = '';
+  });
+
+  it('titles the step as a click as soon as the field is clicked', async () => {
+    await new InputSession('guide-1', sink).start(field(''));
+    expect(lastUpdate().description).toBe('steps.click[Email]');
+  });
+
+  it('retitles the step once something is typed', async () => {
+    const s = new InputSession('guide-1', sink);
+    const input = field('');
+    await s.start(input);
+    input.value = 'bonjour';
+    s.update(input);
+    expect(lastUpdate().description).toBe('steps.typeValueInto[bonjour,Email]');
+  });
+});

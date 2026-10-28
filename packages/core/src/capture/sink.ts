@@ -33,6 +33,7 @@ export interface FinalizeInputStepData {
   stepId: string;
   elementMeta: ElementMeta;
   domContext?: DOMContext;
+  typed: boolean;
 }
 
 export interface FinalizeInputStepResponse {
