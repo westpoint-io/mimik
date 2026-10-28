@@ -1,9 +1,28 @@
 import { REDACT_ATTR } from '../../blur/redactor';
 
-const FOCUSABLE_SELECTOR =
-  'a[href], button, input, select, textarea, [role="button"], [role="link"], [role="tab"], [role="menuitem"], [role="checkbox"], [role="radio"], [role="switch"], [role="option"], [tabindex], [contenteditable="true"]';
+const SEMANTIC_SELECTOR =
+  'a[href], button, input, select, textarea, summary, [role="button"], [role="link"], [role="tab"], [role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="checkbox"], [role="radio"], [role="switch"], [role="option"], [role="treeitem"], [role="gridcell"], [role="columnheader"], [role="combobox"], [contenteditable="true"]';
+
+const WEAK_SELECTOR = '[tabindex], [aria-haspopup]';
+
+const CONTROL_SELECTOR = `${SEMANTIC_SELECTOR}, ${WEAK_SELECTOR}`;
+
+const MAX_WEAK_DEPTH = 4;
 
 const MAX_ELEMENT_RATIO = 0.8;
+
+function isPainted(el: Element): boolean {
+  const { width, height } = el.getBoundingClientRect();
+  return width > 0 && height > 0;
+}
+
+function holdsSeveralControls(el: Element): boolean {
+  let painted = 0;
+  for (const inner of el.querySelectorAll(CONTROL_SELECTOR)) {
+    if (isPainted(inner) && ++painted > 1) return true;
+  }
+  return false;
+}
 
 function labelledControl(el: Element): HTMLElement | null {
   const label = el.closest('label');
@@ -16,22 +35,21 @@ function shadowHost(el: Element): Element | null {
 }
 
 export function findFocusableAncestor(el: Element): HTMLElement {
+  let weak: HTMLElement | null = null;
   let scope: Element | null = el;
   while (scope) {
-    let cursor: Element | null = scope;
-    while (cursor) {
-      const match: Element | null = cursor.closest(FOCUSABLE_SELECTOR);
-      if (match instanceof HTMLElement) return match;
-      if (match) {
-        cursor = match.parentElement;
-        continue;
-      }
-      break;
+    let depth = 0;
+    for (let cursor: Element | null = scope; cursor; cursor = cursor.parentElement, depth++) {
+      if (!(cursor instanceof HTMLElement)) continue;
+      if (cursor.matches(SEMANTIC_SELECTOR)) return cursor;
+      if (!weak && depth <= MAX_WEAK_DEPTH && cursor.matches(WEAK_SELECTOR) && !holdsSeveralControls(cursor))
+        weak = cursor;
     }
     const control = labelledControl(scope);
     if (control) return control;
     scope = shadowHost(scope);
   }
+  if (weak) return weak;
   if (el instanceof HTMLElement) return el;
   let parent: Element | null = el.parentElement;
   while (parent && !(parent instanceof HTMLElement)) {

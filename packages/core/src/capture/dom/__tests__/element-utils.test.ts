@@ -172,6 +172,52 @@ describe('findFocusableAncestor', () => {
     expect(findFocusableAncestor(label)).toBe(option);
     list.remove();
   });
+
+  function painted(el: Element) {
+    Object.defineProperty(el, 'getBoundingClientRect', { value: () => ({ width: 20, height: 20 }) });
+  }
+
+  it('resolves a tree row to its treeitem rather than the focusable tree around it', () => {
+    document.body.innerHTML =
+      '<div role="tree" tabindex="1048"><ul><li role="treeitem"><div><span><div id="name">Sales orders</div></span></div></li></ul></div>';
+    const item = document.querySelector('[role="treeitem"]');
+    expect(findFocusableAncestor(document.getElementById('name')!)).toBe(item);
+  });
+
+  it('resolves a div button inside a focusable pane to the button', () => {
+    document.body.innerHTML =
+      '<div id="pane" tabindex="-1"><div id="btn" tabindex="9"><span>✓</span><span id="label">Save</span></div></div>';
+    painted(document.getElementById('btn')!);
+    expect(findFocusableAncestor(document.getElementById('label')!)).toBe(document.getElementById('btn'));
+  });
+
+  it('skips a focusable panel that holds several controls of its own', () => {
+    document.body.innerHTML =
+      '<div tabindex="-1"><span id="text">Posting</span><div tabindex="-1">Save</div><div tabindex="-1">Print</div></div>';
+    for (const control of document.querySelectorAll('div div')) painted(control);
+    const text = document.getElementById('text')!;
+    expect(findFocusableAncestor(text)).toBe(text);
+  });
+
+  it('keeps a focusable menu item that carries its own tick box', () => {
+    document.body.innerHTML =
+      '<div id="item" tabindex="-1"><div role="checkbox"></div><span id="text">Toolbar</span></div>';
+    painted(document.querySelector('[role="checkbox"]')!);
+    expect(findFocusableAncestor(document.getElementById('text')!)).toBe(document.getElementById('item'));
+  });
+
+  it('ignores hidden controls when deciding whether a focusable element stands alone', () => {
+    document.body.innerHTML =
+      '<div id="trigger" aria-haspopup="menu"><span id="text">Edit</span><div role="menu"><div role="menuitem">Undo</div></div></div>';
+    expect(findFocusableAncestor(document.getElementById('text')!)).toBe(document.getElementById('trigger'));
+  });
+
+  it('does not stretch a focusable pane over text nested deep inside it', () => {
+    document.body.innerHTML =
+      '<div tabindex="-1"><div><div><div><div><span id="leaf">Posting period 2026-09</span></div></div></div></div></div>';
+    const leaf = document.getElementById('leaf')!;
+    expect(findFocusableAncestor(leaf)).toBe(leaf);
+  });
 });
 
 describe('getFieldLabel', () => {
