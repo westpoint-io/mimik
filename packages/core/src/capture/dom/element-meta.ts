@@ -52,7 +52,7 @@ export function extractElementMeta(el: HTMLElement, atEvent?: FrozenRect): Eleme
     textContent: getCleanText(el),
     ariaLabel: el.getAttribute('aria-label'),
     placeholder: el.getAttribute('placeholder'),
-    altText: el instanceof HTMLImageElement ? el.alt : null,
+    altText: el instanceof HTMLImageElement ? el.alt : el.getAttribute('title'),
     name: el.getAttribute('name'),
     role: el.getAttribute('role') || (el.tagName?.toLowerCase() ?? null),
     href: el instanceof HTMLAnchorElement ? el.href : null,

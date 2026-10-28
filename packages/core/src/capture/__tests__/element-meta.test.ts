@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
 import { extractElementMeta } from '@/core/capture/dom/element-meta';
+import { buildFallbackDescription } from '@/core/capture/step-description';
 
 function withRect(el: HTMLElement, rect: { x: number; y: number; width: number; height: number }) {
   el.getBoundingClientRect = () => ({ ...rect, top: rect.y, left: rect.x, right: 0, bottom: 0, toJSON: () => ({}) });
@@ -66,5 +67,17 @@ describe('extractElementMeta', () => {
     for (const node of attached) {
       expect(node instanceof HTMLInputElement || (node as Element).querySelector?.('input')).toBeFalsy();
     }
+  });
+});
+
+describe('extractElementMeta help text', () => {
+  it('names an icon-only control after its tooltip', () => {
+    const el = document.createElement('div');
+    el.title = 'Print list';
+    el.textContent = '▤';
+    document.body.appendChild(el);
+    const meta = extractElementMeta(el);
+    expect(meta.altText).toBe('Print list');
+    expect(buildFallbackDescription('click', meta)).toContain('Print list');
   });
 });
