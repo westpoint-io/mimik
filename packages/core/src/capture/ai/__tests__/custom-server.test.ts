@@ -7,6 +7,7 @@ import { validateApiKey } from '../validate';
 interface Seen {
   path: string;
   key?: string;
+  browserAccess?: string;
 }
 
 const TEXT = 'Clicked the Update profile button';
@@ -17,7 +18,8 @@ function startMockServer(models: string[]): Promise<{ server: Server; seen: Seen
     const path = new URL(req.url ?? '/', 'http://x').pathname;
     const auth = req.headers.authorization;
     const key = auth ? auth.replace('Bearer ', '') : (req.headers['x-api-key'] as string | undefined);
-    seen.push({ path, key });
+    const browserAccess = req.headers['anthropic-dangerous-direct-browser-access'] as string | undefined;
+    seen.push({ path, key, browserAccess });
     const send = (code: number, body: unknown) => {
       res.writeHead(code, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(body));
@@ -137,12 +139,16 @@ describe('a real custom server, real fetch, real SDK', () => {
     expect(openai.seen.slice(before).map((r) => r.path)).toContain('/v1/chat/completions');
   });
 
-  it('generates through the anthropic protocol against a custom server', async () => {
+  it('generates through the anthropic protocol with the browser access header the key check sends', async () => {
+    const before = anthropic.seen.length;
     const { text } = await generateText({
       model: createModel('anthropic', 'claude-local', 'ak-test', ANTHROPIC_URL),
       prompt: 'Describe this step.',
     });
     expect(text).toBe(TEXT);
+    const generated = anthropic.seen.slice(before).filter((r) => r.path === '/v1/messages');
+    expect(generated.length).toBeGreaterThan(0);
+    expect(generated.every((r) => r.browserAccess === 'true')).toBe(true);
   });
 
   it('keeps deepseek on chat completions at its own default endpoint', async () => {
