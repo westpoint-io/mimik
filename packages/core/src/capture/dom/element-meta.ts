@@ -1,5 +1,6 @@
 import { getCssSelector } from 'css-selector-generator';
 import type { ElementMeta } from '@/core/guides/types';
+import { getFieldLabel, isRedactedField, isSensitiveField } from './element-utils';
 
 function getCleanText(el: HTMLElement): string | null {
   if (el instanceof HTMLInputElement) return null;
@@ -45,12 +46,19 @@ export function extractElementMeta(el: HTMLElement, atEvent?: FrozenRect): Eleme
   } catch {
     cssSelector = el.tagName?.toLowerCase() ?? 'unknown';
   }
+  const isField =
+    el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement;
+  const fixedValue =
+    el instanceof HTMLInputElement && (el.readOnly || el.disabled) && !isSensitiveField(el) && !isRedactedField(el)
+      ? el.value
+      : '';
   return {
     source: 'dom',
     tag: el.tagName?.toLowerCase() ?? 'unknown',
     cssSelector,
     textContent: getCleanText(el),
     ariaLabel: el.getAttribute('aria-label'),
+    label: isField ? getFieldLabel(el) || fixedValue || null : null,
     placeholder: el.getAttribute('placeholder'),
     altText: el instanceof HTMLImageElement ? el.alt : el.getAttribute('title'),
     name: el.getAttribute('name'),

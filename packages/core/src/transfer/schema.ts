@@ -225,6 +225,7 @@ function parseElementMeta(value: unknown): ElementMeta | null {
     cssSelector,
     textContent: nullableStr(value.textContent),
     ariaLabel: nullableStr(value.ariaLabel),
+    label: nullableStr(value.label),
     placeholder: nullableStr(value.placeholder),
     altText: nullableStr(value.altText),
     name: nullableStr(value.name),

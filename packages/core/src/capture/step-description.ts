@@ -45,6 +45,7 @@ function nameCandidates(meta: ElementMeta): NameCandidate[] {
   const ownName = IDENTIFIER.test(meta.name ?? '') ? null : meta.name;
   const found: NameCandidate[] = [
     meta.ariaLabel,
+    meta.label,
     meta.placeholder,
     shownIsLabel ? shown : null,
     meta.altText,

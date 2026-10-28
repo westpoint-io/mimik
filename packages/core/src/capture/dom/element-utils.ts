@@ -9,6 +9,8 @@ const CONTROL_SELECTOR = `${SEMANTIC_SELECTOR}, ${WEAK_SELECTOR}`;
 
 const MAX_WEAK_DEPTH = 4;
 
+const MAX_ROW_LABEL_LENGTH = 40;
+
 const MAX_ELEMENT_RATIO = 0.8;
 
 function isPainted(el: Element): boolean {
@@ -60,9 +62,12 @@ export function findFocusableAncestor(el: Element): HTMLElement {
 
 export function isTextField(el: Element): boolean {
   if (el instanceof HTMLInputElement) {
-    return ['text', 'email', 'password', 'search', 'tel', 'url', 'number'].includes(el.type);
+    return (
+      !el.readOnly && !el.disabled && ['text', 'email', 'password', 'search', 'tel', 'url', 'number'].includes(el.type)
+    );
   }
-  return el instanceof HTMLTextAreaElement || (el instanceof HTMLElement && el.isContentEditable);
+  if (el instanceof HTMLTextAreaElement) return !el.readOnly && !el.disabled;
+  return el instanceof HTMLElement && el.isContentEditable;
 }
 
 const TOGGLE_ROLES = new Set(['checkbox', 'radio', 'switch']);
@@ -132,6 +137,16 @@ function slottedLabel(el: Element): string | null {
   );
 }
 
+function rowLabel(el: HTMLElement): string | null {
+  const row = el.parentElement;
+  if (!row) return null;
+  for (const control of row.querySelectorAll(CONTROL_SELECTOR)) {
+    if (control !== el && !el.contains(control) && isPainted(control)) return null;
+  }
+  const text = meaningfulLabel(row.innerText);
+  return text && text.length <= MAX_ROW_LABEL_LENGTH ? text : null;
+}
+
 export function getFieldLabel(el: HTMLElement): string | null {
   const ariaLabel = el.getAttribute('aria-label');
   if (ariaLabel) return ariaLabel;
@@ -164,6 +179,9 @@ export function getFieldLabel(el: HTMLElement): string | null {
     const labelText = meaningfulLabel(parentLabel.innerText);
     if (labelText) return labelText;
   }
+
+  const row = rowLabel(el);
+  if (row) return row;
 
   const name = el.getAttribute('name');
   if (name && !/[-_]test|[-_]id|[-_]key/i.test(name)) return name;
