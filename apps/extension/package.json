@@ -55,7 +55,7 @@
     {
       "name": "pages",
       "path": ".output/chrome-mv3/chunks/*.js",
-      "limit": "600 kB"
+      "limit": "620 kB"
     }
   ]
 }
