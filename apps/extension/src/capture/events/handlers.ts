@@ -23,6 +23,7 @@ import { localStorage } from '@/lib/browser-api/local-storage';
 import { HoverRing } from '@/lib/hover-ring';
 import { InputSession } from './input-session';
 import { isRecordableKey } from './is-recordable-key';
+import { PressHold } from './press-hold';
 
 const REPEAT_CLICK_MS = 300;
 const MAC = /Mac/i.test(navigator.platform);
@@ -65,6 +66,7 @@ const ACTIVE_CAPTURE = { capture: true } as const;
 
 class CaptureController {
   private input: InputSession;
+  private press = new PressHold();
   private queue = new PQueue({ concurrency: 1 });
   private listeners: [string, EventListener, AddEventListenerOptions][] = [];
   private dragStartX: number | null = null;
@@ -89,6 +91,7 @@ class CaptureController {
   ) {
     this.input = new InputSession(guideId, sink);
     this.listeners = [
+      ...this.press.listeners,
       ['click', this.onClick.bind(this), ACTIVE_CAPTURE],
       ['auxclick', this.onAuxClick.bind(this), ACTIVE_CAPTURE],
       ['keydown', this.onKeydown.bind(this), ACTIVE_CAPTURE],
@@ -180,13 +183,19 @@ class CaptureController {
 
   private onClick(e: Event) {
     const me = e as MouseEvent;
+    if (isReplayedClick(me)) return;
+    const press = this.press.take();
+    if (!this.interceptClick(me, press)) this.press.replay(press);
+  }
+
+  private interceptClick(me: MouseEvent, press: ReturnType<PressHold['take']>): boolean {
     const raw = eventTarget(me);
-    if (!raw || !(raw instanceof Element) || isReplayedClick(me) || me.shiftKey) return;
+    if (!raw || !(raw instanceof Element) || me.shiftKey) return false;
     const target = findFocusableAncestor(raw);
-    if (isMimikElement(target)) return;
+    if (isMimikElement(target)) return false;
 
     const now = Date.now();
-    if (target === lastClickTarget && now - lastClickTime < REPEAT_CLICK_MS) return;
+    if (target === lastClickTarget && now - lastClickTime < REPEAT_CLICK_MS) return false;
     lastClickTarget = target;
     lastClickTime = now;
 
@@ -196,7 +205,7 @@ class CaptureController {
         if (this.input.active && this.input.target !== target) await this.input.finalize();
         if (!this.input.active) await this.input.start(target, atEvent);
       });
-      return;
+      return false;
     }
 
     if (isNavigatingClick(target)) {
@@ -212,14 +221,14 @@ class CaptureController {
           }, INTERCEPT_DELAY_MS),
         );
       }
-      return;
+      return false;
     }
 
     const task = this.capture('click', target, { x: me.clientX, y: me.clientY });
 
     if (!shouldInterceptClick(target, me)) {
       this.enqueue(task);
-      return;
+      return false;
     }
 
     me.preventDefault();
@@ -231,9 +240,11 @@ class CaptureController {
       } catch (err) {
         logger.warn('Capture failed, replaying the click anyway', err);
       } finally {
+        this.press.replay(press);
         replayClick(target, init);
       }
     });
+    return true;
   }
 
   private onAuxClick(e: Event) {
@@ -342,6 +353,7 @@ class CaptureController {
   }
 
   stop(): Promise<void> {
+    this.press.flush();
     browser.storage.local.onChanged.removeListener(this.onSettingsChanged);
     for (const [event, handler, opts] of this.listeners) {
       window.removeEventListener(event, handler, opts);

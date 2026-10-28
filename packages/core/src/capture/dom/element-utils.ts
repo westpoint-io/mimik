@@ -89,6 +89,10 @@ export function isTooLarge(el: Element): boolean {
   return rect.width / window.innerWidth > MAX_ELEMENT_RATIO || rect.height / window.innerHeight > MAX_ELEMENT_RATIO;
 }
 
+export function isControl(el: Element): boolean {
+  return el.matches(CONTROL_SELECTOR);
+}
+
 export function isMimikElement(el: Element): boolean {
   return !!el.closest('[data-mimik-ignore]');
 }
