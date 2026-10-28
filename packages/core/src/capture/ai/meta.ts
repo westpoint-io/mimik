@@ -83,7 +83,7 @@ export async function generateGuideMeta(
       model: aiModel,
       schema: guideMetaSchema,
       prompt,
-      maxOutputTokens: 200,
+      maxOutputTokens: 1024,
       abortSignal: deadline.signal,
     });
     clearTimeout(timer);
@@ -96,7 +96,7 @@ export async function generateGuideMeta(
     const { text } = await generateText({
       model: aiModel,
       prompt: prompt + GUIDE_META_JSON_SUFFIX,
-      maxOutputTokens: 200,
+      maxOutputTokens: 1024,
       abortSignal: deadline.signal,
     });
     return parseGuideMeta(text);
