@@ -117,12 +117,6 @@ input[type="checkbox"]:not(:disabled) {
   50%, 100% { top: 100%; opacity: 0; }
 }
 
-@keyframes ob-blur {
-  0%, 15% { filter: none; }
-  35%, 92% { filter: blur(2.5px); }
-  100% { filter: none; }
-}
-
 @keyframes ob-fill-x {
   0%, 10% { transform: scaleX(0); }
   30%, 92% { transform: scaleX(1); }
