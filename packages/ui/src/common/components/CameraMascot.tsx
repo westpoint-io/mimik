@@ -23,7 +23,7 @@ export function CameraMascot({ size = 64, flash = 'loop' }: CameraMascotProps) {
   const face = MASCOT_FACES.happy;
   const camera = CAMERA_MASCOT_PARTS;
   return (
-    <svg viewBox={CAMERA_MASCOT_VIEW_BOX} width={size} height={size} fill="none" aria-hidden="true">
+    <svg viewBox={CAMERA_MASCOT_VIEW_BOX} width={size} height={size} fill="none" aria-hidden="true" className="light">
       <g transform={`translate(0 ${CAMERA_MASCOT_DROP})`}>
         <rect {...MASCOT_BODY} className="fill-primary" />
         <path d={MASCOT_CROWN} className="fill-violet-mid" />

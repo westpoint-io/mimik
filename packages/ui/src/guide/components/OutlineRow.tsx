@@ -1,7 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { i18n } from '@mimik/core/env';
-import { calloutAccent, tint } from '@mimik/core/guides/blocks';
+import { calloutAccent } from '@mimik/core/guides/blocks';
 import type { Step } from '@mimik/core/guides/types';
 import { Check } from 'lucide-react';
 import { outlineLabel } from '../lib/outline-label';
@@ -49,7 +49,7 @@ export function OutlineRow({ step, number, active, selected, dimmed, disabled, o
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
-        background: callout && accent && !active ? tint(accent) : undefined,
+        background: callout && accent && !active ? `color-mix(in srgb, ${accent} 12%, var(--card))` : undefined,
       }}
       className={`flex items-start gap-2.5 min-w-0 rounded-[10px] px-3 select-none outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-border ${disabled ? 'cursor-pointer' : 'cursor-grab'} ${layout} ${tone} ${dimmed || isDragging ? 'opacity-40' : ''}`}
     >

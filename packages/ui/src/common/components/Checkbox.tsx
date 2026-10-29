@@ -19,7 +19,7 @@ export function Checkbox({ checked, label, hint, onChange }: CheckboxProps) {
       <span
         aria-hidden="true"
         className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded border-[1.5px] transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-1 ${
-          checked ? 'border-accent bg-accent text-primary-foreground' : 'border-border bg-card'
+          checked ? 'border-transparent bg-accent text-primary-foreground' : 'border-border bg-card'
         }`}
       >
         {checked && <Check size={11} strokeWidth={3} />}

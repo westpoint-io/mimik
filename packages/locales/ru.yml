@@ -191,9 +191,14 @@ settings:
   keyUnreachable: Не удалось подключиться к провайдеру. Проверьте соединение и попробуйте снова.
   modelsFound: "Доступно моделей: $1"
   smartBlur: Умное размытие
-  privacyNotice: Ваши ключи и аудио отправляются только выбранному вами провайдеру. Больше ничего не покидает ваш браузер.
+  version: Версия $1
   reportBug: "Сообщить об ошибке"
   aboutSection: "О Mimik"
+  appearance: "Оформление"
+  appearanceHint: "Светлое, тёмное или как в системе."
+  themeSystem: "Как в системе"
+  themeLight: "Светлое"
+  themeDark: "Тёмное"
   starCtaTitle: "Нравится то, что вы видите?"
   starCtaMessage: "Звезда на GitHub помогает другим находить Mimik и поддерживает нас!"
   starOnGithub: Поставить звезду на GitHub

@@ -14,7 +14,13 @@ export function PermissionsMascot({ granted }: { granted: boolean[] }) {
   const happy = MASCOT_FACES.happy;
   const waiting = MASCOT_FACES.lookaway;
   return (
-    <svg viewBox="20 55 180 112" width={WIDTH} height={Math.round((WIDTH * 112) / 180)} aria-hidden="true">
+    <svg
+      className="light"
+      viewBox="20 55 180 112"
+      width={WIDTH}
+      height={Math.round((WIDTH * 112) / 180)}
+      aria-hidden="true"
+    >
       <defs>
         <clipPath id="permissions-mascot-split">
           <path d={MASCOT_CROWN_SPLIT} />

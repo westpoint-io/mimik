@@ -4,6 +4,7 @@ import type { VoiceoverProviderKey } from '@mimik/core/export/voiceover/provider
 import {
   AiSettings,
   ApiKeysSettings,
+  AppearanceSettings,
   BrandingSettings,
   NarrationSettings,
   SavedBadge,
@@ -148,6 +149,7 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
       </SettingsCard>
     ),
     'api-keys': <ApiKeysSettings state={keys} validate={validateApiKey} title={i18n.t('settings.apiKeys')} />,
+    appearance: <AppearanceSettings />,
     about: <SettingsFooter />,
   };
 
@@ -204,6 +206,7 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
         {sections.branding}
         {sections['smart-blur']}
         {sections.keyboard}
+        {sections.appearance}
         <SettingsFooter />
       </div>
     </div>

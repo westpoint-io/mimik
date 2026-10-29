@@ -191,9 +191,14 @@ settings:
   keyUnreachable: "无法连接到提供商。请检查网络。"
   modelsFound: "$1 个可用模型"
   smartBlur: 智能模糊
-  privacyNotice: "密钥和音频只会发送给你选择的提供商。"
+  version: "版本 $1"
   reportBug: "报告问题"
   aboutSection: "关于"
+  appearance: "外观"
+  appearanceHint: "浅色、深色或跟随系统。"
+  themeSystem: "跟随系统"
+  themeLight: "浅色"
+  themeDark: "深色"
   starCtaTitle: "喜欢 Mimik 吗？"
   starCtaMessage: "在 GitHub 上加星能帮助更多人发现 Mimik。"
   starOnGithub: 在 GitHub 上加星

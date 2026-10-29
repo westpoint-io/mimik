@@ -3,7 +3,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/too
 
 const TONES = {
   default: 'bg-secondary text-foreground hover:bg-lavender',
-  on: 'bg-primary text-primary-foreground hover:bg-primary/90',
+  on: 'bg-toggle-on text-toggle-on-foreground hover:bg-toggle-on-hover',
   danger: 'bg-secondary text-foreground hover:bg-destructive/10 hover:text-destructive',
   locked: 'bg-secondary text-muted-foreground/60 cursor-default',
 } as const;

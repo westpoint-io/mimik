@@ -40,7 +40,7 @@ export function CardPrinter({
           id="photo"
           ref={photoRef}
           data-developing={developing || undefined}
-          className="absolute top-[29px] left-1/2 -ml-[27px] h-11 w-[54px] rounded-[2px] bg-white px-[3px] pt-[3px] pb-2 shadow-[0_4px_10px_rgba(30,27,75,0.18)] [transform:translateY(calc(var(--p)*0.48px))]"
+          className="light absolute top-[29px] left-1/2 -ml-[27px] h-11 w-[54px] rounded-[2px] bg-white px-[3px] pt-[3px] pb-2 shadow-[0_4px_10px_rgba(30,27,75,0.18)] [transform:translateY(calc(var(--p)*0.48px))]"
         >
           <span ref={filmRef} className="film relative block size-full overflow-hidden rounded-[1px] bg-white">
             <img

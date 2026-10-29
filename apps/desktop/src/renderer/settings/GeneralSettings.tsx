@@ -1,5 +1,5 @@
 import { i18n } from '@mimik/core/env';
-import { Button, GitHubCard, Switch } from '@mimik/ui';
+import { AppearanceSettings, Button, GitHubCard, Switch } from '@mimik/ui';
 import { Languages, Power, RefreshCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AppLanguage } from './AppLanguage';
@@ -24,6 +24,8 @@ export function GeneralSettings({ onSaved }: { onSaved: () => void }) {
           <AppLanguage />
         </Row>
       </Card>
+
+      <AppearanceSettings />
 
       <Card icon={Power} title={i18n.t('desktop.cardStartup')}>
         <Row label={i18n.t('desktop.startAtLogin')} hint={i18n.t(LOGIN_HINT)}>

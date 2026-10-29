@@ -17,7 +17,7 @@ export function SettingsCard({ icon: Icon, title, hint, action, className, child
       {title && (
         <div className="flex items-center gap-2.5">
           {Icon && (
-            <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center shrink-0">
+            <div className="w-7 h-7 rounded-lg bg-icon-tile flex items-center justify-center shrink-0">
               <Icon size={14} className="text-accent" />
             </div>
           )}

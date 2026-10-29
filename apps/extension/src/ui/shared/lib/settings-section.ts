@@ -1,4 +1,4 @@
-import { EyeOff, ImageIcon, Info, Keyboard, KeyRound, Sparkles } from 'lucide-react';
+import { EyeOff, ImageIcon, Info, Keyboard, KeyRound, Sparkles, SunMoon } from 'lucide-react';
 
 export const SETTINGS_SECTIONS = [
   { id: 'ai', label: 'settings.aiSection', Icon: Sparkles },
@@ -6,6 +6,7 @@ export const SETTINGS_SECTIONS = [
   { id: 'smart-blur', label: 'settings.smartBlur', Icon: EyeOff },
   { id: 'keyboard', label: 'settings.cardKeyboard', Icon: Keyboard },
   { id: 'api-keys', label: 'settings.apiKeys', Icon: KeyRound },
+  { id: 'appearance', label: 'settings.appearance', Icon: SunMoon },
   { id: 'about', label: 'settings.aboutSection', Icon: Info },
 ] as const;
 

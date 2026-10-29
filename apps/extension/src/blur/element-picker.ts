@@ -5,6 +5,7 @@ import { isMimikElement } from '@/core/capture/dom/element-utils';
 import { createOverlayRoot } from '@/core/capture/dom/overlay-root';
 import { svgElement } from '@/core/capture/dom/svg-element';
 import { HoverRing } from '@/lib/hover-ring';
+import { followTheme } from '@/page-ui/follow-theme';
 
 const RING_COLOR = '#7C3AED';
 
@@ -50,6 +51,15 @@ const STYLES = `
     background: #1E1B4B;
     color: #C7D2FE;
   }
+  .dark.bar {
+    background: rgba(24, 25, 27, 0.97);
+    border-top-color: #363A3F;
+  }
+  .dark .bar-left { color: #EDEEF0; }
+  .dark .bar-done {
+    background: #1E1B4B;
+    color: #C7D2FE;
+  }
 `;
 
 export class ElementPicker {
@@ -57,6 +67,7 @@ export class ElementPicker {
   private ring = new HoverRing(RING_COLOR);
   private listeners: [string, EventListener, AddEventListenerOptions][] = [];
   private onDone: (() => void) | null = null;
+  private stopTheme: (() => void) | null = null;
 
   start(onDone: () => void) {
     this.onDone = onDone;
@@ -81,6 +92,8 @@ export class ElementPicker {
       window.removeEventListener(event, handler, opts);
     }
     this.listeners = [];
+    this.stopTheme?.();
+    this.stopTheme = null;
     this.host?.remove();
     this.host = null;
     this.ring.dispose();
@@ -108,6 +121,7 @@ export class ElementPicker {
     doneBtn.addEventListener('click', () => this.onDone?.());
     bar.appendChild(doneBtn);
     shadow.appendChild(bar);
+    this.stopTheme = followTheme(bar);
 
     document.documentElement.appendChild(this.host);
   }

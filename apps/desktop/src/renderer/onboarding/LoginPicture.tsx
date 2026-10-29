@@ -6,7 +6,7 @@ export function LoginPicture({ mac }: { mac: boolean }) {
   return (
     <>
       <div
-        className={`absolute inset-x-[14%] flex animate-[ob-login-out_5s_ease-in-out_infinite] flex-col items-center justify-center gap-1 rounded-lg bg-white text-[8px] font-semibold text-foreground shadow-[0_4px_14px_rgba(30,27,75,0.12)] motion-reduce:hidden ${
+        className={`light absolute inset-x-[14%] flex animate-[ob-login-out_5s_ease-in-out_infinite] flex-col items-center justify-center gap-1 rounded-lg bg-white text-[8px] font-semibold text-foreground shadow-[0_4px_14px_rgba(30,27,75,0.12)] motion-reduce:hidden ${
           mac ? 'top-[24%] bottom-[8%]' : 'top-[12%] bottom-[30%]'
         }`}
       >
@@ -23,7 +23,7 @@ export function LoginPicture({ mac }: { mac: boolean }) {
         </span>
       </div>
       <div
-        className={`absolute right-1.5 flex animate-[ob-toast_5s_ease_infinite] items-center gap-1 rounded-md bg-white px-1.5 py-[3px] text-[7px] font-semibold text-foreground opacity-0 shadow-[0_4px_10px_rgba(30,27,75,0.18)] motion-reduce:animate-none motion-reduce:opacity-100 ${
+        className={`light absolute right-1.5 flex animate-[ob-toast_5s_ease_infinite] items-center gap-1 rounded-md bg-white px-1.5 py-[3px] text-[7px] font-semibold text-foreground opacity-0 shadow-[0_4px_10px_rgba(30,27,75,0.18)] motion-reduce:animate-none motion-reduce:opacity-100 ${
           mac ? 'top-[24%]' : 'bottom-[26%]'
         }`}
       >

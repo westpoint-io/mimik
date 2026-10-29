@@ -2,12 +2,12 @@ import { i18n } from '@mimik/core/env';
 import { Loader2 } from 'lucide-react';
 import type { KeyStatus } from '../types';
 
-const GOOD = 'bg-[#ECFDF5] text-[#047857]';
-const BAD = 'bg-[#FEF3F2] text-[#B42318]';
+const GOOD = 'bg-status-good text-status-good-foreground';
+const BAD = 'bg-status-bad text-status-bad-foreground';
 const QUIET = 'bg-secondary text-muted-foreground';
 const COMPACT: Record<string, string> = {
-  [GOOD]: 'text-[#047857]',
-  [BAD]: 'text-[#B42318]',
+  [GOOD]: 'text-status-good-foreground',
+  [BAD]: 'text-status-bad-foreground',
   [QUIET]: 'text-muted-foreground',
 };
 

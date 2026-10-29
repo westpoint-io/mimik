@@ -95,7 +95,13 @@ export function ExportPreviewModal({ open, onOpenChange, guide, steps, screensho
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[96vw] max-w-[96vw] sm:max-w-[1180px] p-0 gap-0 overflow-hidden">
+      <DialogContent
+        className="w-[96vw] max-w-[96vw] sm:max-w-[1180px] p-0 gap-0 overflow-hidden"
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+          (event.currentTarget as HTMLElement).focus();
+        }}
+      >
         <DialogHeader className="px-5 py-3.5 border-b border-border">
           <DialogTitle className="text-[15px] font-bold">{i18n.t('exportPreview.title')}</DialogTitle>
         </DialogHeader>
@@ -131,8 +137,8 @@ export function ExportPreviewModal({ open, onOpenChange, guide, steps, screensho
                     onClick={() => update({ imageScale: scale })}
                     className={`flex-1 px-2 py-1.5 rounded-lg border text-[11px] transition-colors disabled:cursor-not-allowed disabled:hover:border-border disabled:hover:text-muted-foreground ${
                       options.imageScale === scale
-                        ? 'border-accent text-accent'
-                        : 'border-border text-muted-foreground hover:border-accent hover:text-foreground'
+                        ? 'border-chip-on-border bg-chip-on text-chip-on-foreground'
+                        : 'border-chip-border bg-chip text-muted-foreground hover:border-chip-hover-border hover:bg-chip-hover hover:text-foreground'
                     }`}
                   >
                     {i18n.t(`exportPreview.scale_${scale}`)}
@@ -154,8 +160,8 @@ export function ExportPreviewModal({ open, onOpenChange, guide, steps, screensho
                       onClick={() => update({ resolution: value })}
                       className={`flex-1 px-2 py-1.5 rounded-lg border text-[11px] transition-colors ${
                         options.resolution === value
-                          ? 'border-accent text-accent'
-                          : 'border-border text-muted-foreground hover:border-accent hover:text-foreground'
+                          ? 'border-chip-on-border bg-chip-on text-chip-on-foreground'
+                          : 'border-chip-border bg-chip text-muted-foreground hover:border-chip-hover-border hover:bg-chip-hover hover:text-foreground'
                       }`}
                     >
                       {i18n.t(`exportPreview.res_${value}`)}
@@ -175,8 +181,8 @@ export function ExportPreviewModal({ open, onOpenChange, guide, steps, screensho
                     onClick={() => update({ voiceover: false })}
                     className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg border text-[11px] leading-none transition-colors ${
                       voiceover
-                        ? 'border-border text-muted-foreground hover:border-accent hover:text-foreground'
-                        : 'border-accent text-accent'
+                        ? 'border-chip-border bg-chip text-muted-foreground hover:border-chip-hover-border hover:bg-chip-hover hover:text-foreground'
+                        : 'border-chip-on-border bg-chip-on text-chip-on-foreground'
                     }`}
                   >
                     <span className="leading-none">{i18n.t('exportPreview.audioSilent')}</span>
@@ -188,8 +194,8 @@ export function ExportPreviewModal({ open, onOpenChange, guide, steps, screensho
                     onClick={() => update({ voiceover: true })}
                     className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg border text-[11px] leading-none transition-colors disabled:opacity-45 disabled:cursor-not-allowed disabled:hover:border-border disabled:hover:text-muted-foreground ${
                       voiceover
-                        ? 'border-accent text-accent'
-                        : 'border-border text-muted-foreground hover:border-accent hover:text-foreground'
+                        ? 'border-chip-on-border bg-chip-on text-chip-on-foreground'
+                        : 'border-chip-border bg-chip text-muted-foreground hover:border-chip-hover-border hover:bg-chip-hover hover:text-foreground'
                     }`}
                   >
                     <span className="leading-none">{i18n.t('exportPreview.audioNarrated')}</span>
@@ -224,8 +230,8 @@ export function ExportPreviewModal({ open, onOpenChange, guide, steps, screensho
                     onClick={() => update({ gifQuality: value })}
                     className={`flex-1 px-2 py-1.5 rounded-lg border text-[11px] transition-colors ${
                       options.gifQuality === value
-                        ? 'border-accent text-accent'
-                        : 'border-border text-muted-foreground hover:border-accent hover:text-foreground'
+                        ? 'border-chip-on-border bg-chip-on text-chip-on-foreground'
+                        : 'border-chip-border bg-chip text-muted-foreground hover:border-chip-hover-border hover:bg-chip-hover hover:text-foreground'
                     }`}
                   >
                     {i18n.t(`exportPreview.gif_${value}`)}
@@ -270,8 +276,8 @@ export function ExportPreviewModal({ open, onOpenChange, guide, steps, screensho
                       onClick={() => update({ bundleUrls: value })}
                       className={`flex-1 px-2 py-1.5 rounded-lg border text-[11px] transition-colors ${
                         options.bundleUrls === value
-                          ? 'border-accent text-accent'
-                          : 'border-border text-muted-foreground hover:border-accent hover:text-foreground'
+                          ? 'border-chip-on-border bg-chip-on text-chip-on-foreground'
+                          : 'border-chip-border bg-chip text-muted-foreground hover:border-chip-hover-border hover:bg-chip-hover hover:text-foreground'
                       }`}
                     >
                       {i18n.t(`exportPreview.url_${value}`)}
@@ -329,8 +335,8 @@ export function ExportPreviewModal({ open, onOpenChange, guide, steps, screensho
                     onClick={() => setMode(key)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[11px] transition-colors ${
                       mode === key
-                        ? 'border-accent text-accent bg-secondary'
-                        : 'border-border text-muted-foreground hover:border-accent hover:text-foreground'
+                        ? 'border-chip-on-border bg-tab-on text-chip-on-foreground'
+                        : 'border-chip-border bg-chip text-muted-foreground hover:border-chip-hover-border hover:bg-chip-hover hover:text-foreground'
                     }`}
                   >
                     <Icon size={13} />

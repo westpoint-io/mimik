@@ -17,7 +17,7 @@ export function ModePicker({ hidden, mode }: { hidden: boolean; mode: string }) 
             onClick={() => window.mimikOverlay.command(`mode:${id}`)}
             className={`flex h-8 flex-1 basis-0 items-center justify-center gap-[5px] rounded-lg border px-2 text-[11.5px] font-semibold transition-colors ${
               id === mode
-                ? 'border-transparent bg-primary text-white'
+                ? 'border-transparent bg-accent text-white'
                 : 'border-lavender bg-card text-foreground hover:border-primary'
             }`}
           >

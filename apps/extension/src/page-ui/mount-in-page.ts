@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createOverlayRoot } from '@/core/capture/dom/overlay-root';
+import { followTheme } from './follow-theme';
 import css from './page-ui.css?inline';
 import { withPropertyFallbacks } from './with-property-fallbacks';
 
@@ -14,10 +15,12 @@ export function mountInPage(tag?: string): PageUi {
   const container = document.createElement('div');
   shadow.appendChild(container);
   document.documentElement.appendChild(host);
+  const stopTheme = followTheme(container);
   const root = createRoot(container);
   return {
     render: (node) => root.render(node),
     unmount: () => {
+      stopTheme();
       root.unmount();
       host.remove();
     },

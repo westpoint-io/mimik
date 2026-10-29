@@ -8,6 +8,10 @@
 
 @source ".";
 
+html {
+  background-color: var(--color-card);
+}
+
 body {
   font-family: "Poppins", sans-serif;
 }

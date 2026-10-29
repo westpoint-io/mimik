@@ -16,7 +16,7 @@ export function LoaderMascot({ filming, size = 128 }: { filming: boolean; size?:
   const face = MASCOT_FACES.happy;
   const camera = CAMERA_MASCOT_PARTS;
   return (
-    <span className="relative inline-flex" aria-hidden="true">
+    <span className="light relative inline-flex" aria-hidden="true">
       <svg viewBox={CAMERA_MASCOT_VIEW_BOX} width={size} height={size} fill="none">
         <defs>
           <clipPath id="loader-mascot-crown">

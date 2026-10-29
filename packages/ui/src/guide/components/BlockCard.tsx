@@ -1,5 +1,5 @@
 import { i18n } from '@mimik/core/env';
-import { CALLOUT_VARIANTS, calloutAccent, DEFAULT_CALLOUT_COLOR, tint, variantLabel } from '@mimik/core/guides/blocks';
+import { CALLOUT_VARIANTS, calloutAccent, DEFAULT_CALLOUT_COLOR, variantLabel } from '@mimik/core/guides/blocks';
 import { updateCallout } from '@mimik/core/guides/service';
 import type { CalloutVariant, Step } from '@mimik/core/guides/types';
 import { Trash2 } from 'lucide-react';
@@ -45,7 +45,11 @@ export function BlockCard({ step, onDescriptionChange, onDelete, onChanged, read
     <div className="mb-3">
       <div
         className={isHeading ? 'border-b border-foreground pb-1.5' : 'rounded-lg px-3 py-2.5 border-l-[3px]'}
-        style={isHeading ? undefined : { borderLeftColor: accent, background: tint(accent) }}
+        style={
+          isHeading
+            ? undefined
+            : { borderLeftColor: accent, background: `color-mix(in srgb, ${accent} 12%, var(--card))` }
+        }
       >
         {readOnly ? (
           <p className={`${textClass} whitespace-pre-wrap`}>{step.description}</p>

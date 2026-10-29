@@ -44,7 +44,7 @@ export function CaptureSheet({ insert, onClose }: { insert?: CaptureInsert; onCl
         type="button"
         aria-label={i18n.t('common.close')}
         onClick={onClose}
-        className="absolute inset-0 bg-deep/40"
+        className="absolute inset-0 bg-overlay-strong"
       />
 
       <aside className="relative flex h-full w-[416px] flex-col border-l border-border bg-card shadow-2xl">
@@ -87,13 +87,13 @@ export function CaptureSheet({ insert, onClose }: { insert?: CaptureInsert; onCl
                     onClick={() => save({ captureMode: id })}
                     className={`flex w-full items-center gap-3.5 rounded-xl bg-clip-padding text-left transition-colors ${
                       active
-                        ? 'border-2 border-accent bg-secondary px-[13px] py-3'
+                        ? 'border-2 border-option-on-border bg-option-on px-[13px] py-3'
                         : 'border border-border bg-card px-[14px] py-[13px] hover:border-accent'
                     }`}
                   >
                     <span
                       className={`flex size-[34px] shrink-0 items-center justify-center rounded-[10px] ${
-                        active ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'
+                        active ? 'bg-option-on-tile text-primary-foreground' : 'bg-secondary text-muted-foreground'
                       }`}
                     >
                       <Icon size={17} />
@@ -104,7 +104,7 @@ export function CaptureSheet({ insert, onClose }: { insert?: CaptureInsert; onCl
                         active ? 'border-accent' : 'border-border'
                       }`}
                     >
-                      {active && <span className="size-2.5 rounded-full bg-accent" />}
+                      {active && <span className="size-2.5 rounded-full bg-option-on-dot" />}
                     </span>
                   </button>
                 );

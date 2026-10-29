@@ -288,7 +288,7 @@ export function App() {
               placeholder={i18n.t('sidepanel.searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-3 rounded-xl border-border bg-card !text-[13px]"
+              className="w-full pl-10 pr-3 rounded-xl border-border bg-search-field !text-[13px]"
             />
           </div>
 

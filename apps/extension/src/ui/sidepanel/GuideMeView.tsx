@@ -116,7 +116,7 @@ export function GuideMeView({ guideId, onExit, onComplete }: GuideMeViewProps) {
         <div className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden">
           <div className="p-4 pb-3">
             <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold bg-secondary text-accent px-2.5 py-1 rounded-full mb-2.5">
-              <span className="w-5 h-5 rounded-full bg-accent text-white flex items-center justify-center text-[10px] font-bold">
+              <span className="w-5 h-5 rounded-full bg-accent text-on-solid flex items-center justify-center text-[10px] font-bold">
                 {activeStepIndex + 1}
               </span>
               {i18n.t('guideme.stepOf', [String(activeStepIndex + 1), String(totalSteps)])}
@@ -183,11 +183,11 @@ export function GuideMeView({ guideId, onExit, onComplete }: GuideMeViewProps) {
               }`}
             >
               {isDone ? (
-                <span className="shrink-0 w-5 h-5 rounded-full bg-success flex items-center justify-center mt-0.5">
-                  <Check size={12} className="text-white" strokeWidth={3} />
+                <span className="shrink-0 w-5 h-5 rounded-full bg-done text-done-foreground flex items-center justify-center mt-0.5">
+                  <Check size={12} strokeWidth={3} />
                 </span>
               ) : isActive ? (
-                <span className="shrink-0 w-5 h-5 rounded-full bg-accent flex items-center justify-center text-[10px] font-bold text-white mt-0.5">
+                <span className="shrink-0 w-5 h-5 rounded-full bg-accent flex items-center justify-center text-[10px] font-bold text-on-solid mt-0.5">
                   {idx + 1}
                 </span>
               ) : (

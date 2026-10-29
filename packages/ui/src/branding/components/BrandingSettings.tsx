@@ -101,8 +101,8 @@ export function BrandingSettings({ onChange }: { onChange?: (patch: Record<strin
                 onClick={() => setBrandFooter(preset)}
                 className={`px-2 py-1 rounded-md border text-[10px] transition-colors ${
                   brandFooter === preset
-                    ? 'border-accent text-accent'
-                    : 'border-border text-muted-foreground hover:border-accent hover:text-foreground'
+                    ? 'border-chip-on-border bg-chip-on text-chip-on-foreground'
+                    : 'border-chip-border bg-chip text-muted-foreground hover:border-chip-hover-border hover:bg-chip-hover hover:text-foreground'
                 }`}
               >
                 {preset}

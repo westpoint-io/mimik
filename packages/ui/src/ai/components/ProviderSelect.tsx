@@ -37,7 +37,7 @@ export function ProviderSelect<T extends string>({
         <span className="flex min-w-0 flex-1 items-center gap-2">
           <SelectValue />
           {missingKey && (
-            <span className="ml-auto inline-flex h-[22px] shrink-0 items-center rounded-full bg-[#FEF3F2] px-2.5 text-[11px] font-semibold text-[#B42318]">
+            <span className="ml-auto inline-flex h-[22px] shrink-0 items-center rounded-full bg-status-bad px-2.5 text-[11px] font-semibold text-status-bad-foreground">
               {i18n.t('settings.noKey')}
             </span>
           )}
