@@ -18,6 +18,17 @@ body:
       value: |
         Reporting something broken instead? Use the [bug report form](https://github.com/westpoint-io/mimik/issues/new?template=bug_report.yml).
 
+  - type: dropdown
+    id: app
+    attributes:
+      label: Which app?
+      options:
+        - Browser extension
+        - Desktop app
+        - Both
+    validations:
+      required: true
+
   - type: textarea
     id: problem
     attributes:
@@ -50,6 +61,9 @@ body:
         - Voice narration
         - AI descriptions
         - Onboarding or settings
+        - Desktop permissions (screen recording, accessibility)
+        - Desktop recording shortcut
+        - Desktop install and updates
         - Other
     validations:
       required: true

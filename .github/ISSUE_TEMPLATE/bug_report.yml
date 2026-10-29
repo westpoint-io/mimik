@@ -14,13 +14,24 @@ body:
           required: true
         - label: I can reproduce it on the latest version.
           required: false
-        - label: I can reproduce it in a clean browser profile with Mimik as the only extension.
+        - label: "Extension only: I can reproduce it in a clean browser profile with Mimik as the only extension."
           required: false
 
   - type: markdown
     attributes:
       value: |
         Suggesting something new instead? Use the [feature request form](https://github.com/westpoint-io/mimik/issues/new?template=feature_request.yml).
+
+  - type: dropdown
+    id: app
+    attributes:
+      label: Which app?
+      options:
+        - Browser extension
+        - Desktop app
+        - Both
+    validations:
+      required: true
 
   - type: textarea
     id: behaviour
@@ -61,6 +72,9 @@ body:
         - Voice narration
         - AI descriptions
         - Onboarding or settings
+        - Desktop permissions (screen recording, accessibility)
+        - Desktop recording shortcut
+        - Desktop install and updates
         - Other
     validations:
       required: true
@@ -69,12 +83,13 @@ body:
     id: environment
     attributes:
       label: Environment
+      description: The desktop app shows its version in the tray menu.
       render: text
       placeholder: |
-        - Browser: Chrome 140 / Firefox 145 / Edge 140
-        - Mimik version: 1.1.1
+        - Mimik version: 1.3.0
         - OS: macOS 15, Windows 11, Ubuntu 26.04
-        - Site being recorded, if it matters:
+        - Browser, for the extension: Chrome 140 / Firefox 145 / Edge 140
+        - Site or app being recorded, if it matters:
     validations:
       required: true
 
@@ -83,8 +98,9 @@ body:
     attributes:
       label: Console errors
       description: >
-        Chrome: chrome://extensions, Mimik, "service worker", Console.
-        Firefox: about:debugging, Inspect. Paste anything red.
+        Extension in Chrome: chrome://extensions, Mimik, "service worker", Console.
+        Extension in Firefox: about:debugging, Inspect. Paste anything red.
+        Desktop app: paste any error message Mimik showed, word for word.
       render: text
 
   - type: textarea
