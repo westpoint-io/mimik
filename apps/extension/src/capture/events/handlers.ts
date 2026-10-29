@@ -143,17 +143,26 @@ class CaptureController {
     };
   }
 
-  private enqueue(task: () => Promise<unknown>) {
-    this.busy = true;
+  private enqueue(task: () => Promise<unknown>, after?: () => void) {
     this.ring.hide();
+    const wasIdle = !this.busy;
+    this.busy = true;
     this.queue.add(async () => {
       await waitForPaint();
-      await task();
+      try {
+        await Promise.race([task(), sleep(CAPTURE_BUDGET_MS)]);
+      } catch (err) {
+        logger.error('Capture failed', err);
+      } finally {
+        after?.();
+      }
     });
-    this.queue.onIdle().then(() => {
-      this.busy = false;
-      if (this.hovered?.isConnected && !focusInEmbed()) this.ring.show(this.hovered);
-    });
+    if (wasIdle) {
+      this.queue.onIdle().then(() => {
+        this.busy = false;
+        if (this.hovered?.isConnected && !focusInEmbed()) this.ring.show(this.hovered);
+      });
+    }
   }
 
   private hoverTarget(raw: EventTarget | null): HTMLElement | null {
@@ -234,15 +243,9 @@ class CaptureController {
     me.preventDefault();
     me.stopImmediatePropagation();
     const init = replayInit(me);
-    this.enqueue(async () => {
-      try {
-        await Promise.race([task(), sleep(CAPTURE_BUDGET_MS)]);
-      } catch (err) {
-        logger.warn('Capture failed, replaying the click anyway', err);
-      } finally {
-        this.press.replay(press);
-        replayClick(target, init);
-      }
+    this.enqueue(task, () => {
+      this.press.replay(press);
+      replayClick(target, init);
     });
     return true;
   }
