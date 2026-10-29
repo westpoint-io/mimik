@@ -2,27 +2,41 @@ import { getCssSelector } from 'css-selector-generator';
 import type { ElementMeta } from '@/core/guides/types';
 import { getFieldLabel, isRedactedField, isSensitiveField } from './element-utils';
 
+const SKIP_TEXT = 'script, style, [hidden], [aria-hidden="true"]';
+
+const LINE_SELECTOR =
+  'address, article, aside, blockquote, dd, div, dl, dt, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, legend, li, main, nav, ol, option, p, pre, section, table, td, th, tr, ul';
+
 function getCleanText(el: HTMLElement): string | null {
   if (el instanceof HTMLInputElement) return null;
-  const clone = el.cloneNode(true) as HTMLElement;
-  for (const input of clone.querySelectorAll('input')) input.remove();
-  clone.style.position = 'absolute';
-  clone.style.left = '-9999px';
-  clone.style.pointerEvents = 'none';
-  document.body.appendChild(clone);
-  try {
-    const hidden = clone.querySelectorAll('[aria-hidden="true"], [hidden], script, style');
-    for (const h of Array.from(hidden)) h.remove();
-    const text = clone.innerText?.trim();
-    if (!text) return null;
-    const firstLine = text
-      .split('\n')
-      .find((l) => l.trim().length > 2)
-      ?.trim();
-    return firstLine?.slice(0, 80) || null;
-  } finally {
-    clone.remove();
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
+    acceptNode: (node) =>
+      node instanceof Element && node.matches(SKIP_TEXT) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT,
+  });
+  const lines: string[] = [];
+  let line = '';
+  let owner: Element | null = null;
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    if (node instanceof Element) {
+      if (node.tagName === 'BR') {
+        lines.push(line);
+        line = '';
+        owner = null;
+      }
+      continue;
+    }
+    const block = node.parentElement?.closest(LINE_SELECTOR);
+    const next = block && el.contains(block) ? block : el;
+    if (next !== owner) {
+      lines.push(line);
+      line = '';
+      owner = next;
+    }
+    line += node.textContent ?? '';
   }
+  lines.push(line);
+  const firstLine = lines.map((text) => text.replace(/\s+/g, ' ').trim()).find((text) => text.length > 2);
+  return firstLine?.slice(0, 80) || null;
 }
 
 export interface FrozenRect {
