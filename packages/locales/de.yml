@@ -451,6 +451,8 @@ exportPreview:
   preparingVoiceover: "Voiceover wird vorbereitet"
   stepDescriptions: "Schritttexte"
   stepDescriptionsHint: "Den Schritttext in jedes Videobild einzeichnen"
+  stepNumbers: "Schrittnummern"
+  stepNumbersHint: "Jeden Schritttext in Video und GIF mit seiner Nummer beginnen"
   resolution: "Videoqualität"
   gifQuality: "GIF-Qualität"
   gif_low: "Niedrig"

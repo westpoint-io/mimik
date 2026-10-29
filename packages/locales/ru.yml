@@ -521,6 +521,8 @@ exportPreview:
   preparingVoiceover: Готовим озвучку
   stepDescriptions: Подписи шагов
   stepDescriptionsHint: Наносить текст шагов на каждый кадр видео
+  stepNumbers: Номера шагов
+  stepNumbersHint: Начинать подпись каждого шага в видео и GIF с его номера
   resolution: Качество видео
   gifQuality: Качество GIF
   gif_low: Низкое

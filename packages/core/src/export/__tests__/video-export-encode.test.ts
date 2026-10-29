@@ -351,6 +351,27 @@ describe('exportGuideAsVideo cover cards', () => {
 
     expect(rec.calls.some((c) => c.m === 'drawImage')).toBe(true);
   });
+
+  it.each([
+    ['#1E1B4B', '#A5B4FC'],
+    ['#F59E0B', '#F59E0B'],
+  ])('draws the card divider in a colour that shows on the card for brand %s', async (accent, expected) => {
+    branding.value = { ...branding.value, accent };
+    const steps = [makeStep(0)];
+    await exportGuideAsVideo(guide, steps, shotsFor(steps), opts({ cover: true }));
+
+    expect(rec.calls.find((c) => c.m === 'set:strokeStyle')?.a[0]).toBe(expected);
+  });
+
+  it('draws the step count in white like the other card fields', async () => {
+    branding.value = { ...branding.value, accent: '#1E1B4B' };
+    const steps = [makeStep(0)];
+    await exportGuideAsVideo(guide, steps, shotsFor(steps), opts({ cover: true }));
+
+    const count = rec.calls.findIndex((c) => c.m === 'fillText' && c.a[0] === '01');
+    const fill = rec.calls.slice(0, count).findLast((c) => c.m === 'set:fillStyle');
+    expect(fill?.a[0]).toBe('#FFFFFF');
+  });
 });
 
 describe('exportGuideAsVideo progress and abort', () => {
@@ -450,6 +471,37 @@ describe('exportGuideAsVideo layers', () => {
 
     const written = rec.calls.filter((c) => c.m === 'fillText').flatMap((c) => String(c.a[0]));
     expect(written.some((t) => t.includes('Click the button labelled'))).toBe(true);
+  });
+
+  it('starts each caption with its step number when the option is on, skipping blocks', async () => {
+    const steps = [makeStep(0), makeStep(1, { blockType: 'heading', description: 'Part two' }), makeStep(2)];
+    await exportGuideAsVideo(guide, steps, shotsFor(steps), opts({ cover: false, stepNumbers: true }));
+
+    const written = rec.calls.filter((c) => c.m === 'fillText').map((c) => String(c.a[0]));
+    expect(written).toContain('1. Click the button labelled 0');
+    expect(written).toContain('2. Click the button labelled 2');
+  });
+
+  it('writes only the number when captions are off and numbers are on', async () => {
+    const steps = [makeStep(0)];
+    await exportGuideAsVideo(
+      guide,
+      steps,
+      shotsFor(steps),
+      opts({ cover: false, stepDescriptions: false, stepNumbers: true }),
+    );
+
+    const written = rec.calls.filter((c) => c.m === 'fillText').map((c) => String(c.a[0]));
+    expect(written).toContain('1');
+    expect(written.some((t) => t.includes('Click the button labelled'))).toBe(false);
+  });
+
+  it('leaves captions unnumbered by default', async () => {
+    const steps = [makeStep(0)];
+    await exportGuideAsVideo(guide, steps, shotsFor(steps), opts({ cover: false }));
+
+    const written = rec.calls.filter((c) => c.m === 'fillText').map((c) => String(c.a[0]));
+    expect(written).toContain('Click the button labelled 0');
   });
 
   it('renders a block step over a blurred backdrop of the previous screenshot', async () => {

@@ -521,6 +521,8 @@ exportPreview:
   preparingVoiceover: "正在准备配音"
   stepDescriptions: "步骤字幕"
   stepDescriptionsHint: "将步骤文字绘制到每一帧视频中"
+  stepNumbers: "步骤编号"
+  stepNumbersHint: "在视频和 GIF 的每个步骤字幕前加上编号"
   resolution: "视频质量"
   gifQuality: "GIF 质量"
   gif_low: "低"

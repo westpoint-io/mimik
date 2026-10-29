@@ -10,7 +10,7 @@ const GIF_MAX_COLORS = 128;
 const GIF_MIN_DELAY_MS = 20;
 const GIF_YIELD_EVERY = 8;
 
-export type GifOptions = Pick<ExportOptions, 'cover' | 'stepDescriptions' | 'gifQuality'>;
+export type GifOptions = Pick<ExportOptions, 'cover' | 'stepDescriptions' | 'stepNumbers' | 'gifQuality'>;
 
 export interface GifExportControls {
   onProgress?: (encoded: number, frames: number) => void;

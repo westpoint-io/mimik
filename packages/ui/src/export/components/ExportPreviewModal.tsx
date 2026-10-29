@@ -75,6 +75,7 @@ export function ExportPreviewModal({ open, onOpenChange, guide, steps, screensho
       label: i18n.t('exportPreview.stepDescriptions'),
       hint: i18n.t('exportPreview.stepDescriptionsHint'),
     },
+    { key: 'stepNumbers', label: i18n.t('exportPreview.stepNumbers'), hint: i18n.t('exportPreview.stepNumbersHint') },
   ];
 
   const modes: Array<{ key: PreviewMode; icon: typeof FileText; label: string }> = [

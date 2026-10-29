@@ -521,6 +521,8 @@ exportPreview:
   preparingVoiceover: "Préparation de la voix off"
   stepDescriptions: "Légendes des étapes"
   stepDescriptionsHint: "Incruster le texte de l'étape sur chaque image"
+  stepNumbers: "Numéros des étapes"
+  stepNumbersHint: "Faire précéder la légende de chaque étape de son numéro dans la vidéo et le GIF"
   resolution: "Qualité vidéo"
   gifQuality: "Qualité du GIF"
   gif_low: "Basse"

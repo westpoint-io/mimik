@@ -521,6 +521,8 @@ exportPreview:
   preparingVoiceover: "Preparando la voz en off"
   stepDescriptions: "Textos de los pasos"
   stepDescriptionsHint: "Dibuja el texto del paso en cada fotograma del vídeo"
+  stepNumbers: "Números de paso"
+  stepNumbersHint: "Empieza el texto de cada paso en el vídeo y el GIF con su número"
   resolution: "Calidad de vídeo"
   gifQuality: "Calidad del GIF"
   gif_low: "Baja"

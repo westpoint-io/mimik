@@ -521,6 +521,8 @@ exportPreview:
   preparingVoiceover: "Preparing the voice-over"
   stepDescriptions: "Step captions"
   stepDescriptionsHint: "Draw the step text onto each video frame"
+  stepNumbers: "Step numbers"
+  stepNumbersHint: "Start each step caption in the video and GIF with its number"
   resolution: "Video quality"
   gifQuality: "GIF quality"
   gif_low: "Low"

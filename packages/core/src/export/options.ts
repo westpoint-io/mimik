@@ -39,6 +39,7 @@ export interface ExportOptions {
   stepUrls: boolean;
   imageScale: ImageScale;
   stepDescriptions: boolean;
+  stepNumbers: boolean;
   resolution: VideoResolution;
   gifQuality: GifQuality;
   bundleStripInputs: boolean;
@@ -52,6 +53,7 @@ export const DEFAULT_EXPORT_OPTIONS: ExportOptions = {
   stepUrls: true,
   imageScale: 'medium',
   stepDescriptions: true,
+  stepNumbers: false,
   resolution: '720p',
   gifQuality: 'medium',
   bundleStripInputs: true,
@@ -71,6 +73,7 @@ export function normaliseExportOptions(value: unknown): ExportOptions {
     imageScale:
       raw.imageScale && raw.imageScale in IMAGE_SCALE_FACTORS ? raw.imageScale : DEFAULT_EXPORT_OPTIONS.imageScale,
     stepDescriptions: bool(raw.stepDescriptions, DEFAULT_EXPORT_OPTIONS.stepDescriptions),
+    stepNumbers: bool(raw.stepNumbers, DEFAULT_EXPORT_OPTIONS.stepNumbers),
     resolution: VIDEO_RESOLUTIONS.includes(raw.resolution as VideoResolution)
       ? (raw.resolution as VideoResolution)
       : DEFAULT_EXPORT_OPTIONS.resolution,
