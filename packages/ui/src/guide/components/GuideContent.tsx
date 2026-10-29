@@ -4,7 +4,7 @@ import { i18n } from '@mimik/core/env';
 import { formatDate } from '@mimik/core/export/utils';
 import { isReplayable } from '@mimik/core/guideme/session';
 import { actionSteps } from '@mimik/core/guides/blocks';
-import { getMostCommonDomain } from '@mimik/core/guides/domain';
+import { extractDomain, getMostCommonDomain } from '@mimik/core/guides/domain';
 import {
   deleteStep,
   getGuide,
@@ -302,6 +302,7 @@ export function GuideContent({
   const viewScreenshots = previewView ? previewView.screenshots : data.screenshots;
   const actionCount = actionSteps(viewSteps).length;
   const domain = getMostCommonDomain(viewSteps);
+  const singleHost = viewSteps.every((s) => !s.url || extractDomain(s.url) === domain);
   const editingScreenshot = editingStepId ? data.screenshots.get(editingStepId) : undefined;
   const animatingTitle = preview ? null : typingTitle;
   const untitledPending = !preview && !typingTitle && title === i18n.t('guide.untitled') && viewSteps.length > 0;
@@ -495,7 +496,7 @@ export function GuideContent({
                 {domain && (
                   <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground bg-card border border-border pl-1.5 pr-2.5 py-0.5 rounded-full">
                     <FaviconImg domain={domain} size={14} className="rounded-full" />
-                    {readOnly ? (
+                    {readOnly || !singleHost ? (
                       domain
                     ) : (
                       <input
