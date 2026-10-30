@@ -1,3 +1,4 @@
+import { getCleanText } from '@/core/capture/dom/element-meta';
 import type { ElementMeta } from '@/core/guides/types';
 
 interface FindResult {
@@ -32,6 +33,17 @@ function compareText(stored: string, candidate: string): number {
   return 0;
 }
 
+function compareHref(stored: string, candidate: string): number {
+  if (stored === candidate) return 1.0;
+  try {
+    const a = new URL(stored);
+    const b = new URL(candidate);
+    return a.origin === b.origin && a.pathname === b.pathname ? 0.8 : 0;
+  } catch {
+    return compareText(stored, candidate);
+  }
+}
+
 function isVisible(el: HTMLElement): boolean {
   const rect = el.getBoundingClientRect();
   return rect.width > 0 && rect.height > 0;
@@ -40,7 +52,7 @@ function isVisible(el: HTMLElement): boolean {
 function getCandidateValue(el: HTMLElement, signal: string): string | null {
   switch (signal) {
     case 'textContent':
-      return el.textContent?.trim().slice(0, 200) || null;
+      return getCleanText(el) ?? (el.textContent?.trim().slice(0, 200) || null);
     case 'ariaLabel':
       return el.getAttribute('aria-label');
     case 'dataTestId':
@@ -103,7 +115,8 @@ function scoreCandidate(
       const storedValue = meta[key as keyof ElementMeta] as string;
       const candidateValue = getCandidateValue(candidate, key);
       if (candidateValue) {
-        signalScore = compareText(storedValue, candidateValue);
+        signalScore =
+          key === 'href' ? compareHref(storedValue, candidateValue) : compareText(storedValue, candidateValue);
       }
     }
 

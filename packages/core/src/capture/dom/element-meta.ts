@@ -7,19 +7,23 @@ const SKIP_TEXT = 'script, style, [hidden], [aria-hidden="true"]';
 const LINE_SELECTOR =
   'address, article, aside, blockquote, dd, div, dl, dt, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, legend, li, main, nav, ol, option, p, pre, section, table, td, th, tr, ul';
 
-function getCleanText(el: HTMLElement): string | null {
+export function getCleanText(el: HTMLElement): string | null {
   if (el instanceof HTMLInputElement) return null;
   const walker = document.createTreeWalker(el, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
     acceptNode: (node) =>
       node instanceof Element && node.matches(SKIP_TEXT) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT,
   });
-  const lines: string[] = [];
+  const finish = (text: string) => {
+    const tidy = text.replace(/\s+/g, ' ').trim();
+    return tidy.length > 2 ? tidy.slice(0, 80) : null;
+  };
   let line = '';
   let owner: Element | null = null;
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     if (node instanceof Element) {
       if (node.tagName === 'BR') {
-        lines.push(line);
+        const done = finish(line);
+        if (done) return done;
         line = '';
         owner = null;
       }
@@ -28,15 +32,14 @@ function getCleanText(el: HTMLElement): string | null {
     const block = node.parentElement?.closest(LINE_SELECTOR);
     const next = block && el.contains(block) ? block : el;
     if (next !== owner) {
-      lines.push(line);
+      const done = finish(line);
+      if (done) return done;
       line = '';
       owner = next;
     }
     line += node.textContent ?? '';
   }
-  lines.push(line);
-  const firstLine = lines.map((text) => text.replace(/\s+/g, ' ').trim()).find((text) => text.length > 2);
-  return firstLine?.slice(0, 80) || null;
+  return finish(line);
 }
 
 export interface FrozenRect {
