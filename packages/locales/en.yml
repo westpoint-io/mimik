@@ -98,6 +98,13 @@ recording:
 settings:
   cardKeyboard: "Typing and keys"
   cardKeyboardHint: "What your keyboard adds to a guide."
+  shortcutsHint: "Work on any page you browse."
+  shortcutsChange: "Change in browser"
+  shortcutRecordHint: "Starts on the tab you are looking at."
+  shortcutPauseHint: "While recording."
+  shortcutCaptureHint: "Saves the screen as a step without clicking, for open menus."
+  shortcutNotSet: "Not set"
+  shortcutsChangeNote: "Your browser keeps shortcuts on its own page."
   recordKeys: "Record shortcuts and named keys"
   recordKeysHint: "Ctrl+S, Enter and the like become steps."
   recordTyping: "Record what you type"

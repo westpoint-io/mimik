@@ -23,6 +23,7 @@ import { requestMicrophoneAccess } from '@/ui/shared/lib/request-microphone-acce
 import { SETTINGS_SECTIONS, type SettingsSection, settingsSection } from '@/ui/shared/lib/settings-section';
 import { validateApiKey } from '@/ui/shared/lib/validate-api-key';
 import { SettingsFooter } from '@/ui/shared/SettingsFooter';
+import { ShortcutsCard } from '@/ui/shared/ShortcutsCard';
 
 interface SettingsViewProps {
   onBack?: () => void;
@@ -148,6 +149,7 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
         </div>
       </SettingsCard>
     ),
+    shortcuts: <ShortcutsCard />,
     'api-keys': <ApiKeysSettings state={keys} validate={validateApiKey} title={i18n.t('settings.apiKeys')} />,
     appearance: <AppearanceSettings />,
     about: <SettingsFooter />,
@@ -206,6 +208,7 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
         {sections.branding}
         {sections['smart-blur']}
         {sections.keyboard}
+        {sections.shortcuts}
         {sections.appearance}
         <SettingsFooter />
       </div>

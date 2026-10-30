@@ -98,6 +98,13 @@ recording:
 settings:
   cardKeyboard: "Escritura y teclas"
   cardKeyboardHint: "Lo que tu teclado añade a una guía."
+  shortcutsHint: "Funcionan en cualquier página que visites."
+  shortcutsChange: "Cambiar en el navegador"
+  shortcutRecordHint: "Empieza en la pestaña que estás mirando."
+  shortcutPauseHint: "Mientras grabas."
+  shortcutCaptureHint: "Guarda la pantalla como un paso sin hacer clic, para menús abiertos."
+  shortcutNotSet: "Sin asignar"
+  shortcutsChangeNote: "Tu navegador guarda los atajos en su propia página."
   recordKeys: "Registrar atajos y teclas con nombre"
   recordKeysHint: "Ctrl+S, Enter y similares se convierten en pasos."
   recordTyping: "Registrar lo que escribes"

@@ -98,6 +98,13 @@ recording:
 settings:
   cardKeyboard: "Saisie et touches"
   cardKeyboardHint: "Ce que votre clavier ajoute à un guide."
+  shortcutsHint: "Fonctionnent sur toutes les pages que vous visitez."
+  shortcutsChange: "Modifier dans le navigateur"
+  shortcutRecordHint: "Démarre dans l’onglet que vous regardez."
+  shortcutPauseHint: "Pendant l’enregistrement."
+  shortcutCaptureHint: "Enregistre l’écran comme une étape sans cliquer, pour les menus ouverts."
+  shortcutNotSet: "Non défini"
+  shortcutsChangeNote: "Votre navigateur gère les raccourcis sur sa propre page."
   recordKeys: "Enregistrer les raccourcis et touches nommées"
   recordKeysHint: "Ctrl+S, Entrée et autres deviennent des étapes."
   recordTyping: "Enregistrer ce que vous tapez"

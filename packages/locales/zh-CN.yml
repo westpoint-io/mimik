@@ -98,6 +98,13 @@ recording:
 settings:
   cardKeyboard: "输入与按键"
   cardKeyboardHint: "键盘为指南添加的内容。"
+  shortcutsHint: "在你浏览的任意页面上可用。"
+  shortcutsChange: "在浏览器中更改"
+  shortcutRecordHint: "在你正在查看的标签页上开始。"
+  shortcutPauseHint: "录制时可用。"
+  shortcutCaptureHint: "无需点击即可把当前屏幕保存为一个步骤，适合展开的菜单。"
+  shortcutNotSet: "未设置"
+  shortcutsChangeNote: "浏览器在单独的页面中管理快捷键。"
   recordKeys: "记录快捷键和命名按键"
   recordKeysHint: "Ctrl+S、Enter 等会成为步骤。"
   recordTyping: "记录输入内容"

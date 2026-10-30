@@ -98,6 +98,13 @@ recording:
 settings:
   cardKeyboard: "Tippen und Tasten"
   cardKeyboardHint: "Was deine Tastatur zu einer Anleitung beiträgt."
+  shortcutsHint: "Funktionieren auf jeder Seite, die du besuchst."
+  shortcutsChange: "Im Browser ändern"
+  shortcutRecordHint: "Startet im Tab, den du gerade ansiehst."
+  shortcutPauseHint: "Während der Aufnahme."
+  shortcutCaptureHint: "Speichert den Bildschirm ohne Klick als Schritt, für geöffnete Menüs."
+  shortcutNotSet: "Nicht festgelegt"
+  shortcutsChangeNote: "Dein Browser verwaltet Tastenkürzel auf einer eigenen Seite."
   recordKeys: "Kürzel und benannte Tasten aufzeichnen"
   recordKeysHint: "Strg+S, Enter und Ähnliches werden zu Schritten."
   recordTyping: "Eingaben aufzeichnen"

@@ -98,6 +98,13 @@ recording:
 settings:
   cardKeyboard: Ввод и клавиши
   cardKeyboardHint: Что клавиатура добавляет в гайд.
+  shortcutsHint: Работают на любой открытой странице.
+  shortcutsChange: Изменить в браузере
+  shortcutRecordHint: Начинает запись на открытой вкладке.
+  shortcutPauseHint: Во время записи.
+  shortcutCaptureHint: Сохраняет экран как шаг без клика, для открытых меню.
+  shortcutNotSet: Не задано
+  shortcutsChangeNote: Браузер хранит сочетания клавиш на отдельной странице.
   recordKeys: Записывать сочетания и именованные клавиши
   recordKeysHint: "Ctrl+S, Enter и подобные становятся шагами."
   recordTyping: Записывать ввод текста
