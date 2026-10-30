@@ -20,6 +20,15 @@ export function useVideoElement(narrated: boolean) {
     return () => document.removeEventListener('fullscreenchange', sync);
   }, []);
 
+  useEffect(() => {
+    const element = video.current;
+    if (!element) return;
+    const sync = () => setDuration(element.duration);
+    sync();
+    element.addEventListener('durationchange', sync);
+    return () => element.removeEventListener('durationchange', sync);
+  }, []);
+
   const seek = useCallback((seconds: number) => {
     if (video.current) video.current.currentTime = Math.max(0, seconds + 0.01);
   }, []);
@@ -51,7 +60,6 @@ export function useVideoElement(narrated: boolean) {
       else void root.current?.requestFullscreen();
     },
     events: {
-      onDurationChange: (event: VideoEvent) => setDuration(event.currentTarget.duration),
       onPause: () => setPaused(true),
       onPlay: () => setPaused(false),
       onRateChange: (event: VideoEvent) => setRate(event.currentTarget.playbackRate),
