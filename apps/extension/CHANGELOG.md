@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.5.0](https://github.com/westpoint-io/mimik/compare/v1.4.1...v1.5.0) (2026-10-30)
+
+### Features
+
+* Keyboard shortcuts to start or stop recording, pause and capture a step now: Alt+Shift+1, 2 and 3, listed in Settings
+* Dark mode, following the system or a choice in Settings
+* Reorder steps from a contents panel instead of dragging cards
+* Step numbers in video and GIF exports
+
+### Bug Fixes
+
+* Clicking some pages while recording no longer freezes them
+* Choosing an item in a menu or dropdown that closes on mouse release records a step
+* A click is named after the control it hit, and clicking a field names it
+* Anthropic works again for step descriptions
+* A guide gets a plain title when the AI takes too long to write one
+* Guide Me finds a recorded link again when it holds more text or its address changed
+* Menus in Firefox stay open instead of closing straight away
+* The onboarding blur preview follows every smart blur switch, including SSN, IP and MAC
+* The video preview timer shows the total length instead of 0:00
+
 ## [1.4.1](https://github.com/westpoint-io/mimik/compare/v1.4.0...v1.4.1) (2026-10-27)
 
 
