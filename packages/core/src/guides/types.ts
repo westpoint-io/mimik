@@ -122,6 +122,7 @@ export interface ElementMeta {
   source?: ElementSource;
   textContent: string | null;
   ariaLabel: string | null;
+  label?: string | null;
   placeholder: string | null;
   altText: string | null;
   name: string | null;

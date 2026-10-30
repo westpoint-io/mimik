@@ -43,7 +43,7 @@ export function useVideoPreview({ active, guide, steps, screenshots, options, vo
   const [error, setError] = useState<string | null>(null);
   const [requested, setRequested] = useState(false);
 
-  const { cover, stepDescriptions, resolution } = options;
+  const { cover, stepDescriptions, stepNumbers, resolution } = options;
   const deferred = steps.length > AUTOPLAY_STEP_LIMIT && !requested;
 
   useEffect(() => {
@@ -79,7 +79,7 @@ export function useVideoPreview({ active, guide, steps, screenshots, options, vo
           guide,
           steps,
           screenshots,
-          { cover, stepDescriptions, resolution, voiceover },
+          { cover, stepDescriptions, stepNumbers, resolution, voiceover },
           {
             signal: controller.signal,
             onProgress: (encoded, frames) => {
@@ -117,7 +117,7 @@ export function useVideoPreview({ active, guide, steps, screenshots, options, vo
       if (made) URL.revokeObjectURL(made);
       setUrl(null);
     };
-  }, [active, deferred, guide, steps, screenshots, cover, stepDescriptions, resolution, voiceover]);
+  }, [active, deferred, guide, steps, screenshots, cover, stepDescriptions, stepNumbers, resolution, voiceover]);
 
   return {
     supported,

@@ -110,6 +110,24 @@ describe('generateGuideMeta', () => {
     generateTextMock.mockRejectedValue(new Error('rate limited'));
     expect(await generateGuideMeta(steps, 'openai', 'gpt-4o-mini', 'key')).toBeNull();
   });
+
+  it('gives up on a model that never answers, so the guide can fall back to a plain title', async () => {
+    vi.useFakeTimers();
+    const hang = ({ abortSignal }: { abortSignal?: AbortSignal }) =>
+      new Promise((_, reject) => {
+        if (abortSignal?.aborted) reject(new Error('aborted'));
+        abortSignal?.addEventListener('abort', () => reject(new Error('aborted')));
+      });
+    generateObjectMock.mockImplementation(hang);
+    generateTextMock.mockImplementation(hang);
+
+    const result = generateGuideMeta(steps, 'ollama', 'glm', 'key');
+    await vi.waitUntil(() => generateObjectMock.mock.calls.length > 0);
+    await vi.advanceTimersByTimeAsync(45_000);
+
+    expect(await result).toBeNull();
+    vi.useRealTimers();
+  });
 });
 
 describe('models without structured output support', () => {

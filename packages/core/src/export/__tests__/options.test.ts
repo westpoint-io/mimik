@@ -28,6 +28,7 @@ describe('normaliseExportOptions', () => {
       stepUrls: DEFAULT_EXPORT_OPTIONS.stepUrls,
       imageScale: 'small',
       stepDescriptions: DEFAULT_EXPORT_OPTIONS.stepDescriptions,
+      stepNumbers: DEFAULT_EXPORT_OPTIONS.stepNumbers,
       resolution: DEFAULT_EXPORT_OPTIONS.resolution,
       gifQuality: DEFAULT_EXPORT_OPTIONS.gifQuality,
       bundleStripInputs: DEFAULT_EXPORT_OPTIONS.bundleStripInputs,

@@ -4,7 +4,7 @@ export function EmptyGuideState() {
   return (
     <div className="flex flex-col items-center justify-center flex-1 min-h-[300px]">
       <div className="relative">
-        <svg width="72" height="54" viewBox="20 50 160 120" className="block">
+        <svg width="72" height="54" viewBox="20 50 160 120" className="light block">
           <rect x="30" y="95" width="140" height="68" rx="5" className="fill-primary" />
           <path d="M30 95 L30 80 Q30 60, 100 60 Q170 60, 170 80 L170 95 Z" className="fill-violet-mid" />
           <rect x="30" y="93" width="140" height="3" className="fill-lavender" />

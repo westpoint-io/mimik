@@ -32,6 +32,10 @@ const INTERACTIVE_SELECTOR =
 
 const MAX_WALK_UP = 3;
 const MAX_SIBLINGS = 10;
+const MAX_NAME_LENGTH = 80;
+
+const DECORATION_EDGES = /^[\p{So}\p{Co}\s]+|[\p{So}\p{Co}\s]+$/gu;
+const READABLE = /[\p{L}\p{N}]/u;
 
 function textOf(el: Element | null): string | null {
   return el?.textContent?.trim() || null;
@@ -66,6 +70,17 @@ function getLabelForInput(el: Element): string | null {
   return textOf(clone);
 }
 
+function visibleText(el: Element): string | null {
+  let text = '';
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    const hidden = node.parentElement?.closest('[aria-hidden="true"]');
+    if (!hidden || !el.contains(hidden)) text += node.textContent ?? '';
+  }
+  const name = text.replace(DECORATION_EDGES, '');
+  return READABLE.test(name) && name.length <= MAX_NAME_LENGTH ? name : null;
+}
+
 function getAccessibleName(el: Element): string | null {
   return (
     attr(el, 'aria-label') ??
@@ -73,7 +88,7 @@ function getAccessibleName(el: Element): string | null {
     (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement
       ? getLabelForInput(el)
       : null) ??
-    ((el.textContent?.trim()?.length ?? 0) <= 80 ? el.textContent?.trim() || null : null) ??
+    visibleText(el) ??
     attr(el, 'title') ??
     attr(el, 'placeholder')
   );

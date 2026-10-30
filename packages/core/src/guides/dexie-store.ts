@@ -613,9 +613,18 @@ async function updateStepInputValue(stepId: string, inputValue: string): Promise
   await db.steps.update(stepId, { inputValue });
 }
 
-async function updateStepCapture(stepId: string, elementMeta: ElementMeta, screenshotId?: string): Promise<void> {
+async function updateStepCapture(
+  stepId: string,
+  elementMeta: ElementMeta,
+  screenshotId?: string,
+  action?: string,
+): Promise<void> {
   const updates: Partial<Step> = { elementMeta };
   if (screenshotId) updates.screenshotId = screenshotId;
+  if (action) {
+    updates.action = action;
+    updates.description = buildFallbackDescription(action, elementMeta);
+  }
   await db.steps.update(stepId, updates);
 }
 

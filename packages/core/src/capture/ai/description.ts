@@ -21,7 +21,7 @@ export async function getAIDescription(
   const { text } = await generateText({
     model: createModel(provider, model, apiKey, baseUrl),
     prompt: prompt + getLanguageSuffix(locale),
-    maxOutputTokens: 50,
+    maxOutputTokens: 1024,
   });
   return unwrapQuotes(text) || null;
 }

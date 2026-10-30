@@ -98,6 +98,13 @@ recording:
 settings:
   cardKeyboard: "Typing and keys"
   cardKeyboardHint: "What your keyboard adds to a guide."
+  shortcutsHint: "Work on any page you browse."
+  shortcutsChange: "Change in browser"
+  shortcutRecordHint: "Starts on the tab you are looking at."
+  shortcutPauseHint: "While recording."
+  shortcutCaptureHint: "Saves the screen as a step without clicking, for open menus."
+  shortcutNotSet: "Not set"
+  shortcutsChangeNote: "Your browser keeps shortcuts on its own page."
   recordKeys: "Record shortcuts and named keys"
   recordKeysHint: "Ctrl+S, Enter and the like become steps."
   recordTyping: "Record what you type"
@@ -191,9 +198,14 @@ settings:
   keyUnreachable: "Couldn't reach the provider. Check your connection."
   modelsFound: "$1 models available"
   smartBlur: "Smart blur"
-  privacyNotice: "Keys and audio go only to the provider you choose."
+  version: "Version $1"
   reportBug: "Report a bug"
   aboutSection: "About"
+  appearance: "Appearance"
+  appearanceHint: "Light, dark, or the same as your system."
+  themeSystem: "System"
+  themeLight: "Light"
+  themeDark: "Dark"
   starCtaTitle: "Like what you see?"
   starCtaMessage: "A GitHub star helps other people find Mimik."
   starOnGithub: Star on GitHub
@@ -521,6 +533,8 @@ exportPreview:
   preparingVoiceover: "Preparing the voice-over"
   stepDescriptions: "Step captions"
   stepDescriptionsHint: "Draw the step text onto each video frame"
+  stepNumbers: "Step numbers"
+  stepNumbersHint: "Start each step caption in the video and GIF with its number"
   resolution: "Video quality"
   gifQuality: "GIF quality"
   gif_low: "Low"
@@ -798,3 +812,14 @@ stepKind:
   key: "Key"
   navigate: "Page"
   note: "Note"
+outline:
+  title: Contents
+  untitledStep: Untitled step
+  moreSelected: "+$1"
+  instructions: Press Space to pick up a step. Use the arrow keys to move it, Space to drop it, or Escape to cancel.
+  pickedUp: "Picked up $1"
+  movedOver: "$1 moved over $2"
+  droppedOver: "$1 dropped over $2"
+  dropped: "$1 dropped"
+  cancelled: "Moving $1 cancelled"
+  selected: Selected

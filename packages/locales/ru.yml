@@ -98,6 +98,13 @@ recording:
 settings:
   cardKeyboard: Ввод и клавиши
   cardKeyboardHint: Что клавиатура добавляет в гайд.
+  shortcutsHint: Работают на любой открытой странице.
+  shortcutsChange: Изменить в браузере
+  shortcutRecordHint: Начинает запись на открытой вкладке.
+  shortcutPauseHint: Во время записи.
+  shortcutCaptureHint: Сохраняет экран как шаг без клика, для открытых меню.
+  shortcutNotSet: Не задано
+  shortcutsChangeNote: Браузер хранит сочетания клавиш на отдельной странице.
   recordKeys: Записывать сочетания и именованные клавиши
   recordKeysHint: "Ctrl+S, Enter и подобные становятся шагами."
   recordTyping: Записывать ввод текста
@@ -191,9 +198,14 @@ settings:
   keyUnreachable: Не удалось подключиться к провайдеру. Проверьте соединение и попробуйте снова.
   modelsFound: "Доступно моделей: $1"
   smartBlur: Умное размытие
-  privacyNotice: Ваши ключи и аудио отправляются только выбранному вами провайдеру. Больше ничего не покидает ваш браузер.
+  version: Версия $1
   reportBug: "Сообщить об ошибке"
   aboutSection: "О Mimik"
+  appearance: "Оформление"
+  appearanceHint: "Светлое, тёмное или как в системе."
+  themeSystem: "Как в системе"
+  themeLight: "Светлое"
+  themeDark: "Тёмное"
   starCtaTitle: "Нравится то, что вы видите?"
   starCtaMessage: "Звезда на GitHub помогает другим находить Mimik и поддерживает нас!"
   starOnGithub: Поставить звезду на GitHub
@@ -521,6 +533,8 @@ exportPreview:
   preparingVoiceover: Готовим озвучку
   stepDescriptions: Подписи шагов
   stepDescriptionsHint: Наносить текст шагов на каждый кадр видео
+  stepNumbers: Номера шагов
+  stepNumbersHint: Начинать подпись каждого шага в видео и GIF с его номера
   resolution: Качество видео
   gifQuality: Качество GIF
   gif_low: Низкое
@@ -798,3 +812,14 @@ stepKind:
   key: Клавиша
   navigate: Страница
   note: Примечание
+outline:
+  title: Содержание
+  untitledStep: Шаг без названия
+  moreSelected: "+$1"
+  instructions: Нажмите Пробел, чтобы взять шаг. Перемещайте его стрелками, отпустите Пробелом или отмените клавишей Escape.
+  pickedUp: "Взят: $1"
+  movedOver: "$1 над $2"
+  droppedOver: "$1 перемещён на место $2"
+  dropped: "$1 отпущен"
+  cancelled: "Перемещение $1 отменено"
+  selected: Выбран

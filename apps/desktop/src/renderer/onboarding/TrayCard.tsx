@@ -32,7 +32,7 @@ export function TrayCard() {
       {MAC ? (
         <div
           aria-hidden="true"
-          className="relative h-[230px] w-full lg:h-auto lg:min-h-[230px] max-w-[440px] overflow-hidden rounded-xl border border-lavender/60 bg-[radial-gradient(60%_70%_at_15%_100%,#F59E0B_0%,rgba(245,158,11,0)_60%),radial-gradient(55%_75%_at_85%_100%,#DB2777_0%,rgba(219,39,119,0)_62%),radial-gradient(70%_80%_at_50%_110%,#7C3AED_0%,rgba(124,58,237,0)_70%),linear-gradient(180deg,#1E3A8A_0%,#3B5BDB_45%,#A78BFA_100%)]"
+          className="light relative h-[230px] w-full lg:h-auto lg:min-h-[230px] max-w-[440px] overflow-hidden rounded-xl border border-lavender/60 bg-[radial-gradient(60%_70%_at_15%_100%,#F59E0B_0%,rgba(245,158,11,0)_60%),radial-gradient(55%_75%_at_85%_100%,#DB2777_0%,rgba(219,39,119,0)_62%),radial-gradient(70%_80%_at_50%_110%,#7C3AED_0%,rgba(124,58,237,0)_70%),linear-gradient(180deg,#1E3A8A_0%,#3B5BDB_45%,#A78BFA_100%)]"
         >
           <div className="absolute inset-x-0 top-0 flex h-6 items-center gap-3 bg-white/55 px-2.5 text-[10px] text-gray-900 backdrop-blur-md">
             <span className="h-3 w-2.5 rounded-[5px_5px_6px_6px] bg-gray-900" />
@@ -58,7 +58,7 @@ export function TrayCard() {
       ) : (
         <div
           aria-hidden="true"
-          className="relative h-[230px] w-full lg:h-auto lg:min-h-[230px] max-w-[440px] overflow-hidden rounded-xl border border-lavender/60 bg-[radial-gradient(38%_60%_at_30%_66%,#1E40AF_0%,rgba(30,64,175,0)_72%),radial-gradient(30%_48%_at_20%_54%,#2563EB_0%,rgba(37,99,235,0)_72%),radial-gradient(26%_40%_at_38%_40%,#60A5FA_0%,rgba(96,165,250,0)_72%),linear-gradient(160deg,#EAF2FD_0%,#CFE0F7_55%,#B9D1F2_100%)]"
+          className="light relative h-[230px] w-full lg:h-auto lg:min-h-[230px] max-w-[440px] overflow-hidden rounded-xl border border-lavender/60 bg-[radial-gradient(38%_60%_at_30%_66%,#1E40AF_0%,rgba(30,64,175,0)_72%),radial-gradient(30%_48%_at_20%_54%,#2563EB_0%,rgba(37,99,235,0)_72%),radial-gradient(26%_40%_at_38%_40%,#60A5FA_0%,rgba(96,165,250,0)_72%),linear-gradient(160deg,#EAF2FD_0%,#CFE0F7_55%,#B9D1F2_100%)]"
         >
           <TrayMenu mac={false} version={version} />
           <div className="absolute inset-x-0 bottom-0 flex h-[42px] items-center border-t border-black/5 bg-[#EEF1F7]/85 px-2.5 backdrop-blur-md">

@@ -117,7 +117,12 @@ export function ControlsCard() {
         padding: '4px 4px 10px',
         backgroundColor: '#ffffff',
       };
-      const to = { ...rectIn(preview.current), borderRadius: '10px', padding: '0px', backgroundColor: '#eef2ff' };
+      const to = {
+        ...rectIn(preview.current),
+        borderRadius: '10px',
+        padding: '0px',
+        backgroundColor: 'var(--secondary)',
+      };
       Object.assign(flyer.current.style, from);
       const fade = node.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, delay: 220, fill: 'forwards' });
       const grow = flyer.current.animate([from, to], {
@@ -184,7 +189,7 @@ export function ControlsCard() {
       data-resting={resting || undefined}
       className={`flex flex-col overflow-hidden border ${
         collapsed
-          ? 'w-fit rounded-full border-transparent bg-primary text-white'
+          ? 'w-fit rounded-full border-transparent bg-primary text-on-solid'
           : 'w-[300px] rounded-[14px] border-lavender bg-card text-foreground'
       }`}
     >

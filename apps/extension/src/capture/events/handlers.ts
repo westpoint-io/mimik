@@ -23,6 +23,7 @@ import { localStorage } from '@/lib/browser-api/local-storage';
 import { HoverRing } from '@/lib/hover-ring';
 import { InputSession } from './input-session';
 import { isRecordableKey } from './is-recordable-key';
+import { PressHold } from './press-hold';
 
 const REPEAT_CLICK_MS = 300;
 const MAC = /Mac/i.test(navigator.platform);
@@ -58,6 +59,7 @@ let lastClickTime = 0;
 
 export interface CaptureHandle {
   stop: () => Promise<void>;
+  captureNow: () => void;
 }
 
 const PASSIVE_CAPTURE = { capture: true, passive: true } as const;
@@ -65,6 +67,7 @@ const ACTIVE_CAPTURE = { capture: true } as const;
 
 class CaptureController {
   private input: InputSession;
+  private press = new PressHold();
   private queue = new PQueue({ concurrency: 1 });
   private listeners: [string, EventListener, AddEventListenerOptions][] = [];
   private dragStartX: number | null = null;
@@ -72,6 +75,7 @@ class CaptureController {
   private dragStartElement: Element | null = null;
   private ring = new HoverRing(DEFAULT_TARGET_COLOR);
   private hovered: HTMLElement | null = null;
+  private pointer: { x: number; y: number } | null = null;
   private busy = false;
   private recordKeys = false;
   private recordTyping = true;
@@ -89,6 +93,7 @@ class CaptureController {
   ) {
     this.input = new InputSession(guideId, sink);
     this.listeners = [
+      ...this.press.listeners,
       ['click', this.onClick.bind(this), ACTIVE_CAPTURE],
       ['auxclick', this.onAuxClick.bind(this), ACTIVE_CAPTURE],
       ['keydown', this.onKeydown.bind(this), ACTIVE_CAPTURE],
@@ -102,6 +107,7 @@ class CaptureController {
         ['cut', this.onClipboard.bind(this), PASSIVE_CAPTURE],
         ['pointerdown', this.onPointerDown.bind(this), PASSIVE_CAPTURE],
         ['pointerup', this.onPointerUp.bind(this), PASSIVE_CAPTURE],
+        ['pointermove', this.onPointerMove.bind(this), PASSIVE_CAPTURE],
         ['dragend', this.onDragEnd.bind(this), PASSIVE_CAPTURE],
         ['mouseover', this.onMouseOver.bind(this), PASSIVE_CAPTURE],
         ['mouseout', this.onMouseOut.bind(this), PASSIVE_CAPTURE],
@@ -140,17 +146,26 @@ class CaptureController {
     };
   }
 
-  private enqueue(task: () => Promise<unknown>) {
-    this.busy = true;
+  private enqueue(task: () => Promise<unknown>, after?: () => void) {
     this.ring.hide();
+    const wasIdle = !this.busy;
+    this.busy = true;
     this.queue.add(async () => {
       await waitForPaint();
-      await task();
+      try {
+        await Promise.race([task(), sleep(CAPTURE_BUDGET_MS)]);
+      } catch (err) {
+        logger.error('Capture failed', err);
+      } finally {
+        after?.();
+      }
     });
-    this.queue.onIdle().then(() => {
-      this.busy = false;
-      if (this.hovered?.isConnected && !focusInEmbed()) this.ring.show(this.hovered);
-    });
+    if (wasIdle) {
+      this.queue.onIdle().then(() => {
+        this.busy = false;
+        if (this.hovered?.isConnected && !focusInEmbed()) this.ring.show(this.hovered);
+      });
+    }
   }
 
   private hoverTarget(raw: EventTarget | null): HTMLElement | null {
@@ -180,13 +195,19 @@ class CaptureController {
 
   private onClick(e: Event) {
     const me = e as MouseEvent;
+    if (isReplayedClick(me)) return;
+    const press = this.press.take();
+    if (!this.interceptClick(me, press)) this.press.replay(press);
+  }
+
+  private interceptClick(me: MouseEvent, press: ReturnType<PressHold['take']>): boolean {
     const raw = eventTarget(me);
-    if (!raw || !(raw instanceof Element) || isReplayedClick(me) || me.shiftKey) return;
+    if (!raw || !(raw instanceof Element) || me.shiftKey) return false;
     const target = findFocusableAncestor(raw);
-    if (isMimikElement(target)) return;
+    if (isMimikElement(target)) return false;
 
     const now = Date.now();
-    if (target === lastClickTarget && now - lastClickTime < REPEAT_CLICK_MS) return;
+    if (target === lastClickTarget && now - lastClickTime < REPEAT_CLICK_MS) return false;
     lastClickTarget = target;
     lastClickTime = now;
 
@@ -196,7 +217,7 @@ class CaptureController {
         if (this.input.active && this.input.target !== target) await this.input.finalize();
         if (!this.input.active) await this.input.start(target, atEvent);
       });
-      return;
+      return false;
     }
 
     if (isNavigatingClick(target)) {
@@ -212,28 +233,24 @@ class CaptureController {
           }, INTERCEPT_DELAY_MS),
         );
       }
-      return;
+      return false;
     }
 
     const task = this.capture('click', target, { x: me.clientX, y: me.clientY });
 
     if (!shouldInterceptClick(target, me)) {
       this.enqueue(task);
-      return;
+      return false;
     }
 
     me.preventDefault();
     me.stopImmediatePropagation();
     const init = replayInit(me);
-    this.enqueue(async () => {
-      try {
-        await Promise.race([task(), sleep(CAPTURE_BUDGET_MS)]);
-      } catch (err) {
-        logger.warn('Capture failed, replaying the click anyway', err);
-      } finally {
-        replayClick(target, init);
-      }
+    this.enqueue(task, () => {
+      this.press.replay(press);
+      replayClick(target, init);
     });
+    return true;
   }
 
   private onAuxClick(e: Event) {
@@ -307,6 +324,18 @@ class CaptureController {
     this.enqueue(this.capture(e.type as 'copy' | 'paste' | 'cut', target));
   }
 
+  private onPointerMove(e: Event) {
+    const pe = e as PointerEvent;
+    this.pointer = { x: pe.clientX, y: pe.clientY };
+  }
+
+  captureNow() {
+    const point = this.pointer ?? undefined;
+    const raw = point ? document.elementFromPoint(point.x, point.y) : document.activeElement;
+    const target = raw && !isMimikElement(raw) ? findFocusableAncestor(raw) : document.body;
+    this.enqueue(this.capture('click', target, point));
+  }
+
   private onPointerDown(e: Event) {
     this.ring.hide();
     const pe = e as PointerEvent;
@@ -342,6 +371,7 @@ class CaptureController {
   }
 
   stop(): Promise<void> {
+    this.press.flush();
     browser.storage.local.onChanged.removeListener(this.onSettingsChanged);
     for (const [event, handler, opts] of this.listeners) {
       window.removeEventListener(event, handler, opts);
@@ -361,5 +391,6 @@ export function startCapture(
   const controller = new CaptureController(guideId, isTopFrame, sink);
   return {
     stop: () => controller.stop(),
+    captureNow: () => controller.captureNow(),
   };
 }

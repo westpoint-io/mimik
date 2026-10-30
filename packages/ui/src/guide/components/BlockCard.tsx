@@ -1,32 +1,21 @@
 import { i18n } from '@mimik/core/env';
-import { CALLOUT_VARIANTS, calloutAccent, DEFAULT_CALLOUT_COLOR, tint, variantLabel } from '@mimik/core/guides/blocks';
+import { CALLOUT_VARIANTS, calloutAccent, DEFAULT_CALLOUT_COLOR, variantLabel } from '@mimik/core/guides/blocks';
 import { updateCallout } from '@mimik/core/guides/service';
 import type { CalloutVariant, Step } from '@mimik/core/guides/types';
 import { Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { ConfirmDialog } from '../../common/components/ConfirmDialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
-import { useCardDrag } from '../hooks/use-card-drag';
-import type { DragHandleProps } from '../types';
-import { DragGrip } from './DragGrip';
 
 interface BlockCardProps {
   step: Step;
   onDescriptionChange?: (stepId: string, description: string) => void;
   onDelete?: (stepId: string) => void;
   onChanged?: () => void;
-  dragHandleProps?: DragHandleProps;
   readOnly?: boolean;
 }
 
-export function BlockCard({
-  step,
-  onDescriptionChange,
-  onDelete,
-  onChanged,
-  dragHandleProps,
-  readOnly,
-}: BlockCardProps) {
+export function BlockCard({ step, onDescriptionChange, onDelete, onChanged, readOnly }: BlockCardProps) {
   const [description, setDescription] = useState(step.description);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -34,7 +23,6 @@ export function BlockCard({
     setDescription(step.description);
   }, [step.description]);
 
-  const cardDrag = useCardDrag(dragHandleProps);
   const isHeading = step.blockType === 'heading';
   const accent = calloutAccent(step);
   const variant = step.calloutVariant ?? 'info';
@@ -54,18 +42,14 @@ export function BlockCard({
     : 'text-[13px] font-medium leading-snug text-foreground';
 
   return (
-    <div
-      {...cardDrag}
-      onDragOver={(e) => {
-        e.preventDefault();
-        dragHandleProps?.onDragOver(e);
-      }}
-      onDragEnd={dragHandleProps?.onDragEnd}
-      className="mb-3"
-    >
+    <div className="mb-3">
       <div
         className={isHeading ? 'border-b border-foreground pb-1.5' : 'rounded-lg px-3 py-2.5 border-l-[3px]'}
-        style={isHeading ? undefined : { borderLeftColor: accent, background: tint(accent) }}
+        style={
+          isHeading
+            ? undefined
+            : { borderLeftColor: accent, background: `color-mix(in srgb, ${accent} 12%, var(--card))` }
+        }
       >
         {readOnly ? (
           <p className={`${textClass} whitespace-pre-wrap`}>{step.description}</p>
@@ -94,7 +78,6 @@ export function BlockCard({
       </div>
       {!readOnly && (
         <div className="flex items-center gap-1 mt-1">
-          {dragHandleProps && <DragGrip />}
           {!isHeading &&
             CALLOUT_VARIANTS.map((option) => (
               <Tooltip key={option}>

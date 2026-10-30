@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from 'vitest';
+import { extractElementMeta } from '@/core/capture/dom/element-meta';
 import type { ElementMeta } from '@/core/guides/types';
 import { compareText, findElement, isVisible, scoreCandidate, THRESHOLD, WEIGHTS } from '../finder';
 
@@ -576,5 +577,58 @@ describe('findElement', () => {
     const result = findElement(meta);
     expect(result.element).toBe(btn);
     expect(result.matchDetails.cssSelector).toBe(1);
+  });
+});
+
+describe('result links', () => {
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  function resultLink(id: string, href: string, title: string): HTMLAnchorElement {
+    const link = makeVisible(document.createElement('a')) as HTMLAnchorElement;
+    link.id = id;
+    link.href = href;
+    link.innerHTML = `<h3>${title}</h3><div><cite>example.com › docs › guide</cite></div>`;
+    document.body.appendChild(link);
+    return link;
+  }
+
+  it('finds a recorded result link whose address picked up a text fragment and query', () => {
+    const recorded = extractElementMeta(resultLink('r1', 'https://example.com/docs/guide', 'Getting started guide'));
+    document.body.innerHTML = '';
+
+    resultLink('other', 'https://example.com/pricing', 'Pricing plans');
+    const target = resultLink(
+      'r9',
+      'https://example.com/docs/guide?utm_source=search#:~:text=Getting%20started',
+      'Getting started guide',
+    );
+
+    const result = findElement({ ...recorded, cssSelector: '#r1' });
+    expect(result.element).toBe(target);
+    expect(result.matchDetails.textContent).toBe(1);
+    expect(result.matchDetails.href).toBe(0.8);
+    expect(result.score).toBeGreaterThanOrEqual(THRESHOLD);
+  });
+
+  it('does not take a different result link for the recorded one', () => {
+    const recorded = extractElementMeta(resultLink('r1', 'https://example.com/docs/guide', 'Getting started guide'));
+    document.body.innerHTML = '';
+
+    resultLink('other', 'https://example.com/pricing', 'Pricing plans');
+
+    const result = findElement({ ...recorded, cssSelector: '#r1' });
+    expect(result.element).toBeNull();
+  });
+
+  it('treats a different path on the same site as a different address', () => {
+    const a = document.createElement('a');
+    a.href = 'https://example.com/pricing?plan=pro';
+    const { matchDetails } = scoreCandidate(
+      makeMeta({ tag: 'a', href: 'https://example.com/docs/guide', cssSelector: '#nonexistent' }),
+      a,
+    );
+    expect(matchDetails.href).toBe(0);
   });
 });

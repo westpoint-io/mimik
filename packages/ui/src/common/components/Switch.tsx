@@ -14,8 +14,8 @@ export function Switch({ checked, label, disabled, onChange }: SwitchProps) {
       aria-label={label}
       disabled={disabled}
       onClick={() => onChange(!checked)}
-      className={`relative h-5 w-9 shrink-0 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
-        checked ? 'bg-accent' : 'bg-border'
+      className={`relative h-5 w-9 shrink-0 rounded-full transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card disabled:cursor-not-allowed disabled:opacity-50 ${
+        checked ? 'bg-accent' : 'bg-switch-off'
       }`}
     >
       <span

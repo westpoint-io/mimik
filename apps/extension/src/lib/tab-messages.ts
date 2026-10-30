@@ -9,6 +9,7 @@ export const TabMessage = {
   START_BLUR: 'START_BLUR',
   DISMISS_BLUR: 'DISMISS_BLUR',
   CLEAR_BLUR: 'CLEAR_BLUR',
+  CAPTURE_NOW: 'CAPTURE_NOW',
 } as const;
 
 export type TabMessageType = (typeof TabMessage)[keyof typeof TabMessage];

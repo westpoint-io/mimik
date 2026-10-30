@@ -90,7 +90,7 @@ export function AreaEditor({ origin }: { origin: { x: number; y: number } }) {
       >
         <div
           id="size"
-          className="absolute top-3 left-3 rounded-md bg-primary px-[9px] py-[3px] text-[11.5px] font-semibold text-white tabular-nums"
+          className="absolute top-3 left-3 rounded-md bg-primary px-[9px] py-[3px] text-[11.5px] font-semibold text-on-solid tabular-nums"
         >
           {rect ? `${Math.round(rect.width)} × ${Math.round(rect.height)}` : ''}
         </div>
@@ -124,7 +124,7 @@ export function AreaEditor({ origin }: { origin: { x: number; y: number } }) {
           >
             <Check size={15} />
             {i18n.t('annotationEditor.done')}
-            <kbd className={`${KEY} bg-lavender/20 text-lavender`}>Enter</kbd>
+            <kbd className={`${KEY} bg-kbd-on-solid text-kbd-on-solid-foreground`}>Enter</kbd>
           </Button>
         </span>
       </div>

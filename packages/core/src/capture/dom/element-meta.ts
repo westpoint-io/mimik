@@ -1,27 +1,45 @@
 import { getCssSelector } from 'css-selector-generator';
 import type { ElementMeta } from '@/core/guides/types';
+import { getFieldLabel, isRedactedField, isSensitiveField } from './element-utils';
 
-function getCleanText(el: HTMLElement): string | null {
+const SKIP_TEXT = 'script, style, [hidden], [aria-hidden="true"]';
+
+const LINE_SELECTOR =
+  'address, article, aside, blockquote, dd, div, dl, dt, fieldset, figcaption, figure, footer, form, h1, h2, h3, h4, h5, h6, header, legend, li, main, nav, ol, option, p, pre, section, table, td, th, tr, ul';
+
+export function getCleanText(el: HTMLElement): string | null {
   if (el instanceof HTMLInputElement) return null;
-  const clone = el.cloneNode(true) as HTMLElement;
-  for (const input of clone.querySelectorAll('input')) input.remove();
-  clone.style.position = 'absolute';
-  clone.style.left = '-9999px';
-  clone.style.pointerEvents = 'none';
-  document.body.appendChild(clone);
-  try {
-    const hidden = clone.querySelectorAll('[aria-hidden="true"], [hidden], script, style');
-    for (const h of Array.from(hidden)) h.remove();
-    const text = clone.innerText?.trim();
-    if (!text) return null;
-    const firstLine = text
-      .split('\n')
-      .find((l) => l.trim().length > 2)
-      ?.trim();
-    return firstLine?.slice(0, 80) || null;
-  } finally {
-    clone.remove();
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, {
+    acceptNode: (node) =>
+      node instanceof Element && node.matches(SKIP_TEXT) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT,
+  });
+  const finish = (text: string) => {
+    const tidy = text.replace(/\s+/g, ' ').trim();
+    return tidy.length > 2 ? tidy.slice(0, 80) : null;
+  };
+  let line = '';
+  let owner: Element | null = null;
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    if (node instanceof Element) {
+      if (node.tagName === 'BR') {
+        const done = finish(line);
+        if (done) return done;
+        line = '';
+        owner = null;
+      }
+      continue;
+    }
+    const block = node.parentElement?.closest(LINE_SELECTOR);
+    const next = block && el.contains(block) ? block : el;
+    if (next !== owner) {
+      const done = finish(line);
+      if (done) return done;
+      line = '';
+      owner = next;
+    }
+    line += node.textContent ?? '';
   }
+  return finish(line);
 }
 
 export interface FrozenRect {
@@ -45,14 +63,21 @@ export function extractElementMeta(el: HTMLElement, atEvent?: FrozenRect): Eleme
   } catch {
     cssSelector = el.tagName?.toLowerCase() ?? 'unknown';
   }
+  const isField =
+    el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement;
+  const fixedValue =
+    el instanceof HTMLInputElement && (el.readOnly || el.disabled) && !isSensitiveField(el) && !isRedactedField(el)
+      ? el.value
+      : '';
   return {
     source: 'dom',
     tag: el.tagName?.toLowerCase() ?? 'unknown',
     cssSelector,
     textContent: getCleanText(el),
     ariaLabel: el.getAttribute('aria-label'),
+    label: isField ? getFieldLabel(el) || fixedValue || null : null,
     placeholder: el.getAttribute('placeholder'),
-    altText: el instanceof HTMLImageElement ? el.alt : null,
+    altText: el instanceof HTMLImageElement ? el.alt : el.getAttribute('title'),
     name: el.getAttribute('name'),
     role: el.getAttribute('role') || (el.tagName?.toLowerCase() ?? null),
     href: el instanceof HTMLAnchorElement ? el.href : null,

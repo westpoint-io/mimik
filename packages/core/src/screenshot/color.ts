@@ -60,6 +60,19 @@ export function hsvToHex({ h, s, v }: Hsv): string {
   return rgbToHex((r + m) * 255, (g + m) * 255, (b + m) * 255);
 }
 
+function luminance(hex: string): number {
+  const [r, g, b] = (hexToRgb(hex) ?? [0, 0, 0]).map((c) => {
+    const s = c / 255;
+    return s <= 0.03928 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+  }) as [number, number, number];
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+export function contrastRatio(a: string, b: string): number {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x) as [number, number];
+  return (hi + 0.05) / (lo + 0.05);
+}
+
 export function shadeOf(hex: string, valueScale: number, saturationScale = 1): string {
   const hsv = hexToHsv(hex);
   return hsvToHex({ h: hsv.h, s: clamp01(hsv.s * saturationScale), v: clamp01(hsv.v * valueScale) });

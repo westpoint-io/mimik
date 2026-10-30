@@ -98,6 +98,13 @@ recording:
 settings:
   cardKeyboard: "输入与按键"
   cardKeyboardHint: "键盘为指南添加的内容。"
+  shortcutsHint: "在你浏览的任意页面上可用。"
+  shortcutsChange: "在浏览器中更改"
+  shortcutRecordHint: "在你正在查看的标签页上开始。"
+  shortcutPauseHint: "录制时可用。"
+  shortcutCaptureHint: "无需点击即可把当前屏幕保存为一个步骤，适合展开的菜单。"
+  shortcutNotSet: "未设置"
+  shortcutsChangeNote: "浏览器在单独的页面中管理快捷键。"
   recordKeys: "记录快捷键和命名按键"
   recordKeysHint: "Ctrl+S、Enter 等会成为步骤。"
   recordTyping: "记录输入内容"
@@ -191,9 +198,14 @@ settings:
   keyUnreachable: "无法连接到提供商。请检查网络。"
   modelsFound: "$1 个可用模型"
   smartBlur: 智能模糊
-  privacyNotice: "密钥和音频只会发送给你选择的提供商。"
+  version: "版本 $1"
   reportBug: "报告问题"
   aboutSection: "关于"
+  appearance: "外观"
+  appearanceHint: "浅色、深色或跟随系统。"
+  themeSystem: "跟随系统"
+  themeLight: "浅色"
+  themeDark: "深色"
   starCtaTitle: "喜欢 Mimik 吗？"
   starCtaMessage: "在 GitHub 上加星能帮助更多人发现 Mimik。"
   starOnGithub: 在 GitHub 上加星
@@ -521,6 +533,8 @@ exportPreview:
   preparingVoiceover: "正在准备配音"
   stepDescriptions: "步骤字幕"
   stepDescriptionsHint: "将步骤文字绘制到每一帧视频中"
+  stepNumbers: "步骤编号"
+  stepNumbersHint: "在视频和 GIF 的每个步骤字幕前加上编号"
   resolution: "视频质量"
   gifQuality: "GIF 质量"
   gif_low: "低"
@@ -798,3 +812,14 @@ stepKind:
   key: "按键"
   navigate: "页面"
   note: "备注"
+outline:
+  title: 目录
+  untitledStep: 未命名步骤
+  moreSelected: "+$1"
+  instructions: 按空格键拿起步骤，用方向键移动，再按空格键放下，或按 Esc 取消。
+  pickedUp: "已拿起 $1"
+  movedOver: "$1 移到 $2 上方"
+  droppedOver: "$1 已放到 $2"
+  dropped: "$1 已放下"
+  cancelled: "已取消移动 $1"
+  selected: 已选择

@@ -22,7 +22,7 @@ export function ConfirmDeleteModal({ open, onClose, onConfirm }: ConfirmDeleteMo
         <div className="flex flex-col gap-2 mt-2">
           <button
             onClick={onConfirm}
-            className="w-full py-2.5 rounded-lg bg-destructive text-white text-sm font-semibold hover:bg-destructive/90 transition-colors"
+            className="w-full py-2.5 rounded-lg bg-destructive text-destructive-foreground text-sm font-semibold hover:bg-destructive/90 transition-colors"
           >
             {i18n.t('confirmDelete.confirm')}
           </button>

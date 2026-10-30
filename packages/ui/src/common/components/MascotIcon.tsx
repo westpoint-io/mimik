@@ -29,7 +29,7 @@ export function MascotIcon({ size = 22, pose = 'happy', tone = 'brand' }: Mascot
       viewBox={MASCOT_VIEW_BOX}
       width={size}
       height={Math.round(size * MASCOT_ASPECT)}
-      className="block shrink-0"
+      className={`block shrink-0 ${muted ? '' : 'light'}`}
       aria-hidden="true"
     >
       <defs>

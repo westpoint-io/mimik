@@ -37,7 +37,7 @@ export function PinCard() {
     <section className="flex flex-col items-center gap-3 rounded-[18px] border border-lavender/60 bg-card px-7 py-6 text-center lg:row-span-3 lg:grid lg:grid-rows-subgrid lg:items-stretch lg:justify-items-center">
       <div
         style={{ right, ['--arrow' as string]: `${arrow}px` }}
-        className="fixed top-2.5 z-10 flex animate-[bob_1.4s_ease-in-out_infinite] items-center gap-2.5 rounded-xl bg-primary px-4 py-3 text-[14px] font-semibold text-white shadow-[0_10px_24px_rgba(30,27,75,0.25)] motion-reduce:animate-none before:absolute before:-top-2 before:right-[var(--arrow)] before:border-8 before:border-t-0 before:border-transparent before:border-b-primary"
+        className="light fixed top-2.5 z-10 flex animate-[bob_1.4s_ease-in-out_infinite] items-center gap-2.5 rounded-xl bg-primary px-4 py-3 text-[14px] font-semibold text-white shadow-[0_10px_24px_rgba(30,27,75,0.25)] motion-reduce:animate-none before:absolute before:-top-2 before:right-[var(--arrow)] before:border-8 before:border-t-0 before:border-transparent before:border-b-primary"
       >
         <span className="flex size-[30px] items-center justify-center rounded-full bg-white text-primary">
           <Puzzle size={17} className="fill-primary" />
@@ -49,7 +49,7 @@ export function PinCard() {
       <p className="-mt-1 max-w-[52ch] text-[13.5px] text-muted-foreground lg:mt-0 lg:self-center">
         {i18n.t('onboarding.pinCardMessage')}
       </p>
-      <div className="w-full max-w-[420px] overflow-hidden rounded-xl border border-lavender/60 bg-background text-left">
+      <div className="light w-full max-w-[420px] overflow-hidden rounded-xl border border-lavender/60 bg-background text-left">
         <div className="flex items-center gap-2 bg-gray-200/70 px-2.5 py-2">
           <span className="flex gap-1">
             <i className="size-2 rounded-full bg-gray-300" />
@@ -57,7 +57,7 @@ export function PinCard() {
             <i className="size-2 rounded-full bg-gray-300" />
           </span>
           <span className="h-4 flex-1 rounded-full bg-white" />
-          <span className="flex size-[18px] items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
+          <span className="flex size-[18px] items-center justify-center rounded-full bg-primary text-[10px] font-bold text-on-solid">
             1
           </span>
           <Puzzle size={16} />
@@ -70,7 +70,7 @@ export function PinCard() {
             <MascotIcon size={20} />
             Mimik
             <span className="ml-auto flex items-center gap-1.5">
-              <span className="flex size-[18px] items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
+              <span className="flex size-[18px] items-center justify-center rounded-full bg-primary text-[10px] font-bold text-on-solid">
                 2
               </span>
               <span className="relative inline-flex animate-[ob-pin-fill_6s_step-end_infinite] text-muted-foreground motion-reduce:animate-none">

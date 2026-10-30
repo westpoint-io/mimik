@@ -32,7 +32,7 @@ export function VideoLoader({ stage, narrating, progress, stepCount }: VideoLoad
       </div>
 
       <div
-        className={`relative h-[34px] w-[260px] overflow-hidden rounded bg-primary transition duration-500 motion-reduce:transition-none ${
+        className={`light relative h-[34px] w-[260px] overflow-hidden rounded bg-primary transition duration-500 motion-reduce:transition-none ${
           filming ? 'opacity-100' : '-translate-y-2.5 opacity-0'
         }`}
         aria-hidden="true"

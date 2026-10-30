@@ -8,15 +8,11 @@ import { isRecordableUrl } from '@/capture/recordable-tabs';
 import { CaptureState, type PauseReason } from '@/core/capture/machine';
 import type { GuideMeSession } from '@/core/guideme/session';
 import { SESSION_KEY } from '@/core/guideme/session';
-import { createTab } from '@/lib/browser-api/create-tab';
-import { focusWindow } from '@/lib/browser-api/focus-window';
 import { getActiveTab } from '@/lib/browser-api/get-active-tab';
-import { getExtensionURL } from '@/lib/browser-api/get-extension-url';
-import { queryTabs } from '@/lib/browser-api/query-tabs';
 import { requestHostPermissions } from '@/lib/browser-api/request-host-permissions';
-import { updateTab } from '@/lib/browser-api/update-tab';
 import { sendMessage } from '@/lib/messaging';
 import { getVoiceStatus } from '@/lib/offscreen/get-voice-status';
+import { openGuideInFullview } from '@/lib/open-guide-in-fullview';
 import { connectToBackground } from '@/lib/port/connect-to-background';
 import type { PanelAiUpdate, PanelVoiceUpdate } from '@/lib/port/types';
 import { useLetterNotice } from '@/ui/shared/hooks/use-letter-notice';
@@ -52,6 +48,7 @@ export function App() {
   const [pauseReason, setPauseReason] = useState<PauseReason | null>(null);
 
   useEffect(() => {
+    let wasLive = false;
     const disconnect = connectToBackground({
       onConnect: () => {
         setIsAlive(true);
@@ -70,8 +67,10 @@ export function App() {
         const isPaused = update.state === CaptureState.PAUSED;
         setPaused(isPaused);
         setPauseReason(isPaused ? (update.pauseReason ?? null) : null);
+        if (live && !wasLive) setAiFailure(null);
+        if (!live && wasLive) setView((prev) => (prev.name === 'recording' ? { name: 'library' } : prev));
+        wasLive = live;
         if (live) {
-          setAiFailure(null);
           const guideId = update.currentGuideId;
           if (guideId) {
             setView((prev) => (prev.name === 'recording' ? prev : { name: 'recording', guideId }));
@@ -148,16 +147,7 @@ export function App() {
       const res = await sendMessage('stopRecording', undefined);
       if (res.success) {
         setView(res.inserted && res.guideId ? { name: 'editor', guideId: res.guideId } : { name: 'library' });
-        if (res.guideId) {
-          const url = getExtensionURL(`/fullview.html?guideId=${res.guideId}`);
-          const [tab] = await queryTabs({ url: getExtensionURL('/fullview.html') });
-          if (tab?.id) {
-            await updateTab(tab.id, { active: true, url });
-            if (tab.windowId) await focusWindow(tab.windowId);
-          } else {
-            await createTab({ url });
-          }
-        }
+        if (res.guideId) await openGuideInFullview(res.guideId);
       }
     } catch (err) {
       logger.error(' STOP_RECORDING error', err);
@@ -286,7 +276,7 @@ export function App() {
               placeholder={i18n.t('sidepanel.searchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-3 rounded-xl border-border bg-card !text-[13px]"
+              className="w-full pl-10 pr-3 rounded-xl border-border bg-search-field !text-[13px]"
             />
           </div>
 

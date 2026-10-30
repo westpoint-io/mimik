@@ -18,6 +18,7 @@ function DropdownMenuPortal({ ...props }: React.ComponentProps<typeof DropdownMe
 function DropdownMenuContent({
   className,
   sideOffset = 4,
+  onFocusOutside,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Content>) {
   return (
@@ -25,6 +26,12 @@ function DropdownMenuContent({
       <DropdownMenuPrimitive.Content
         data-slot="dropdown-menu-content"
         sideOffset={sideOffset}
+        onFocusOutside={(e) => {
+          onFocusOutside?.(e);
+          if ((e.target as Element).closest('[aria-haspopup="menu"][aria-expanded="true"]')) {
+            e.preventDefault();
+          }
+        }}
         className={cn(
           'z-50 min-w-40 overflow-hidden rounded-lg border border-border bg-card p-1 text-foreground shadow-lg data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
           className,

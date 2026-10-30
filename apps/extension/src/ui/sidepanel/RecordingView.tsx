@@ -129,7 +129,7 @@ export function RecordingView({
 
   return (
     <div className="flex flex-col h-screen bg-card relative">
-      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-sm border border-border shadow-sm">
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-4 py-1.5 rounded-full bg-card/90 backdrop-blur-sm border border-border shadow-sm">
         <span className={`w-2 h-2 rounded-full ${paused ? 'bg-accent' : 'bg-destructive animate-pulse'}`} />
         <span className="text-xs font-semibold text-foreground">
           {paused

@@ -98,6 +98,13 @@ recording:
 settings:
   cardKeyboard: "Digitação e teclas"
   cardKeyboardHint: "O que o seu teclado acrescenta a um guia."
+  shortcutsHint: "Funcionam em qualquer página que você visitar."
+  shortcutsChange: "Alterar no navegador"
+  shortcutRecordHint: "Começa na aba que você está vendo."
+  shortcutPauseHint: "Durante a gravação."
+  shortcutCaptureHint: "Salva a tela como um passo sem clicar, para menus abertos."
+  shortcutNotSet: "Não definido"
+  shortcutsChangeNote: "Seu navegador guarda os atalhos em uma página própria."
   recordKeys: "Registrar atalhos e teclas nomeadas"
   recordKeysHint: "Ctrl+S, Enter e afins viram passos."
   recordTyping: "Registrar o que você digita"
@@ -191,9 +198,14 @@ settings:
   keyUnreachable: "Não foi possível se conectar ao provedor. Verifique sua conexão."
   modelsFound: "$1 modelos disponíveis"
   smartBlur: Desfoque inteligente
-  privacyNotice: "Chaves e áudio vão só para o provedor que você escolher."
+  version: "Versão $1"
   reportBug: "Relatar um erro"
   aboutSection: "Sobre"
+  appearance: "Aparência"
+  appearanceHint: "Claro, escuro ou igual ao seu sistema."
+  themeSystem: "Sistema"
+  themeLight: "Claro"
+  themeDark: "Escuro"
   starCtaTitle: "Gostou do Mimik?"
   starCtaMessage: "Uma estrela no GitHub ajuda outras pessoas a encontrar o Mimik."
   starOnGithub: "Deixar uma estrela no GitHub"
@@ -521,6 +533,8 @@ exportPreview:
   preparingVoiceover: "Preparando a narração"
   stepDescriptions: "Textos dos passos"
   stepDescriptionsHint: "Desenhar o texto do passo em cada quadro"
+  stepNumbers: "Números dos passos"
+  stepNumbersHint: "Começar o texto de cada passo no vídeo e no GIF com o número dele"
   resolution: "Qualidade do vídeo"
   gifQuality: "Qualidade do GIF"
   gif_low: "Baixa"
@@ -798,3 +812,14 @@ stepKind:
   key: "Tecla"
   navigate: "Página"
   note: "Nota"
+outline:
+  title: Sumário
+  untitledStep: Passo sem título
+  moreSelected: "+$1"
+  instructions: Pressione Espaço para pegar um passo. Mova com as setas, solte com Espaço ou cancele com Esc.
+  pickedUp: "$1 selecionado"
+  movedOver: "$1 movido sobre $2"
+  droppedOver: "$1 solto sobre $2"
+  dropped: "$1 solto"
+  cancelled: "Movimentação de $1 cancelada"
+  selected: Selecionado

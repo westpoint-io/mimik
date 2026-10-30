@@ -2,7 +2,7 @@ import type { BrandLogo } from '@mimik/core/export/branding';
 
 export function BrandPicture({ color, logo }: { color: string; logo: BrandLogo | null }) {
   return (
-    <div className="absolute inset-x-[16%] top-[10%] bottom-0 flex flex-col overflow-hidden rounded-t-md bg-white shadow-[0_4px_14px_rgba(30,27,75,0.12)]">
+    <div className="light absolute inset-x-[16%] top-[10%] bottom-0 flex flex-col overflow-hidden rounded-t-md bg-white shadow-[0_4px_14px_rgba(30,27,75,0.12)]">
       <div
         className="flex h-[22%] origin-left animate-[ob-fill-x_4s_ease-in-out_infinite] items-center gap-1 px-[7%] motion-reduce:animate-none"
         style={{ background: color }}

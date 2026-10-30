@@ -115,7 +115,7 @@ export function CaptureDemo({ onPhase }: { onPhase: (phase: 1 | 2 | 3) => void }
     <div
       ref={box}
       aria-hidden="true"
-      className="relative aspect-video w-full overflow-hidden rounded-xl bg-gradient-to-b from-lavender/50 to-secondary text-left text-[11px]"
+      className="light relative aspect-video w-full overflow-hidden rounded-xl bg-gradient-to-b from-lavender/50 to-secondary text-left text-[11px]"
     >
       <div className="absolute inset-x-[4%] top-[5%] flex h-[9%] items-center gap-2 rounded-t-lg border-b border-gray-200 bg-white px-2.5">
         <span className="flex gap-1">

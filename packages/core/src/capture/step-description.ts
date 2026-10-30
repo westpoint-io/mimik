@@ -45,6 +45,7 @@ function nameCandidates(meta: ElementMeta): NameCandidate[] {
   const ownName = IDENTIFIER.test(meta.name ?? '') ? null : meta.name;
   const found: NameCandidate[] = [
     meta.ariaLabel,
+    meta.label,
     meta.placeholder,
     shownIsLabel ? shown : null,
     meta.altText,
@@ -98,7 +99,7 @@ export function buildFallbackDescription(action: string, meta: ElementMeta, type
     case 'input':
       if (meta.inputType === 'password') return i18n.t('steps.typeSecret');
       if (typed?.trim()) return typedTitle(typed, name || null);
-      if (meta.inputType) return i18n.t('steps.typeIntoField', [meta.inputType, target]);
+      if (meta.inputType && !name) return i18n.t('steps.typeIntoField', [meta.inputType, target]);
       return i18n.t('steps.typeInto', [target]);
     case 'copy':
       return i18n.t('steps.copyFrom', [target]);

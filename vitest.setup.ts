@@ -46,6 +46,20 @@ Object.defineProperty(globalThis, "sessionStorage", {
   value: new MemoryStorage(),
 });
 
+if (typeof window !== "undefined" && !window.matchMedia) {
+  window.matchMedia = (query: string) =>
+    ({
+      matches: true,
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    }) as MediaQueryList;
+}
+
 const mockI18n = {
   i18n: {
     t: (key: string, subs?: string[]) => {

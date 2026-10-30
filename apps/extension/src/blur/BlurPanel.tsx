@@ -34,7 +34,7 @@ export function BlurPanel({ initial }: { initial: Record<PresetKey, boolean> }) 
   return (
     <div
       style={place}
-      className="pointer-events-auto fixed flex w-[280px] flex-col overflow-hidden rounded-xl border border-lavender bg-white text-foreground shadow-[0_8px_32px_rgba(0,0,0,0.12)] select-none"
+      className="pointer-events-auto fixed flex w-[280px] flex-col overflow-hidden rounded-xl border border-lavender bg-card text-foreground shadow-[0_8px_32px_rgba(0,0,0,0.12)] select-none"
     >
       <div
         onPointerDown={grab}

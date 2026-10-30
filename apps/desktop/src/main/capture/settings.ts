@@ -36,9 +36,9 @@ export const DEFAULT_CAPTURE_SETTINGS: CaptureSettings = {
   typingDebounceMs: 1000,
   zoomLevel: null,
   shortcuts: {
-    record: 'Alt+Shift+R',
-    pause: 'Alt+Shift+P',
-    capture: 'Alt+Shift+C',
+    record: 'Alt+Shift+1',
+    pause: 'Alt+Shift+2',
+    capture: 'Alt+Shift+3',
   },
 };
 

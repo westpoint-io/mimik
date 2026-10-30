@@ -1,7 +1,7 @@
 name: Feature request
 description: Suggest something Mimik should do
 title: "[Feature] "
-labels: [enhancement, needs-triage]
+labels: [enhancement]
 body:
   - type: checkboxes
     id: preflight
@@ -17,6 +17,17 @@ body:
     attributes:
       value: |
         Reporting something broken instead? Use the [bug report form](https://github.com/westpoint-io/mimik/issues/new?template=bug_report.yml).
+
+  - type: dropdown
+    id: app
+    attributes:
+      label: Which app?
+      options:
+        - Browser extension
+        - Desktop app
+        - Both
+    validations:
+      required: true
 
   - type: textarea
     id: problem
@@ -50,6 +61,9 @@ body:
         - Voice narration
         - AI descriptions
         - Onboarding or settings
+        - Desktop permissions (screen recording, accessibility)
+        - Desktop recording shortcut
+        - Desktop install and updates
         - Other
     validations:
       required: true

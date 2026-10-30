@@ -34,7 +34,7 @@ export function CardHead({ label, count, recording, paused, collapsed, mode, onC
       <span
         id="counter"
         hidden={!paused}
-        className={`text-[11.5px] font-medium tabular-nums ${collapsed ? 'text-lavender' : 'text-muted-foreground'}`}
+        className={`text-[11.5px] font-medium tabular-nums ${collapsed ? 'text-on-solid-muted' : 'text-muted-foreground'}`}
       >
         {i18n.t(count === 1 ? 'guide.stepCount' : 'guide.stepCountPlural', counted)}
       </span>
@@ -52,7 +52,7 @@ export function CardHead({ label, count, recording, paused, collapsed, mode, onC
         aria-label={toggleLabel}
         onClick={onCollapse}
         className={`flex size-7 items-center justify-center ${
-          collapsed ? 'order-last rounded-full bg-lavender/15 text-white' : 'rounded-lg text-muted-foreground'
+          collapsed ? 'order-last rounded-full bg-on-solid-subtle text-white' : 'rounded-lg text-muted-foreground'
         }`}
       >
         {collapsed ? <ChevronUp size={15} /> : <ChevronDown size={15} />}

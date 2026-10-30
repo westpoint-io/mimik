@@ -108,13 +108,13 @@ export function SearchModal() {
     <Dialog open={open} onOpenChange={setSearchOpen} modal={false}>
       <DialogPortal>
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center bg-primary/25 px-4 pt-[12vh]"
+          className="fixed inset-0 z-50 flex items-start justify-center bg-overlay px-4 pt-[12vh]"
           onClick={() => setSearchOpen(false)}
         >
           <div
             role="dialog"
             aria-label={i18n.t('library.searchPlaceholder')}
-            className="w-full max-w-[620px] overflow-hidden rounded-2xl border border-border bg-card shadow-[0_30px_80px_rgba(30,27,75,0.3)]"
+            className="w-full max-w-[620px] overflow-hidden rounded-2xl border border-border bg-card"
             onClick={(e) => e.stopPropagation()}
             onKeyDown={handleKeyDown}
           >

@@ -1,14 +1,16 @@
 import { create } from 'zustand';
 import { createEditorSlice, type EditorSlice } from '../guide/store/editor-slice';
 import { createGuideSlice, type GuideSlice } from '../guide/store/guide-slice';
+import { createOutlineSlice, type OutlineSlice } from '../guide/store/outline-slice';
 import { createLibrarySlice, type LibrarySlice } from '../library/store/library-slice';
 import { createSearchSlice, type SearchSlice } from '../search/store/search-slice';
 
-export type FullviewStore = LibrarySlice & SearchSlice & GuideSlice & EditorSlice;
+export type FullviewStore = LibrarySlice & SearchSlice & GuideSlice & EditorSlice & OutlineSlice;
 
 export const useFullviewStore = create<FullviewStore>()((...a) => ({
   ...createLibrarySlice(...a),
   ...createSearchSlice(...a),
   ...createGuideSlice(...a),
   ...createEditorSlice(...a),
+  ...createOutlineSlice(...a),
 }));

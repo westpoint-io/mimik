@@ -115,7 +115,7 @@ export function VersionHistoryPanel({
       <div key={snapshot.id} className="relative pl-5 py-2.5">
         <span
           className={`absolute left-0 top-4 w-2 h-2 rounded-full border-2 ${
-            active ? 'bg-accent border-accent' : 'bg-card border-border'
+            active ? 'bg-accent border-transparent' : 'bg-card border-border'
           }`}
         />
         <div className="flex items-start gap-1">
@@ -238,7 +238,7 @@ export function VersionHistoryPanel({
             <div className="pl-5 py-2.5 relative">
               <span
                 className={`absolute left-0 top-4 w-2 h-2 rounded-full border-2 ${
-                  selectedId === null ? 'bg-accent border-accent' : 'bg-card border-border'
+                  selectedId === null ? 'bg-accent border-transparent' : 'bg-card border-border'
                 }`}
               />
               <button

@@ -59,9 +59,9 @@ export function CardStage({
         <div
           id="veil"
           hidden={!paused || capturing}
-          className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-white/55"
+          className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-card/55"
         >
-          <span className="flex size-10 items-center justify-center rounded-full bg-primary text-white">
+          <span className="flex size-10 items-center justify-center rounded-full bg-scrim-badge text-white">
             <Pause size={16} />
           </span>
         </div>
@@ -73,7 +73,7 @@ export function CardStage({
               hidden={!step || capturing || armed}
               aria-label={i18n.t('recording.deleteStep')}
               onClick={() => window.mimikOverlay.command('deleteStep')}
-              className={`absolute top-2 right-2 flex size-7 items-center justify-center rounded-lg bg-white/95 text-foreground hover:text-destructive ${arrive}`}
+              className={`absolute top-2 right-2 flex size-7 items-center justify-center rounded-lg bg-card/95 text-foreground hover:text-destructive ${arrive}`}
             >
               <Trash2 size={13} />
             </button>

@@ -23,10 +23,11 @@ import {
   voiceTimeline,
 } from '@/core/export/video-support';
 import { COVER_SEGMENT, stepNarration } from '@/core/export/voiceover/script';
-import { actionSteps, calloutAccent, isBlock } from '@/core/guides/blocks';
+import { actionSteps, calloutAccent, isBlock, stepNumbers } from '@/core/guides/blocks';
 import type { BlockType, Guide, Screenshot, Step } from '@/core/guides/types';
 import { logger } from '@/core/logger';
 import type { Rect } from '@/core/rect';
+import { contrastRatio } from '@/core/screenshot/color';
 import type { Ctx } from '@/core/screenshot/draw';
 import { drawRoundedRect, TARGET_RADIUS, TARGET_STROKE } from '@/core/screenshot/draw';
 import { clamp, resolveFrameViewport, resolveTarget } from '@/core/screenshot/geometry';
@@ -43,6 +44,8 @@ const RESERVE_PASSES = 3;
 const BACKDROP = '#1E1B4B';
 const MUTED = '#9CA3AF';
 const ON_DARK = '#FFFFFF';
+const CARD_ACCENT = '#A5B4FC';
+const MIN_CARD_CONTRAST = 3;
 
 const TOOLTIP_BG = 'rgba(17, 15, 43, 0.92)';
 const TOOLTIP_FONT_SIZE = 20;
@@ -639,7 +642,8 @@ async function drawCardFrame(ctx: Ctx, guide: Guide, steps: Step[], brand: Brand
   }
 
   y += 26;
-  ctx.strokeStyle = brand.accent;
+  const accent = contrastRatio(brand.accent, BACKDROP) >= MIN_CARD_CONTRAST ? brand.accent : CARD_ACCENT;
+  ctx.strokeStyle = accent;
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(COVER_MARGIN, y);
@@ -659,7 +663,7 @@ async function drawCardFrame(ctx: Ctx, guide: Guide, steps: Step[], brand: Brand
     ctx.fillStyle = MUTED;
     ctx.font = '700 12px Poppins, sans-serif';
     ctx.fillText(label, x, y);
-    ctx.fillStyle = index === 0 ? brand.accent : ON_DARK;
+    ctx.fillStyle = ON_DARK;
     ctx.font = '700 30px Poppins, sans-serif';
     ctx.fillText(value, x, y + 20);
   });
@@ -679,9 +683,14 @@ async function drawCardFrame(ctx: Ctx, guide: Guide, steps: Step[], brand: Brand
   }
 }
 
-export type VideoOptions = Pick<ExportOptions, 'cover' | 'stepDescriptions' | 'resolution' | 'voiceover'>;
+export type VideoOptions = Pick<
+  ExportOptions,
+  'cover' | 'stepDescriptions' | 'stepNumbers' | 'resolution' | 'voiceover'
+>;
 
-export type FrameOptions = Pick<ExportOptions, 'cover' | 'stepDescriptions'> & { timeline?: VideoTimeline };
+export type FrameOptions = Pick<ExportOptions, 'cover' | 'stepDescriptions' | 'stepNumbers'> & {
+  timeline?: VideoTimeline;
+};
 
 export interface VideoExportControls {
   onProgress?: (done: number, total: number) => void;
@@ -763,6 +772,7 @@ export async function composeGuideFrames(
   const stepTotal = spannedFrames(spans, fps);
   const total = stepTotal + (options.cover ? 2 : 0);
   const loaded = new Map<number, StepLayer>();
+  const numbers = stepNumbers(frames);
   const { onProgress, signal } = controls;
   let done = 0;
 
@@ -787,6 +797,10 @@ export async function composeGuideFrames(
       ? await loadBlockLayer(step, backdropFor(index))
       : await loadScreenshotLayer(step, screenshots.get(step.id) as Screenshot, cursorOriginFor(index, targetAt));
     if (layer.kind === 'screenshot' && !options.stepDescriptions) layer.description = '';
+    const number = options.stepNumbers ? numbers.get(step.id) : undefined;
+    if (layer.kind === 'screenshot' && number) {
+      layer.description = layer.description ? `${number}. ${layer.description}` : String(number);
+    }
     loaded.set(index, layer);
     return layer;
   };

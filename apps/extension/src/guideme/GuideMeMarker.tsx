@@ -58,7 +58,7 @@ export function GuideMeMarker({ target, description, number }: GuideMeMarkerProp
       />
       <div
         ref={label}
-        className="pointer-events-none fixed flex max-w-[320px] items-center gap-2 rounded-[10px] border border-black/5 bg-white px-3.5 py-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.25)]"
+        className="pointer-events-none fixed flex max-w-[320px] items-center gap-2 rounded-[10px] border border-marker-border bg-card px-3.5 py-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.25)]"
       >
         <span className="flex size-[22px] shrink-0 items-center justify-center rounded-full bg-primary text-[10px] font-extrabold text-primary-foreground">
           {number}

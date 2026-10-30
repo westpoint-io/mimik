@@ -205,7 +205,7 @@ export function useAskAi(value: string, onReplace: (next: string) => void, enabl
                   <button
                     type="button"
                     onClick={replace}
-                    className="rounded-md bg-accent px-2 py-1 text-[11px] font-medium text-primary-foreground hover:bg-deep"
+                    className="rounded-md bg-primary px-2 py-1 text-[11px] font-medium text-primary-foreground hover:bg-primary/90"
                   >
                     {i18n.t('editor.rewriteReplace')}
                   </button>

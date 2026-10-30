@@ -44,6 +44,10 @@ export class CaptureSession {
     this.capture = startCapture(guideId, isTopFrame);
   }
 
+  captureNow(): void {
+    this.capture?.captureNow();
+  }
+
   stop(): Promise<void> {
     if (!this.isActive) return Promise.resolve();
 

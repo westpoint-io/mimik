@@ -35,12 +35,12 @@ export function WritingChoice({
       }`}
     >
       {selected && (
-        <span className="absolute -top-2.5 -right-2.5 flex size-[22px] items-center justify-center rounded-md bg-primary text-white">
+        <span className="absolute -top-2.5 -right-2.5 flex size-[22px] items-center justify-center rounded-md bg-primary text-on-solid">
           <Check size={14} strokeWidth={3} />
         </span>
       )}
       <div className="relative aspect-video w-full overflow-hidden rounded-[10px] bg-gradient-to-b from-lavender/50 to-secondary">
-        <div className="absolute inset-x-[10%] top-[14%] bottom-0 flex flex-col gap-[7%] rounded-t-lg bg-white px-[8%] pt-[8%] shadow-[0_4px_14px_rgba(30,27,75,0.12)]">
+        <div className="light absolute inset-x-[10%] top-[14%] bottom-0 flex flex-col gap-[7%] rounded-t-lg bg-white px-[8%] pt-[8%] shadow-[0_4px_14px_rgba(30,27,75,0.12)]">
           <div className="relative h-[46%] rounded-[5px] bg-background bg-[linear-gradient(var(--color-lavender),var(--color-lavender)),linear-gradient(var(--color-lavender),var(--color-lavender))] bg-[length:45%_10%,65%_10%] bg-[position:8%_22%,8%_50%] bg-no-repeat">
             <span className="absolute top-[47%] left-[60%] h-[22%] w-[22%] rounded-[3px] bg-gray-200" />
             <span className="absolute top-[45%] left-[58%] h-[26%] w-[26%] animate-[ob-mark_5s_ease-in-out_infinite] rounded-[4px] border-2 border-dashed border-mascot motion-reduce:animate-none" />

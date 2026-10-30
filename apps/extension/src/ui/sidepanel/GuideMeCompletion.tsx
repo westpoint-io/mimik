@@ -32,7 +32,7 @@ export function GuideMeCompletion({ guideId, onDone, onRunAgain }: GuideMeComple
         <div className="flex flex-col gap-2">
           {steps.map((step) => (
             <div key={step.id} className="flex items-center gap-2.5 text-left">
-              <div className="w-[22px] h-[22px] rounded-full bg-success flex items-center justify-center shrink-0">
+              <div className="w-[22px] h-[22px] rounded-full bg-done text-done-foreground flex items-center justify-center shrink-0">
                 <CheckIcon />
               </div>
               <span className="text-[13px] text-muted-foreground">{step.description}</span>

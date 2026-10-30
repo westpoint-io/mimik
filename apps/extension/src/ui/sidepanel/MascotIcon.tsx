@@ -1,6 +1,6 @@
 export function MascotIcon({ size = 44 }: { size?: number }) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width={size} height={size}>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width={size} height={size} className="light">
       <defs>
         <clipPath id="cc">
           <circle cx="100" cy="100" r="95" />

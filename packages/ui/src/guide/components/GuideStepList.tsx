@@ -1,7 +1,7 @@
 import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import { i18n } from '@mimik/core/env';
 import { isBlock, stepNumbers } from '@mimik/core/guides/blocks';
-import { createSnapshot, deleteSteps, insertBlock, reorderSteps } from '@mimik/core/guides/service';
+import { createSnapshot, deleteSteps, insertBlock } from '@mimik/core/guides/service';
 import type { BlockType, Screenshot, Step } from '@mimik/core/guides/types';
 import { logger } from '@mimik/core/logger';
 import { dominantRatio } from '@mimik/core/screenshot/geometry';
@@ -15,6 +15,8 @@ import { EmptyGuideState } from './EmptyGuideState';
 import { InsertBlockMenu } from './InsertBlockMenu';
 import { StepCard } from './StepCard';
 
+const JUMP_SETTLE_MS = 1500;
+
 interface GuideStepListProps {
   guideId: string;
   steps: Step[];
@@ -22,7 +24,6 @@ interface GuideStepListProps {
   onDescriptionChange: (stepId: string, description: string) => void;
   onDelete: (stepId: string) => void;
   onOpenEditor: (stepId: string, tool: 'annotate' | 'redact' | 'crop' | 'target') => void;
-  onReorder: (newSteps: Step[]) => void;
   readOnly?: boolean;
   onChanged?: () => void;
   hasApiKey?: boolean;
@@ -36,26 +37,33 @@ export function GuideStepList({
   onDescriptionChange,
   onDelete,
   onOpenEditor,
-  onReorder,
   readOnly,
   onChanged,
   hasApiKey,
   onCaptureMore,
 }: GuideStepListProps) {
-  const { scrollToStepId, setActiveStepId, bumpHistoryRefresh } = useFullview((s) => ({
+  const {
+    scrollToStepId,
+    setActiveStepId,
+    bumpHistoryRefresh,
+    selectedStepIds,
+    toggleStepSelection,
+    clearStepSelection,
+  } = useFullview((s) => ({
     scrollToStepId: s.scrollToStepId,
     setActiveStepId: s.setActiveStepId,
     bumpHistoryRefresh: s.bumpHistoryRefresh,
+    selectedStepIds: s.selectedStepIds,
+    toggleStepSelection: s.toggleStepSelection,
+    clearStepSelection: s.clearStepSelection,
   }));
 
-  const [dragIndex, setDragIndex] = useState<number | null>(null);
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
-  const anchorIndex = useRef<number | null>(null);
   const stepRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const jumpingTo = useRef<string | null>(null);
   const frameRatio = dominantRatio(screenshots);
   const numbers = stepNumbers(steps);
+  const selectedCount = steps.filter((step) => selectedStepIds.has(step.id)).length;
   const recordAt = onCaptureMore
     ? (atIndex: number) => () =>
         onCaptureMore({
@@ -66,15 +74,23 @@ export function GuideStepList({
     : undefined;
 
   useEffect(() => {
-    if (scrollToStepId) {
-      stepRefs.current.get(scrollToStepId)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }, [scrollToStepId]);
+    if (!scrollToStepId) return;
+    const target = scrollToStepId;
+    const release = () => {
+      if (jumpingTo.current === target) jumpingTo.current = null;
+    };
+    jumpingTo.current = target;
+    setActiveStepId(target);
+    document.addEventListener('scrollend', release, { once: true });
+    setTimeout(release, JUMP_SETTLE_MS);
+    stepRefs.current.get(target)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [scrollToStepId, setActiveStepId]);
 
   useEffect(() => {
     if (steps.length === 0) return;
     const observer = new IntersectionObserver(
       (entries) => {
+        if (jumpingTo.current) return;
         for (const entry of entries) {
           if (entry.isIntersecting) {
             setActiveStepId(entry.target.getAttribute('data-step-id'));
@@ -88,74 +104,26 @@ export function GuideStepList({
   }, [steps, setActiveStepId]);
 
   useEffect(() => {
-    if (readOnly) {
-      setSelected(new Set());
-      anchorIndex.current = null;
-    }
-  }, [readOnly]);
-
-  const handleDragEnd = () => {
-    if (dragIndex !== null && dragOverIndex !== null && dragIndex !== dragOverIndex) {
-      const newSteps = [...steps];
-      const [moved] = newSteps.splice(dragIndex, 1);
-      newSteps.splice(dragOverIndex, 0, moved!);
-      reorderSteps(
-        guideId,
-        newSteps.map((s) => s.id),
-      );
-      onReorder(newSteps);
-    }
-    setDragIndex(null);
-    setDragOverIndex(null);
-  };
+    if (readOnly) clearStepSelection();
+  }, [readOnly, clearStepSelection]);
 
   const handleInsertBlock = async (atIndex: number, blockType: BlockType) => {
     await insertBlock(guideId, atIndex, blockType, '');
     onChanged?.();
   };
 
-  const toggleSelected = (index: number, extend: boolean) => {
-    const from = extend && anchorIndex.current !== null ? anchorIndex.current : index;
-    anchorIndex.current = index;
-    setSelected((prev) => {
-      const next = new Set(prev);
-      const adding = !prev.has(steps[index]!.id);
-      for (let i = Math.min(from, index); i <= Math.max(from, index); i++) {
-        if (adding) next.add(steps[i]!.id);
-        else next.delete(steps[i]!.id);
-      }
-      return next;
-    });
-  };
-
   const handleBulkDelete = async () => {
     setConfirmBulkDelete(false);
-    const ids = steps.filter((step) => selected.has(step.id)).map((step) => step.id);
+    const ids = steps.filter((step) => selectedStepIds.has(step.id)).map((step) => step.id);
     try {
       if (await createSnapshot(guideId)) bumpHistoryRefresh();
     } catch (err) {
       logger.error(' Snapshot before bulk delete failed', err);
     }
     await deleteSteps(guideId, ids);
-    setSelected(new Set());
-    anchorIndex.current = null;
+    clearStepSelection();
     onChanged?.();
   };
-
-  const dragHandlers = (idx: number) =>
-    readOnly
-      ? undefined
-      : {
-          onDragStart: (e: React.DragEvent) => {
-            setDragIndex(idx);
-            e.dataTransfer.effectAllowed = 'move';
-          },
-          onDragOver: (e: React.DragEvent) => {
-            e.preventDefault();
-            setDragOverIndex(idx);
-          },
-          onDragEnd: handleDragEnd,
-        };
 
   if (steps.length === 0) {
     return (
@@ -182,16 +150,13 @@ export function GuideStepList({
           }}
           data-step-id={step.id}
         >
-          {dragOverIndex === idx && dragIndex !== null && dragIndex !== idx && (
-            <div className="h-1 bg-accent rounded-full mx-4 mb-2" />
-          )}
           <div className="flex items-start gap-2">
             {!readOnly && (
               <input
                 type="checkbox"
-                checked={selected.has(step.id)}
+                checked={selectedStepIds.has(step.id)}
                 onChange={() => {}}
-                onClick={(e) => toggleSelected(idx, e.shiftKey)}
+                onClick={(e) => toggleStepSelection(steps, step.id, e.shiftKey)}
                 aria-label={i18n.t('editor.selectStep')}
                 className="mt-3 shrink-0 w-4 h-4 accent-accent"
               />
@@ -204,7 +169,6 @@ export function GuideStepList({
                   onDelete={onDelete}
                   onChanged={onChanged}
                   readOnly={readOnly}
-                  dragHandleProps={dragHandlers(idx)}
                 />
               ) : (
                 <StepCard
@@ -219,7 +183,6 @@ export function GuideStepList({
                   readOnly={readOnly}
                   hasApiKey={hasApiKey}
                   onChanged={onChanged}
-                  dragHandleProps={dragHandlers(idx)}
                 />
               )}
             </div>
@@ -232,12 +195,12 @@ export function GuideStepList({
           )}
         </div>
       ))}
-      {selected.size > 0 && (
+      {selectedCount > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 rounded-full border border-border bg-card px-4 py-2 shadow-lg">
           <span className="text-[12px] font-medium text-foreground">
-            {i18n.t('editor.selectedCount', [String(selected.size)])}
+            {i18n.t('editor.selectedCount', [String(selectedCount)])}
           </span>
-          <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>
+          <Button variant="ghost" size="sm" onClick={clearStepSelection}>
             {i18n.t('common.cancel')}
           </Button>
           <Button variant="destructive" size="sm" onClick={() => setConfirmBulkDelete(true)}>
@@ -249,9 +212,9 @@ export function GuideStepList({
       <ConfirmDialog
         open={confirmBulkDelete}
         heading={
-          selected.size === 1
+          selectedCount === 1
             ? i18n.t('editor.deleteSelectedStep', ['1'])
-            : i18n.t('editor.deleteSelectedSteps', [String(selected.size)])
+            : i18n.t('editor.deleteSelectedSteps', [String(selectedCount)])
         }
         destructive
         onConfirm={handleBulkDelete}

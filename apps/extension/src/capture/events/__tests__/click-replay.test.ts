@@ -329,3 +329,70 @@ describe('inside a frame', () => {
     expect(sent('finalizeInputStep')).toMatchObject(placed);
   });
 });
+
+function row(label: string): HTMLElement {
+  const el = place('div');
+  el.setAttribute('role', 'button');
+  el.textContent = label;
+  return el;
+}
+
+function dragBy(el: Element, dy: number) {
+  for (const [type, y] of [
+    ['pointerdown', 0],
+    ['pointerup', dy],
+  ] as const) {
+    const event = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: 10, clientY: y });
+    Object.defineProperty(event, 'isTrusted', { configurable: true, value: true });
+    Object.defineProperty(event, 'pageX', { configurable: true, value: 10 });
+    Object.defineProperty(event, 'pageY', { configurable: true, value: y });
+    el.dispatchEvent(event);
+  }
+}
+
+describe('a capture that never answers', () => {
+  it('gives the page back its clicks instead of holding them for the recording', async () => {
+    vi.useFakeTimers();
+    try {
+      const dragged = row('A93E_ALL_DOCD_09');
+      const targets = ['SMT_KTAOICS_11', 'SMT_LSSNL_03', 'SMT_HTBM_09'].map(row);
+      const delivered: string[] = [];
+      for (const target of targets) {
+        target.addEventListener('click', () => delivered.push(target.textContent ?? ''));
+      }
+
+      dragBy(dragged, 200);
+      for (const target of targets) {
+        userClick(target);
+        await vi.advanceTimersByTimeAsync(4000);
+      }
+      await vi.advanceTimersByTimeAsync(4000);
+
+      expect(delivered).toEqual(targets.map((target) => target.textContent));
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('holds the click only until the capture budget runs out', async () => {
+    vi.useFakeTimers();
+    try {
+      const dragged = row('A93E_ALL_DOCD_09');
+      const target = row('SMT_KTAOICS_11');
+      let seen = 0;
+      target.addEventListener('click', () => {
+        seen += 1;
+      });
+
+      dragBy(dragged, 200);
+      userClick(target);
+      await vi.advanceTimersByTimeAsync(100);
+      const swallowed = seen;
+      await vi.advanceTimersByTimeAsync(8000);
+
+      expect({ swallowed, afterBudget: seen }).toEqual({ swallowed: 0, afterBudget: 1 });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});

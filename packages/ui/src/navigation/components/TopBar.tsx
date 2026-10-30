@@ -1,11 +1,12 @@
 import { i18n } from '@mimik/core/env';
 import { createSnapshot, duplicateGuide } from '@mimik/core/guides/service';
 import { logger } from '@mimik/core/logger';
-import { Check, Copy, Download, History, MessageSquareQuote, Pencil, Search } from 'lucide-react';
+import { Check, Copy, Download, History, ListTree, MessageSquareQuote, Pencil, Search } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../components/ui/button';
 import { ExportPreviewModal } from '../../export/components/ExportPreviewModal';
+import { useWideLayout } from '../../guide/hooks/use-wide-layout';
 import { LibraryTools } from '../../library/components/LibraryTools';
 import { useFullview } from '../../stores/use-fullview';
 import { useElementWidth } from '../hooks/use-element-width';
@@ -39,6 +40,10 @@ export function TopBar({ route, guideActions }: TopBarProps) {
     transcriptOpen,
     setTranscriptOpen,
     hasTranscript,
+    outlineCollapsed,
+    setOutlineCollapsed,
+    outlineDrawerOpen,
+    setOutlineDrawerOpen,
   } = useFullview((s) => ({
     guideExportData: s.guideExportData,
     setSearchOpen: s.setSearchOpen,
@@ -50,7 +55,13 @@ export function TopBar({ route, guideActions }: TopBarProps) {
     transcriptOpen: s.transcriptOpen,
     setTranscriptOpen: s.setTranscriptOpen,
     hasTranscript: s.hasTranscript,
+    outlineCollapsed: s.outlineCollapsed,
+    setOutlineCollapsed: s.setOutlineCollapsed,
+    outlineDrawerOpen: s.outlineDrawerOpen,
+    setOutlineDrawerOpen: s.setOutlineDrawerOpen,
   }));
+  const wide = useWideLayout() && !historyOpen && !transcriptOpen;
+  const contentsOpen = wide ? !outlineCollapsed : outlineDrawerOpen;
   const [exportOpen, setExportOpen] = useState(false);
   const [duplicating, setDuplicating] = useState(false);
   const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -108,6 +119,17 @@ export function TopBar({ route, guideActions }: TopBarProps) {
         ref={bar}
         className="@container sticky top-0 z-30 flex items-center gap-3 px-7 h-16 shrink-0 bg-card border-b border-border"
       >
+        {route.page === 'guide' && exportData && (
+          <BarButton
+            variant="ghost"
+            iconOnly={iconOnly}
+            icon={<ListTree size={14} />}
+            label={i18n.t('outline.title')}
+            aria-pressed={contentsOpen}
+            onClick={() => (wide ? setOutlineCollapsed(!outlineCollapsed) : setOutlineDrawerOpen(!outlineDrawerOpen))}
+            className={`${NAV_CONTROL} ${contentsOpen ? 'bg-secondary' : ''}`}
+          />
+        )}
         <Button
           size="sm"
           variant="ghost"

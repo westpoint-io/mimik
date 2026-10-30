@@ -98,6 +98,13 @@ recording:
 settings:
   cardKeyboard: "Saisie et touches"
   cardKeyboardHint: "Ce que votre clavier ajoute à un guide."
+  shortcutsHint: "Fonctionnent sur toutes les pages que vous visitez."
+  shortcutsChange: "Modifier dans le navigateur"
+  shortcutRecordHint: "Démarre dans l’onglet que vous regardez."
+  shortcutPauseHint: "Pendant l’enregistrement."
+  shortcutCaptureHint: "Enregistre l’écran comme une étape sans cliquer, pour les menus ouverts."
+  shortcutNotSet: "Non défini"
+  shortcutsChangeNote: "Votre navigateur gère les raccourcis sur sa propre page."
   recordKeys: "Enregistrer les raccourcis et touches nommées"
   recordKeysHint: "Ctrl+S, Entrée et autres deviennent des étapes."
   recordTyping: "Enregistrer ce que vous tapez"
@@ -191,9 +198,14 @@ settings:
   keyUnreachable: "Impossible de joindre le fournisseur. Vérifiez votre connexion."
   modelsFound: "$1 modèles disponibles"
   smartBlur: Flou intelligent
-  privacyNotice: "Les clés et l'audio ne vont qu'au fournisseur choisi."
+  version: "Version $1"
   reportBug: "Signaler un bug"
   aboutSection: "À propos"
+  appearance: "Apparence"
+  appearanceHint: "Clair, sombre ou comme votre système."
+  themeSystem: "Système"
+  themeLight: "Clair"
+  themeDark: "Sombre"
   starCtaTitle: "Vous aimez Mimik ?"
   starCtaMessage: "Une étoile sur GitHub aide d'autres personnes à découvrir Mimik."
   starOnGithub: "Mettre une étoile sur GitHub"
@@ -521,6 +533,8 @@ exportPreview:
   preparingVoiceover: "Préparation de la voix off"
   stepDescriptions: "Légendes des étapes"
   stepDescriptionsHint: "Incruster le texte de l'étape sur chaque image"
+  stepNumbers: "Numéros des étapes"
+  stepNumbersHint: "Faire précéder la légende de chaque étape de son numéro dans la vidéo et le GIF"
   resolution: "Qualité vidéo"
   gifQuality: "Qualité du GIF"
   gif_low: "Basse"
@@ -798,3 +812,14 @@ stepKind:
   key: "Touche"
   navigate: "Page"
   note: "Note"
+outline:
+  title: Sommaire
+  untitledStep: Étape sans titre
+  moreSelected: "+$1"
+  instructions: Appuyez sur Espace pour saisir une étape. Déplacez-la avec les flèches, déposez-la avec Espace ou annulez avec Échap.
+  pickedUp: "$1 saisie"
+  movedOver: "$1 déplacée sur $2"
+  droppedOver: "$1 déposée sur $2"
+  dropped: "$1 déposée"
+  cancelled: "Déplacement de $1 annulé"
+  selected: Sélectionnée

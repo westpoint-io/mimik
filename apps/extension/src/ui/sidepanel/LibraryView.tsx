@@ -186,7 +186,7 @@ export function LibraryView({ onOpen, searchQuery = '' }: LibraryViewProps) {
                 <TooltipTrigger asChild>
                   <button
                     onClick={(e) => handleStar(e, guide.id)}
-                    className={`p-1.5 rounded-lg transition-all hover:text-accent ${guide.starred ? 'text-accent' : 'text-border'}`}
+                    className={`p-1.5 rounded-lg transition-all hover:text-foreground ${guide.starred ? 'text-foreground' : 'text-border'}`}
                   >
                     <Star size={13} fill={guide.starred ? 'currentColor' : 'none'} />
                   </button>
