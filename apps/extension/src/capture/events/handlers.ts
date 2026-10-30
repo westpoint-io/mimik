@@ -59,6 +59,7 @@ let lastClickTime = 0;
 
 export interface CaptureHandle {
   stop: () => Promise<void>;
+  captureNow: () => void;
 }
 
 const PASSIVE_CAPTURE = { capture: true, passive: true } as const;
@@ -74,6 +75,7 @@ class CaptureController {
   private dragStartElement: Element | null = null;
   private ring = new HoverRing(DEFAULT_TARGET_COLOR);
   private hovered: HTMLElement | null = null;
+  private pointer: { x: number; y: number } | null = null;
   private busy = false;
   private recordKeys = false;
   private recordTyping = true;
@@ -105,6 +107,7 @@ class CaptureController {
         ['cut', this.onClipboard.bind(this), PASSIVE_CAPTURE],
         ['pointerdown', this.onPointerDown.bind(this), PASSIVE_CAPTURE],
         ['pointerup', this.onPointerUp.bind(this), PASSIVE_CAPTURE],
+        ['pointermove', this.onPointerMove.bind(this), PASSIVE_CAPTURE],
         ['dragend', this.onDragEnd.bind(this), PASSIVE_CAPTURE],
         ['mouseover', this.onMouseOver.bind(this), PASSIVE_CAPTURE],
         ['mouseout', this.onMouseOut.bind(this), PASSIVE_CAPTURE],
@@ -321,6 +324,18 @@ class CaptureController {
     this.enqueue(this.capture(e.type as 'copy' | 'paste' | 'cut', target));
   }
 
+  private onPointerMove(e: Event) {
+    const pe = e as PointerEvent;
+    this.pointer = { x: pe.clientX, y: pe.clientY };
+  }
+
+  captureNow() {
+    const point = this.pointer ?? undefined;
+    const raw = point ? document.elementFromPoint(point.x, point.y) : document.activeElement;
+    const target = raw && !isMimikElement(raw) ? findFocusableAncestor(raw) : document.body;
+    this.enqueue(this.capture('click', target, point));
+  }
+
   private onPointerDown(e: Event) {
     this.ring.hide();
     const pe = e as PointerEvent;
@@ -376,5 +391,6 @@ export function startCapture(
   const controller = new CaptureController(guideId, isTopFrame, sink);
   return {
     stop: () => controller.stop(),
+    captureNow: () => controller.captureNow(),
   };
 }

@@ -71,6 +71,20 @@ export default defineConfig({
         128: 'icon128.png',
       },
       action: {},
+      commands: {
+        "toggle-recording": {
+          suggested_key: { default: "Alt+Shift+1" },
+          description: "__MSG_desktop_shortcutRecord__",
+        },
+        "toggle-pause": {
+          suggested_key: { default: "Alt+Shift+2" },
+          description: "__MSG_desktop_shortcutPause__",
+        },
+        "capture-now": {
+          suggested_key: { default: "Alt+Shift+3" },
+          description: "__MSG_desktop_shortcutCapture__",
+        },
+      },
       ...(isFirefox
         ? {
             sidebar_action: {

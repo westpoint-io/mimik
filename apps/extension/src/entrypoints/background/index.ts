@@ -1,11 +1,14 @@
 import '@/lib/core-env';
 import '@/lib/ui-env';
+import { isLive } from '@mimik/core/capture/is-live';
 import { logger } from '@mimik/core/logger';
 import { browser, defineBackground } from '#imports';
+import { isRecordableUrl } from '@/capture/recordable-tabs';
 import { generateDescriptionOnDemand } from '@/core/capture/ai/guide-description';
 import { mergeRecording } from '@/core/capture/ai/merge-recording';
 import { rewriteSelection } from '@/core/capture/ai/rewrite';
 import { validateApiKey } from '@/core/capture/ai/validate';
+import { CaptureState } from '@/core/capture/machine';
 import { stepRequiresManual } from '@/core/guideme/manual';
 import { advanceSession, cancelSession, completeSession, getSession, startSession } from '@/core/guideme/session';
 import { actionSteps } from '@/core/guides/blocks';
@@ -19,12 +22,15 @@ import {
 import type { Step } from '@/core/guides/types';
 import { getActiveTab } from '@/lib/browser-api/get-active-tab';
 import { localStorage } from '@/lib/browser-api/local-storage';
+import { openSidebar } from '@/lib/browser-api/open-sidebar';
+import { requestHostPermissions } from '@/lib/browser-api/request-host-permissions';
 import { sendMessageToTab } from '@/lib/browser-api/send-message-to-tab';
 import { setSidePanelBehavior } from '@/lib/browser-api/set-side-panel-behavior';
 import { toggleSidebar } from '@/lib/browser-api/toggle-sidebar';
 import { updateTab } from '@/lib/browser-api/update-tab';
 import { recordInstall } from '@/lib/letter-notice/record-install';
 import { onMessage } from '@/lib/messaging';
+import { openGuideInFullview } from '@/lib/open-guide-in-fullview';
 import { broadcastStateToPanel } from '@/lib/port/broadcast-state-to-panel';
 import { setupPortListener } from '@/lib/port/setup-port-listener';
 import { TabMessage } from '@/lib/tab-messages';
@@ -33,6 +39,7 @@ import { getActor, getStateUpdate, initActor, initActorFallback, waitUntilReady 
 import { generateGuideMetaOnStop } from './guide-meta';
 import { registerNavigationListeners } from './navigation';
 import { pauseCapture, resumeFromPause, whenPauseSettled } from './pause';
+import { registerShortcuts } from './shortcuts';
 import { handleCaptureStep, handleFinalizeInputStep, handleUpdateInputStep } from './step-pipeline';
 import {
   broadcastAttachCapture,
@@ -66,6 +73,52 @@ async function startNarrationIfPossible(): Promise<boolean> {
   const activeTab = await getActiveTab();
   await startVoiceNarration(activeTab?.id);
   return getVoiceUpdate().phase === 'recording';
+}
+
+async function startRecording(data: { url: string; insertTargetGuideId?: string; insertAtIndex?: number }) {
+  await waitUntilReady();
+  const actor = getActor();
+  actor.send({
+    type: 'START_RECORDING',
+    url: data.url,
+    insertTargetGuideId: data.insertTargetGuideId,
+    insertAtIndex: data.insertAtIndex,
+  });
+  const guideId = actor.getSnapshot().context.currentGuideId!;
+
+  await createGuide(guideId, data.insertTargetGuideId !== undefined);
+
+  const activeTab = await getActiveTab();
+  if (activeTab?.id) await showNotificationOnTab(activeTab.id);
+
+  await startVoiceNarration(activeTab?.id);
+
+  await broadcastAttachCapture(guideId);
+  return { guideId };
+}
+
+async function stopRecording() {
+  await waitUntilReady();
+  await whenPauseSettled();
+  const actor = getActor();
+  const { currentGuideId: guideId, insertTargetGuideId, insertAtIndex } = actor.getSnapshot().context;
+  await broadcastDetachCaptureAndFlush();
+  await broadcastClearBlur();
+  actor.send({ type: 'STOP_RECORDING' });
+
+  const narrationStopped = guideId ? stopVoiceNarration(guideId) : Promise.resolve();
+
+  if (guideId && insertTargetGuideId !== null && insertAtIndex !== null) {
+    await narrationStopped;
+    await mergeRecording(guideId, { insertTargetGuideId, insertAtIndex }, whenNarrationSettled);
+    return { success: true, guideId: insertTargetGuideId, inserted: true };
+  }
+
+  if (guideId) {
+    narrationStopped.then(() => generateGuideMetaOnStop(guideId)).catch(() => {});
+  }
+
+  return { success: true, guideId: guideId ?? undefined, inserted: false };
 }
 
 export default defineBackground(() => {
@@ -121,56 +174,43 @@ export default defineBackground(() => {
 
   const resume = () => resumeFromPause(startNarrationIfPossible);
 
+  registerShortcuts({
+    record: async () => {
+      openSidebar();
+      const permitted = requestHostPermissions();
+      await waitUntilReady();
+      if (isLive(getStateUpdate().state)) {
+        const { guideId } = await stopRecording();
+        if (guideId) await openGuideInFullview(guideId);
+        return;
+      }
+      if (!(await permitted)) return;
+      const tab = await getActiveTab();
+      const url = tab?.url || tab?.pendingUrl || '';
+      if (isRecordableUrl(url)) await startRecording({ url });
+    },
+    pause: async () => {
+      await waitUntilReady();
+      const { state } = getStateUpdate();
+      if (state === CaptureState.RECORDING) await pauseCapture('manual');
+      else if (state === CaptureState.PAUSED) await resume();
+    },
+    capture: async () => {
+      await waitUntilReady();
+      if (getStateUpdate().state !== CaptureState.RECORDING) return;
+      const tab = await getActiveTab();
+      if (tab?.id) await sendMessageToTab(tab.id, { type: TabMessage.CAPTURE_NOW });
+    },
+  });
+
   onMessage('getState', async () => {
     await waitUntilReady();
     return getStateUpdate();
   });
 
-  onMessage('startRecording', async ({ data }) => {
-    await waitUntilReady();
-    const actor = getActor();
-    actor.send({
-      type: 'START_RECORDING',
-      url: data.url,
-      insertTargetGuideId: data.insertTargetGuideId,
-      insertAtIndex: data.insertAtIndex,
-    });
-    const guideId = actor.getSnapshot().context.currentGuideId!;
+  onMessage('startRecording', ({ data }) => startRecording(data));
 
-    await createGuide(guideId, data.insertTargetGuideId !== undefined);
-
-    const activeTab = await getActiveTab();
-    if (activeTab?.id) await showNotificationOnTab(activeTab.id);
-
-    await startVoiceNarration(activeTab?.id);
-
-    await broadcastAttachCapture(guideId);
-    return { guideId };
-  });
-
-  onMessage('stopRecording', async () => {
-    await waitUntilReady();
-    await whenPauseSettled();
-    const actor = getActor();
-    const { currentGuideId: guideId, insertTargetGuideId, insertAtIndex } = actor.getSnapshot().context;
-    await broadcastDetachCaptureAndFlush();
-    await broadcastClearBlur();
-    actor.send({ type: 'STOP_RECORDING' });
-
-    const narrationStopped = guideId ? stopVoiceNarration(guideId) : Promise.resolve();
-
-    if (guideId && insertTargetGuideId !== null && insertAtIndex !== null) {
-      await narrationStopped;
-      await mergeRecording(guideId, { insertTargetGuideId, insertAtIndex }, whenNarrationSettled);
-      return { success: true, guideId: insertTargetGuideId, inserted: true };
-    }
-
-    if (guideId) {
-      narrationStopped.then(() => generateGuideMetaOnStop(guideId)).catch(() => {});
-    }
-
-    return { success: true, guideId: guideId ?? undefined, inserted: false };
-  });
+  onMessage('stopRecording', () => stopRecording());
 
   onMessage('discardRecording', async () => {
     await waitUntilReady();
