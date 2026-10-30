@@ -69,7 +69,7 @@ app.whenReady().then(async () => {
     () => mode,
     {
       introFrame: async (): Promise<Rect> => overlay.region,
-      shortcuts: () => ({ record: 'Alt+Shift+R', capture: 'Alt+Shift+C' }),
+      shortcuts: () => ({ record: 'Alt+Shift+1', capture: 'Alt+Shift+3' }),
     },
   );
 
@@ -204,7 +204,7 @@ app.whenReady().then(async () => {
   const mascot = JSON.parse(String(drawn ?? '{}')) as { paths?: number; circles?: number; visible?: boolean; hint?: string };
   check(
     'the armed card draws the camera mascot and the start shortcut',
-    mascot.paths === 4 && mascot.circles === 5 && mascot.visible === true && mascot.hint === 'Tip: you can press Alt+Shift+R to start and stop.',
+    mascot.paths === 4 && mascot.circles === 5 && mascot.visible === true && mascot.hint === 'Tip: you can press Alt+Shift+1 to start and stop.',
     `${mascot.paths} mascot paths, ${mascot.circles} circles, intro visible: ${mascot.visible}, hint: ${mascot.hint}`,
   );
 
@@ -216,7 +216,7 @@ app.whenReady().then(async () => {
   const idle = await card("tip: document.querySelector('#tip').textContent, hint: document.querySelector('#keyHint').textContent");
   check(
     'recording with no steps waits for the first click',
-    idle.tip === 'Your first click will show up here.' && idle.hint === 'Tip: you can press Alt+Shift+C to capture without clicking.',
+    idle.tip === 'Your first click will show up here.' && idle.hint === 'Tip: you can press Alt+Shift+3 to capture without clicking.',
     `tip: ${idle.tip}, hint: ${idle.hint}`,
   );
   const badgeWhileRecording = await card("badge: !document.querySelector('#badge').hidden && document.querySelector('#badge').textContent");
