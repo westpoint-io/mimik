@@ -38,6 +38,7 @@ export const getStepsForGuide: GuideStore['getStepsForGuide'] = (...args) => sto
 export const findExistingStepIds: GuideStore['findExistingStepIds'] = (...args) => store.findExistingStepIds(...args);
 export const deleteSteps: GuideStore['deleteSteps'] = (...args) => store.deleteSteps(...args);
 export const deleteStep: GuideStore['deleteStep'] = (...args) => store.deleteStep(...args);
+export const replaceGuideHost: GuideStore['replaceGuideHost'] = (...args) => store.replaceGuideHost(...args);
 export const getGuideDomain: GuideStore['getGuideDomain'] = (...args) => store.getGuideDomain(...args);
 export const allScreenshotIds: GuideStore['allScreenshotIds'] = (...args) => store.allScreenshotIds(...args);
 export const saveScreenshot: GuideStore['saveScreenshot'] = (...args) => store.saveScreenshot(...args);

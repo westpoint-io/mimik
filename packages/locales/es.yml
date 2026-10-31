@@ -333,6 +333,7 @@ confirmDelete:
   confirm: Eliminar definitivamente
 
 editor:
+  guideHost: Dirección del sitio web
   backToLibrary: Volver a la biblioteca
   openInDashboard: Abrir
   openInDashboardHint: "Ábrela en el panel para editarla o exportarla"

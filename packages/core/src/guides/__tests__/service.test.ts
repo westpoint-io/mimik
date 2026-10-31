@@ -37,6 +37,7 @@ import {
   getTrashedGuides,
   permanentlyDeleteGuide,
   reorderSteps,
+  replaceGuideHost,
   softDeleteGuide,
   toggleStar,
   updateGuideDescription,
@@ -231,6 +232,22 @@ describe('reorderSteps', () => {
     const steps = await db.steps.where('guideId').equals('g1').sortBy('index');
     expect(steps.map((s) => s.id)).toEqual(['s3', 's1', 's2']);
     expect(steps.map((s) => s.index)).toEqual([0, 1, 2]);
+  });
+});
+
+describe('replaceGuideHost', () => {
+  it('moves steps on the guide domain to the new host and keeps their path', async () => {
+    await seedGuide('g1', { stepIds: ['s1', 's2'] });
+    await db.steps.bulkAdd([
+      makeStep({ id: 's1', guideId: 'g1', url: 'http://localhost:3000/orders/7?tab=items#notes' }),
+      makeStep({ id: 's2', guideId: 'g1', index: 1, url: 'https://accounts.google.com/signin' }),
+    ]);
+
+    await replaceGuideHost('g1', 'localhost', 'https://app.example.com');
+
+    expect((await db.steps.get('s1'))!.url).toBe('https://app.example.com/orders/7?tab=items#notes');
+    expect((await db.steps.get('s2'))!.url).toBe('https://accounts.google.com/signin');
+    expect(broadcastMessages).toContainEqual({ type: 'mutated' });
   });
 });
 

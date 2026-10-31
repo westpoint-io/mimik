@@ -333,6 +333,7 @@ confirmDelete:
   confirm: 永久删除
 
 editor:
+  guideHost: 网站地址
   backToLibrary: 返回资料库
   openInDashboard: 打开
   openInDashboardHint: 在仪表盘中打开以编辑或导出

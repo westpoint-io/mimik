@@ -333,6 +333,7 @@ confirmDelete:
   confirm: Delete permanently
 
 editor:
+  guideHost: Website address
   backToLibrary: Back to library
   openInDashboard: Open
   openInDashboardHint: Open in the dashboard to edit or export

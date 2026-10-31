@@ -333,6 +333,7 @@ confirmDelete:
   confirm: "Excluir permanentemente"
 
 editor:
+  guideHost: Endereço do site
   backToLibrary: "Voltar para a biblioteca"
   openInDashboard: Abrir
   openInDashboardHint: "Abra no painel para editar ou exportar"

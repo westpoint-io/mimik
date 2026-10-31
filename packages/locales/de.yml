@@ -333,6 +333,7 @@ confirmDelete:
   confirm: Endgültig löschen
 
 editor:
+  guideHost: Website-Adresse
   backToLibrary: Zurück zur Bibliothek
   openInDashboard: Öffnen
   openInDashboardHint: Im Dashboard öffnen, um zu bearbeiten oder zu exportieren
