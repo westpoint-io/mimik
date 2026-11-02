@@ -4,6 +4,7 @@
 @import "@fontsource/poppins/700.css";
 @import "@fontsource/poppins/800.css";
 @import "tailwindcss";
+@import "tw-animate-css";
 @import "./theme.css";
 
 @source ".";
@@ -52,6 +53,12 @@ input[type="checkbox"]:not(:disabled) {
 @utility animate-drawer-out {
   animation: drawer-out 150ms ease-in;
   @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot][data-state] {
     animation: none;
   }
 }
