@@ -1,19 +1,18 @@
 import { i18n } from '@mimik/core/env';
-import { AppearanceSettings, Button, GitHubCard, Switch } from '@mimik/ui';
-import { Languages, Power, RefreshCw } from 'lucide-react';
+import { AppearanceSettings, GitHubCard, Switch } from '@mimik/ui';
+import { Languages, Power } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AppLanguage } from './AppLanguage';
 import { Card } from './Card';
 import { Row } from './Row';
+import { UpdatesCard } from './UpdatesCard';
 
 const LOGIN_HINT = navigator.userAgent.includes('Mac') ? 'desktop.startAtLoginHintMac' : 'desktop.startAtLoginHint';
 
 export function GeneralSettings({ onSaved }: { onSaved: () => void }) {
-  const [version, setVersion] = useState('');
   const [atLogin, setAtLogin] = useState(false);
 
   useEffect(() => {
-    window.mimik.version().then(setVersion);
     window.mimik.openAtLogin.get().then(setAtLogin);
   }, []);
 
@@ -40,14 +39,7 @@ export function GeneralSettings({ onSaved }: { onSaved: () => void }) {
         </Row>
       </Card>
 
-      <Card icon={RefreshCw} title={i18n.t('desktop.cardUpdates')}>
-        <Row label={i18n.t('desktop.version', [version])} hint={i18n.t('desktop.versionHint')}>
-          <Button variant="outline" size="sm" onClick={() => window.mimik.updates.check()}>
-            <RefreshCw size={14} />
-            {i18n.t('desktop.checkUpdates')}
-          </Button>
-        </Row>
-      </Card>
+      <UpdatesCard />
 
       <GitHubCard />
     </>

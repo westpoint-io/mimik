@@ -3,7 +3,7 @@ import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import type { Rect } from '@mimik/core/rect';
 import { contextBridge, ipcRenderer } from 'electron';
 import type { CaptureSettings } from '../main/capture/settings';
-import type { DesktopStateUpdate, RendererRequest, RendererRequests } from '../main/ipc';
+import type { DesktopStateUpdate, RendererRequest, RendererRequests, UpdateStatus } from '../main/ipc';
 import type { OverlayNarration } from '../main/overlay';
 import type { CapturePermissions, MicrophoneAccess, PermissionKind } from '../main/permissions';
 
@@ -70,6 +70,14 @@ const api = {
   locale: (code: string): void => ipcRenderer.send('mimik:app:locale', code),
   updates: {
     check: (): Promise<void> => ipcRenderer.invoke('mimik:updates:check'),
+    status: (): Promise<UpdateStatus | undefined> => ipcRenderer.invoke('mimik:updates:status'),
+    onStatus: (handler: (status: UpdateStatus) => void): (() => void) => {
+      const listener = (_event: unknown, status: UpdateStatus) => handler(status);
+      ipcRenderer.on('mimik:updates:status', listener);
+      return () => ipcRenderer.removeListener('mimik:updates:status', listener);
+    },
+    install: (): Promise<void> => ipcRenderer.invoke('mimik:updates:install'),
+    notes: (): Promise<void> => ipcRenderer.invoke('mimik:updates:notes'),
   },
   screenshots: {
     sweep: (keep: string[]): Promise<number> => ipcRenderer.invoke('mimik:screenshots:sweep', keep),

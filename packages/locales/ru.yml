@@ -267,19 +267,27 @@ desktop:
   startAtLoginHint: "Mimik открывается в трее, без окна."
   startAtLoginHintMac: Mimik открывается при входе в систему.
   version: Версия $1
-  versionHint: Mimik проверяет обновления при каждом запуске.
+  versionHint: "Mimik проверяет обновления, пока работает."
   checkUpdates: Проверить обновления
+  lastChecked: "Последняя проверка: $1"
+  checking: "Проверка…"
+  downloading: "Загрузка $1%"
+  restartToUpdate: "Перезапустить и обновить"
+  versionAvailable: "Доступна версия $1"
+  versionDownloaded: "Версия $1 загружена"
+  tryAgain: "Повторить"
+  updatesUnavailable: "Для этой версии обновления пока недоступны"
+  restart: "Перезапустить"
+  trayChecking: "Проверка обновлений…"
+  trayDownloading: "Загрузка обновления $1%"
   trayQuit: Выйти из Mimik
   trayRecording: "Mimik записывает. Нажмите, чтобы закончить."
   cannotRecord: Mimik не может записывать
   updateReady: Обновление готово
-  updateReadyMessage: Mimik $1 готов к установке.
-  restartNow: Перезапустить сейчас
+  updateReadyMessage: "Перезапустите Mimik, чтобы установить версию $1."
   later: Позже
-  updateFailed: Не удалось проверить обновления
-  updateFailedMessage: Mimik не смог связаться с сервером обновлений. Попробуйте позже.
-  upToDate: Обновлений нет
-  upToDateMessage: Mimik $1 — последняя версия.
+  updateFailed: "Сервер обновлений недоступен"
+  upToDate: "У вас последняя версия"
   cardScreenshots: Скриншоты
   cardGlobalKeys: Глобальные клавиши
   cardGlobalKeysHint: "Работают в любом приложении, пока Mimik запущен."
