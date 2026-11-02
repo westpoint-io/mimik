@@ -185,7 +185,7 @@ export function GuideOutline({ guideId, steps, readOnly, wide, onReorder }: Guid
       <DialogContent
         aria-describedby={undefined}
         showCloseButton={false}
-        className="top-0 left-0 translate-x-0 translate-y-0 flex flex-col h-full w-[320px] max-w-none sm:max-w-none rounded-none border-0 bg-card p-0 gap-0 shadow-xl data-[state=open]:animate-drawer-in data-[state=closed]:animate-drawer-out"
+        className="top-0 left-0 translate-x-0 translate-y-0 flex flex-col h-full w-[320px] max-w-none sm:max-w-none rounded-none border-0 bg-card p-0 gap-0 shadow-xl data-[state=open]:slide-in-from-left data-[state=open]:zoom-in-100 data-[state=closed]:slide-out-to-left data-[state=closed]:zoom-out-100"
       >
         <div className="flex items-center justify-between pl-5 pr-4 pt-[18px] pb-3.5">
           <DialogPrimitive.Title className="text-[15px] font-semibold text-foreground">
