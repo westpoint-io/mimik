@@ -104,8 +104,9 @@ describe('hasVoiceApiKey', () => {
 });
 
 describe('normalizeVoiceProvider', () => {
-  it('accepts groq and defaults everything else to openai', () => {
+  it('accepts groq and server and defaults everything else to openai', () => {
     expect(normalizeVoiceProvider('groq')).toBe('groq');
+    expect(normalizeVoiceProvider('server')).toBe('server');
     expect(normalizeVoiceProvider('openai')).toBe('openai');
     expect(normalizeVoiceProvider('whisper.cpp')).toBe('openai');
     expect(normalizeVoiceProvider(undefined)).toBe('openai');
@@ -126,10 +127,47 @@ describe('resolveVoiceApiKey with a custom AI server', () => {
   });
 });
 
+describe('resolveVoiceApiKey with the voice provider set to server', () => {
+  const server = { voiceProvider: 'server', aiServerUrl: 'http://localhost:8000/v1', apiKeys: { server: 'sk-local' } };
+
+  it('uses the server address and key', () => {
+    expect(resolveVoiceApiKey(server)).toEqual({
+      provider: 'server',
+      apiKey: 'sk-local',
+      baseUrl: 'http://localhost:8000/v1',
+    });
+  });
+
+  it('is usable without a key', () => {
+    expect(hasVoiceApiKey({ ...server, apiKeys: {} })).toBe(true);
+  });
+
+  it('is unusable without an address', () => {
+    expect(hasVoiceApiKey({ voiceProvider: 'server', apiKeys: { server: 'sk-local' } })).toBe(false);
+  });
+
+  it('is unusable when the server speaks the Anthropic protocol', () => {
+    expect(resolveVoiceApiKey({ ...server, aiServerProtocol: 'anthropic' })).toEqual({
+      provider: 'server',
+      apiKey: '',
+    });
+    expect(hasVoiceApiKey({ ...server, aiServerProtocol: 'anthropic' })).toBe(false);
+  });
+});
+
 describe('VOICE_KEY_SETTINGS', () => {
   it('names every storage key the resolution reads', () => {
     expect([...VOICE_KEY_SETTINGS]).toEqual(
-      expect.arrayContaining(['apiKeys', 'voiceProvider', 'voiceApiKey', 'aiApiKey', 'aiApiKeys', 'aiBaseUrl']),
+      expect.arrayContaining([
+        'apiKeys',
+        'voiceProvider',
+        'voiceApiKey',
+        'aiApiKey',
+        'aiApiKeys',
+        'aiBaseUrl',
+        'aiServerUrl',
+        'aiServerProtocol',
+      ]),
     );
   });
 });

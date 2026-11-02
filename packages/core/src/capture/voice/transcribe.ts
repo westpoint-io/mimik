@@ -1,23 +1,37 @@
+import { normalizeBaseUrl } from '@/core/capture/ai/models';
 import { coreFetch } from '@/core/env';
 import type { TranscriptionResponse } from './types';
 
-export type VoiceProvider = 'openai' | 'groq';
+export type VoiceProvider = 'openai' | 'groq' | 'server';
 
 export interface TranscribeConfig {
   provider: VoiceProvider;
   apiKey: string;
+  baseUrl?: string;
+  model?: string;
   language?: string;
 }
 
-const PROVIDERS: Record<VoiceProvider, { url: string; model: string }> = {
+const PROVIDERS: Record<Exclude<VoiceProvider, 'server'>, { url: string; model: string }> = {
   openai: { url: 'https://api.openai.com/v1/audio/transcriptions', model: 'whisper-1' },
   groq: { url: 'https://api.groq.com/openai/v1/audio/transcriptions', model: 'whisper-large-v3' },
 };
 
+const SERVER_MODEL = 'whisper-1';
+
 const ERROR_BODY_LIMIT = 200;
 
+function endpointFor(config: TranscribeConfig): { url: string; model: string } {
+  if (config.provider !== 'server') return PROVIDERS[config.provider] ?? PROVIDERS.openai;
+  return {
+    url: `${normalizeBaseUrl(config.baseUrl ?? '')}/audio/transcriptions`,
+    model: config.model?.trim() || SERVER_MODEL,
+  };
+}
+
 export function createTranscriber(config: TranscribeConfig): (wav: Blob) => Promise<TranscriptionResponse> {
-  const { url, model } = PROVIDERS[config.provider] ?? PROVIDERS.openai;
+  const { url, model } = endpointFor(config);
+  const headers: Record<string, string> = config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : {};
 
   return async (wav: Blob): Promise<TranscriptionResponse> => {
     const form = new FormData();
@@ -31,7 +45,7 @@ export function createTranscriber(config: TranscribeConfig): (wav: Blob) => Prom
 
     const response = await coreFetch(url, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${config.apiKey}` },
+      headers,
       body: form,
     });
 

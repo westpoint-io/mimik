@@ -156,6 +156,8 @@ settings:
   protocolOpenai: "OpenAI"
   protocolAnthropic: "Anthropic"
   noServer: "Noch keine Serveradresse."
+  voiceServerNeedsOpenai: "Der Sprachkommentar braucht einen OpenAI-kompatiblen Server."
+  transcriptionModel: "Transkriptionsmodell"
   noKeyFor: "Noch kein $1-Schlüssel."
   addOneInKeys: "Füge einen unter API-Schlüssel hinzu."
   addKey: "Schlüssel hinzufügen"

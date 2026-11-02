@@ -1,6 +1,7 @@
 import { logger } from '@mimik/core/logger';
 import { CaptureState } from '@/core/capture/machine';
 import { applyNarrationResult } from '@/core/capture/voice/apply-narration-result';
+import { canTranscribe } from '@/core/capture/voice/can-transcribe';
 import { describeStepNow, describeUnnarratedSteps } from '@/core/capture/voice/describe-unnarrated';
 import { narrateRecording, type VoiceRecording } from '@/core/capture/voice/narrate-recording';
 import { NARRATION_SETTLE_MS } from '@/core/capture/voice/narration-settle-ms';
@@ -226,7 +227,7 @@ async function recoverNarration(guideId: string): Promise<void> {
   if (!audio || import.meta.env.BROWSER !== 'firefox') return;
 
   const settings = await readTranscriptionSettings();
-  if (!settings.apiKey) {
+  if (!canTranscribe(settings)) {
     report({ phase: 'error', reason: 'missing-api-key', error: 'No transcription API key is configured' });
     return;
   }
@@ -243,7 +244,7 @@ export async function flushNarrationForStep(guideId: string, stepId: string, tim
   if (phase.phase !== 'recording') return;
   try {
     const settings = await readTranscriptionSettings();
-    if (!settings.apiKey) return;
+    if (!canTranscribe(settings)) return;
     const response = await flushVoiceCapture(guideId, { stepId, timestamp }, settings);
     if (!response.ok) {
       logger.warn('voice: could not narrate the step yet', response);

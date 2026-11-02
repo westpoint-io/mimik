@@ -111,6 +111,7 @@ export function WriteStepsStep({
             {voice && (
               <VoiceNarrationRow
                 aiProvider={provider}
+                server={keys.server}
                 validate={validate}
                 requestMicrophoneAccess={requestMicrophoneAccess}
                 microphoneAccess={microphoneAccess}

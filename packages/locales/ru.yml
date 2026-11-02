@@ -140,6 +140,8 @@ settings:
   protocolOpenai: OpenAI
   protocolAnthropic: Anthropic
   noServer: Адрес сервера ещё не указан.
+  voiceServerNeedsOpenai: "Для озвучки нужен сервер, совместимый с OpenAI."
+  transcriptionModel: "Модель транскрибации"
   noKeyFor: Ключа $1 ещё нет.
   addOneInKeys: Добавьте его в разделе «API-ключи».
   addKey: Добавить ключ
