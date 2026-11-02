@@ -125,8 +125,9 @@ async function validateCustomServer(
   apiKey: string,
   baseUrl: string,
   model?: string,
+  extraHeaders?: Record<string, string>,
 ): Promise<KeyValidation> {
-  const headers = PROTOCOL_HEADERS[config.protocol](apiKey);
+  const headers = { ...PROTOCOL_HEADERS[config.protocol](apiKey), ...extraHeaders };
   const base = normalizeBaseUrl(baseUrl);
   const catalogUrl = `${base}/models`;
 
@@ -148,6 +149,7 @@ export async function validateApiKey(
   apiKey: string,
   baseUrl?: string,
   model?: string,
+  serverHeaders?: Record<string, string>,
 ): Promise<KeyValidation> {
   const config = findProvider(provider);
 
@@ -160,7 +162,8 @@ export async function validateApiKey(
     return checkCatalog(endpoint.url, endpoint.headers(apiKey));
   }
 
-  if (isCustomBaseUrl(config, baseUrl)) return validateCustomServer(config, apiKey, baseUrl as string, model);
+  if (isCustomBaseUrl(config, baseUrl))
+    return validateCustomServer(config, apiKey, baseUrl as string, model, serverHeaders);
 
   const headers = PROTOCOL_HEADERS[config.protocol](apiKey);
   const base = resolveBaseUrl(config);

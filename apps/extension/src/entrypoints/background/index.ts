@@ -268,7 +268,9 @@ export default defineBackground(() => {
 
   onMessage('generateGuideDescription', ({ data }) => generateDescriptionOnDemand(data.guideId));
 
-  onMessage('validateApiKey', ({ data }) => validateApiKey(data.provider, data.apiKey, data.baseUrl, data.model));
+  onMessage('validateApiKey', ({ data }) =>
+    validateApiKey(data.provider, data.apiKey, data.baseUrl, data.model, data.headers),
+  );
 
   onMessage('listVoices', async ({ data }) => {
     const { fetchVoices } = await import('@/core/export/voiceover/client');

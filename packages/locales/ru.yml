@@ -137,6 +137,11 @@ settings:
   ownServer: Свой сервер
   optional: Необязательно
   serverSpeaks: Совместим с
+  serverHeaders: "Заголовки"
+  headerName: "Имя заголовка"
+  headerValue: "Значение"
+  addHeader: "Добавить заголовок"
+  removeHeader: "Удалить заголовок"
   protocolOpenai: OpenAI
   protocolAnthropic: Anthropic
   noServer: Адрес сервера ещё не указан.

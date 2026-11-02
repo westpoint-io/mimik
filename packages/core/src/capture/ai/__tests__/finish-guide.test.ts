@@ -123,6 +123,7 @@ describe('guide meta', () => {
         AI_PROVIDERS.anthropic.defaultModel,
         'key',
         undefined,
+        undefined,
       );
     });
 
@@ -136,6 +137,7 @@ describe('guide meta', () => {
         'openai',
         AI_PROVIDERS.openai.defaultModel,
         'key',
+        undefined,
         undefined,
       );
     });

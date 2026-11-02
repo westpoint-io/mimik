@@ -76,6 +76,7 @@ interface ValidateApiKeyData {
   apiKey: string;
   baseUrl?: string;
   model?: string;
+  headers?: Record<string, string>;
 }
 
 interface ValidateApiKeyResponse {

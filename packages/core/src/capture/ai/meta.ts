@@ -63,6 +63,7 @@ export async function generateGuideMeta(
   model: string,
   apiKey: string,
   baseUrl?: string,
+  headers?: Record<string, string>,
 ): Promise<GuideMeta | null> {
   if (steps.length === 0) return null;
 
@@ -74,7 +75,7 @@ export async function generateGuideMeta(
     GUIDE_META_PROMPT.replace('{{titleExamples}}', formatExamples(examples.titles))
       .replace('{{descriptionExamples}}', formatExamples(examples.descriptions))
       .replace('{{steps}}', () => formatted) + getLanguageSuffix(locale);
-  const aiModel = createModel(provider, model, apiKey, baseUrl);
+  const aiModel = createModel(provider, model, apiKey, baseUrl, headers);
   const deadline = new AbortController();
   const timer = setTimeout(() => deadline.abort(), GUIDE_META_TIMEOUT_MS);
 
