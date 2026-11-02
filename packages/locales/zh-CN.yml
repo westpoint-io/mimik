@@ -343,6 +343,23 @@ editor:
   selectedCount: "已选择 $1 项"
   deleteSelectedStep: "删除选中的 $1 个步骤？"
   deleteSelectedSteps: "删除选中的 $1 个步骤？"
+  copyTo: 复制到
+  deselect: 取消选择
+  copyStepTo: "将 1 个步骤复制到…"
+  copyStepsTo: "将 $1 个步骤复制到…"
+  copyStepsHint: "截图、模糊和编辑都会一并复制。此指南保持不变。"
+  searchGuidesToCopyTo: 按标题搜索指南
+  allGuides: 所有指南
+  sameSite: 同一网站
+  sameApp: 同一应用
+  newGuide: 新建指南
+  noGuidesToCopyTo: 没有匹配的指南
+  copyStep: 复制 1 个步骤
+  copySteps: "复制 $1 个步骤"
+  copyStepsFailed: "无法复制这些步骤，请重试。"
+  stepCopied: "已从“$2”复制 1 个步骤"
+  stepsCopied: "已从“$2”复制 $1 个步骤"
+  newStep: 新
   copyScreenshot: 复制截图
   noScreenshot: 无截图
   edit: 编辑

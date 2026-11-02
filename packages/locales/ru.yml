@@ -343,6 +343,23 @@ editor:
   selectedCount: "Выбрано: $1"
   deleteSelectedStep: Удалить выбранный шаг ($1)?
   deleteSelectedSteps: Удалить выбранные шаги ($1)?
+  copyTo: Копировать в
+  deselect: Снять выделение
+  copyStepTo: "Копировать 1 шаг в…"
+  copyStepsTo: "Копировать шаги ($1) в…"
+  copyStepsHint: "Скриншоты, размытие и правки копируются. Этот гайд не изменится."
+  searchGuidesToCopyTo: Поиск гайдов по названию
+  allGuides: Все гайды
+  sameSite: Тот же сайт
+  sameApp: То же приложение
+  newGuide: Новый гайд
+  noGuidesToCopyTo: Нет подходящих гайдов
+  copyStep: Копировать 1 шаг
+  copySteps: "Копировать шаги ($1)"
+  copyStepsFailed: Не удалось скопировать шаги. Попробуйте ещё раз.
+  stepCopied: "1 шаг скопирован из «$2»"
+  stepsCopied: "Шаги ($1) скопированы из «$2»"
+  newStep: Новый
   copyScreenshot: Копировать скриншот
   noScreenshot: Нет скриншота
   edit: Редактировать

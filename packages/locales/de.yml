@@ -343,6 +343,23 @@ editor:
   selectedCount: "$1 ausgewählt"
   deleteSelectedStep: "$1 ausgewählten Schritt löschen?"
   deleteSelectedSteps: "$1 ausgewählte Schritte löschen?"
+  copyTo: Kopieren nach
+  deselect: Auswahl aufheben
+  copyStepTo: "1 Schritt kopieren nach…"
+  copyStepsTo: "$1 Schritte kopieren nach…"
+  copyStepsHint: "Screenshots, Unschärfe und Bearbeitungen werden übernommen. Diese Anleitung bleibt unverändert."
+  searchGuidesToCopyTo: Anleitungen nach Titel suchen
+  allGuides: Alle Anleitungen
+  sameSite: Gleiche Website
+  sameApp: Gleiche App
+  newGuide: Neue Anleitung
+  noGuidesToCopyTo: Keine passenden Anleitungen
+  copyStep: 1 Schritt kopieren
+  copySteps: "$1 Schritte kopieren"
+  copyStepsFailed: "Die Schritte konnten nicht kopiert werden. Versuche es erneut."
+  stepCopied: "1 Schritt aus „$2“ kopiert"
+  stepsCopied: "$1 Schritte aus „$2“ kopiert"
+  newStep: Neu
   copyScreenshot: Screenshot kopieren
   noScreenshot: Kein Screenshot
   edit: Bearbeiten

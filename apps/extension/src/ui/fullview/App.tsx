@@ -40,6 +40,7 @@ export function FullViewApp() {
             guideId={route.guideId}
             initialStepId={route.stepId}
             initialTool={route.tool}
+            copied={route.copied}
             onCaptureMore={(insert) => setPendingCapture({ insert })}
             onGuideMe={(guideId) => {
               openSidebar();

@@ -343,6 +343,23 @@ editor:
   selectedCount: "$1 selected"
   deleteSelectedStep: "Delete $1 selected step?"
   deleteSelectedSteps: "Delete $1 selected steps?"
+  copyTo: Copy to
+  deselect: Deselect
+  copyStepTo: "Copy 1 step to…"
+  copyStepsTo: "Copy $1 steps to…"
+  copyStepsHint: "Screenshots, blur and edits come along. This guide stays as it is."
+  searchGuidesToCopyTo: Search guides by title
+  allGuides: All guides
+  sameSite: Same site
+  sameApp: Same app
+  newGuide: New guide
+  noGuidesToCopyTo: No guides match
+  copyStep: Copy 1 step
+  copySteps: "Copy $1 steps"
+  copyStepsFailed: Couldn't copy these steps. Try again.
+  stepCopied: "1 step copied from “$2”"
+  stepsCopied: "$1 steps copied from “$2”"
+  newStep: New
   copyScreenshot: Copy screenshot
   noScreenshot: No screenshot
   edit: Edit

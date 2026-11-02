@@ -343,6 +343,23 @@ editor:
   selectedCount: "$1 selecionados"
   deleteSelectedStep: "Excluir $1 passo selecionado?"
   deleteSelectedSteps: "Excluir $1 passos selecionados?"
+  copyTo: Copiar para
+  deselect: Desmarcar
+  copyStepTo: "Copiar 1 passo para…"
+  copyStepsTo: "Copiar $1 passos para…"
+  copyStepsHint: "Capturas, desfoque e edições vão junto. Este guia continua como está."
+  searchGuidesToCopyTo: Buscar guias pelo título
+  allGuides: Todos os guias
+  sameSite: Mesmo site
+  sameApp: Mesmo app
+  newGuide: Novo guia
+  noGuidesToCopyTo: Nenhum guia encontrado
+  copyStep: Copiar 1 passo
+  copySteps: "Copiar $1 passos"
+  copyStepsFailed: Não foi possível copiar estes passos. Tente novamente.
+  stepCopied: "1 passo copiado de “$2”"
+  stepsCopied: "$1 passos copiados de “$2”"
+  newStep: Novo
   copyScreenshot: Copiar captura
   noScreenshot: Sem captura
   edit: Editar

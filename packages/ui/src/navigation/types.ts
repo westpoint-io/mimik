@@ -5,4 +5,5 @@ export type Route =
       guideId: string;
       stepId?: string;
       tool?: 'annotate' | 'redact' | 'crop' | 'target';
+      copied?: { stepIds: string[]; from: string };
     };
