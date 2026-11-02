@@ -299,6 +299,73 @@ async function duplicateGuide(guideId: string): Promise<string | null> {
   return copyId;
 }
 
+async function copySteps(
+  sourceGuideId: string,
+  stepIds: readonly string[],
+  targetGuideId: string | null,
+): Promise<{ guideId: string; stepIds: string[] } | null> {
+  const copied = await db.transaction('rw', [db.guides, db.steps, db.screenshots, db.transcripts], async () => {
+    const source = await db.guides.get(sourceGuideId);
+    const target = targetGuideId ? await db.guides.get(targetGuideId) : null;
+    if (!source || (targetGuideId && (!target || target.deletedAt !== null))) return null;
+    const steps = (await db.steps.bulkGet([...stepIds]))
+      .filter((step): step is Step => step?.guideId === sourceGuideId)
+      .sort((a, b) => a.index - b.index);
+    const stepIdMap = new Map(steps.map((step) => [step.id, crypto.randomUUID()]));
+    const screenshots = (
+      await db.screenshots.bulkGet(steps.map((step) => step.screenshotId).filter((id): id is string => !!id))
+    ).filter((row): row is StoredScreenshot => !!row && stepIdMap.has(row.stepId));
+    const screenshotIdMap = new Map(screenshots.map((row) => [row.id, crypto.randomUUID()]));
+    const guideId = target?.id ?? crypto.randomUUID();
+    const offset = target ? await db.steps.where('guideId').equals(guideId).count() : 0;
+    const newStepIds = steps.map((step) => stepIdMap.get(step.id)!);
+    const now = Date.now();
+
+    if (target) {
+      await db.guides.update(guideId, { stepIds: [...target.stepIds, ...newStepIds], updatedAt: now });
+    } else {
+      await db.guides.add({
+        id: guideId,
+        title: sanitizeGuideTitle(i18n.t('library.copyOfTitle', [source.title])),
+        createdAt: now,
+        updatedAt: now,
+        stepIds: newStepIds,
+        starred: false,
+        deletedAt: null,
+      });
+    }
+    await db.steps.bulkAdd(
+      steps.map((step, index) => ({
+        ...step,
+        id: stepIdMap.get(step.id)!,
+        guideId,
+        index: offset + index,
+        aiPending: undefined,
+        screenshotId: step.screenshotId ? screenshotIdMap.get(step.screenshotId) : undefined,
+      })),
+    );
+    await db.screenshots.bulkAdd(
+      screenshots.map((row) => ({ ...row, id: screenshotIdMap.get(row.id)!, stepId: stepIdMap.get(row.stepId)! })),
+    );
+    const transcripts = await db.transcripts.where('guideId').equals(sourceGuideId).toArray();
+    await db.transcripts.bulkAdd(
+      transcripts
+        .map((row) => ({
+          ...row,
+          id: crypto.randomUUID(),
+          guideId,
+          lines: row.lines
+            .filter((line) => line.stepId && stepIdMap.has(line.stepId))
+            .map((line) => ({ ...line, stepId: stepIdMap.get(line.stepId!)! })),
+        }))
+        .filter((row) => row.lines.length > 0),
+    );
+    return { guideId, stepIds: newStepIds };
+  });
+  if (copied) notifyGuidesChanged({ type: 'mutated' });
+  return copied;
+}
+
 async function mergeGuideInto(sourceGuideId: string, targetGuideId: string, atIndex: number): Promise<number> {
   const moved = await db.transaction('rw', db.steps, db.guides, db.transcripts, db.guideMerges, async () => {
     const incoming = await db.steps.where('guideId').equals(sourceGuideId).sortBy('index');
@@ -846,6 +913,7 @@ export const dexieStore = {
   renameSnapshot,
   revertToSnapshot,
   duplicateGuide,
+  copySteps,
   importGuide,
   saveTranscript,
   getTranscripts,
