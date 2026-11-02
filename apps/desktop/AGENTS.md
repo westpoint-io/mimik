@@ -74,4 +74,5 @@ that only touch `apps/extension`, and writes the changelog into `apps/desktop/CH
 Merging that PR tags `desktop-v<version>` and opens a draft release. The signed Windows build waits
 for approval in the `desktop-production` environment, then attaches the installer, its blockmap and
 `latest.yml` and publishes the release as Latest, because the updater reads `latest.yml` from
-whichever release holds that flag. The config is in `.github/release-please/`.
+whichever release holds that flag. `desktop-linux-release.yml` builds the unsigned `.deb` and its
+`latest-linux.yml` for the same release. The config is in `.github/release-please/`.

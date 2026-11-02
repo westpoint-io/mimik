@@ -55,6 +55,14 @@ nsis:
 linux:
   executableName: mimik
   category: Utility
+  synopsis: Step-by-step guides from your clicks
+  icon: linux/icons
+  extraResources:
+    - from: linux/apparmor-profile
+      to: apparmor-profile
   target:
     - AppImage
     - deb
+deb:
+  afterInstall: linux/after-install.tpl
+  afterRemove: linux/after-remove.tpl

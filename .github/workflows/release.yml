@@ -48,9 +48,14 @@ jobs:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
 
+  desktop-linux:
+    needs: release-pr
+    if: needs.release-pr.outputs.desktop == 'true'
+    uses: $/.github/workflows/desktop-linux-release.yml
+
   desktop:
     name: Desktop installers
-    needs: [release-pr, desktop-windows]
+    needs: [release-pr, desktop-windows, desktop-linux]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -58,6 +63,11 @@ jobs:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: mimik-windows-signed
+          path: dist
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: mimik-linux
           path: dist
 
       - env:

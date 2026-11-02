@@ -87,3 +87,6 @@ jobs:
 
       - name: Overlay check
         run: xvfb-run -a pnpm --filter @mimik/desktop check:overlay
+
+      - name: Linux package
+        run: pnpm --filter @mimik/desktop exec electron-builder --linux deb --publish never
