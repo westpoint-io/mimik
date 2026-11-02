@@ -33,30 +33,6 @@ input[type="checkbox"]:not(:disabled) {
   animation: gradient-text 3s ease infinite;
 }
 
-@keyframes drawer-in {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
-}
-
-@keyframes drawer-out {
-  from { transform: translateX(0); }
-  to { transform: translateX(-100%); }
-}
-
-@utility animate-drawer-in {
-  animation: drawer-in 200ms ease-out;
-  @media (prefers-reduced-motion: reduce) {
-    animation: none;
-  }
-}
-
-@utility animate-drawer-out {
-  animation: drawer-out 150ms ease-in;
-  @media (prefers-reduced-motion: reduce) {
-    animation: none;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   [data-slot][data-state] {
     animation: none;
