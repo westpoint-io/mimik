@@ -26,6 +26,7 @@ import { useAskAi } from '../../ai/hooks/use-ask-ai';
 import { useGuideDescription } from '../../ai/hooks/use-guide-description';
 import { AnnotationEditor } from '../../annotation/components/AnnotationEditor';
 import { FaviconImg } from '../../common/components/FaviconImg';
+import { Notice } from '../../common/components/Notice';
 import { Toast } from '../../common/components/Toast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
 import { TranscriptPanel } from '../../history/components/TranscriptPanel';
@@ -43,6 +44,7 @@ interface GuideContentProps {
   initialTool?: 'annotate' | 'redact' | 'crop' | 'target';
   onCaptureMore?: (target: CaptureInsert) => void;
   onGuideMe?: (guideId: string) => void;
+  copied?: { stepIds: string[]; from: string };
 }
 
 interface GuideData {
@@ -51,7 +53,14 @@ interface GuideData {
   screenshots: Map<string, Screenshot>;
 }
 
-export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMore, onGuideMe }: GuideContentProps) {
+export function GuideContent({
+  guideId,
+  initialStepId,
+  initialTool,
+  onCaptureMore,
+  onGuideMe,
+  copied,
+}: GuideContentProps) {
   const {
     setGuideTitle,
     setGuideStepCount,
@@ -66,6 +75,7 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
     setTranscriptOpen,
     setHasTranscript,
     clearStepSelection,
+    setNewStepIds,
   } = useFullview((s) => ({
     setGuideTitle: s.setGuideTitle,
     setGuideStepCount: s.setGuideStepCount,
@@ -80,6 +90,7 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
     setTranscriptOpen: s.setTranscriptOpen,
     setHasTranscript: s.setHasTranscript,
     clearStepSelection: s.clearStepSelection,
+    setNewStepIds: s.setNewStepIds,
   }));
 
   const wide = useWideLayout();
@@ -98,6 +109,9 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
   const [dataVersion, setDataVersion] = useState(0);
   const titleRef = useRef('');
   const appliedInitialRef = useRef(false);
+  const appliedCopiedRef = useRef<GuideContentProps['copied']>(undefined);
+  const [copiedNotice, setCopiedNotice] = useState<string | null>(null);
+  const dismissCopiedNotice = useCallback(() => setCopiedNotice(null), []);
   const editingDescriptionRef = useRef(false);
 
   const loadGuide = useCallback(async () => {
@@ -135,6 +149,15 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
   useEffect(() => {
     if (data) setGuideExportData({ guideId, ...data });
   }, [data, guideId, setGuideExportData]);
+
+  useEffect(() => {
+    if (!data || !copied || appliedCopiedRef.current === copied) return;
+    appliedCopiedRef.current = copied;
+    const count = copied.stepIds.length;
+    setNewStepIds(new Set(copied.stepIds));
+    setCopiedNotice(i18n.t(count === 1 ? 'editor.stepCopied' : 'editor.stepsCopied', [String(count), copied.from]));
+    if (copied.stepIds[0]) scrollToStep(copied.stepIds[0]);
+  }, [data, copied, setNewStepIds, scrollToStep]);
 
   useEffect(() => {
     readAiCredentials().then((keys) => desc.setHasApiKey(keys !== null));
@@ -484,6 +507,7 @@ export function GuideContent({ guideId, initialStepId, initialTool, onCaptureMor
                 onChanged={loadGuide}
                 onCaptureMore={onCaptureMore}
               />
+              <Notice title={copiedNotice} onDismiss={dismissCopiedNotice} />
             </div>
 
             {transcriptOpen && (

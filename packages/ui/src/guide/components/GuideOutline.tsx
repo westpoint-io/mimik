@@ -34,16 +34,25 @@ interface GuideOutlineProps {
 }
 
 export function GuideOutline({ guideId, steps, readOnly, wide, onReorder }: GuideOutlineProps) {
-  const { activeStepId, scrollToStep, collapsed, drawerOpen, setDrawerOpen, selected, toggleStepSelection } =
-    useFullview((s) => ({
-      activeStepId: s.activeStepId,
-      scrollToStep: s.scrollToStep,
-      collapsed: s.outlineCollapsed,
-      drawerOpen: s.outlineDrawerOpen,
-      setDrawerOpen: s.setOutlineDrawerOpen,
-      selected: s.selectedStepIds,
-      toggleStepSelection: s.toggleStepSelection,
-    }));
+  const {
+    activeStepId,
+    scrollToStep,
+    collapsed,
+    drawerOpen,
+    setDrawerOpen,
+    selected,
+    toggleStepSelection,
+    newStepIds,
+  } = useFullview((s) => ({
+    activeStepId: s.activeStepId,
+    scrollToStep: s.scrollToStep,
+    collapsed: s.outlineCollapsed,
+    drawerOpen: s.outlineDrawerOpen,
+    setDrawerOpen: s.setOutlineDrawerOpen,
+    selected: s.selectedStepIds,
+    toggleStepSelection: s.toggleStepSelection,
+    newStepIds: s.newStepIds,
+  }));
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -126,6 +135,7 @@ export function GuideOutline({ guideId, steps, readOnly, wide, onReorder }: Guid
               number={numbers.get(step.id)}
               active={step.id === activeStepId}
               selected={selected.has(step.id)}
+              isNew={newStepIds.has(step.id)}
               dimmed={dragging.includes(step.id) && step.id !== draggingId}
               disabled={readOnly}
               onActivate={(e) => activate(step, e)}

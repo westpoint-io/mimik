@@ -4,7 +4,13 @@ import type { Route } from '../types';
 function parseHash(hash: string): Route {
   const h = hash.replace(/^#\/?/, '');
   if (h.startsWith('guide/')) {
-    const guideId = h.slice(6);
+    const [guideId, query] = h.slice(6).split('?');
+    const params = new URLSearchParams(query);
+    const copied = params.get('copied');
+    if (guideId && copied) {
+      window.history.replaceState(null, '', `${window.location.pathname}#guide/${guideId}`);
+      return { page: 'guide', guideId, copied: { stepIds: copied.split(','), from: params.get('from') ?? '' } };
+    }
     if (guideId) return { page: 'guide', guideId };
   }
   if (h === 'library/starred') return { page: 'library', category: 'starred' };
