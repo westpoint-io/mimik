@@ -90,7 +90,7 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
           onRequestAccess={import.meta.env.BROWSER !== 'firefox' ? requestMicrophoneAccess : undefined}
           liveMeter
         />
-        <VoiceoverSettings keys={keys.keys} listVoices={listVoices} onOpenKeys={openKeys} onChange={queue} />
+        <VoiceoverSettings keys={keys} listVoices={listVoices} onOpenKeys={openKeys} onChange={queue} />
       </>
     ),
     branding: <BrandingSettings onChange={queue} />,

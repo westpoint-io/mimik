@@ -146,6 +146,7 @@ settings:
   noKey: "无密钥"
   voiceover: "视频配音"
   voiceoverHint: "Mimik 会在导出的视频中朗读每个步骤的文本。"
+  voiceoverServerNeedsOpenai: "配音需要兼容 OpenAI 的服务器。"
   voice: "语音"
   voiceNarrationHint: "边录边讲，Mimik 会根据你说的内容写出每个步骤。"
   voiceNarration: 语音讲解

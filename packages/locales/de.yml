@@ -162,6 +162,7 @@ settings:
   noKey: "Kein Schlüssel"
   voiceover: "Video-Voiceover"
   voiceoverHint: "Mimik spricht den Text jedes Schritts über das exportierte Video."
+  voiceoverServerNeedsOpenai: "Das Voice-over braucht einen OpenAI-kompatiblen Server."
   voice: "Stimme"
   voiceNarrationHint: "Erkläre den Ablauf laut, und Mimik formuliert jeden Schritt aus deinen Worten."
   voiceNarration: Sprachkommentar

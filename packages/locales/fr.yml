@@ -146,6 +146,7 @@ settings:
   noKey: "Pas de clé"
   voiceover: "Voix off de la vidéo"
   voiceoverHint: "Mimik lit le texte de chaque étape par-dessus la vidéo exportée."
+  voiceoverServerNeedsOpenai: "La voix off demande un serveur compatible OpenAI."
   voice: "Voix"
   voiceNarrationHint: "Décrivez le parcours à voix haute et Mimik rédige chaque étape à partir de ce que vous avez dit."
   voiceNarration: "Narration vocale"

@@ -16,6 +16,14 @@ const eleven: VoiceoverConfig = {
   modelId: 'eleven_turbo_v2_5',
 };
 
+const server: VoiceoverConfig = {
+  provider: 'server',
+  apiKey: '',
+  voiceId: 'af_bella',
+  modelId: 'kokoro',
+  baseUrl: 'http://localhost:8880/v1/',
+};
+
 afterEach(() => vi.unstubAllGlobals());
 
 describe('speechRequest', () => {
@@ -39,6 +47,25 @@ describe('speechRequest', () => {
     expect(request.headers['xi-api-key']).toBe('sk_test');
     expect(request.headers.Authorization).toBeUndefined();
     expect(JSON.parse(request.body)).toEqual({ text: 'Click Save', model_id: 'eleven_turbo_v2_5' });
+  });
+
+  it('posts a server the OpenAI speech request at its own address', () => {
+    const request = speechRequest(server, 'Click Save');
+    expect(request.url).toBe('http://localhost:8880/v1/audio/speech');
+    expect(JSON.parse(request.body)).toEqual({
+      model: 'kokoro',
+      voice: 'af_bella',
+      input: 'Click Save',
+      response_format: 'mp3',
+    });
+  });
+
+  it('sends no authorization to a server without a key', () => {
+    expect(speechRequest(server, 'x').headers).toEqual({ 'Content-Type': 'application/json' });
+  });
+
+  it('authorises a server that has a key', () => {
+    expect(speechRequest({ ...server, apiKey: 'sk-local' }, 'x').headers.Authorization).toBe('Bearer sk-local');
   });
 
   it('escapes a voice id rather than splicing it into the path raw', () => {
@@ -83,6 +110,14 @@ describe('fetchVoices', () => {
     vi.stubGlobal('fetch', fetchSpy);
 
     expect((await fetchVoices('openai', 'sk-test')).map((voice) => voice.id)).toContain('alloy');
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('asks a server for nothing, since its voices are typed in', async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+
+    expect(await fetchVoices('server', '')).toEqual([]);
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 });

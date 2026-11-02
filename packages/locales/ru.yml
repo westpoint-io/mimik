@@ -146,6 +146,7 @@ settings:
   noKey: Нет ключа
   voiceover: Закадровый голос для видео
   voiceoverHint: Mimik зачитывает текст каждого шага поверх экспортированного видео.
+  voiceoverServerNeedsOpenai: "Для закадрового голоса нужен сервер, совместимый с OpenAI."
   voice: Голос
   voiceNarrationHint: "Проговаривайте свои действия, и Mimik напишет каждый шаг по вашим словам."
   voiceNarration: Озвучка

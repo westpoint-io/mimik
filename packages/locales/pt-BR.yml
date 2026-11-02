@@ -146,6 +146,7 @@ settings:
   noKey: "Sem chave"
   voiceover: "Narração do vídeo"
   voiceoverHint: "O Mimik lê o texto de cada passo sobre o vídeo exportado."
+  voiceoverServerNeedsOpenai: "A narração do vídeo precisa de um servidor compatível com OpenAI."
   voice: "Voz"
   voiceNarrationHint: "Explique o fluxo em voz alta e o Mimik escreve cada passo com o que você disse."
   voiceNarration: "Narração por voz"
