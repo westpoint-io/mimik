@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CaptureState } from '@/core/capture/machine';
 import type { ElementMeta } from '@/core/guides/types';
+import { handleCaptureStep, handleFinalizeInputStep, handleUpdateInputStep } from '../step-pipeline';
 
 let state: string = CaptureState.RECORDING;
 
@@ -55,7 +56,6 @@ beforeEach(() => {
 
 describe('step writes while PAUSED', () => {
   it('ignores a captureStep', async () => {
-    const { handleCaptureStep } = await import('../step-pipeline');
     state = CaptureState.PAUSED;
 
     const res = await handleCaptureStep({ guideId: 'guide-1', action: 'click', elementMeta: meta });
@@ -66,7 +66,6 @@ describe('step writes while PAUSED', () => {
   });
 
   it('ignores an input step update', async () => {
-    const { handleUpdateInputStep } = await import('../step-pipeline');
     state = CaptureState.PAUSED;
 
     await handleUpdateInputStep('step-1', 'Type secret');
@@ -76,7 +75,6 @@ describe('step writes while PAUSED', () => {
 
   it('still finalizes an input step, so the typed text is not lost', async () => {
     captureVisibleTab.mockRejectedValue(new Error('no tab in this harness'));
-    const { handleFinalizeInputStep } = await import('../step-pipeline');
     state = CaptureState.PAUSED;
 
     await handleFinalizeInputStep('step-1', meta, undefined, true);
@@ -87,7 +85,6 @@ describe('step writes while PAUSED', () => {
 
   it('turns a field that was clicked but never typed into a click step', async () => {
     captureVisibleTab.mockRejectedValue(new Error('no tab in this harness'));
-    const { handleFinalizeInputStep } = await import('../step-pipeline');
     state = CaptureState.RECORDING;
 
     await handleFinalizeInputStep('step-1', meta, undefined, false);
@@ -96,7 +93,6 @@ describe('step writes while PAUSED', () => {
   });
 
   it('refuses a finalize once the recording has ended', async () => {
-    const { handleFinalizeInputStep } = await import('../step-pipeline');
     state = CaptureState.IDLE;
 
     await handleFinalizeInputStep('step-1', meta, undefined, true);
@@ -106,8 +102,6 @@ describe('step writes while PAUSED', () => {
   });
 
   it('still writes an input step update while RECORDING', async () => {
-    const { handleUpdateInputStep } = await import('../step-pipeline');
-
     await handleUpdateInputStep('step-1', 'Type hello');
 
     expect(updateStepDescription).toHaveBeenCalledWith('step-1', 'Type hello');
