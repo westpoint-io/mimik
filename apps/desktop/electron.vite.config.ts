@@ -76,6 +76,7 @@ export default defineConfig({
           'check-storage': resolve(__dirname, 'src/renderer/check-storage.html'),
           overlay: resolve(__dirname, 'src/renderer/overlay.html'),
           splash: resolve(__dirname, 'src/renderer/splash.html'),
+          update: resolve(__dirname, 'src/renderer/update.html'),
           'check-pipeline': resolve(__dirname, 'src/renderer/check-pipeline.html'),
         },
       },
