@@ -13,7 +13,15 @@ export async function describeStep(context: string, prompt?: string): Promise<St
   const [keys, use] = await Promise.all([readAiCredentials(), readAiUse()]);
   if (!keys || !use.steps) return { text: null, failure: null };
   try {
-    const text = await getAIDescription(context, keys.provider, keys.model, keys.apiKey, keys.baseUrl, prompt);
+    const text = await getAIDescription(
+      context,
+      keys.provider,
+      keys.model,
+      keys.apiKey,
+      keys.baseUrl,
+      prompt,
+      keys.headers,
+    );
     return { text: text || null, failure: null };
   } catch (err) {
     const failure = describeAiFailure(err);

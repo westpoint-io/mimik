@@ -1,4 +1,4 @@
-import type { AIApiKeys, AiChoice, ApiKeys } from '@/core/capture/ai/keys';
+import type { AIApiKeys, AiChoice, ApiKeys, ServerHeader } from '@/core/capture/ai/keys';
 import type { AIProtocol } from '@/core/capture/ai/models';
 import type { VoiceProvider } from '@/core/capture/voice/transcribe';
 import type { TranscriptLine } from '@/core/capture/voice/types';
@@ -80,6 +80,7 @@ export interface Settings {
   aiBaseUrl: string;
   aiServerUrl: string;
   aiServerProtocol: AIProtocol;
+  aiServerHeaders: ServerHeader[];
   aiLanguage: string;
   aiForSteps: boolean;
   aiForGuide: boolean;

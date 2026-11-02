@@ -12,6 +12,7 @@ export async function getAIDescription(
   apiKey: string,
   baseUrl?: string,
   template = STEP_DESCRIPTION_PROMPT,
+  headers?: Record<string, string>,
 ): Promise<string | null> {
   const settings = await localStorage.get(['aiLanguage']);
   const locale = (settings.aiLanguage as string) || 'en';
@@ -19,7 +20,7 @@ export async function getAIDescription(
     .replace('{{examples}}', formatExamples(resolveExamples(locale).steps))
     .replace('{{context}}', () => context);
   const { text } = await generateText({
-    model: createModel(provider, model, apiKey, baseUrl),
+    model: createModel(provider, model, apiKey, baseUrl, headers),
     prompt: prompt + getLanguageSuffix(locale),
     maxOutputTokens: 1024,
   });

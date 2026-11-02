@@ -10,8 +10,8 @@ export function useKeyCheck(validate: ValidateKey) {
   const requestId = useRef(0);
 
   const check = useCallback(
-    async (provider: string, apiKey: string, baseUrl?: string, model?: string) => {
-      const fingerprint = `${provider}:${apiKey}:${baseUrl ?? ''}:${model ?? ''}`;
+    async (provider: string, apiKey: string, baseUrl?: string, model?: string, headers?: Record<string, string>) => {
+      const fingerprint = `${provider}:${apiKey}:${baseUrl ?? ''}:${model ?? ''}:${JSON.stringify(headers ?? {})}`;
       const known = verified.get(fingerprint);
       if (known) {
         requestId.current += 1;
@@ -24,7 +24,7 @@ export function useKeyCheck(validate: ValidateKey) {
       setStatus('checking');
       setModels(null);
       setWarning(null);
-      const result = await validate(provider, apiKey, baseUrl, model).catch(() => null);
+      const result = await validate(provider, apiKey, baseUrl, model, headers).catch(() => null);
       if (requestId.current !== currentRequestId) return;
       if (result?.valid) verified.set(fingerprint, result);
       setModels(result?.models?.length ? result.models : null);
