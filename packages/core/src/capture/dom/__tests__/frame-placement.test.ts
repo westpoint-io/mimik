@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { answerChildFrames, contentBox, IDENTITY, locateFrame, placeInTab } from '@/core/capture/dom/frame-placement';
 import type { ElementMeta } from '@/core/guides/types';
 
@@ -89,6 +89,11 @@ function answering(win: FakeWindow) {
   teardowns.push(answerChildFrames(asWindow(win)));
 }
 
+async function settled<T>(pending: Promise<T>) {
+  await vi.advanceTimersByTimeAsync(1000);
+  return pending;
+}
+
 afterEach(() => {
   for (const stop of teardowns.splice(0)) stop();
   vi.useRealTimers();
@@ -96,6 +101,10 @@ afterEach(() => {
 });
 
 describe('locateFrame', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
   it('asks nobody from the top frame, which is the tab', async () => {
     const top = fakeWindow(document);
     const post = vi.spyOn(top, 'postMessage');
@@ -109,7 +118,7 @@ describe('locateFrame', () => {
     answering(top);
     const { child } = embed(top, { left: 981, top: 527 });
 
-    await expect(locateFrame(asWindow(child))).resolves.toEqual({ x: 981, y: 527, scale: 1 });
+    await expect(settled(locateFrame(asWindow(child)))).resolves.toEqual({ x: 981, y: 527, scale: 1 });
   });
 
   it('starts inside the frame border and padding, where the child coordinates begin', async () => {
@@ -117,7 +126,7 @@ describe('locateFrame', () => {
     answering(top);
     const { child } = embed(top, { left: 100, top: 50, style: { border: '2px solid', padding: '3px' } });
 
-    await expect(locateFrame(asWindow(child))).resolves.toEqual({ x: 105, y: 55, scale: 1 });
+    await expect(settled(locateFrame(asWindow(child)))).resolves.toEqual({ x: 105, y: 55, scale: 1 });
   });
 
   it('adds up every frame between it and the tab', async () => {
@@ -127,7 +136,7 @@ describe('locateFrame', () => {
     answering(middle);
     const { child: inner } = embed(middle, { left: 10, top: 20 });
 
-    await expect(locateFrame(asWindow(inner))).resolves.toEqual({ x: 110, y: 70, scale: 1 });
+    await expect(settled(locateFrame(asWindow(inner)))).resolves.toEqual({ x: 110, y: 70, scale: 1 });
   });
 
   it('carries a scaled frame through to the frames inside it', async () => {
@@ -137,7 +146,7 @@ describe('locateFrame', () => {
     answering(middle);
     const { child: inner } = embed(middle, { left: 10, top: 20 });
 
-    await expect(locateFrame(asWindow(inner))).resolves.toEqual({ x: 105, y: 60, scale: 0.5 });
+    await expect(settled(locateFrame(asWindow(inner)))).resolves.toEqual({ x: 105, y: 60, scale: 0.5 });
   });
 
   it('finds a frame a web component keeps in its shadow root', async () => {
@@ -147,7 +156,7 @@ describe('locateFrame', () => {
     document.body.appendChild(host);
     const { child } = embed(top, { left: 40, top: 60, root: host.attachShadow({ mode: 'open' }) });
 
-    await expect(locateFrame(asWindow(child))).resolves.toEqual({ x: 40, y: 60, scale: 1 });
+    await expect(settled(locateFrame(asWindow(child)))).resolves.toEqual({ x: 40, y: 60, scale: 1 });
   });
 
   it('measures the frame that asked, not the first frame on the page', async () => {
@@ -156,7 +165,7 @@ describe('locateFrame', () => {
     embed(top, { left: 10, top: 10 });
     const { child } = embed(top, { left: 400, top: 250 });
 
-    await expect(locateFrame(asWindow(child))).resolves.toEqual({ x: 400, y: 250, scale: 1 });
+    await expect(settled(locateFrame(asWindow(child)))).resolves.toEqual({ x: 400, y: 250, scale: 1 });
   });
 
   it.each([
@@ -165,7 +174,6 @@ describe('locateFrame', () => {
     ['a collapsed scale', { x: 0, y: 0, scale: 0 }],
     ['a runaway scale', { x: 0, y: 0, scale: 1e4 }],
   ])('refuses %s too large to be a real placement', async (_what, forged) => {
-    vi.useFakeTimers();
     const top = fakeWindow(document);
     const { child } = embed(top, { left: 981, top: 527 });
     const parent = child.parent;
@@ -174,25 +182,17 @@ describe('locateFrame', () => {
       deliver(child, { mimikFramePlacement: 'answer', id, ...forged }, parent);
     };
 
-    const placement = locateFrame(asWindow(child));
-    await vi.advanceTimersByTimeAsync(1000);
-
-    await expect(placement).resolves.toEqual(IDENTITY);
+    await expect(settled(locateFrame(asWindow(child)))).resolves.toEqual(IDENTITY);
   });
 
   it('gives up and leaves the rect where it was when the parent never answers', async () => {
-    vi.useFakeTimers();
     const top = fakeWindow(document);
     const { child } = embed(top, { left: 981, top: 527 });
 
-    const placement = locateFrame(asWindow(child));
-    await vi.advanceTimersByTimeAsync(1000);
-
-    await expect(placement).resolves.toEqual(IDENTITY);
+    await expect(settled(locateFrame(asWindow(child)))).resolves.toEqual(IDENTITY);
   });
 
   it('ignores an answer from a window other than its parent', async () => {
-    vi.useFakeTimers();
     const top = fakeWindow(document);
     const { child } = embed(top, { left: 981, top: 527 });
     const stranger = fakeWindow(document.implementation.createHTMLDocument());
@@ -203,10 +203,7 @@ describe('locateFrame', () => {
       toParent(data, '*');
     };
 
-    const placement = locateFrame(asWindow(child));
-    await vi.advanceTimersByTimeAsync(1000);
-
-    await expect(placement).resolves.toEqual(IDENTITY);
+    await expect(settled(locateFrame(asWindow(child)))).resolves.toEqual(IDENTITY);
   });
 });
 

@@ -1,4 +1,4 @@
-import { strToU8, zipSync } from 'fflate';
+import { strFromU8, strToU8, zipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import { readBundle } from '../parse';
 import { BUNDLE_VERSION, type BundleError, MANIFEST_PATH, parseManifest } from '../schema';
@@ -28,6 +28,27 @@ function manifest(overrides: Record<string, unknown> = {}) {
 function bundleFile(files: Record<string, Uint8Array>) {
   return new Blob([zipSync(files) as unknown as BlobPart]);
 }
+
+function claimingSize(files: Record<string, Uint8Array>, name: string, bytes: number) {
+  const zip = zipSync(files);
+  const view = new DataView(zip.buffer, zip.byteOffset, zip.byteLength);
+  const end = zip.length - 22;
+  let entry = view.getUint32(end + 16, true);
+  for (let i = 0; i < view.getUint16(end + 10, true); i++) {
+    const nameLength = view.getUint16(entry + 28, true);
+    if (strFromU8(zip.subarray(entry + 46, entry + 46 + nameLength)) === name) {
+      view.setUint32(entry + 24, bytes, true);
+      view.setUint32(view.getUint32(entry + 42, true) + 22, bytes, true);
+    }
+    entry += 46 + nameLength + view.getUint16(entry + 30, true) + view.getUint16(entry + 32, true);
+  }
+  return new Blob([zip as unknown as BlobPart]);
+}
+
+const withScreenshot = () => ({
+  [MANIFEST_PATH]: strToU8(JSON.stringify(manifest())),
+  'screenshots/ss-1.webp': new Uint8Array(1000),
+});
 
 const caught = async (file: Blob): Promise<BundleError> => {
   try {
@@ -261,13 +282,6 @@ describe('readBundle', () => {
     expect((await caught(bundleFile({ 'readme.txt': strToU8('hi') }))).kind).toBe('not-a-bundle');
   });
 
-  it('refuses a zip bomb before inflating it', async () => {
-    const huge = new Uint8Array(210 * 1024 * 1024);
-    const bomb = bundleFile({ [MANIFEST_PATH]: strToU8(JSON.stringify(manifest())), 'screenshots/big.webp': huge });
-    expect(bomb.size).toBeLessThan(5 * 1024 * 1024);
-    expect((await caught(bomb)).kind).toBe('unreadable');
-  });
-
   it('reports a manifest that is not valid JSON', async () => {
     expect((await caught(bundleFile({ [MANIFEST_PATH]: strToU8('{ nope') }))).kind).toBe('not-a-bundle');
   });
@@ -279,5 +293,18 @@ describe('readBundle against a crafted archive', () => {
     for (let i = 0; i < 5_001; i++) files[`screenshots/${i}.webp`] = new Uint8Array(1);
 
     expect((await caught(bundleFile(files))).kind).toBe('unreadable');
+  });
+
+  it('refuses a zip bomb from the size it claims, before inflating it', async () => {
+    const bomb = claimingSize(withScreenshot(), 'screenshots/ss-1.webp', 210 * 1024 * 1024);
+
+    expect((await caught(bomb)).kind).toBe('unreadable');
+  });
+
+  it('takes the same forged archive under the limit, so the bomb is refused for its size alone', async () => {
+    const forged = claimingSize(withScreenshot(), 'screenshots/ss-1.webp', 150 * 1024 * 1024);
+
+    const { images } = await readBundle(forged);
+    expect(images.get('screenshots/ss-1.webp')).toBeInstanceOf(Blob);
   });
 });
