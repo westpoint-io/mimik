@@ -1,5 +1,5 @@
 import { i18n } from '@mimik/core/env';
-import { AppearanceSettings, GitHubCard, Switch } from '@mimik/ui';
+import { AppearanceSettings, GitHubCard, Switch, TranslationNotice } from '@mimik/ui';
 import { Languages, Power } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AppLanguage } from './AppLanguage';
@@ -42,6 +42,8 @@ export function GeneralSettings({ onSaved }: { onSaved: () => void }) {
       <UpdatesCard />
 
       <GitHubCard />
+
+      <TranslationNotice />
     </>
   );
 }

@@ -205,6 +205,8 @@ settings:
   smartBlur: Flou intelligent
   version: "Version $1"
   reportBug: "Signaler un bug"
+  machineTranslated: "Cette langue a été traduite par IA, certaines formulations peuvent donc sembler maladroites. Vous voyez une erreur ? Ouvrez une pull request sur GitHub."
+  fixTranslation: "Corriger une traduction"
   aboutSection: "À propos"
   appearance: "Apparence"
   appearanceHint: "Clair, sombre ou comme votre système."

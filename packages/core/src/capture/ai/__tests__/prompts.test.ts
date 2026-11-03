@@ -45,6 +45,17 @@ describe('getLanguageSuffix', () => {
     expect(getLanguageSuffix('ru')).toContain('на русском языке');
   });
 
+  it('writes the Japanese, Korean and Traditional Chinese instructions in their own language', () => {
+    expect(getLanguageSuffix('ja')).toContain('日本語で');
+    expect(getLanguageSuffix('ko')).toContain('한국어로');
+    expect(getLanguageSuffix('zh-TW')).toContain('台灣繁體中文');
+  });
+
+  it('gives Hong Kong the Traditional Chinese instruction, not the Simplified one', () => {
+    expect(getLanguageSuffix('zh-HK')).toBe(getLanguageSuffix('zh-TW'));
+    expect(getLanguageSuffix('zh')).toBe(getLanguageSuffix('zh-CN'));
+  });
+
   it('matches a regional locale to its base language', () => {
     expect(getLanguageSuffix('fr-CA')).toBe(getLanguageSuffix('fr'));
   });
@@ -74,16 +85,17 @@ describe('getLanguageSuffix', () => {
 });
 
 describe('AI_LANGUAGES', () => {
-  it('has 7 supported languages', () => {
-    expect(AI_LANGUAGES).toHaveLength(7);
+  it('has 10 supported languages', () => {
+    expect(AI_LANGUAGES).toHaveLength(10);
   });
 
   it('includes English as first entry', () => {
     expect(AI_LANGUAGES[0]).toEqual({ code: 'en', label: 'English' });
   });
 
-  it('includes Simplified Chinese', () => {
-    expect(AI_LANGUAGES).toContainEqual({ code: 'zh-CN', label: '中文' });
+  it('names both Chinese scripts', () => {
+    expect(AI_LANGUAGES).toContainEqual({ code: 'zh-CN', label: '简体中文' });
+    expect(AI_LANGUAGES).toContainEqual({ code: 'zh-TW', label: '繁體中文' });
   });
 
   it('includes Russian', () => {

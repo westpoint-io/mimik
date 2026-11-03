@@ -191,6 +191,8 @@ settings:
   smartBlur: Smart Blur
   version: "Version $1"
   reportBug: "Fehler melden"
+  machineTranslated: "Diese Sprache wurde mit KI übersetzt, daher kann manches holprig klingen. Fehler entdeckt? Öffne einen Pull Request auf GitHub."
+  fixTranslation: "Übersetzung korrigieren"
   aboutSection: "Über Mimik"
   appearance: "Darstellung"
   appearanceHint: "Hell, dunkel oder wie dein System."

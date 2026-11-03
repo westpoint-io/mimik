@@ -2,8 +2,18 @@ export const SCRUB_PLACEHOLDER = '…';
 
 export const MIN_BARE_SCRUB = 4;
 
+const QUOTE_PAIRS = ['""', '「」', '『』', '“”', '«»'];
+
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function scrubQuoted(text: string, escaped: string): string {
+  return QUOTE_PAIRS.reduce((out, [open, close]) => {
+    const gap = open === close ? '' : '[\\s\\u202f]*';
+    const pattern = new RegExp(`(${open}${gap})${escaped}(${gap}${close})`, 'gi');
+    return out.replace(pattern, (_, before: string, after: string) => `${before}${SCRUB_PLACEHOLDER}${after}`);
+  }, text);
 }
 
 export function scrubValues(text: string, values: readonly string[]): string {
@@ -14,7 +24,7 @@ export function scrubValues(text: string, values: readonly string[]): string {
     if (!value) continue;
     const escaped = escapeRegExp(value);
 
-    out = out.replace(new RegExp(`"${escaped}"`, 'gi'), `"${SCRUB_PLACEHOLDER}"`);
+    out = scrubQuoted(out, escaped);
     if (value.length >= MIN_BARE_SCRUB) {
       out = out.replace(new RegExp(escaped, 'gi'), SCRUB_PLACEHOLDER);
     }

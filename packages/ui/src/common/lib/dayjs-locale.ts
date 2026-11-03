@@ -6,6 +6,9 @@ import 'dayjs/locale/fr';
 import 'dayjs/locale/de';
 import 'dayjs/locale/zh-cn';
 import 'dayjs/locale/ru';
+import 'dayjs/locale/ja';
+import 'dayjs/locale/ko';
+import 'dayjs/locale/zh-tw';
 import { i18n } from '@mimik/core/env';
 
 dayjs.extend(relativeTime);
@@ -19,6 +22,9 @@ const DAYJS_LOCALE_MAP: Record<string, string> = {
   'zh-CN': 'zh-cn',
   zh: 'zh-cn',
   ru: 'ru',
+  ja: 'ja',
+  ko: 'ko',
+  'zh-TW': 'zh-tw',
 };
 
 export function getDayjsLocale(): string | undefined {

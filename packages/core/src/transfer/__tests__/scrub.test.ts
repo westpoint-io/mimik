@@ -40,6 +40,18 @@ describe('scrubValues', () => {
     expect(out).toContain('note it is not done');
   });
 
+  it.each([
+    ['「', '」'],
+    ['『', '』'],
+    ['“', '”'],
+    ['«', '»'],
+    ['« ', ' »'],
+  ])('quotes a short value inside %s %s the way the language writes it', (open, close) => {
+    expect(scrubValues(`${open}no${close} を Comment に入力 no`, ['no'])).toBe(
+      `${open}${SCRUB_PLACEHOLDER}${close} を Comment に入力 no`,
+    );
+  });
+
   it('scrubs a longer value before the shorter one it contains', () => {
     const out = scrubValues(
       'Type "acme-corp-token" in Key',
