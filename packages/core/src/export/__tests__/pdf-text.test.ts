@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { boxFrom, layout, needsRaster, segments, wrap } from '@/core/export/pdf-text';
+import { boxFrom, layout, needsRaster, rasterFonts, segments, wrap } from '@/core/export/pdf-text';
 
 describe('needsRaster', () => {
   it('leaves latin text on the vector path', () => {
@@ -145,5 +145,24 @@ describe('layout', () => {
     const l = layout(0.01, 1, lineHeightMm, LATIN_BOX);
     expect(l.deviceWidth).toBeGreaterThanOrEqual(1);
     expect(l.deviceHeight).toBeGreaterThanOrEqual(1);
+  });
+});
+
+describe('rasterFonts', () => {
+  const firstCjk = (locale: string) => /"Noto Sans CJK (\w+)"/.exec(rasterFonts(locale))?.[1];
+
+  it("puts the guide language's CJK font first, so shared characters take its letterforms", () => {
+    expect(firstCjk('ja')).toBe('JP');
+    expect(firstCjk('ko')).toBe('KR');
+    expect(firstCjk('zh-TW')).toBe('TC');
+    expect(firstCjk('zh-CN')).toBe('SC');
+  });
+
+  it('keeps Simplified Chinese first for other languages and still covers every script', () => {
+    const fonts = rasterFonts('en');
+    expect(firstCjk('en')).toBe('SC');
+    for (const face of ['JP', 'KR', 'TC']) expect(fonts).toContain(`"Noto Sans CJK ${face}"`);
+    expect(fonts.startsWith('"Noto Sans"')).toBe(true);
+    expect(fonts.endsWith('sans-serif')).toBe(true);
   });
 });
