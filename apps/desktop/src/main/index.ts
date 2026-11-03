@@ -44,6 +44,8 @@ import {
 import { bindShortcuts, type ShortcutName, shortcutMap, unbindShortcuts } from './shortcuts';
 import { createUpdater } from './updater';
 
+if (process.platform === 'linux' && !InputHook.unsupportedSession()) delete process.env.WAYLAND_DISPLAY;
+
 const FINISH_TIMEOUT_MS = NARRATION_SETTLE_MS + 15_000;
 
 let mainWindow: BrowserWindow | null = null;
