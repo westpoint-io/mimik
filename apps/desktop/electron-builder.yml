@@ -4,6 +4,7 @@ executableName: Mimik
 extraMetadata:
   name: mimik
   productName: Mimik
+  homepage: https://github.com/westpoint-io/mimik
 npmRebuild: false
 afterPack: scripts/flip-fuses.cjs
 directories:
@@ -55,6 +56,47 @@ nsis:
 linux:
   executableName: mimik
   category: Utility
+  artifactName: ${productName}-${version}-${arch}.${ext}
+  icon: linux/icon512.png
+  extraResources:
+    - from: linux/apparmor-profile
+      to: apparmor-profile
   target:
     - AppImage
     - deb
+    - rpm
+deb:
+  afterInstall: linux/after-install.tpl
+  afterRemove: linux/after-remove.tpl
+  depends:
+    - libgtk-3-0
+    - libnotify4
+    - libnss3
+    - libxss1
+    - libxtst6
+    - libxt6
+    - libxrandr2
+    - libasound2
+    - libdbus-1-3
+    - libgbm1
+    - xdg-utils
+    - libatspi2.0-0
+    - libuuid1
+    - libsecret-1-0
+    - x11-utils
+rpm:
+  depends:
+    - gtk3
+    - libnotify
+    - nss
+    - libXScrnSaver
+    - (libXtst or libXtst6)
+    - (libXt or libXt6)
+    - (libXrandr or libXrandr2)
+    - (alsa-lib or libasound2)
+    - (mesa-libgbm or libgbm1)
+    - xdg-utils
+    - at-spi2-core
+    - (libuuid or libuuid1)
+    - xprop
+    - xwininfo
