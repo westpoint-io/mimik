@@ -8,10 +8,9 @@ function describeTyping(locale: string, value: string, label: string): string {
 }
 
 describe('localized typing step descriptions', () => {
-  it.each(LOCALES)('%s wraps the typed value in straight double quotes', (locale) => {
+  it.each(LOCALES)('%s wraps the typed value in quotes the redaction recognises', (locale) => {
     const description = describeTyping(locale, 'hunter2', 'Password');
-    expect(description).toContain('"hunter2"');
-    expect(description).not.toMatch(/[“”«»「」]/);
+    expect(description).toMatch(/"hunter2"|「hunter2」|『hunter2』|“hunter2”|«[\s\u202f]*hunter2[\s\u202f]*»/);
   });
 
   it.each(LOCALES)('%s names the field as well as the value', (locale) => {
@@ -51,6 +50,8 @@ describe('bundle redaction over AI-written descriptions', () => {
     { name: 'a sentence closing with the quoted value', text: '在 $2 字段中输入 "$1"' },
     { name: 'a sentence quoting the value mid-way', text: 'Type "$1" in $2' },
     { name: 'a description the model wrapped whole', text: '"Type "$1" in $2"' },
+    { name: 'a Japanese sentence quoting the value in corner brackets', text: '$2 に「$1」と入力' },
+    { name: 'a Chinese sentence quoting the value in curly quotes', text: '在 $2 中输入“$1”' },
   ];
 
   for (const { name, text } of shapes) {
