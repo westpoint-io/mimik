@@ -830,7 +830,7 @@ async function ungroupStep(guideId: string, stepId: string): Promise<boolean> {
       id: sub.id,
       index: baseIndex + idx,
       description: sub.description,
-      action: sub.action,
+      action: sub.action ?? parentRest.action ?? 'click',
       inputValue: sub.inputValue,
       elementMeta: sub.elementMeta,
       screenshotId: sub.screenshotId ?? parentRest.screenshotId,

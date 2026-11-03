@@ -17,7 +17,7 @@ import {
   stepContext,
 } from '@/core/export/utils';
 import { actionSteps, calloutAccent, isBlock, stepNumbers, tint, variantLabel } from '@/core/guides/blocks';
-import type { Guide, Screenshot, Step } from '@/core/guides/types';
+import type { GroupedSubStep, Guide, Screenshot, Step } from '@/core/guides/types';
 import { dominantRatio, resolveViewport } from '@/core/screenshot/geometry';
 import { renderScreenshot } from '@/core/screenshot/render';
 
@@ -67,6 +67,17 @@ function blockSection(step: Step): string {
       </section>`;
 }
 
+function subStepsHtml(groupedSteps?: GroupedSubStep[]): string {
+  if (!groupedSteps || groupedSteps.length === 0) return '';
+  const items = groupedSteps
+    .map(
+      (sub) =>
+        `<li style="margin-bottom:6px;display:flex;align-items:center;gap:8px;"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#4F46E5;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;">${sub.index}</span><span>${escapeHtml(sub.description)}</span></li>`,
+    )
+    .join('');
+  return `<ol style="list-style:none;padding:0;margin:12px 0 0;font-size:14px;color:#1E1B4B;">${items}</ol>`;
+}
+
 export async function exportGuideAsHTML(
   guide: Guide,
   steps: Step[],
@@ -114,6 +125,7 @@ export async function exportGuideAsHTML(
           <p style="margin:0;font-size:17px;font-weight:700;line-height:1.45;color:#1E1B4B;overflow-wrap:anywhere;">${titleHtml(step)}${
             urlHtml ? `<span style="color:#6B7280;font-weight:400;"> &nbsp;·&nbsp; </span>${urlHtml}` : ''
           }</p>
+          ${subStepsHtml(step.groupedSteps)}
           ${imgHtml}
         </div>
       </section>`);

@@ -358,6 +358,9 @@ editor:
   deleteThisStep: "删除此步骤？"
   selectStep: 选择步骤
   selectedCount: "已选择 $1 项"
+  groupSteps: "组合步骤"
+  ungroupStep: "取消组合"
+  groupedCount: "$1 个操作"
   deleteSelectedStep: "删除选中的 $1 个步骤？"
   deleteSelectedSteps: "删除选中的 $1 个步骤？"
   copyTo: 复制到

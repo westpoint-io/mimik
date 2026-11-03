@@ -31,7 +31,7 @@ export interface GroupedSubStep {
   id: string;
   index: number;
   description: string;
-  action: string;
+  action?: string;
   inputValue?: string;
   elementMeta?: ElementMeta;
   markerId?: string;

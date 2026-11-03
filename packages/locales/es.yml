@@ -358,6 +358,9 @@ editor:
   deleteThisStep: "¿Eliminar este paso?"
   selectStep: Seleccionar paso
   selectedCount: "$1 seleccionados"
+  groupSteps: "Agrupar pasos"
+  ungroupStep: "Desagrupar"
+  groupedCount: "$1 acciones"
   deleteSelectedStep: "¿Eliminar $1 paso seleccionado?"
   deleteSelectedSteps: "¿Eliminar $1 pasos seleccionados?"
   copyTo: Copiar a

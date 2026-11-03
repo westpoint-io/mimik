@@ -358,6 +358,9 @@ editor:
   deleteThisStep: Удалить этот шаг?
   selectStep: Выбрать шаг
   selectedCount: "Выбрано: $1"
+  groupSteps: "Сгруппировать шаги"
+  ungroupStep: "Разгруппировать"
+  groupedCount: "Действий: $1"
   deleteSelectedStep: Удалить выбранный шаг ($1)?
   deleteSelectedSteps: Удалить выбранные шаги ($1)?
   copyTo: Копировать в

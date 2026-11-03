@@ -1,10 +1,10 @@
 import { splitAtShortcut } from '@mimik/core/capture/split-at-shortcut';
 import { i18n } from '@mimik/core/env';
-import { replaceScreenshot, restoreNarratedDescription } from '@mimik/core/guides/service';
+import { createSnapshot, replaceScreenshot, restoreNarratedDescription, ungroupStep } from '@mimik/core/guides/service';
 import type { Screenshot, Step } from '@mimik/core/guides/types';
 import { logger } from '@mimik/core/logger';
 import { imageDimensions, renderScreenshot } from '@mimik/core/screenshot/render';
-import { Check, Copy, Loader2, Trash2, Undo2 } from 'lucide-react';
+import { Check, Copy, Loader2, Trash2, Undo2, Ungroup } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAskAi } from '../../ai/hooks/use-ask-ai';
 import { ConfirmDialog } from '../../common/components/ConfirmDialog';
@@ -97,6 +97,16 @@ export function StepCard({
     onChanged?.();
   };
 
+  const handleUngroup = async () => {
+    try {
+      await createSnapshot(step.guideId);
+    } catch (err) {
+      logger.error(' Snapshot before ungroup failed', err);
+    }
+    await ungroupStep(step.guideId, step.id);
+    onChanged?.();
+  };
+
   return (
     <div
       className={`rounded-xl mb-3 overflow-hidden transition-shadow border bg-card ${isNew ? 'border-violet/60' : 'border-border'}`}
@@ -159,9 +169,40 @@ export function StepCard({
             <span className="shrink-0 text-[11px] font-semibold text-violet-dark">{i18n.t('editor.newStep')}</span>
           )}
         </div>
+        {step.groupedSteps && step.groupedSteps.length > 0 && (
+          <div className="mt-2.5 pt-2 border-t border-border/50 flex flex-col gap-1.5">
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+              {i18n.t('editor.groupedCount', [String(step.groupedSteps.length)])}
+            </span>
+            <div className="flex flex-col gap-1">
+              {step.groupedSteps.map((sub) => (
+                <div key={sub.id} className="flex items-center gap-2 text-[12px] text-foreground">
+                  <span className="flex items-center justify-center w-[18px] h-[18px] rounded-full text-[10px] font-bold shrink-0 bg-primary/90 text-primary-foreground">
+                    {sub.index}
+                  </span>
+                  <span className="truncate flex-1">{sub.description}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="flex items-center justify-between gap-2 mt-1">
           {step.aiPending ? <span /> : <StepSourceBadge source={step.descriptionSource} />}
           <div className="flex items-center gap-0.5">
+            {!readOnly && Boolean(step.groupedSteps?.length) && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => void handleUngroup()}
+                    aria-label={i18n.t('editor.ungroupStep')}
+                    className="p-1 rounded-md transition-colors text-border hover:text-foreground"
+                  >
+                    <Ungroup size={13} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>{i18n.t('editor.ungroupStep')}</TooltipContent>
+              </Tooltip>
+            )}
             {canRestoreSpoken && (
               <Tooltip>
                 <TooltipTrigger asChild>
