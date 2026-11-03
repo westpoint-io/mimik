@@ -288,6 +288,8 @@ desktop:
   trayQuit: "Salir de Mimik"
   trayRecording: "Mimik está grabando. Haz clic para terminar."
   cannotRecord: "Mimik no puede grabar"
+  needsX11: "Para grabar otras aplicaciones hace falta una sesión X11. Cierra la sesión, elige una sesión Xorg o X11 en la pantalla de inicio y vuelve a abrir Mimik. Para grabar en el navegador, usa la extensión de Mimik."
+  getExtension: "Obtener la extensión"
   updateReady: "Actualización lista"
   updateReadyMessage: "Reinicia Mimik para instalar la versión $1."
   later: "Más tarde"

@@ -79,6 +79,9 @@ jobs:
       - name: Bundle size
         run: pnpm size
 
+      - name: Build the native addon
+        run: pnpm --filter @mimik/capture-native build
+
       - name: Storage check
         run: xvfb-run -a pnpm --filter @mimik/desktop check:storage
 

@@ -12,6 +12,7 @@ import type { DescriptionSource } from '@mimik/core/guides/types';
 import type { Rect } from '@mimik/core/rect';
 import { app, BrowserWindow, ipcMain, screen } from 'electron';
 import type { Actor } from 'xstate';
+import { type Addon, loadNative } from '../capture/native';
 import { loadRegion, saveRegion } from '../capture/region';
 import type { CaptureMode } from '../capture/settings';
 
@@ -96,6 +97,7 @@ const BORDER = 3;
 const CONTROLS = { width: 300, height: 190, margin: 24 };
 const INTRO_LIMIT_MS = 6000;
 const HIDE_SETTLE_MS = 60;
+const FOCUS_AFTER_MAP_MS = 100;
 const NO_SHORTCUTS: OverlayShortcuts = { record: null, capture: null };
 
 function rendererFile(): string {
@@ -104,6 +106,17 @@ function rendererFile(): string {
 
 function preloadFile(): string {
   return join(__dirname, '../preload/overlay.cjs');
+}
+
+let shell: Addon | null = null;
+if (process.platform === 'linux') {
+  void loadNative().then((loaded) => {
+    shell = loaded;
+  });
+}
+
+function xid(win: BrowserWindow): number {
+  return win.getNativeWindowHandle().readUInt32LE(0);
 }
 
 function protect(win: BrowserWindow): void {
@@ -357,12 +370,18 @@ export class CaptureOverlay {
     if (this.controls && !this.controls.isDestroyed()) this.controls.hide();
     this.closeEditors();
 
+    const pointer = screen.getDisplayNearestPoint(screen.getCursorScreenPoint()).id;
     this.editors = screen.getAllDisplays().map((display) => {
       const win = overlayWindow(display.bounds, `editor:${display.bounds.x}:${display.bounds.y}`, true);
       win.setIgnoreMouseEvents(false);
+      shell?.floatAboveShell(xid(win));
       win.once('ready-to-show', () => {
         win.show();
         protect(win);
+        if (shell && display.id === pointer) {
+          const focus = shell;
+          setTimeout(() => !win.isDestroyed() && focus.focusWindow(xid(win)), FOCUS_AFTER_MAP_MS);
+        }
       });
       return win;
     });

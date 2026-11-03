@@ -16,6 +16,8 @@ mod macmap;
 mod win;
 #[cfg(any(windows, test))]
 mod window;
+#[cfg(target_os = "linux")]
+mod x11;
 #[cfg(target_os = "macos")]
 use mac as platform;
 #[cfg(windows)]
@@ -90,6 +92,7 @@ pub fn start_input_hook(callback: HookCallback) -> Result<()> {
 }
 
 pub struct ElementLookup {
+  #[cfg_attr(not(any(windows, target_os = "macos")), allow(dead_code))]
   at: Option<(i32, i32)>,
 }
 
@@ -181,4 +184,20 @@ pub fn release_web_content() {
 #[napi]
 pub fn is_supported() -> bool {
   cfg!(any(windows, target_os = "macos"))
+}
+
+#[napi]
+pub fn float_above_shell(window: u32) {
+  #[cfg(target_os = "linux")]
+  x11::float_above_shell(window);
+  #[cfg(not(target_os = "linux"))]
+  let _ = window;
+}
+
+#[napi]
+pub fn focus_window(window: u32) {
+  #[cfg(target_os = "linux")]
+  x11::focus_window(window);
+  #[cfg(not(target_os = "linux"))]
+  let _ = window;
 }
