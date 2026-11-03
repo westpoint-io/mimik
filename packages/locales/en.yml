@@ -205,6 +205,8 @@ settings:
   smartBlur: "Smart blur"
   version: "Version $1"
   reportBug: "Report a bug"
+  machineTranslated: "This language was translated with AI, so some wording may be off. Spotted a mistake? Open a pull request on GitHub."
+  fixTranslation: "Fix a translation"
   aboutSection: "About"
   appearance: "Appearance"
   appearanceHint: "Light, dark, or the same as your system."

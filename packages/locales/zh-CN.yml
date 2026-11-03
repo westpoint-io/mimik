@@ -205,6 +205,8 @@ settings:
   smartBlur: 智能模糊
   version: "版本 $1"
   reportBug: "报告问题"
+  machineTranslated: "此语言由 AI 翻译，部分措辞可能不够准确。发现错误？欢迎在 GitHub 上提交 pull request。"
+  fixTranslation: "修正翻译"
   aboutSection: "关于"
   appearance: "外观"
   appearanceHint: "浅色、深色或跟随系统。"

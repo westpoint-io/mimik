@@ -205,6 +205,8 @@ settings:
   smartBlur: Desfoque inteligente
   version: "Versão $1"
   reportBug: "Relatar um erro"
+  machineTranslated: "Este idioma foi traduzido com IA, então alguns textos podem soar estranhos. Encontrou um erro? Abra um pull request no GitHub."
+  fixTranslation: "Corrigir uma tradução"
   aboutSection: "Sobre"
   appearance: "Aparência"
   appearanceHint: "Claro, escuro ou igual ao seu sistema."

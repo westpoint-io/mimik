@@ -134,6 +134,60 @@ const EXAMPLES: Record<AILanguageCode, PromptExamples> = {
       'Выбор каналов Slack, которые отправляют уведомления на рабочий стол, и настройка расписания режима «Не беспокоить».',
     ],
   },
+  ja: {
+    steps: [
+      'Submitボタンをクリック',
+      'Emailフィールドにメールアドレスを入力',
+      'Roleドロップダウンで「Admin」を選択',
+      'Settingsページに移動',
+    ],
+    titles: [
+      'web-appのプルリクエストをレビュー',
+      'Slackの通知設定を変更',
+      'Workdayで経費精算書を提出',
+      'GitHubの組織にリポジトリを作成',
+    ],
+    descriptions: [
+      'Oktaの管理画面で、ロックされたユーザーのパスワードをリセットします。ITサポート担当者向けです。',
+      'デスクトップ通知を送るSlackチャンネルを選び、通知を止める時間帯を設定します。',
+    ],
+  },
+  ko: {
+    steps: [
+      'Submit 버튼 클릭',
+      'Email 필드에 이메일 주소 입력',
+      'Role 드롭다운에서 "Admin" 선택',
+      'Settings 페이지로 이동',
+    ],
+    titles: [
+      'web-app 풀 리퀘스트 검토',
+      'Slack 알림 설정 변경',
+      'Workday에서 경비 보고서 제출',
+      'GitHub 조직에 저장소 만들기',
+    ],
+    descriptions: [
+      'Okta 관리자 화면에서 잠긴 사용자의 비밀번호를 재설정해요. IT 지원 담당자를 위한 가이드예요.',
+      '데스크톱 알림을 보낼 Slack 채널을 고르고 방해 금지 시간을 설정해요.',
+    ],
+  },
+  'zh-TW': {
+    steps: [
+      '點擊 Submit 按鈕',
+      '在 Email 欄位中輸入電子郵件地址',
+      '在 Role 下拉選單中選擇「Admin」',
+      '前往 Settings 頁面',
+    ],
+    titles: [
+      '審查 web-app 的 Pull Request',
+      '設定 Slack 通知偏好',
+      '在 Workday 中提交報帳單',
+      '在 GitHub 組織中建立儲存庫',
+    ],
+    descriptions: [
+      '在 Okta 管理介面中重設被鎖定使用者的密碼。適用於 IT 支援人員。',
+      '設定哪些 Slack 頻道會傳送桌面通知，並設定勿擾時段。',
+    ],
+  },
 };
 
 export function resolveExamples(locale: string): PromptExamples {

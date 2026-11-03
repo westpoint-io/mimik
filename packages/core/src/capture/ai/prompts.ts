@@ -74,12 +74,15 @@ export type RewritePreset = keyof typeof REWRITE_PRESETS;
 
 export const AI_LANGUAGES = [
   { code: 'en', label: 'English' },
-  { code: 'zh-CN', label: '中文' },
+  { code: 'zh-CN', label: '简体中文' },
+  { code: 'zh-TW', label: '繁體中文' },
   { code: 'es', label: 'Español' },
   { code: 'pt-BR', label: 'Português (Brasil)' },
   { code: 'fr', label: 'Français' },
   { code: 'de', label: 'Deutsch' },
   { code: 'ru', label: 'Русский' },
+  { code: 'ja', label: '日本語' },
+  { code: 'ko', label: '한국어' },
 ] as const;
 
 export type AILanguageCode = (typeof AI_LANGUAGES)[number]['code'];
@@ -103,6 +106,9 @@ const LANGUAGE_INSTRUCTIONS: Record<Exclude<AILanguageCode, 'en'>, string> = {
   de: '\nWICHTIG: Schreibe die Ausgabe auf Deutsch. Übersetze keine Schaltflächen-, Feld- oder Seitennamen.',
   'zh-CN': '\n重要：请用中文输出。不要翻译按钮、字段和页面的名称。',
   ru: '\nВАЖНО: пиши результат на русском языке. Не переводи названия кнопок, полей и страниц.',
+  ja: '\n重要：結果は日本語で書いてください。ボタン、フィールド、ページの名前は翻訳しないでください。',
+  ko: '\n중요: 결과를 한국어로 작성해 주세요. 버튼, 필드, 페이지 이름은 번역하지 마세요.',
+  'zh-TW': '\n重要：請用台灣繁體中文撰寫結果，使用台灣用語。不要翻譯按鈕、欄位和頁面的名稱。',
 };
 
 export function getLanguageSuffix(locale: string): string {

@@ -205,6 +205,8 @@ settings:
   smartBlur: Умное размытие
   version: Версия $1
   reportBug: "Сообщить об ошибке"
+  machineTranslated: "Этот язык переведён с помощью ИИ, поэтому некоторые фразы могут звучать неточно. Нашли ошибку? Откройте pull request на GitHub."
+  fixTranslation: "Исправить перевод"
   aboutSection: "О Mimik"
   appearance: "Оформление"
   appearanceHint: "Светлое, тёмное или как в системе."
