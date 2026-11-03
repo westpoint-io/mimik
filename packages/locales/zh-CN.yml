@@ -288,6 +288,8 @@ desktop:
   trayQuit: "退出 Mimik"
   trayRecording: "Mimik 正在录制。点击即可完成。"
   cannotRecord: "Mimik 无法录制"
+  needsX11: "录制其他应用需要 X11 会话。请注销，在登录界面选择 Xorg 或 X11 会话，然后重新打开 Mimik。如需在浏览器中录制，请使用 Mimik 扩展。"
+  getExtension: "获取扩展"
   updateReady: "更新已就绪"
   updateReadyMessage: "重启 Mimik 以安装版本 $1。"
   later: "稍后"

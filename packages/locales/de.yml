@@ -288,6 +288,8 @@ desktop:
   trayQuit: "Mimik beenden"
   trayRecording: "Mimik nimmt auf. Zum Beenden klicken."
   cannotRecord: "Mimik kann nicht aufnehmen"
+  needsX11: "Um andere Apps aufzunehmen, braucht Mimik eine X11-Sitzung. Melde dich ab, wähle auf dem Anmeldebildschirm eine Xorg- oder X11-Sitzung und starte Mimik neu. Für Aufnahmen im Browser nutze die Mimik-Erweiterung."
+  getExtension: "Erweiterung holen"
   updateReady: "Update bereit"
   updateReadyMessage: "Starte Mimik neu, um Version $1 zu installieren."
   later: "Später"

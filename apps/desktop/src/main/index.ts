@@ -24,6 +24,7 @@ import { createActor } from 'xstate';
 import { registerAiFetch } from './ai-fetch';
 import { APP_ICON_SCHEME, registerAppIconProtocol } from './app-icon';
 import { ask } from './ask';
+import { InputHook } from './capture/input-hook';
 import { DesktopRecorder, frameFor } from './capture/recorder';
 import { grabDisplay } from './capture/screenshot';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from './capture/screenshot-store';
@@ -84,7 +85,25 @@ function warmScreenCapture(): void {
   void grabDisplay(screen.getCursorScreenPoint()).catch(() => undefined);
 }
 
+const EXTENSION_URL = 'https://chromewebstore.google.com/detail/mimik/jmfohdaflahliammccpiadmkcibohgha';
+
+async function explainWayland(): Promise<void> {
+  const { response } = await dialog.showMessageBox({
+    type: 'info',
+    message: mainI18n.t('desktop.cannotRecord'),
+    detail: mainI18n.t('desktop.needsX11'),
+    buttons: [mainI18n.t('desktop.getExtension'), mainI18n.t('common.close')],
+    defaultId: 1,
+    cancelId: 1,
+  });
+  if (response === 0) await shell.openExternal(EXTENSION_URL);
+}
+
 function whenPermitted(start: () => void): void {
+  if (InputHook.unsupportedSession()) {
+    void explainWayland();
+    return;
+  }
   const granted = readPermissions();
   if (granted.accessibility && granted.screen) {
     warmScreenCapture();
