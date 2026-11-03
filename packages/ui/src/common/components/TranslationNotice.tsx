@@ -4,10 +4,11 @@ import { Button } from '../../components/ui/button';
 import { tabs } from '../../env';
 
 const REVIEWED_LOCALES = ['en', 'es', 'pt-BR'];
-const LOCALES_URL = 'https://github.com/westpoint-io/mimik/tree/main/packages/locales';
+const EDIT_URL = 'https://github.com/westpoint-io/mimik/edit/dev/packages/locales';
 
 export function TranslationNotice() {
-  if (REVIEWED_LOCALES.includes(i18n.t('meta.locale'))) return null;
+  const locale = i18n.t('meta.locale');
+  if (REVIEWED_LOCALES.includes(locale)) return null;
 
   return (
     <div className="flex items-start gap-2.5 rounded-xl border border-border bg-card p-3.5">
@@ -17,7 +18,7 @@ export function TranslationNotice() {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => void tabs.create(LOCALES_URL)}
+          onClick={() => void tabs.create(`${EDIT_URL}/${locale}.yml`)}
           className="mt-2.5 rounded-lg text-[12px] font-semibold"
         >
           {i18n.t('settings.fixTranslation')}
