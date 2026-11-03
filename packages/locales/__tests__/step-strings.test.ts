@@ -7,10 +7,14 @@ function describeTyping(locale: string, value: string, label: string): string {
   return renderMessage(locale, 'steps.typeValueInto', [value, label]);
 }
 
+const TYPING = LOCALES.flatMap((locale) => [
+  [locale, 'steps.typeValueInto', (value: string) => describeTyping(locale, value, 'Password')] as const,
+  [locale, 'steps.type', (value: string) => renderMessage(locale, 'steps.type', [value])] as const,
+]);
+
 describe('localized typing step descriptions', () => {
-  it.each(LOCALES)('%s wraps the typed value in quotes the redaction recognises', (locale) => {
-    const description = describeTyping(locale, 'hunter2', 'Password');
-    expect(description).toMatch(/"hunter2"|「hunter2」|『hunter2』|“hunter2”|«[\s\u202f]*hunter2[\s\u202f]*»/);
+  it.each(TYPING)('%s %s wraps the typed value in quotes the redaction recognises', (_locale, _key, render) => {
+    expect(render('hunter2')).toMatch(/"hunter2"|「hunter2」|『hunter2』|“hunter2”|«[\s\u202f]*hunter2[\s\u202f]*»/);
   });
 
   it.each(LOCALES)('%s names the field as well as the value', (locale) => {
@@ -33,8 +37,8 @@ describe('bundle redaction over localized descriptions', () => {
   ];
 
   for (const { name, value } of cases) {
-    it.each(LOCALES)(`%s redacts ${name}`, (locale) => {
-      const description = describeTyping(locale, value, 'Password');
+    it.each(TYPING)(`%s %s redacts ${name}`, (_locale, _key, render) => {
+      const description = render(value);
       expect(description).toContain(value);
 
       const scrubbed = scrubValues(description, typedValues([{ inputValue: value }]));
