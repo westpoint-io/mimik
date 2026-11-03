@@ -6,7 +6,11 @@ lookup, key labels and the macOS event tap. Screenshots, displays and the Window
 come from npm packages. Do not add them here.
 
 - Linux builds the crate and answers `null`, or `is_supported() == false`. Callers treat that the
-  same as a missing binary.
+  same as a missing binary. Its one real job there is `x11.rs`: GNOME Shell draws its dock and top
+  bar above every managed window, so the area editor is made override-redirect (`floatAboveShell`)
+  and given keyboard focus by hand (`focusWindow`), since the window manager ignores it. Electron
+  already makes non-focusable windows override-redirect. Check every X request with `.check()`: a
+  request left unchecked can be lost when the short-lived connection closes.
 - `pnpm --filter @mimik/capture-native build:windows` cross-compiles from Linux with `cargo-xwin`.
   macOS binaries need Apple's SDK, so on Linux type-check with
   `cargo clippy --target x86_64-apple-darwin` (and `aarch64-apple-darwin`).

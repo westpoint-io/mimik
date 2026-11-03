@@ -31,6 +31,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Build the native addon
+        run: pnpm --filter @mimik/capture-native build
+
       - name: Build the app
         run: pnpm build:desktop
 

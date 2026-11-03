@@ -11,6 +11,8 @@ export type Addon = {
   releaseWebContent(): void;
   isSupported(): boolean;
   startInputHook(callback: (event: HookEvent) => void): void;
+  floatAboveShell(window: number): void;
+  focusWindow(window: number): void;
 };
 
 let addon: Addon | null | undefined;

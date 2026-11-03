@@ -17,7 +17,7 @@ apps/desktop/src/         Electron: main, preload, renderer
 packages/core/src/        logic both surfaces share: capture, guides, export, screenshot, blur, i18n
 packages/ui/src/          React both surfaces share, grouped by feature
 packages/locales/         the translations both surfaces read
-packages/capture-native/  Rust napi addon: accessibility lookup and input hook, Windows and macOS
+packages/capture-native/  Rust napi addon: accessibility lookup and input hook on Windows and macOS, X11 overlay windows on Linux
 scripts/                  repository checks run by pnpm lint
 ```
 
