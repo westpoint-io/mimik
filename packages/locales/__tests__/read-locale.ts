@@ -34,7 +34,7 @@ export function localeKeys(locale: string): string[] {
   return keys.sort();
 }
 
-function localeMessage(locale: string, path: string): string {
+export function localeMessage(locale: string, path: string): string {
   const [wanted, key] = path.split('.');
   let section = '';
 
