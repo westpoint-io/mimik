@@ -14,6 +14,8 @@ files:
   - out/**
   - "!out/THIRD_PARTY_NOTICES.txt"
   - package.json
+  - "!**/capture-native/{target,src}{,/**}"
+  - "!**/capture-native/{Cargo.*,build.rs,rustfmt.toml,*.md}"
 extraFiles:
   - from: out/THIRD_PARTY_NOTICES.txt
     to: THIRD_PARTY_NOTICES.txt
