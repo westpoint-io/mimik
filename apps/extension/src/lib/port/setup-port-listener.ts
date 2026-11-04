@@ -1,5 +1,5 @@
 import { browser } from '#imports';
-import { OBSERVER_PORT_NAME, PORT_NAME } from './constants';
+import { CARD_PORT_NAME, OBSERVER_PORT_NAME, PORT_NAME } from './constants';
 import { postTo } from './post-to';
 import { lastVoice, observerPorts, panelPorts } from './state';
 import type { Port } from './types';
@@ -15,7 +15,7 @@ export function setupPortListener(onPanelConnect?: (port: Port) => void) {
       return;
     }
 
-    if (port.name !== PORT_NAME) return;
+    if (port.name !== PORT_NAME && port.name !== CARD_PORT_NAME) return;
 
     panelPorts.add(port);
     onPanelConnect?.(port);

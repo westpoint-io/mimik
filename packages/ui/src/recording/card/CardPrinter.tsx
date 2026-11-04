@@ -1,7 +1,7 @@
 import { i18n } from '@mimik/core/env';
-import { CameraMascot } from '@mimik/ui';
 import { MousePointer2 } from 'lucide-react';
 import type { Ref } from 'react';
+import { CameraMascot } from '../../common/components/CameraMascot';
 
 interface CardPrinterProps {
   printerRef: Ref<HTMLDivElement>;

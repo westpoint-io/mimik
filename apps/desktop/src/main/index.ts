@@ -3,6 +3,7 @@ import { basename, join } from 'node:path';
 import type { AiFailureUpdate } from '@mimik/core/capture/ai/errors';
 import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import { captureStateUpdate } from '@mimik/core/capture/capture-state-update';
+import type { CardNarration, CardStep } from '@mimik/core/capture/card-view';
 import { isLive } from '@mimik/core/capture/is-live';
 import { CaptureState, captureMachine } from '@mimik/core/capture/machine';
 import { shortcutLabel } from '@mimik/core/capture/shortcut-label';
@@ -31,7 +32,7 @@ import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from 
 import { type CaptureMode, type CaptureSettings, loadSettings, saveSettings } from './capture/settings';
 import { mainI18n } from './i18n';
 import type { DesktopStateUpdate, UpdateStatus } from './ipc';
-import { CaptureOverlay, type OverlayCommand, type OverlayNarration, type OverlayStep } from './overlay';
+import { CaptureOverlay, type OverlayCommand } from './overlay';
 import {
   askMicrophone,
   captureWasHeld,
@@ -57,7 +58,7 @@ let ending = false;
 let insert: CaptureInsert | null = null;
 let describing = true;
 let captureSettings: CaptureSettings | null = null;
-let steps: OverlayStep[] = [];
+let steps: CardStep[] = [];
 
 let pendingStart: (() => void) | null = captureWasHeld()
   ? () => mainWindow?.webContents.send('mimik:capture:openSheet')
@@ -604,7 +605,7 @@ if (!app.requestSingleInstanceLock()) {
           guideId,
         }).catch(() => undefined);
         if (reply?.stepId && reply.title) {
-          const step: OverlayStep = {
+          const step: CardStep = {
             id: reply.stepId,
             number: steps.length + 1 + (insert?.afterStep ?? 0),
             title: reply.title,
@@ -640,7 +641,7 @@ if (!app.requestSingleInstanceLock()) {
       applyShortcuts();
       return captureSettings;
     });
-    ipcMain.on('mimik:capture:narration', (_event, narration: OverlayNarration | null) =>
+    ipcMain.on('mimik:capture:narration', (_event, narration: CardNarration | null) =>
       overlay?.setNarration(narration),
     );
     ipcMain.on(

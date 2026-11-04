@@ -1,14 +1,15 @@
 import { join } from 'node:path';
 import type { AiFailureUpdate } from '@mimik/core/capture/ai/errors';
 import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
-import {
-  CaptureState,
-  type CaptureStateValue,
-  type captureMachine,
-  type PauseReason,
-} from '@mimik/core/capture/machine';
-import type { VoiceErrorReason } from '@mimik/core/capture/voice/voice-update';
-import type { DescriptionSource } from '@mimik/core/guides/types';
+import type {
+  CardNarration,
+  CardPrint,
+  CardProgress,
+  CardShortcuts,
+  CardStep,
+  CardView,
+} from '@mimik/core/capture/card-view';
+import { CaptureState, type CaptureStateValue, type captureMachine } from '@mimik/core/capture/machine';
 import type { Rect } from '@mimik/core/rect';
 import { app, BrowserWindow, ipcMain, screen } from 'electron';
 import type { Actor } from 'xstate';
@@ -34,63 +35,15 @@ export type OverlayCommand =
   | 'narration:stop'
   | 'intro:done';
 
-export interface OverlayStep {
-  id: string;
-  number: number;
-  title: string;
-  action: string;
-  src: string;
-  source: DescriptionSource;
-  pending: boolean;
-  app: string | null;
-}
-
-export interface OverlayProgress {
-  percent: number;
-  ms: number;
-}
-
-interface OverlayShortcuts {
-  record: string | null;
-  capture: string | null;
-}
-
-export interface OverlayNarration {
-  level: number;
-  speaking: boolean;
-  reason?: VoiceErrorReason;
-}
-
-interface OverlayAim {
-  x: number;
-  y: number;
-  aspect: number;
-}
-
-export interface OverlayPrint {
-  src: string | null;
-  aim: OverlayAim | null;
-}
-
-export interface OverlayView {
-  state: CaptureStateValue;
-  pauseReason: PauseReason | null;
+export interface OverlayView extends CardView {
   region: Rect;
-  step: OverlayStep | null;
   mode: CaptureMode;
-  busy: boolean;
-  progress: OverlayProgress;
-  print: OverlayPrint;
-  starting: boolean;
-  shortcuts: OverlayShortcuts;
-  aiFailure: AiFailureUpdate | null;
-  narration: OverlayNarration | null;
 }
 
 export interface OverlayOptions {
   introFrame?: () => Promise<Rect>;
   insert?: () => CaptureInsert | null;
-  shortcuts?: () => OverlayShortcuts;
+  shortcuts?: () => CardShortcuts;
 }
 
 const BORDER = 3;
@@ -98,7 +51,7 @@ const CONTROLS = { width: 300, height: 190, margin: 24 };
 const INTRO_LIMIT_MS = 6000;
 const HIDE_SETTLE_MS = 60;
 const FOCUS_AFTER_MAP_MS = 100;
-const NO_SHORTCUTS: OverlayShortcuts = { record: null, capture: null };
+const NO_SHORTCUTS: CardShortcuts = { record: null, capture: null };
 
 function rendererFile(): string {
   return join(__dirname, '../renderer/overlay.html');
@@ -169,13 +122,13 @@ export class CaptureOverlay {
   private introDone: ((finished: boolean) => void) | null = null;
   private editing = false;
   private rect: Rect;
-  private step: OverlayStep | null = null;
+  private step: CardStep | null = null;
   private size = { width: CONTROLS.width, height: CONTROLS.height };
   private busy = false;
-  private progress: OverlayProgress = { percent: 0, ms: 0 };
-  private print: OverlayPrint = { src: null, aim: null };
+  private progress: CardProgress = { percent: 0, ms: 0 };
+  private print: CardPrint = { src: null, aim: null };
   private aiFailure: AiFailureUpdate | null = null;
-  private narration: OverlayNarration | null = null;
+  private narration: CardNarration | null = null;
   private modeBeforeEdit: CaptureMode | null = null;
   private hiding: { shown: BrowserWindow[]; ready: Promise<unknown>; users: number } | null = null;
   private starting = false;
@@ -251,7 +204,7 @@ export class CaptureOverlay {
     });
   }
 
-  showStep(step: OverlayStep | null): void {
+  showStep(step: CardStep | null): void {
     this.step = step ? { ...step } : null;
     this.broadcast();
   }
@@ -261,7 +214,7 @@ export class CaptureOverlay {
     this.broadcast();
   }
 
-  setNarration(narration: OverlayNarration | null): void {
+  setNarration(narration: CardNarration | null): void {
     this.narration = narration;
     this.broadcast();
   }
@@ -276,7 +229,7 @@ export class CaptureOverlay {
     this.broadcast();
   }
 
-  setPrint(patch: Partial<OverlayPrint>): void {
+  setPrint(patch: Partial<CardPrint>): void {
     this.print = { ...this.print, ...patch };
     this.broadcast();
   }

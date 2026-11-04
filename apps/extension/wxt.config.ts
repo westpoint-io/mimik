@@ -71,6 +71,13 @@ export default defineConfig({
         128: 'icon128.png',
       },
       action: {},
+      web_accessible_resources: [
+        {
+          resources: ["recording-card.html"],
+          matches: ["<all_urls>"],
+          ...(isFirefox ? {} : { use_dynamic_url: true }),
+        },
+      ],
       commands: {
         "toggle-recording": {
           suggested_key: { default: "Alt+Shift+1" },
