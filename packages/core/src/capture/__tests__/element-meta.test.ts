@@ -106,3 +106,16 @@ describe('extractElementMeta text', () => {
     expect(extractElementMeta(button).textContent).toBe('Add new item');
   });
 });
+
+describe('extractElementMeta on a busy field', () => {
+  it('builds a selector for a field with many attributes and classes without blowing up', () => {
+    const el = document.createElement('input');
+    for (let i = 0; i < 20; i++) el.setAttribute(`data-k${i}`, `v${i}`);
+    el.className = Array.from({ length: 10 }, (_, i) => `c${i}`).join(' ');
+    document.body.appendChild(el);
+    const started = performance.now();
+    const { cssSelector } = extractElementMeta(el);
+    expect(performance.now() - started).toBeLessThan(500);
+    expect(document.querySelector(cssSelector ?? '')).toBe(el);
+  });
+});
