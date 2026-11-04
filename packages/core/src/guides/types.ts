@@ -108,6 +108,7 @@ export interface Settings {
   appLanguage: string;
   recordKeys: boolean;
   recordTyping: boolean;
+  recordingCard: boolean;
 }
 
 export type SettingsKey = keyof Settings;

@@ -1,6 +1,6 @@
+import type { CardNarration } from '@mimik/core/capture/card-view';
 import { voiceErrorKey } from '@mimik/core/capture/voice/voice-error-key';
 import { i18n } from '@mimik/core/env';
-import type { OverlayNarration } from '../../main/overlay';
 
 const BARS = [
   { id: 'outer-left', weight: 0.45 },
@@ -12,7 +12,7 @@ const BARS = [
 const FLOOR = 0.14;
 
 interface VoiceLineProps {
-  narration: OverlayNarration | null;
+  narration: CardNarration | null;
   hidden: boolean;
   hintHidden: boolean;
 }

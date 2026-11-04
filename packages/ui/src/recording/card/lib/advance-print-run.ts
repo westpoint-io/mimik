@@ -1,4 +1,4 @@
-import type { OverlayView } from '../../../main/overlay';
+import type { CardView } from '@mimik/core/capture/card-view';
 
 export interface PrintRun {
   wasBusy: boolean;
@@ -23,7 +23,7 @@ export interface PrintFrame {
   printedId: string | null;
 }
 
-export function advancePrintRun(run: PrintRun, view: OverlayView, animate: boolean): PrintFrame {
+export function advancePrintRun(run: PrintRun, view: CardView, animate: boolean): PrintFrame {
   const { busy, step, print } = view;
   if (busy && !run.wasBusy) {
     run.number = (step?.number ?? 0) + 1;
