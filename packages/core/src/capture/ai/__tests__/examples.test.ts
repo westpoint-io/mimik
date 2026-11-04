@@ -78,3 +78,17 @@ describe('formatExamples', () => {
     }
   });
 });
+
+describe('screen step examples', () => {
+  it.each(AI_LANGUAGES.map((l) => l.code))('has four for %s', (code) => {
+    expect(resolveExamples(code).screenSteps).toHaveLength(4);
+  });
+
+  it('keeps labels untranslated', () => {
+    for (const { code } of AI_LANGUAGES) {
+      const lines = resolveExamples(code).screenSteps.join('\n');
+      expect(lines).toContain('Downloads');
+      expect(lines).toMatch(/(Ctrl|Strg)\+S/);
+    }
+  });
+});
