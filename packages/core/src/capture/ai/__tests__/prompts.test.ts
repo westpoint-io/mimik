@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
+import { composePrompt } from '../custom-prompts';
 import { AI_LANGUAGES, GUIDE_META_PROMPT, getLanguageSuffix } from '../prompts';
 
 describe('GUIDE_META_PROMPT', () => {
-  it('has a steps placeholder', () => {
-    expect(GUIDE_META_PROMPT).toContain('{{steps}}');
+  it('leaves the steps to composePrompt', () => {
+    expect(GUIDE_META_PROMPT).not.toContain('{{steps}}');
+    expect(composePrompt('guide', undefined, 'en', '1. Click Save')).toContain('Steps:\n1. Click Save');
   });
 
   it('keeps the 60-character title constraint', () => {

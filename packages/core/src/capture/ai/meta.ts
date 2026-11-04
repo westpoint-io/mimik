@@ -4,8 +4,8 @@ import { actionSteps } from '@/core/guides/blocks';
 import { MAX_TITLE_LENGTH, sanitizeGuideTitle } from '@/core/guides/title';
 import type { Step } from '@/core/guides/types';
 import { logger } from '@/core/logger';
-import { formatExamples, resolveExamples } from './examples';
-import { GUIDE_META_JSON_SUFFIX, GUIDE_META_PROMPT, getLanguageSuffix } from './prompts';
+import { composePrompt } from './custom-prompts';
+import { GUIDE_META_JSON_SUFFIX } from './prompts';
 import { createModel } from './provider';
 import { unwrapQuotes } from './text';
 
@@ -68,13 +68,9 @@ export async function generateGuideMeta(
   if (steps.length === 0) return null;
 
   const formatted = steps.map((s, i) => `${i + 1}. [${s.place}] ${s.description}`).join('\n');
-  const settings = await localStorage.get(['aiLanguage']);
+  const settings = await localStorage.get(['aiLanguage', 'aiPrompts']);
   const locale = (settings.aiLanguage as string) || 'en';
-  const examples = resolveExamples(locale);
-  const prompt =
-    GUIDE_META_PROMPT.replace('{{titleExamples}}', formatExamples(examples.titles))
-      .replace('{{descriptionExamples}}', formatExamples(examples.descriptions))
-      .replace('{{steps}}', () => formatted) + getLanguageSuffix(locale);
+  const prompt = composePrompt('guide', settings.aiPrompts, locale, formatted);
   const aiModel = createModel(provider, model, apiKey, baseUrl, headers);
   const deadline = new AbortController();
   const timer = setTimeout(() => deadline.abort(), GUIDE_META_TIMEOUT_MS);

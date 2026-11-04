@@ -1,3 +1,4 @@
+import type { CustomPrompts } from '@/core/capture/ai/custom-prompts';
 import type { AIApiKeys, AiChoice, ApiKeys, ServerHeader } from '@/core/capture/ai/keys';
 import type { AIProtocol } from '@/core/capture/ai/models';
 import type { VoiceProvider } from '@/core/capture/voice/transcribe';
@@ -77,6 +78,7 @@ export interface Settings {
   aiApiKeys: AIApiKeys;
   aiProvider: AiChoice;
   aiModel: string;
+  aiPrompts: CustomPrompts;
   aiBaseUrl: string;
   aiServerUrl: string;
   aiServerProtocol: AIProtocol;

@@ -1,6 +1,4 @@
-export const STEP_DESCRIPTION_PROMPT = `You are describing steps in a browser workflow guide. Given the following context about a user action on a web page, write a single concise sentence describing this step.
-
-{{context}}
+export const STEP_DESCRIPTION_PROMPT = `You are describing steps in a browser workflow guide. Given the details above about a user action on a web page, write a single concise sentence describing this step.
 
 Examples of good descriptions:
 {{examples}}
@@ -9,23 +7,16 @@ Copy button labels, field names, and menu items exactly as they appear on the pa
 
 Write only the description, no preamble.`;
 
-export const SCREEN_STEP_DESCRIPTION_PROMPT = `You are describing steps in a guide to a desktop application. Given the following context about one action the user took, write a single concise sentence describing this step.
+export const SCREEN_STEP_DESCRIPTION_PROMPT = `You are describing steps in a guide to a desktop application. Given the details above about one action the user took, write a single concise sentence describing this step.
 
-{{context}}
-
-Name the control by the label it shows, in quotes. Do not use technical control names such as "tree item", "treeview", "pane", "list item" or "group"; say "list", "menu", "field" or "button" only where a reader would. Only mention names that appear above. The previous step is there for context; describe only this one.
+Name the control by the label it shows, in quotes. Do not use technical control names such as "tree item", "treeview", "pane", "list item" or "group"; say "list", "menu", "field" or "button" only where a reader would. Only mention names that appear in the details. The previous step is there for context; describe only this one.
 
 Examples of good descriptions:
-- "Click "Downloads" in File Explorer"
-- "Select "Dark" from the Theme list"
-- "Enter "Quarterly report" as the file name"
-- "Press Ctrl+S to save the document"
+{{examples}}
 
 Write only the description, no preamble.`;
 
-export const GUIDE_META_PROMPT = `These are the steps of a recorded workflow. Each one shows where it happened, a page URL or an application and its window, and what the user did:
-
-{{steps}}
+export const GUIDE_META_PROMPT = `The steps above come from a recorded workflow. Each one shows where it happened, a page URL or an application and its window, and what the user did.
 
 Write a title and a description for this workflow.
 
@@ -34,7 +25,7 @@ TITLE: specific and descriptive. Mention the application or website name and the
 Examples of good titles:
 {{titleExamples}}
 
-DESCRIPTION: one or two sentences stating what the workflow accomplishes and who would follow it. Do not repeat the title. Do not list the individual steps. Do not mention any application, website or UI element that does not appear in the steps above.
+DESCRIPTION: one or two sentences stating what the workflow accomplishes and who would follow it. Do not repeat the title. Do not list the individual steps. Do not mention any application, website or UI element that does not appear in the steps.
 
 Examples of good descriptions:
 {{descriptionExamples}}
