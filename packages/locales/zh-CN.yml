@@ -132,6 +132,21 @@ settings:
   hideKey: 隐藏密钥
   clearKey: 清除密钥
   aiLanguage: 描述语言
+  aiAdvanced: "高级"
+  aiAdvancedHint: "查看和修改 Mimik 发送的提示词。"
+  aiPromptsTitle: "AI 提示词"
+  aiPromptsHint: "修改 Mimik 要求你的 AI 提供商做的事，或在下方添加你自己的规则。"
+  aiPromptLabel: "Mimik 的提示词"
+  aiPromptDefault: "默认"
+  aiPromptEdited: "已编辑"
+  aiPromptReset: "重置提示词"
+  aiInstructionsLabel: "你的指令"
+  aiInstructionsPlaceholder: "例如：使用第二人称写作。将产品称为“Acme”。"
+  aiCustomised: "已自定义"
+  aiReset: "重置"
+  aiResetConfirmTitle: "重置“$1”？"
+  aiResetConfirmMessage: "此部分中已编辑的提示词和你的指令将被移除。此操作无法撤销。"
+  aiExamplesSwitched: "示例已切换为 $1"
   apiKeys: "API 密钥"
   aiSection: "AI"
   ownServer: "自己的服务器"

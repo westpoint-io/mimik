@@ -148,6 +148,21 @@ settings:
   hideKey: Schlüssel verbergen
   clearKey: Schlüssel löschen
   aiLanguage: Sprache der Beschreibungen
+  aiAdvanced: "Erweitert"
+  aiAdvancedHint: "Sieh dir an, welche Prompts Mimik sendet, und ändere sie."
+  aiPromptsTitle: "KI-Prompts"
+  aiPromptsHint: "Ändere, worum Mimik deinen KI-Anbieter bittet, oder füge darunter eigene Regeln hinzu."
+  aiPromptLabel: "Prompt von Mimik"
+  aiPromptDefault: "Standard"
+  aiPromptEdited: "Bearbeitet"
+  aiPromptReset: "Prompt zurücksetzen"
+  aiInstructionsLabel: "Deine Anweisungen"
+  aiInstructionsPlaceholder: "z. B. Schreibe in der zweiten Person. Nenne das Produkt „Acme“."
+  aiCustomised: "Angepasst"
+  aiReset: "Zurücksetzen"
+  aiResetConfirmTitle: "$1 zurücksetzen?"
+  aiResetConfirmMessage: "Dein bearbeiteter Prompt und deine Anweisungen für diesen Abschnitt werden entfernt. Das lässt sich nicht rückgängig machen."
+  aiExamplesSwitched: "Beispiele auf $1 umgestellt"
   apiKeys: "API-Schlüssel"
   aiSection: "KI"
   ownServer: "Eigener Server"
