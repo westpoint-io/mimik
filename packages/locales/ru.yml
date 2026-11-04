@@ -132,6 +132,21 @@ settings:
   hideKey: Скрыть ключ
   clearKey: Удалить ключ
   aiLanguage: Язык описаний
+  aiAdvanced: "Дополнительно"
+  aiAdvancedHint: "Просмотр и изменение промптов, которые отправляет Mimik."
+  aiPromptsTitle: "AI-промпты"
+  aiPromptsHint: "Измените то, о чём Mimik просит вашего AI-провайдера, или добавьте свои правила ниже."
+  aiPromptLabel: "Промпт Mimik"
+  aiPromptDefault: "По умолчанию"
+  aiPromptEdited: "Изменён"
+  aiPromptReset: "Сбросить промпт"
+  aiInstructionsLabel: "Ваши инструкции"
+  aiInstructionsPlaceholder: "Например: пишите от второго лица. Называйте продукт «Acme»."
+  aiCustomised: "Изменено"
+  aiReset: "Сбросить"
+  aiResetConfirmTitle: "Сбросить «$1»?"
+  aiResetConfirmMessage: "Изменённый промпт и ваши инструкции для этого раздела будут удалены. Отменить действие нельзя."
+  aiExamplesSwitched: "Язык примеров: $1"
   apiKeys: API-ключи
   aiSection: AI
   ownServer: Свой сервер

@@ -132,6 +132,21 @@ settings:
   hideKey: Masquer la clé
   clearKey: Effacer la clé
   aiLanguage: Langue des descriptions
+  aiAdvanced: "Avancé"
+  aiAdvancedHint: "Consultez et modifiez les prompts envoyés par Mimik."
+  aiPromptsTitle: "Prompts IA"
+  aiPromptsHint: "Modifiez ce que Mimik demande à votre fournisseur d'IA, ou ajoutez vos propres règles en dessous."
+  aiPromptLabel: "Prompt de Mimik"
+  aiPromptDefault: "Par défaut"
+  aiPromptEdited: "Modifié"
+  aiPromptReset: "Réinitialiser le prompt"
+  aiInstructionsLabel: "Vos instructions"
+  aiInstructionsPlaceholder: "p. ex. Rédigez à la deuxième personne. Appelez le produit « Acme »."
+  aiCustomised: "Personnalisé"
+  aiReset: "Réinitialiser"
+  aiResetConfirmTitle: "Réinitialiser « $1 » ?"
+  aiResetConfirmMessage: "Votre prompt modifié et vos instructions pour cette section seront supprimés. Cette action est irréversible."
+  aiExamplesSwitched: "Langue des exemples : $1"
   apiKeys: "Clés API"
   aiSection: "IA"
   ownServer: "Votre propre serveur"
