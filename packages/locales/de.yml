@@ -358,6 +358,9 @@ editor:
   deleteThisStep: "Diesen Schritt löschen?"
   selectStep: Schritt auswählen
   selectedCount: "$1 ausgewählt"
+  groupSteps: "Schritte gruppieren"
+  ungroupStep: "Gruppierung aufheben"
+  groupedCount: "$1 Aktionen"
   deleteSelectedStep: "$1 ausgewählten Schritt löschen?"
   deleteSelectedSteps: "$1 ausgewählte Schritte löschen?"
   copyTo: Kopieren nach
