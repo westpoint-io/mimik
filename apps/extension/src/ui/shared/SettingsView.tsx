@@ -8,12 +8,17 @@ import {
   BrandingSettings,
   NarrationSettings,
   SavedBadge,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   SettingsCard,
   Switch,
   useApiKeys,
   VoiceoverSettings,
 } from '@mimik/ui';
-import { ArrowLeft, EyeOff, Keyboard } from 'lucide-react';
+import { ArrowLeft, EyeOff, Keyboard, PanelRight, SquareStack } from 'lucide-react';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import { sendMessage } from '@/lib/messaging';
@@ -35,6 +40,7 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
   const [loaded, setLoaded] = useState(false);
   const [recordKeys, setRecordKeys] = useState(false);
   const [recordTyping, setRecordTyping] = useState(true);
+  const [recordingCard, setRecordingCard] = useState(false);
   const [blurPresets, setBlurPresets] = useState<Record<PresetKey, boolean>>({
     email: true,
     phone: true,
@@ -45,10 +51,11 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
   });
 
   useEffect(() => {
-    localStorage.get(['blurPresets', 'recordKeys', 'recordTyping']).then((result) => {
+    localStorage.get(['blurPresets', 'recordKeys', 'recordTyping', 'recordingCard']).then((result) => {
       if (result.blurPresets) setBlurPresets(result.blurPresets as Record<PresetKey, boolean>);
       setRecordKeys(result.recordKeys === true);
       setRecordTyping(result.recordTyping !== false);
+      setRecordingCard(result.recordingCard === true);
       setLoaded(true);
     });
   }, []);
@@ -151,7 +158,46 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
     ),
     shortcuts: <ShortcutsCard />,
     'api-keys': <ApiKeysSettings state={keys} validate={validateApiKey} title={i18n.t('settings.apiKeys')} />,
-    appearance: <AppearanceSettings />,
+    appearance: (
+      <>
+        <AppearanceSettings />
+        <SettingsCard
+          icon={SquareStack}
+          title={i18n.t('settings.recordingControls')}
+          hint={i18n.t('settings.recordingControlsHint')}
+          action={
+            <Select
+              value={recordingCard ? 'card' : 'panel'}
+              onValueChange={(value) => {
+                setRecordingCard(value === 'card');
+                localStorage.set({ recordingCard: value === 'card' });
+              }}
+            >
+              <SelectTrigger
+                aria-label={i18n.t('settings.recordingControls')}
+                className="h-8 w-fit min-w-[140px] shrink-0 gap-2"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="panel">
+                  <span className="flex items-center gap-2">
+                    <PanelRight size={14} className="text-accent" />
+                    {i18n.t('settings.recordingInPanel')}
+                  </span>
+                </SelectItem>
+                <SelectItem value="card">
+                  <span className="flex items-center gap-2">
+                    <SquareStack size={14} className="text-accent" />
+                    {i18n.t('settings.recordingInCard')}
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          }
+        />
+      </>
+    ),
     about: <SettingsFooter />,
   };
 

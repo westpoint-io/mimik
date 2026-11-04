@@ -8,7 +8,9 @@ import { isRecordableUrl } from '@/capture/recordable-tabs';
 import { CaptureState, type PauseReason } from '@/core/capture/machine';
 import type { GuideMeSession } from '@/core/guideme/session';
 import { SESSION_KEY } from '@/core/guideme/session';
+import { closeSidebar } from '@/lib/browser-api/close-sidebar';
 import { getActiveTab } from '@/lib/browser-api/get-active-tab';
+import { localStorage } from '@/lib/browser-api/local-storage';
 import { requestHostPermissions } from '@/lib/browser-api/request-host-permissions';
 import { sendMessage } from '@/lib/messaging';
 import { getVoiceStatus } from '@/lib/offscreen/get-voice-status';
@@ -136,6 +138,8 @@ export function App() {
       const res = await sendMessage('startRecording', { url });
       if (res.guideId) {
         setView({ name: 'recording', guideId: res.guideId });
+        const { recordingCard } = await localStorage.get(['recordingCard']);
+        if (recordingCard === true) closeSidebar();
       }
     } catch (err) {
       logger.error(' START_RECORDING error', err);
