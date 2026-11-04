@@ -17,8 +17,10 @@ import { ArrowLeft, EyeOff, Keyboard } from 'lucide-react';
 import { type ReactNode, useCallback, useEffect, useState } from 'react';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import { sendMessage } from '@/lib/messaging';
+import { usePromptsRequest } from '@/ui/shared/hooks/use-prompts-request';
 import { useSettingsAutosave } from '@/ui/shared/hooks/use-settings-autosave';
 import { API_KEYS_ID, openApiKeys } from '@/ui/shared/lib/open-api-keys';
+import { openPromptsEditor } from '@/ui/shared/lib/open-prompts-editor';
 import { requestMicrophoneAccess } from '@/ui/shared/lib/request-microphone-access';
 import { SETTINGS_SECTIONS, type SettingsSection, settingsSection } from '@/ui/shared/lib/settings-section';
 import { validateApiKey } from '@/ui/shared/lib/validate-api-key';
@@ -56,11 +58,16 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
   const { saved, queue } = useSettingsAutosave({ blurPresets, recordKeys, recordTyping }, loaded);
   const keys = useApiKeys({ onChange: queue });
 
-  const showSection = (next: SettingsSection) => {
+  const showSection = useCallback((next: SettingsSection) => {
     setSection(next);
     window.history.replaceState(null, '', `#${next}`);
-  };
+  }, []);
   const openKeys = layout === 'sections' ? () => showSection('api-keys') : openApiKeys;
+
+  const promptsRequest = usePromptsRequest(layout === 'sections');
+  useEffect(() => {
+    if (promptsRequest.section) showSection('ai');
+  }, [promptsRequest.section, showSection]);
 
   const listVoices = useCallback(
     (provider: VoiceoverProviderKey, apiKey: string) =>
@@ -82,7 +89,14 @@ export function SettingsView({ onBack, layout = 'column' }: SettingsViewProps) {
   const sections: Record<SettingsSection, ReactNode> = {
     ai: (
       <>
-        <AiSettings keys={keys} onOpenKeys={openKeys} onChange={queue} />
+        <AiSettings
+          keys={keys}
+          onOpenKeys={openKeys}
+          onChange={queue}
+          onEditPrompts={layout === 'sections' ? undefined : (prompt) => void openPromptsEditor(prompt)}
+          promptsRequest={promptsRequest.section}
+          onPromptsRequestHandled={promptsRequest.clear}
+        />
         <NarrationSettings
           keys={keys}
           onOpenKeys={openKeys}
