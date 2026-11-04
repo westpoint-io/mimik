@@ -59,7 +59,7 @@ export function extractElementMeta(el: HTMLElement, atEvent?: FrozenRect): Eleme
   const rect = live.width > 0 || live.height > 0 ? live : (atEvent ?? live);
   let cssSelector: string;
   try {
-    cssSelector = getCssSelector(el);
+    cssSelector = getCssSelector(el, { maxCombinations: 100, maxCandidates: 100 });
   } catch {
     cssSelector = el.tagName?.toLowerCase() ?? 'unknown';
   }
