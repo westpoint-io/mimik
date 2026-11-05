@@ -9,6 +9,7 @@ export type Addon = {
   resolveKey(keycode: number, shift: boolean, ctrl: boolean, alt: boolean): string | null;
   clearDeadKey(): void;
   releaseWebContent(): void;
+  enableAccessibility(): void;
   isSupported(): boolean;
   startInputHook(callback: (event: HookEvent) => void): void;
   floatAboveShell(window: number): void;

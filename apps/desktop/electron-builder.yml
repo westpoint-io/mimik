@@ -82,6 +82,7 @@ deb:
     - libuuid1
     - libsecret-1-0
     - x11-utils
+    - libxkbcommon0
 rpm:
   depends:
     - gtk3
@@ -98,3 +99,4 @@ rpm:
     - (libuuid or libuuid1)
     - xprop
     - xwininfo
+    - libxkbcommon

@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: "22"
 
-      - run: sudo apt-get update && sudo apt-get install -y rpm
+      - run: sudo apt-get update && sudo apt-get install -y rpm libxkbcommon-dev
 
       - run: pnpm install --frozen-lockfile
 

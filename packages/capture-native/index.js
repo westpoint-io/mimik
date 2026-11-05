@@ -781,6 +781,7 @@ module.exports = nativeBinding
 module.exports.activeWindow = nativeBinding.activeWindow
 module.exports.clearDeadKey = nativeBinding.clearDeadKey
 module.exports.elementAtPoint = nativeBinding.elementAtPoint
+module.exports.enableAccessibility = nativeBinding.enableAccessibility
 module.exports.floatAboveShell = nativeBinding.floatAboveShell
 module.exports.focusedElement = nativeBinding.focusedElement
 module.exports.focusWindow = nativeBinding.focusWindow

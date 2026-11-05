@@ -49,7 +49,7 @@ jobs:
           node-version: "22"
           cache: pnpm
 
-      - run: sudo apt-get update && sudo apt-get install -y xvfb
+      - run: sudo apt-get update && sudo apt-get install -y xvfb libxkbcommon-dev
 
       - run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
