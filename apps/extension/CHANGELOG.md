@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.6.0](https://github.com/westpoint-io/mimik/compare/v1.5.0...v1.6.0) (2026-11-05)
+
+### Features
+
+* A recording card that floats over the page at full width, as an alternative to the side panel, picked in onboarding or Settings
+* Edit the AI prompts and add your own instructions for step descriptions and for the guide title and summary, from AI settings
+* Send custom headers to your own AI server, set in Settings or onboarding and masked like the key
+* Copy selected steps to another guide, or to a new one, from the selection bar
+* Japanese, Korean and Traditional Chinese, with Traditional Chinese for Hong Kong and zh-Hant browsers
+
+### Bug Fixes
+
+* Typing into a field with many attributes, such as the Google or Bing search box, no longer freezes the tab
+* Short typed values are redacted from shared guides inside 「」, 『』, “” and «» quotes too
+
 ## [1.5.0](https://github.com/westpoint-io/mimik/compare/v1.4.1...v1.5.0) (2026-10-30)
 
 ### Features
