@@ -115,7 +115,7 @@ export function SettingsPanel({ onSaved, startOnKeys = false }: { onSaved: () =>
                 liveMeter
               />
               <VoiceoverSettings
-                keys={keys.keys}
+                keys={keys}
                 listVoices={fetchVoices}
                 onOpenKeys={() => setSection('api-keys')}
                 onChange={onSaved}
