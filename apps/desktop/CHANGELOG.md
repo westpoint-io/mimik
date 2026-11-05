@@ -2,23 +2,15 @@
 
 ## [1.2.0](https://github.com/westpoint-io/mimik/compare/desktop-v1.1.0...desktop-v1.2.0) (2026-11-05)
 
-
 ### Features
 
-* **ai:** let users edit AI prompts and add their own instructions ([#237](https://github.com/westpoint-io/mimik/issues/237)) ([638e8b4](https://github.com/westpoint-io/mimik/commit/638e8b4dd5a92badce6e1c06851f95c8eab53aaf))
-* **ai:** send custom headers to your own AI server ([#226](https://github.com/westpoint-io/mimik/issues/226)) ([d0869bc](https://github.com/westpoint-io/mimik/commit/d0869bc63fb5f8ec4ec67c9ea3a8ccbd638c1912))
-* **desktop:** read the clicked control and key labels on linux ([#239](https://github.com/westpoint-io/mimik/issues/239)) ([6d952b0](https://github.com/westpoint-io/mimik/commit/6d952b0bf0e0dffb3f6ec026ce683af33384c1f9))
-* **desktop:** ship the desktop app on linux (x11) ([#232](https://github.com/westpoint-io/mimik/issues/232)) ([00dd3e0](https://github.com/westpoint-io/mimik/commit/00dd3e08df58643500ce8f2385693cf7a076e47a))
-* **desktop:** show update progress and keep checking for updates while Mimik runs ([#230](https://github.com/westpoint-io/mimik/issues/230)) ([202609f](https://github.com/westpoint-io/mimik/commit/202609fcfb1888dec2e62164c749c2ee22edc255))
-* **extension:** add a recording card that runs on the page ([#238](https://github.com/westpoint-io/mimik/issues/238)) ([edffca9](https://github.com/westpoint-io/mimik/commit/edffca9c65c141680b34d740ea1af7756630ec14))
-* **i18n:** add Japanese, Korean and Traditional Chinese ([#234](https://github.com/westpoint-io/mimik/issues/234)) ([3275604](https://github.com/westpoint-io/mimik/commit/32756046f2b1b740c93e74bdbdd96b1a4dbb79df))
-* **ui:** copy selected steps to another guide ([#224](https://github.com/westpoint-io/mimik/issues/224)) ([701fdd9](https://github.com/westpoint-io/mimik/commit/701fdd9840a1f0887054ee305b0f6148d52b7d67))
-
-
-### Bug Fixes
-
-* **capture:** stop a typing step from freezing the tab on a field with many attributes ([#236](https://github.com/westpoint-io/mimik/issues/236)) ([4dedb2a](https://github.com/westpoint-io/mimik/commit/4dedb2a2907014104ebeeb037adb23c46e557f3f))
-* **ui:** install the animation package the shared overlays expect ([#225](https://github.com/westpoint-io/mimik/issues/225)) ([a2e044b](https://github.com/westpoint-io/mimik/commit/a2e044bf362b086129382037173a4f34d2a59469))
+* Linux beta on X11, as an AppImage, deb and rpm; on Wayland, starting a recording explains that it needs an X11 session
+* On Linux, steps name the control you clicked and the keys you pressed, as on Windows and macOS
+* Update progress in Settings and the tray, with a check a minute after launch and every four hours while Mimik runs
+* Edit the AI prompts and add your own instructions for step descriptions and for the guide title and summary, from AI settings
+* Send custom headers to your own AI server, set in Settings or onboarding and masked like the key
+* Copy selected steps to another guide, or to a new one, from the selection bar
+* Japanese, Korean and Traditional Chinese
 
 ## [1.1.0](https://github.com/westpoint-io/mimik/compare/desktop-v1.0.0...desktop-v1.1.0) (2026-10-30)
 
