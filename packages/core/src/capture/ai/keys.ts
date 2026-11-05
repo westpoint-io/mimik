@@ -9,7 +9,7 @@ import {
 
 export type AIApiKeys = Partial<Record<AIProviderKey, string>>;
 
-export const KEY_PROVIDERS = ['openai', 'anthropic', 'deepseek', 'openrouter', 'groq', 'elevenlabs'] as const;
+export const KEY_PROVIDERS = ['openai', 'anthropic', 'deepseek', 'openrouter', 'opper', 'groq', 'elevenlabs'] as const;
 
 export type KeyProvider = (typeof KEY_PROVIDERS)[number];
 
@@ -18,6 +18,7 @@ export const KEY_PROVIDER_LABELS: Record<KeyProvider, string> = {
   anthropic: 'Anthropic',
   deepseek: 'DeepSeek',
   openrouter: 'OpenRouter',
+  opper: 'Opper',
   groq: 'Groq',
   elevenlabs: 'ElevenLabs',
 };
@@ -27,6 +28,7 @@ export const KEY_PLACEHOLDERS: Record<KeyProvider, string> = {
   anthropic: 'sk-ant-...',
   deepseek: 'sk-...',
   openrouter: 'sk-or-...',
+  opper: '...',
   groq: 'gsk_...',
   elevenlabs: 'sk_...',
 };

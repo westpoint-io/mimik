@@ -321,6 +321,41 @@ describe('validateApiKey', () => {
     });
   });
 
+  describe('opper', () => {
+    it('checks the key against its catalogue, which needs a key', async () => {
+      fetchMock.mockResolvedValueOnce(modelsBody('gpt-4o-mini', 'claude-haiku-4-5'));
+      expect(await validateApiKey('opper', 'opper-good')).toEqual({
+        valid: true,
+        models: ['gpt-4o-mini', 'claude-haiku-4-5'],
+      });
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(fetchMock.mock.calls[0]![0]).toBe('https://api.opper.ai/v3/compat/models');
+    });
+
+    it('rejects a bad key', async () => {
+      fetchMock.mockResolvedValueOnce(errorResponse(401));
+      expect(await validateApiKey('opper', 'opper-bad')).toEqual({ valid: false, reason: 'rejected' });
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('sends the key as a bearer token', async () => {
+      fetchMock.mockResolvedValueOnce(modelsBody('gpt-4o-mini'));
+      await validateApiKey('opper', 'opper-good');
+      const [, init] = fetchMock.mock.calls[0]!;
+      expect((init!.headers as Record<string, string>).Authorization).toBe('Bearer opper-good');
+    });
+
+    it('goes through the custom server path when pointed elsewhere', async () => {
+      fetchMock.mockResolvedValueOnce(chatOkBody());
+      fetchMock.mockResolvedValueOnce(modelsBody('local-model'));
+      expect(await validateApiKey('opper', 'opper-key', 'http://localhost:8787/v1', 'local-model')).toEqual({
+        valid: true,
+        models: ['local-model'],
+      });
+      expect(fetchMock.mock.calls[0]![0]).toBe('http://localhost:8787/v1/chat/completions');
+    });
+  });
+
   describe('whether a key can spend', () => {
     const freeTierKeyBody = {
       data: {

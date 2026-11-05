@@ -78,6 +78,21 @@ export const AI_PROVIDERS = {
       { id: CUSTOM_MODEL_VALUE, label: 'Custom' },
     ],
   },
+  opper: {
+    label: 'Opper',
+    protocol: 'openai',
+    transport: 'chat',
+    defaultBaseUrl: 'https://api.opper.ai/v3/compat',
+    defaultModel: 'gpt-4o-mini',
+    models: [
+      { id: 'gpt-4o-mini', label: 'GPT-4o Mini' },
+      { id: 'gpt-4.1-mini', label: 'GPT-4.1 Mini' },
+      { id: 'claude-haiku-4-5', label: 'Claude Haiku 4.5' },
+      { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+      { id: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite' },
+      { id: CUSTOM_MODEL_VALUE, label: 'Custom' },
+    ],
+  },
 } satisfies Record<string, AIProviderConfig>;
 
 export type AIProviderKey = keyof typeof AI_PROVIDERS;

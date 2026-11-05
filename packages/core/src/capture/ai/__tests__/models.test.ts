@@ -103,6 +103,19 @@ describe('every provider takes a custom server', () => {
     }
   });
 
+  it('offers Opper with its own endpoint and model ids without a vendor prefix', () => {
+    const config = AI_PROVIDERS.opper;
+    expect(config.defaultBaseUrl).toBe('https://api.opper.ai/v3/compat');
+    expect(config.protocol).toBe('openai');
+    expect(config.transport).toBe('chat');
+    expect(config).not.toHaveProperty('keyCheckPath');
+    expect(config.defaultModel).toBe('gpt-4o-mini');
+    for (const option of config.models) {
+      if (option.id === CUSTOM_MODEL_VALUE) continue;
+      expect(option.id).toMatch(/^[a-z0-9][a-z0-9.-]*$/);
+    }
+  });
+
   it('includes a Custom model option', () => {
     const config = AI_PROVIDERS.openai;
     expect(config.models.some((m) => m.id === CUSTOM_MODEL_VALUE)).toBe(true);
