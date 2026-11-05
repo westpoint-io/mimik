@@ -31,6 +31,15 @@ describe('serializeScreenContext', () => {
     expect(text).toContain('→ Target: button "Save" (click)');
   });
 
+  it('leaves out a name that is a code identifier', () => {
+    expect(serializeScreenContext('click', meta({ role: 'textbox', name: 'source_view' }))).toContain(
+      '→ Target: text field (click)',
+    );
+    expect(serializeScreenContext('click', meta({ role: 'button', name: 'Save' }))).toContain(
+      '→ Target: button "Save" (click)',
+    );
+  });
+
   it('carries the typed value and says a key press is one', () => {
     expect(serializeScreenContext('input', meta({ role: 'textbox', textContent: 'hello' }))).toContain(
       'Value: "hello"',
