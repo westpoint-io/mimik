@@ -60,16 +60,12 @@ linux:
   category: Utility
   artifactName: ${productName}-${version}-${arch}.${ext}
   icon: linux/icon512.png
-  extraResources:
-    - from: linux/apparmor-profile
-      to: apparmor-profile
   target:
     - AppImage
     - deb
     - rpm
 deb:
   afterInstall: linux/after-install.tpl
-  afterRemove: linux/after-remove.tpl
   depends:
     - libgtk-3-0
     - libnotify4

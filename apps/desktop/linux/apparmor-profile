@@ -1,8 +1,0 @@
-abi <abi/4.0>,
-include <tunables/global>
-
-profile "mimik" "/opt/Mimik/mimik" flags=(unconfined) {
-  userns,
-
-  include if exists <local/mimik>
-}
