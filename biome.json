@@ -135,7 +135,8 @@
         "apps/extension/src/ui/**",
         "apps/extension/src/lib/**",
         "apps/desktop/src/renderer/**",
-        "!packages/ui/src/components/ui/**"
+        "!packages/ui/src/components/ui/**",
+        "!**/__tests__/**"
       ],
       "linter": {
         "rules": {
