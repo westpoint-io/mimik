@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0](https://github.com/westpoint-io/mimik/compare/desktop-v1.1.0...desktop-v1.2.0) (2026-11-05)
+
+### Features
+
+* Linux beta on X11, as an AppImage, deb and rpm. On Wayland, starting a recording explains that it needs an X11 session
+* On Linux, steps name the control you clicked and the keys you pressed, as on Windows and macOS
+* Update progress in Settings and the tray, with a check a minute after launch and every four hours while Mimik runs
+* Edit the AI prompts and add your own instructions for step descriptions and for the guide title and summary, from AI settings
+* Send custom headers to your own AI server, set in Settings or onboarding and masked like the key
+* Copy selected steps to another guide, or to a new one, from the selection bar
+* Japanese, Korean and Traditional Chinese
+
 ## [1.1.0](https://github.com/westpoint-io/mimik/compare/desktop-v1.0.0...desktop-v1.1.0) (2026-10-30)
 
 
