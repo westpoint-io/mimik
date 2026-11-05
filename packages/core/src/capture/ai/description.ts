@@ -1,7 +1,6 @@
 import { generateText } from 'ai';
 import { localStorage } from '@/core/env';
-import { formatExamples, resolveExamples } from './examples';
-import { getLanguageSuffix, STEP_DESCRIPTION_PROMPT } from './prompts';
+import { composePrompt } from './custom-prompts';
 import { createModel } from './provider';
 import { unwrapQuotes } from './text';
 
@@ -11,16 +10,13 @@ export async function getAIDescription(
   model: string,
   apiKey: string,
   baseUrl?: string,
-  template = STEP_DESCRIPTION_PROMPT,
+  headers?: Record<string, string>,
 ): Promise<string | null> {
-  const settings = await localStorage.get(['aiLanguage']);
+  const settings = await localStorage.get(['aiLanguage', 'aiPrompts']);
   const locale = (settings.aiLanguage as string) || 'en';
-  const prompt = template
-    .replace('{{examples}}', formatExamples(resolveExamples(locale).steps))
-    .replace('{{context}}', () => context);
   const { text } = await generateText({
-    model: createModel(provider, model, apiKey, baseUrl),
-    prompt: prompt + getLanguageSuffix(locale),
+    model: createModel(provider, model, apiKey, baseUrl, headers),
+    prompt: composePrompt('steps', settings.aiPrompts, locale, context),
     maxOutputTokens: 1024,
   });
   return unwrapQuotes(text) || null;

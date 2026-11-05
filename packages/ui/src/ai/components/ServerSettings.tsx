@@ -1,9 +1,10 @@
-import type { AiServer } from '@mimik/core/capture/ai/keys';
+import { type AiServer, requestHeaders, type ServerHeader } from '@mimik/core/capture/ai/keys';
 import { i18n } from '@mimik/core/env';
-import { Server } from 'lucide-react';
+import { Plus, Server, Trash2 } from 'lucide-react';
 import { useEffect } from 'react';
 import { Segmented } from '../../common/components/Segmented';
 import { SettingsCard } from '../../common/components/SettingsCard';
+import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { useKeyCheck } from '../hooks/use-key-check';
 import type { ValidateKey } from '../types';
@@ -22,7 +23,8 @@ export function ServerSettings({ server, onChange, validate }: ServerSettingsPro
   const keyCheck = useKeyCheck(validate);
   const { check, reset } = keyCheck;
   const probe = (next: AiServer) => {
-    if (next.url.trim()) void check(next.protocol, next.apiKey.trim(), next.url.trim());
+    if (next.url.trim())
+      void check(next.protocol, next.apiKey.trim(), next.url.trim(), undefined, requestHeaders(next.headers));
   };
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: checks the saved key once, when the screen opens
@@ -34,6 +36,9 @@ export function ServerSettings({ server, onChange, validate }: ServerSettingsPro
     reset();
     onChange(patch);
   };
+
+  const setHeader = (index: number, patch: Partial<ServerHeader>) =>
+    change({ headers: server.headers.map((header, i) => (i === index ? { ...header, ...patch } : header)) });
 
   return (
     <SettingsCard
@@ -103,6 +108,56 @@ export function ServerSettings({ server, onChange, validate }: ServerSettingsPro
               probe({ ...server, protocol });
             }}
           />
+        </div>
+        <div className="flex items-start gap-3 py-2.5">
+          <span className="w-[152px] shrink-0 pt-1.5 text-[13px] font-semibold text-foreground">
+            {i18n.t('settings.serverHeaders')}
+          </span>
+          <div className="flex min-w-0 flex-1 flex-col items-start gap-2">
+            {server.headers.map((header, index) => (
+              // biome-ignore lint/suspicious/noArrayIndexKey: rows have no identity besides their position
+              <div key={index} className="flex w-full items-center gap-2">
+                <Input
+                  value={header.name}
+                  onChange={(e) => setHeader(index, { name: e.target.value })}
+                  onBlur={() => probe(server)}
+                  placeholder={i18n.t('settings.headerName')}
+                  aria-label={i18n.t('settings.headerName')}
+                  className="h-8 w-36 shrink-0 text-[13px] rounded-lg border-border"
+                />
+                <SecretInput
+                  value={header.value}
+                  onChange={(value) => setHeader(index, { value })}
+                  onBlur={() => probe(server)}
+                  placeholder={i18n.t('settings.headerValue')}
+                  className="h-8 text-[13px] rounded-lg border-border"
+                />
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => {
+                    const headers = server.headers.filter((_, i) => i !== index);
+                    change({ headers });
+                    probe({ ...server, headers });
+                  }}
+                  aria-label={i18n.t('settings.removeHeader')}
+                  title={i18n.t('settings.removeHeader')}
+                  className="text-muted-foreground"
+                >
+                  <Trash2 size={13} />
+                </Button>
+              </div>
+            ))}
+            <Button
+              variant="ghost"
+              size="xs"
+              onClick={() => change({ headers: [...server.headers, { name: '', value: '' }] })}
+              className="text-[12px] font-semibold text-muted-foreground"
+            >
+              <Plus />
+              {i18n.t('settings.addHeader')}
+            </Button>
+          </div>
         </div>
       </div>
     </SettingsCard>

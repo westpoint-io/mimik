@@ -14,6 +14,7 @@ import { advanceSession, cancelSession, completeSession, getSession, startSessio
 import { actionSteps } from '@/core/guides/blocks';
 import {
   createGuide,
+  deleteStep,
   getScreenshotsForSteps,
   getStepsForGuide,
   permanentlyDeleteGuide,
@@ -23,19 +24,25 @@ import type { Step } from '@/core/guides/types';
 import { getActiveTab } from '@/lib/browser-api/get-active-tab';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import { openSidebar } from '@/lib/browser-api/open-sidebar';
+import { queryTabs } from '@/lib/browser-api/query-tabs';
 import { requestHostPermissions } from '@/lib/browser-api/request-host-permissions';
 import { sendMessageToTab } from '@/lib/browser-api/send-message-to-tab';
 import { setSidePanelBehavior } from '@/lib/browser-api/set-side-panel-behavior';
 import { toggleSidebar } from '@/lib/browser-api/toggle-sidebar';
 import { updateTab } from '@/lib/browser-api/update-tab';
 import { recordInstall } from '@/lib/letter-notice/record-install';
-import { onMessage } from '@/lib/messaging';
+import { onMessage, sendMessage } from '@/lib/messaging';
 import { openGuideInFullview } from '@/lib/open-guide-in-fullview';
 import { broadcastStateToPanel } from '@/lib/port/broadcast-state-to-panel';
+import { CARD_PORT_NAME, PORT_NAME } from '@/lib/port/constants';
+import { postTo } from '@/lib/port/post-to';
 import { setupPortListener } from '@/lib/port/setup-port-listener';
 import { TabMessage } from '@/lib/tab-messages';
 import { recordUpdate } from '@/lib/update-notice/record-update';
 import { getActor, getStateUpdate, initActor, initActorFallback, waitUntilReady } from './actor';
+import { showStepBadge } from './badge';
+import { cardFeed } from './card-feed';
+import { syncCardPopup } from './card-popup';
 import { generateGuideMetaOnStop } from './guide-meta';
 import { registerNavigationListeners } from './navigation';
 import { pauseCapture, resumeFromPause, whenPauseSettled } from './pause';
@@ -46,6 +53,7 @@ import {
   broadcastClearBlur,
   broadcastDetachCapture,
   broadcastDetachCaptureAndFlush,
+  injectContentScript,
   isInjectableTab,
   showNotificationOnTab,
 } from './tab-manager';
@@ -138,12 +146,47 @@ export default defineBackground(() => {
     browser.tabs.create({ url: browser.runtime.getURL('/onboarding.html') });
   });
 
-  setSidePanelBehavior(true);
-  if (import.meta.env.BROWSER === 'firefox') {
-    browser.action.onClicked.addListener(() => {
+  let cardMode = false;
+  const setCardMode = (on: boolean) => {
+    cardMode = on;
+    setSidePanelBehavior(!on);
+  };
+  void localStorage.get(['recordingCard']).then(({ recordingCard }) => setCardMode(recordingCard === true));
+  const syncAllCardPopups = () =>
+    void queryTabs({}).then((tabs) => tabs.forEach((tab) => void syncCardPopup(tab).catch(() => undefined)));
+  syncAllCardPopups();
+  browser.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'local' || !('recordingCard' in changes)) return;
+    setCardMode(changes.recordingCard?.newValue === true);
+    syncAllCardPopups();
+  });
+  browser.tabs.onCreated.addListener((tab) => void syncCardPopup(tab).catch(() => undefined));
+  browser.tabs.onUpdated.addListener((_tabId, change, tab) => {
+    if (change.url) void syncCardPopup(tab).catch(() => undefined);
+  });
+  (browser.action ?? browser.browserAction).onClicked.addListener((tab) => {
+    if (import.meta.env.BROWSER === 'firefox' && !cardMode) {
       toggleSidebar();
-    });
-  }
+      return;
+    }
+    const url = tab.url || tab.pendingUrl || '';
+    if (tab.id && url.startsWith(browser.runtime.getURL('/'))) {
+      void sendMessage('toggleCardInPage', tab.id).catch(() => undefined);
+      return;
+    }
+    if (!tab.id || !isRecordableUrl(url)) {
+      void syncCardPopup(tab)
+        .then(() => (browser.action ?? browser.browserAction).openPopup())
+        .catch(() => undefined);
+      return;
+    }
+    const permitted = requestHostPermissions();
+    const tabId = tab.id;
+    void permitted
+      .then(() => injectContentScript(tabId))
+      .then(() => sendMessageToTab(tabId, { type: TabMessage.TOGGLE_CARD }))
+      .catch(() => openSidebar());
+  });
   initActor().catch(initActorFallback);
   cancelSession();
   registerNavigationListeners();
@@ -156,8 +199,15 @@ export default defineBackground(() => {
         port.postMessage(getStateUpdate());
         port.postMessage(getVoiceUpdate());
       } catch {}
+      const { state, currentGuideId } = getStateUpdate();
+      if (port.name !== CARD_PORT_NAME || !isLive(state) || !currentGuideId) return;
+      cardFeed
+        .hydrate(currentGuideId)
+        .catch(() => undefined)
+        .then(() => postTo(port, cardFeed.attach()));
     });
 
+    if (port.name !== PORT_NAME) return;
     port.onDisconnect.addListener(() => {
       getSession().then((session) => {
         if (session?.active) {
@@ -169,14 +219,19 @@ export default defineBackground(() => {
   });
 
   waitUntilReady().then(() => {
-    getActor().subscribe(() => broadcastStateToPanel(getStateUpdate()));
+    getActor().subscribe(() => {
+      const update = getStateUpdate();
+      broadcastStateToPanel(update);
+      showStepBadge(update);
+      if (!isLive(update.state)) cardFeed.reset();
+    });
   });
 
   const resume = () => resumeFromPause(startNarrationIfPossible);
 
   registerShortcuts({
     record: async () => {
-      openSidebar();
+      if (!cardMode) openSidebar();
       const permitted = requestHostPermissions();
       await waitUntilReady();
       if (isLive(getStateUpdate().state)) {
@@ -210,7 +265,11 @@ export default defineBackground(() => {
 
   onMessage('startRecording', ({ data }) => startRecording(data));
 
-  onMessage('stopRecording', () => stopRecording());
+  onMessage('stopRecording', async ({ data }) => {
+    const stopped = await stopRecording();
+    if (data?.openGuide && stopped.guideId) await openGuideInFullview(stopped.guideId);
+    return stopped;
+  });
 
   onMessage('discardRecording', async () => {
     await waitUntilReady();
@@ -268,7 +327,9 @@ export default defineBackground(() => {
 
   onMessage('generateGuideDescription', ({ data }) => generateDescriptionOnDemand(data.guideId));
 
-  onMessage('validateApiKey', ({ data }) => validateApiKey(data.provider, data.apiKey, data.baseUrl, data.model));
+  onMessage('validateApiKey', ({ data }) =>
+    validateApiKey(data.provider, data.apiKey, data.baseUrl, data.model, data.headers),
+  );
 
   onMessage('listVoices', async ({ data }) => {
     const { fetchVoices } = await import('@/core/export/voiceover/client');
@@ -277,9 +338,18 @@ export default defineBackground(() => {
 
   onMessage('rewriteSelection', ({ data }) => rewriteSelection(data.text, data.instruction));
 
-  onMessage('captureStep', async ({ data }) => {
+  onMessage('captureStep', async ({ data, sender }) => {
     await waitUntilReady();
-    return handleCaptureStep(data);
+    return handleCaptureStep(data, sender.tab?.id);
+  });
+
+  onMessage('removeStep', async ({ data }) => {
+    await waitUntilReady();
+    const { currentGuideId } = getStateUpdate();
+    if (!currentGuideId) return;
+    await deleteStep(currentGuideId, data);
+    getActor().send({ type: 'STEP_REMOVED' });
+    cardFeed.remove(data);
   });
 
   onMessage('updateInputStep', async ({ data }) => {
@@ -288,9 +358,9 @@ export default defineBackground(() => {
     return { updated: true };
   });
 
-  onMessage('finalizeInputStep', async ({ data }) => {
+  onMessage('finalizeInputStep', async ({ data, sender }) => {
     await waitUntilReady();
-    await handleFinalizeInputStep(data.stepId, data.elementMeta, data.domContext, data.typed);
+    await handleFinalizeInputStep(data.stepId, data.elementMeta, data.domContext, data.typed, sender.tab?.id);
     return { updated: true };
   });
 

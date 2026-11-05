@@ -26,6 +26,7 @@ interface StepCardProps {
   readOnly?: boolean;
   onChanged?: () => void;
   hasApiKey?: boolean;
+  isNew?: boolean;
 }
 
 export function StepCard({
@@ -40,6 +41,7 @@ export function StepCard({
   readOnly,
   onChanged,
   hasApiKey,
+  isNew,
 }: StepCardProps) {
   const [description, setDescription] = useState(step.description);
   const shortcut = splitAtShortcut(step.description, step.action);
@@ -96,7 +98,9 @@ export function StepCard({
   };
 
   return (
-    <div className="rounded-xl mb-3 overflow-hidden transition-shadow border border-border bg-card">
+    <div
+      className={`rounded-xl mb-3 overflow-hidden transition-shadow border bg-card ${isNew ? 'border-violet/60' : 'border-border'}`}
+    >
       {screenshot ? (
         <ScreenshotView
           screenshot={screenshot}
@@ -117,7 +121,7 @@ export function StepCard({
         />
       )}
 
-      <div className="px-3 pt-2 pb-2">
+      <div className={`px-3 pt-2 pb-2 ${isNew ? 'bg-secondary' : ''}`}>
         <div className="flex items-center gap-2">
           <span className="flex items-center justify-center w-[22px] h-[22px] rounded-full text-[11px] font-bold shrink-0 bg-primary text-primary-foreground">
             {number}
@@ -150,6 +154,9 @@ export function StepCard({
               onSelect={askAi.onSelect}
               onBlur={handleDescriptionBlur}
             />
+          )}
+          {isNew && (
+            <span className="shrink-0 text-[11px] font-semibold text-violet-dark">{i18n.t('editor.newStep')}</span>
           )}
         </div>
         <div className="flex items-center justify-between gap-2 mt-1">

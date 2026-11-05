@@ -53,6 +53,7 @@ export const getSnapshots: GuideStore['getSnapshots'] = (...args) => store.getSn
 export const renameSnapshot: GuideStore['renameSnapshot'] = (...args) => store.renameSnapshot(...args);
 export const revertToSnapshot: GuideStore['revertToSnapshot'] = (...args) => store.revertToSnapshot(...args);
 export const duplicateGuide: GuideStore['duplicateGuide'] = (...args) => store.duplicateGuide(...args);
+export const copySteps: GuideStore['copySteps'] = (...args) => store.copySteps(...args);
 export const importGuide: GuideStore['importGuide'] = (...args) => store.importGuide(...args);
 export const saveTranscript: GuideStore['saveTranscript'] = (...args) => store.saveTranscript(...args);
 export const getTranscripts: GuideStore['getTranscripts'] = (...args) => store.getTranscripts(...args);

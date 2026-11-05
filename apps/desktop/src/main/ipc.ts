@@ -7,6 +7,13 @@ export interface DesktopStateUpdate extends CaptureStateUpdate {
   narrationWasLive: boolean;
 }
 
+export interface UpdateStatus {
+  phase: 'idle' | 'checking' | 'downloading' | 'ready' | 'upToDate' | 'unavailable' | 'error';
+  percent: number;
+  version: string | null;
+  checkedAt: number | null;
+}
+
 export type DesktopCaptureStepData = CaptureStepData & {
   inputValue?: string;
   zoomLevel?: number;

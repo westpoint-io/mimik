@@ -18,15 +18,26 @@ import { captureVisibleTab } from '@/lib/browser-api/capture-visible-tab';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import type { CaptureStepData, CaptureStepResponse } from '@/lib/messaging';
 import { getActor } from './actor';
+import { aimFor } from './aim-for';
+import { withCardHidden } from './card';
+import { cardFeed } from './card-feed';
 import { describeDomStep } from './describe-dom-step';
 import { flushNarrationForStep, getVoiceUpdate } from './voice';
 
-async function takeScreenshot(stepId: string, meta: ElementMeta): Promise<string | undefined> {
+interface Shot {
+  id?: string;
+  src: string;
+}
+
+async function takeScreenshot(stepId: string, meta: ElementMeta, tabId?: number): Promise<Shot> {
   try {
     const { targetColor } = await localStorage.get(['targetColor']);
-    const dataUrl = await captureVisibleTab('jpeg', 90);
+    cardFeed.setBusy(true);
+    cardFeed.setProgress(90, 250);
+    const dataUrl = await withCardHidden(tabId, () => captureVisibleTab('jpeg', 90));
     const blob = await fetch(dataUrl).then((r) => r.blob());
     const img = await createImageBitmap(blob);
+    cardFeed.setPrint({ src: dataUrl, aim: aimFor(meta, img) });
     const screenshot = screenshotForElement(
       {
         id: crypto.randomUUID(),
@@ -41,10 +52,10 @@ async function takeScreenshot(stepId: string, meta: ElementMeta): Promise<string
     );
     img.close();
     await saveScreenshot(screenshot);
-    return screenshot.id;
+    return { id: screenshot.id, src: dataUrl };
   } catch (err) {
     logger.warn('Screenshot capture failed', err);
-    return undefined;
+    return { src: '' };
   }
 }
 
@@ -59,27 +70,40 @@ const narration: StepNarration = {
   },
 };
 
-export async function handleCaptureStep(data: CaptureStepData): Promise<CaptureStepResponse> {
+export async function handleCaptureStep(data: CaptureStepData, tabId?: number): Promise<CaptureStepResponse> {
   const snap = getActor().getSnapshot();
   if (snap.value !== CaptureState.RECORDING) return { ignored: true };
 
   getActor().send({ type: 'USER_ACTION' });
 
   const stepId = crypto.randomUUID();
-  const screenshotId = await takeScreenshot(stepId, data.elementMeta);
+  const shot = await takeScreenshot(stepId, data.elementMeta, tabId);
   const domContext = data.domContext;
 
-  await writeStep({
-    stepId,
-    guideId: snap.context.currentGuideId!,
-    action: data.action,
-    elementMeta: data.elementMeta,
-    screenshotId,
-    place: { url: snap.context.currentUrl },
-    describable: data.action !== 'input' && domContext !== undefined,
-    describe: () => (domContext ? describeDomStep(stepId, domContext) : Promise.resolve()),
-    narration: getVoiceUpdate().phase === 'recording' ? narration : null,
-  });
+  try {
+    const written = await writeStep({
+      stepId,
+      guideId: snap.context.currentGuideId!,
+      action: data.action,
+      elementMeta: data.elementMeta,
+      screenshotId: shot.id,
+      place: { url: snap.context.currentUrl },
+      describable: data.action !== 'input' && domContext !== undefined,
+      describe: () => (domContext ? describeDomStep(stepId, domContext) : Promise.resolve()),
+      narration: getVoiceUpdate().phase === 'recording' ? narration : null,
+    });
+    cardFeed.add({
+      id: stepId,
+      title: written.description,
+      action: data.action,
+      src: shot.src,
+      source: 'heuristic',
+      pending: written.pending,
+      url: snap.context.currentUrl ?? '',
+    });
+  } finally {
+    cardFeed.setBusy(false);
+  }
 
   return { stepId };
 }
@@ -87,6 +111,7 @@ export async function handleCaptureStep(data: CaptureStepData): Promise<CaptureS
 export async function handleUpdateInputStep(stepId: string, description: string, inputValue?: string) {
   if (!isRecording()) return;
   await updateStepDescription(stepId, description);
+  cardFeed.update(stepId, { title: description });
   if (inputValue !== undefined) {
     await updateStepInputValue(stepId, inputValue);
   }
@@ -97,10 +122,16 @@ export async function handleFinalizeInputStep(
   elementMeta: ElementMeta,
   domContext: DOMContext | undefined,
   typed: boolean,
+  tabId?: number,
 ) {
   if (!isLive(getActor().getSnapshot().value)) return;
-  const screenshotId = await takeScreenshot(stepId, elementMeta);
-  await updateStepCapture(stepId, elementMeta, screenshotId, typed ? undefined : 'click');
+  const shot = await takeScreenshot(stepId, elementMeta, tabId);
+  try {
+    await updateStepCapture(stepId, elementMeta, shot.id, typed ? undefined : 'click');
+    if (shot.src) cardFeed.update(stepId, { src: shot.src });
+  } finally {
+    cardFeed.setBusy(false);
+  }
 
   const guideId = (await getStep(stepId))?.guideId;
   if (domContext && guideId) queueDescription(guideId, () => describeDomStep(stepId, domContext));

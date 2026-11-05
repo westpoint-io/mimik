@@ -4,8 +4,16 @@ use napi::bindgen_prelude::AsyncTask;
 use napi::{Env, Result, Task};
 use napi_derive::napi;
 
-#[cfg(any(windows, target_os = "macos", test))]
+#[cfg(target_os = "linux")]
+mod atspi;
+#[cfg(any(target_os = "linux", test))]
+mod atspimap;
+#[cfg(any(windows, target_os = "macos", target_os = "linux", test))]
 mod hit;
+#[cfg(any(target_os = "macos", target_os = "linux", test))]
+mod keys;
+#[cfg(target_os = "linux")]
+mod linux;
 #[cfg(target_os = "macos")]
 mod mac;
 #[cfg(target_os = "macos")]
@@ -16,6 +24,10 @@ mod macmap;
 mod win;
 #[cfg(any(windows, test))]
 mod window;
+#[cfg(target_os = "linux")]
+mod x11;
+#[cfg(target_os = "linux")]
+use linux as platform;
 #[cfg(target_os = "macos")]
 use mac as platform;
 #[cfg(windows)]
@@ -97,7 +109,7 @@ impl Task for ElementLookup {
   type Output = Option<UiElement>;
   type JsValue = Option<UiElement>;
 
-  #[cfg(any(windows, target_os = "macos"))]
+  #[cfg(any(windows, target_os = "macos", target_os = "linux"))]
   fn compute(&mut self) -> Result<Self::Output> {
     match self.at {
       Some((x, y)) => platform::element_at_point(x, y),
@@ -105,7 +117,7 @@ impl Task for ElementLookup {
     }
   }
 
-  #[cfg(not(any(windows, target_os = "macos")))]
+  #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
   fn compute(&mut self) -> Result<Self::Output> {
     Ok(None)
   }
@@ -127,9 +139,9 @@ pub fn focused_element() -> AsyncTask<ElementLookup> {
 
 #[napi]
 pub fn key_label(keycode: u32) -> Option<String> {
-  #[cfg(any(windows, target_os = "macos"))]
+  #[cfg(any(windows, target_os = "macos", target_os = "linux"))]
   return platform::key_label(keycode);
-  #[cfg(not(any(windows, target_os = "macos")))]
+  #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
   {
     let _ = keycode;
     None
@@ -138,9 +150,9 @@ pub fn key_label(keycode: u32) -> Option<String> {
 
 #[napi]
 pub fn resolve_key(keycode: u32, shift: bool, ctrl: bool, alt: bool) -> Option<String> {
-  #[cfg(any(windows, target_os = "macos"))]
+  #[cfg(any(windows, target_os = "macos", target_os = "linux"))]
   return platform::resolve_key(keycode, shift, ctrl, alt);
-  #[cfg(not(any(windows, target_os = "macos")))]
+  #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
   {
     let _ = (keycode, shift, ctrl, alt);
     None
@@ -168,17 +180,39 @@ pub fn window_at(x: i32, y: i32) -> Option<ActiveWindow> {
 
 #[napi]
 pub fn clear_dead_key() {
-  #[cfg(any(windows, target_os = "macos"))]
+  #[cfg(any(windows, target_os = "macos", target_os = "linux"))]
   platform::clear_dead_key();
 }
 
 #[napi]
 pub fn release_web_content() {
-  #[cfg(target_os = "macos")]
+  #[cfg(any(target_os = "macos", target_os = "linux"))]
   platform::release_web_content();
 }
 
 #[napi]
+pub fn enable_accessibility() {
+  #[cfg(target_os = "linux")]
+  std::thread::spawn(atspi::enable);
+}
+
+#[napi]
 pub fn is_supported() -> bool {
-  cfg!(any(windows, target_os = "macos"))
+  cfg!(any(windows, target_os = "macos", target_os = "linux"))
+}
+
+#[napi]
+pub fn float_above_shell(window: u32) {
+  #[cfg(target_os = "linux")]
+  x11::float_above_shell(window);
+  #[cfg(not(target_os = "linux"))]
+  let _ = window;
+}
+
+#[napi]
+pub fn focus_window(window: u32) {
+  #[cfg(target_os = "linux")]
+  x11::focus_window(window);
+  #[cfg(not(target_os = "linux"))]
+  let _ = window;
 }

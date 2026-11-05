@@ -44,12 +44,12 @@ jobs:
 
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "22"
           cache: pnpm
 
-      - run: sudo apt-get update && sudo apt-get install -y xvfb
+      - run: sudo apt-get update && sudo apt-get install -y xvfb libxkbcommon-dev
 
       - run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
@@ -78,6 +78,9 @@ jobs:
 
       - name: Bundle size
         run: pnpm size
+
+      - name: Build the native addon
+        run: pnpm --filter @mimik/capture-native build
 
       - name: Storage check
         run: xvfb-run -a pnpm --filter @mimik/desktop check:storage

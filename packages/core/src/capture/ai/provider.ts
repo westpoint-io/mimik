@@ -3,13 +3,23 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { coreFetch } from '@/core/env';
 import { AI_PROVIDERS, DEFAULT_AI_PROVIDER, findProvider, openAITransport, resolveBaseUrl } from './models';
 
-export function createModel(provider: string, model: string, apiKey: string, baseUrl?: string) {
+export function createModel(
+  provider: string,
+  model: string,
+  apiKey: string,
+  baseUrl?: string,
+  headers?: Record<string, string>,
+) {
   const config = findProvider(provider) ?? AI_PROVIDERS[DEFAULT_AI_PROVIDER];
   const baseURL = resolveBaseUrl(config, baseUrl);
   if (config.protocol === 'anthropic') {
-    const headers = { 'anthropic-dangerous-direct-browser-access': 'true' };
-    return createAnthropic({ apiKey, baseURL, headers, fetch: coreFetch })(model);
+    return createAnthropic({
+      apiKey,
+      baseURL,
+      headers: { 'anthropic-dangerous-direct-browser-access': 'true', ...headers },
+      fetch: coreFetch,
+    })(model);
   }
-  const openai = createOpenAI({ apiKey, baseURL, name: provider, fetch: coreFetch });
+  const openai = createOpenAI({ apiKey, baseURL, name: provider, headers, fetch: coreFetch });
   return openAITransport(config, baseUrl) === 'responses' ? openai(model) : openai.chat(model);
 }

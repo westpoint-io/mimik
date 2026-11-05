@@ -38,7 +38,13 @@ export interface ElementRect {
   height: number
 }
 
+export declare function enableAccessibility(): void
+
+export declare function floatAboveShell(window: number): void
+
 export declare function focusedElement(): Promise<UiElement | null>
+
+export declare function focusWindow(window: number): void
 
 export interface HookEvent {
   kind: string

@@ -264,6 +264,17 @@ describe('guide meta prompt', () => {
     expect(prompt).toContain('Spesenabrechnung in Workday einreichen');
   });
 
+  it('sends saved instructions after the steps', async () => {
+    vi.mocked(localStorage.get).mockResolvedValue({
+      aiLanguage: 'en',
+      aiPrompts: { guide: { instructions: 'Start with the team name.' } },
+    });
+    await generateGuideMeta(steps, 'openai', 'gpt-4o-mini', 'key');
+    const prompt = generateObjectMock.mock.calls[0]![0].prompt as string;
+    expect(prompt.indexOf('Start with the team name.')).toBeGreaterThan(-1);
+    expect(prompt.indexOf('Start with the team name.')).toBeGreaterThan(prompt.indexOf('Steps:'));
+  });
+
   it('does not let step text act as a replacement pattern', async () => {
     vi.mocked(localStorage.get).mockResolvedValue({ aiLanguage: 'en' });
     await generateGuideMeta([{ description: 'Click $& then $`', place: 'https://example.com' }], 'openai', 'm', 'key');

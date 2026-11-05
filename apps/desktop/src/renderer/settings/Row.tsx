@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 interface RowProps {
   label: string;
-  hint?: string;
+  hint?: ReactNode;
   stack?: boolean;
   children: ReactNode;
 }

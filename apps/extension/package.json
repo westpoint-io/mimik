@@ -22,24 +22,24 @@
     "@mimik/core": "workspace:*",
     "@mimik/ui": "workspace:*",
     "@webext-core/messaging": "^2.3.0",
-    "lucide-react": "^1.52.0",
-    "p-queue": "^9.3.3",
-    "react": "^19.3.0",
-    "react-dom": "^19.3.0",
-    "xstate": "^5.33.2"
+    "lucide-react": "^1.68.0",
+    "p-queue": "^9.3.5",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "xstate": "^5.33.3"
   },
   "devDependencies": {
-    "@size-limit/file": "^14.1.0",
-    "@tailwindcss/vite": "^4.3.3",
+    "@size-limit/file": "^14.3.0",
+    "@tailwindcss/vite": "^4.3.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@wxt-dev/i18n": "^0.2.8",
     "@wxt-dev/module-react": "^1.2.2",
-    "size-limit": "^14.1.0",
+    "size-limit": "^14.3.0",
     "typescript": "^5.9.3",
-    "vite": "^8.0.3",
-    "web-ext": "^10.7.0",
-    "wxt": "^0.21.4"
+    "vite": "^8.3.5",
+    "web-ext": "^10.8.0",
+    "wxt": "^0.21.5"
   },
   "size-limit": [
     {
@@ -55,7 +55,7 @@
     {
       "name": "pages",
       "path": ".output/chrome-mv3/chunks/*.js",
-      "limit": "620 kB"
+      "limit": "640 kB"
     }
   ]
 }

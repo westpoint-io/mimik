@@ -28,7 +28,6 @@ import { PressHold } from './press-hold';
 const REPEAT_CLICK_MS = 300;
 const MAC = /Mac/i.test(navigator.platform);
 const DRAG_MIN_PX = 30;
-const INTERCEPT_DELAY_MS = 100;
 const PAINT_FRAMES = 3;
 const CAPTURE_BUDGET_MS = 2500;
 const EMBED_TAGS = new Set(['IFRAME', 'EMBED', 'OBJECT']);
@@ -223,16 +222,10 @@ class CaptureController {
     if (isNavigatingClick(target)) {
       me.preventDefault();
       me.stopImmediatePropagation();
-      this.enqueue(this.capture('click', target, { x: me.clientX, y: me.clientY }));
-      const anchor = target.closest('a[href]') as HTMLAnchorElement;
-      if (anchor) {
-        const href = anchor.href;
-        requestAnimationFrame(() =>
-          setTimeout(() => {
-            window.location.href = href;
-          }, INTERCEPT_DELAY_MS),
-        );
-      }
+      const href = (target.closest('a[href]') as HTMLAnchorElement | null)?.href;
+      this.enqueue(this.capture('click', target, { x: me.clientX, y: me.clientY }), () => {
+        if (href) window.location.href = href;
+      });
       return false;
     }
 

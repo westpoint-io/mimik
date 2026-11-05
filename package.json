@@ -25,20 +25,21 @@
     "prepare": "husky .github/husky"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.15",
+    "@biomejs/biome": "2.6.3",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.3",
-    "@vitejs/plugin-react": "^6.0.1",
-    "@vitest/coverage-istanbul": "^5.0.3",
-    "fake-indexeddb": "^6.2.5",
-    "happy-dom": "^20.14.5",
+    "@vitejs/plugin-react": "^6.2.1",
+    "@vitest/coverage-istanbul": "^5.1.0",
+    "fake-indexeddb": "^6.2.7",
+    "happy-dom": "^20.14.6",
     "husky": "^9.1.7",
     "jscpd": "^4.3.0",
-    "jsdom": "^30.1.2",
-    "knip": "^6.39.0",
+    "jsdom": "^30.1.3",
+    "knip": "^6.44.1",
+    "opencc-js": "1.4.2",
     "typescript": "^5.9.3",
-    "vitest": "^5.0.3",
-    "wxt": "^0.21.4"
+    "vitest": "^5.1.0",
+    "wxt": "^0.21.5"
   },
   "knip": {
     "ignoreUnresolved": [
@@ -132,5 +133,13 @@
       "console"
     ],
     "silent": true
+  },
+  "pnpm": {
+    "updateConfig": {
+      "ignoreDependencies": [
+        "ai",
+        "@ai-sdk/*"
+      ]
+    }
   }
 }

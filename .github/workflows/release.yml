@@ -48,9 +48,14 @@ jobs:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
 
+  desktop-linux:
+    needs: release-pr
+    if: needs.release-pr.outputs.desktop == 'true'
+    uses: $/.github/workflows/desktop-linux-release.yml
+
   desktop:
     name: Desktop installers
-    needs: [release-pr, desktop-windows]
+    needs: [release-pr, desktop-windows, desktop-linux]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -60,12 +65,24 @@ jobs:
           name: mimik-windows-signed
           path: dist
 
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: mimik-linux
+          path: dist
+
       - env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.release-pr.outputs.desktop-tag }}
         run: |
           gh release upload "$TAG" dist/* --repo "$GITHUB_REPOSITORY"
-          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest --title "Desktop ${TAG#desktop-}"
+          {
+            gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json body -q .body
+            printf '\n\n### Linux (beta)\n\n'
+            printf 'The AppImage, deb and rpm are a beta for x86_64. Recording needs an X11 session; on Wayland, pick an Xorg or X11 session at the login screen. '
+            printf 'On Ubuntu 24.04 and later, install the deb: the AppImage cannot set up the sandbox there and closes at launch. '
+            printf 'Elsewhere the AppImage needs FUSE 2: `libfuse2` on Ubuntu 22.04 and Debian, `fuse-libs` on Fedora.\n'
+          } > notes.md
+          gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest --title "Desktop ${TAG#desktop-}" --notes-file notes.md
 
   extension:
     name: Extension packages
@@ -81,7 +98,7 @@ jobs:
 
       - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: "22"
 

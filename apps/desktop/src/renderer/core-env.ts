@@ -7,6 +7,7 @@ import { mainFetch } from './lib/main-fetch';
 
 const locale = appLocale(window.localStorage.getItem('appLanguage')?.replace(/^"|"$/g, ''), navigator.language);
 window.mimik?.locale(locale);
+document.documentElement.lang = locale;
 
 configureCore({
   client: 'desktop',

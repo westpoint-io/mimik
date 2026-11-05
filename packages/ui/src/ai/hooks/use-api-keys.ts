@@ -20,7 +20,7 @@ export interface ApiKeysState {
   setServer: (patch: Partial<AiServer>) => void;
 }
 
-const NO_SERVER: AiServer = { url: '', protocol: 'openai', apiKey: '' };
+const NO_SERVER: AiServer = { url: '', protocol: 'openai', apiKey: '', headers: [] };
 
 interface Options {
   onChange?: (patch: Record<string, unknown>) => void;
@@ -85,7 +85,13 @@ export function useApiKeys({ onChange, reloadOnFocus = false }: Options = {}): A
       const nextKeys = withKey(latest.current.keys, SERVER, next.apiKey);
       setServerState(next);
       setKeys(nextKeys);
-      save({ aiServerUrl: next.url.trim(), aiServerProtocol: next.protocol, aiBaseUrl: '', apiKeys: nextKeys });
+      save({
+        aiServerUrl: next.url.trim(),
+        aiServerProtocol: next.protocol,
+        aiServerHeaders: next.headers,
+        aiBaseUrl: '',
+        apiKeys: nextKeys,
+      });
     },
     [save],
   );

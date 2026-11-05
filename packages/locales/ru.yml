@@ -132,11 +132,31 @@ settings:
   hideKey: Скрыть ключ
   clearKey: Удалить ключ
   aiLanguage: Язык описаний
+  aiAdvanced: "Дополнительно"
+  aiAdvancedHint: "Просмотр и изменение промптов, которые отправляет Mimik."
+  aiPromptsTitle: "AI-промпты"
+  aiPromptsHint: "Измените то, о чём Mimik просит вашего AI-провайдера, или добавьте свои правила ниже."
+  aiPromptLabel: "Промпт Mimik"
+  aiPromptDefault: "По умолчанию"
+  aiPromptEdited: "Изменён"
+  aiPromptReset: "Сбросить промпт"
+  aiInstructionsLabel: "Ваши инструкции"
+  aiInstructionsPlaceholder: "Например: пишите от второго лица. Называйте продукт «Acme»."
+  aiCustomised: "Изменено"
+  aiReset: "Сбросить"
+  aiResetConfirmTitle: "Сбросить «$1»?"
+  aiResetConfirmMessage: "Изменённый промпт и ваши инструкции для этого раздела будут удалены. Отменить действие нельзя."
+  aiExamplesSwitched: "Язык примеров: $1"
   apiKeys: API-ключи
   aiSection: AI
   ownServer: Свой сервер
   optional: Необязательно
   serverSpeaks: Совместим с
+  serverHeaders: "Заголовки"
+  headerName: "Имя заголовка"
+  headerValue: "Значение"
+  addHeader: "Добавить заголовок"
+  removeHeader: "Удалить заголовок"
   protocolOpenai: OpenAI
   protocolAnthropic: Anthropic
   noServer: Адрес сервера ещё не указан.
@@ -200,9 +220,15 @@ settings:
   smartBlur: Умное размытие
   version: Версия $1
   reportBug: "Сообщить об ошибке"
+  machineTranslated: "Этот язык переведён с помощью ИИ, поэтому некоторые фразы могут звучать неточно. Нашли ошибку? Откройте pull request на GitHub."
+  fixTranslation: "Исправить перевод"
   aboutSection: "О Mimik"
   appearance: "Оформление"
   appearanceHint: "Светлое, тёмное или как в системе."
+  recordingControls: "Управление записью"
+  recordingControlsHint: "Где во время записи показываются «Готово», пауза и последний шаг. С карточкой страница сохраняет всю ширину."
+  recordingInPanel: "Боковая панель"
+  recordingInCard: "Карточка на странице"
   themeSystem: "Как в системе"
   themeLight: "Светлое"
   themeDark: "Тёмное"
@@ -267,19 +293,29 @@ desktop:
   startAtLoginHint: "Mimik открывается в трее, без окна."
   startAtLoginHintMac: Mimik открывается при входе в систему.
   version: Версия $1
-  versionHint: Mimik проверяет обновления при каждом запуске.
+  versionHint: "Mimik проверяет обновления, пока работает."
   checkUpdates: Проверить обновления
+  lastChecked: "Последняя проверка: $1"
+  checking: "Проверка…"
+  downloading: "Загрузка $1%"
+  restartToUpdate: "Перезапустить и обновить"
+  versionAvailable: "Доступна версия $1"
+  versionDownloaded: "Версия $1 загружена"
+  tryAgain: "Повторить"
+  updatesUnavailable: "Для этой версии обновления пока недоступны"
+  restart: "Перезапустить"
+  trayChecking: "Проверка обновлений…"
+  trayDownloading: "Загрузка обновления $1%"
   trayQuit: Выйти из Mimik
   trayRecording: "Mimik записывает. Нажмите, чтобы закончить."
   cannotRecord: Mimik не может записывать
+  needsX11: "Для записи других приложений нужен сеанс X11. Выйдите из системы, выберите на экране входа сеанс Xorg или X11 и снова запустите Mimik. Для записи в браузере используйте расширение Mimik."
+  getExtension: "Установить расширение"
   updateReady: Обновление готово
-  updateReadyMessage: Mimik $1 готов к установке.
-  restartNow: Перезапустить сейчас
+  updateReadyMessage: "Перезапустите Mimik, чтобы установить версию $1."
   later: Позже
-  updateFailed: Не удалось проверить обновления
-  updateFailedMessage: Mimik не смог связаться с сервером обновлений. Попробуйте позже.
-  upToDate: Обновлений нет
-  upToDateMessage: Mimik $1 — последняя версия.
+  updateFailed: "Сервер обновлений недоступен"
+  upToDate: "У вас последняя версия"
   cardScreenshots: Скриншоты
   cardGlobalKeys: Глобальные клавиши
   cardGlobalKeysHint: "Работают в любом приложении, пока Mimik запущен."
@@ -343,6 +379,23 @@ editor:
   selectedCount: "Выбрано: $1"
   deleteSelectedStep: Удалить выбранный шаг ($1)?
   deleteSelectedSteps: Удалить выбранные шаги ($1)?
+  copyTo: Копировать в
+  deselect: Снять выделение
+  copyStepTo: "Копировать 1 шаг в…"
+  copyStepsTo: "Копировать шаги ($1) в…"
+  copyStepsHint: "Скриншоты, размытие и правки копируются. Этот гайд не изменится."
+  searchGuidesToCopyTo: Поиск гайдов по названию
+  allGuides: Все гайды
+  sameSite: Тот же сайт
+  sameApp: То же приложение
+  newGuide: Новый гайд
+  noGuidesToCopyTo: Нет подходящих гайдов
+  copyStep: Копировать 1 шаг
+  copySteps: "Копировать шаги ($1)"
+  copyStepsFailed: Не удалось скопировать шаги. Попробуйте ещё раз.
+  stepCopied: "1 шаг скопирован из «$2»"
+  stepsCopied: "Шаги ($1) скопированы из «$2»"
+  newStep: Новый
   copyScreenshot: Копировать скриншот
   noScreenshot: Нет скриншота
   edit: Редактировать
@@ -639,6 +692,12 @@ onboarding:
   aiBest: "Для гайдов, которыми вы делитесь"
   aiExample: "Откройте «Биллинг», чтобы увидеть счета и тариф"
   exampleMeta: "Шаг 2 · Биллинг"
+  recordTitle: "Где показывать управление записью?"
+  recordMessage: "Кнопки «Готово», «Пауза» и последний шаг всегда под рукой во время записи. Это можно изменить в любой момент в настройках."
+  panelMessage: "Панель рядом со страницей с кнопками управления и шагами. Открывается по нажатию на значок Mimik."
+  panelBest: "Удобно на широком экране"
+  cardMessage: "Небольшая карточка поверх страницы, поэтому страница сохраняет полную ширину. Нажмите на значок Mimik, чтобы открыть её."
+  cardBest: "Удобно на ноутбуке"
   keyPrivacy: "Ваш ключ хранится на этом устройстве и отправляется только выбранному вами провайдеру."
   voiceToggleTitle: "Озвучка"
   voiceToggleHint: "Говорите, что делаете, и Mimik добавит это к следующему шагу."

@@ -18,6 +18,7 @@ type GuideMetaInputs =
       model: string;
       apiKey: string;
       baseUrl?: string;
+      headers?: Record<string, string>;
     }
   | { ok: false; reason: Extract<GuideDescriptionError, 'no-api-key' | 'no-steps'> };
 
@@ -36,7 +37,14 @@ export async function generateDescriptionOnDemand(guideId: string): Promise<Gene
     const inputs = await resolveGuideMetaInputs(guideId);
     if (!inputs.ok) return { error: inputs.reason };
 
-    const meta = await generateGuideMeta(inputs.steps, inputs.provider, inputs.model, inputs.apiKey, inputs.baseUrl);
+    const meta = await generateGuideMeta(
+      inputs.steps,
+      inputs.provider,
+      inputs.model,
+      inputs.apiKey,
+      inputs.baseUrl,
+      inputs.headers,
+    );
     if (!meta?.description) return { error: 'generation-failed' };
 
     await updateGuideDescription(guideId, meta.description);
