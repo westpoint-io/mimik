@@ -1,4 +1,5 @@
 import type { ElementMeta } from '@/core/guides/types';
+import { isIdentifier } from '../is-identifier';
 
 const READABLE_ROLES: Record<string, string> = {
   banner: 'title bar',
@@ -27,7 +28,7 @@ export function serializeScreenContext(action: string, meta: ElementMeta, previo
   if (meta.window?.title) lines.push(`Window: "${meta.window.title}"`);
   if (previous) lines.push(`Previous step: "${previous}"`);
 
-  const name = meta.ariaLabel ?? meta.name;
+  const name = meta.ariaLabel ?? (isIdentifier(meta.name) ? null : meta.name);
   const role = meta.role ? (READABLE_ROLES[meta.role] ?? meta.role) : 'control';
   const control = [role, name ? `"${name}"` : null].filter(Boolean).join(' ');
   lines.push(`→ Target: ${control} (${action.startsWith('keydown:') ? 'key press' : action})`);
