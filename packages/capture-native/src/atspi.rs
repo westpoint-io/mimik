@@ -5,6 +5,7 @@ use std::time::Duration;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use x11rb::connection::Connection as _;
+use x11rb::protocol::res::{ClientIdMask, ClientIdSpec, ConnectionExt as _};
 use x11rb::protocol::xproto::{AtomEnum, ConnectionExt as _, MapState, Window};
 use x11rb::rust_connection::RustConnection;
 use zbus::blocking::Connection;
@@ -348,6 +349,16 @@ fn owner_of(session: &Session, app: &Node) -> Option<u32> {
     .and_then(|reply| reply.body().deserialize().ok())
 }
 
+fn sandbox_of(pid: u32) -> Option<String> {
+  let cgroup = std::fs::read_to_string(format!("/proc/{pid}/cgroup")).ok()?;
+  let scope = cgroup
+    .lines()
+    .find_map(|line| line.strip_prefix("0::"))?
+    .rsplit('/')
+    .next()?;
+  scope.starts_with("app-flatpak-").then(|| scope.to_string())
+}
+
 fn has_window(app: &Node) -> bool {
   app
     .children()
@@ -359,10 +370,20 @@ fn app_for(session: &mut Session, pid: u32) -> Option<Node> {
   if let Some(found) = session.apps.get(&pid) {
     return Node::new(&session.bus, found.clone());
   }
-  let owned: Vec<Node> = apps(session)
-    .into_iter()
+  let all = apps(session);
+  let mut owned: Vec<Node> = all
+    .iter()
     .filter(|app| owner_of(session, app) == Some(pid))
+    .cloned()
     .collect();
+  if owned.is_empty() {
+    if let Some(sandbox) = sandbox_of(pid) {
+      owned = all
+        .into_iter()
+        .filter(|app| owner_of(session, app).and_then(sandbox_of).as_deref() == Some(sandbox.as_str()))
+        .collect();
+    }
+  }
   let chosen = match owned.len() {
     0 => return None,
     1 => owned.into_iter().next()?,
@@ -421,6 +442,19 @@ fn contains(conn: &RustConnection, root: Window, window: Window, x: i32, y: i32)
     && (top..top + i32::from(geometry.height)).contains(&y)
 }
 
+fn client_pid(conn: &RustConnection, window: Window) -> Option<u32> {
+  let spec = ClientIdSpec {
+    client: window,
+    mask: ClientIdMask::LOCAL_CLIENT_PID,
+  };
+  let reply = conn.res_query_client_ids(&[spec]).ok()?.reply().ok()?;
+  reply
+    .ids
+    .iter()
+    .find(|id| id.spec.mask == ClientIdMask::LOCAL_CLIENT_PID)
+    .and_then(|id| id.value.first().copied())
+}
+
 struct Target {
   pid: u32,
   origin: (i32, i32),
@@ -430,7 +464,9 @@ struct Target {
 }
 
 fn target(conn: &RustConnection, root: Window, window: Window) -> Option<Target> {
-  let pid = *property32(conn, window, b"_NET_WM_PID", AtomEnum::CARDINAL)?.first()?;
+  let pid = property32(conn, window, b"_NET_WM_PID", AtomEnum::CARDINAL)
+    .and_then(|values| values.first().copied())
+    .or_else(|| client_pid(conn, window))?;
   let origin = conn
     .translate_coordinates(window, root, 0, 0)
     .ok()?
