@@ -6,11 +6,9 @@ use std::sync::Mutex;
 
 use napi::Result;
 
-use crate::hit::{smallest_under, Bounds};
-use crate::macmap::{
-  is_control, is_label, mac_keycode, named_key, printable, role, window_for_click, LayeredWindow,
-  PROMOTE_DEPTH,
-};
+use crate::hit::{is_control, is_label, smallest_under, Bounds, PROMOTE_DEPTH};
+use crate::keys::{named_key, printable};
+use crate::macmap::{mac_keycode, role, window_for_click, LayeredWindow};
 use crate::{ActiveWindow, ElementNode, ElementRect, UiElement};
 
 type CFTypeRef = *const c_void;

@@ -98,6 +98,11 @@ export async function releaseWebContent(): Promise<void> {
   native?.releaseWebContent();
 }
 
+export async function enableAccessibility(): Promise<void> {
+  const native = await load();
+  native?.enableAccessibility();
+}
+
 export async function elementLookupAvailable(): Promise<boolean> {
   const native = await load();
   return native?.isSupported() ?? false;

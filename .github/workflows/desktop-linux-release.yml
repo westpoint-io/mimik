@@ -27,7 +27,7 @@ jobs:
         with:
           node-version: "22"
 
-      - run: sudo apt-get update && sudo apt-get install -y rpm
+      - run: sudo apt-get update && sudo apt-get install -y rpm libxkbcommon-dev
 
       - run: pnpm install --frozen-lockfile
 
@@ -44,8 +44,9 @@ jobs:
         working-directory: apps/desktop
         run: |
           deb=$(ls dist/*.deb)
-          scripts/check-deb.sh "$deb" debian:12
-          scripts/check-deb.sh "$deb" ubuntu:24.04
+          addon=../../packages/capture-native/capture-native.linux-x64-gnu.node
+          scripts/check-deb.sh "$deb" debian:12 "$addon"
+          scripts/check-deb.sh "$deb" ubuntu:24.04 "$addon"
 
       - name: Check the update feed lists every package
         working-directory: apps/desktop
