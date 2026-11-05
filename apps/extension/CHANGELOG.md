@@ -4,7 +4,7 @@
 
 ### Features
 
-* Record from a card floating over the page instead of the side panel, picked in onboarding or Settings, so the page keeps its full width
+* A recording card that floats over the page at full width, as an alternative to the side panel, picked in onboarding or Settings
 * Edit the AI prompts and add your own instructions for step descriptions and for the guide title and summary, from AI settings
 * Send custom headers to your own AI server, set in Settings or onboarding and masked like the key
 * Copy selected steps to another guide, or to a new one, from the selection bar
