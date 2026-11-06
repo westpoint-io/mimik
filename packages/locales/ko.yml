@@ -369,6 +369,7 @@ confirmDelete:
   confirm: "영구 삭제"
 
 editor:
+  guideHost: "웹사이트 주소"
   backToLibrary: "라이브러리로 돌아가기"
   openInDashboard: "열기"
   openInDashboardHint: "대시보드에서 열어 편집하거나 내보낼 수 있어요"
