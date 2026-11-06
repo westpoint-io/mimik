@@ -734,14 +734,16 @@ async function deleteStep(guideId: string, stepId: string): Promise<void> {
   await deleteSteps(guideId, [stepId]);
 }
 
-async function replaceGuideHost(guideId: string, fromDomain: string, toOrigin: string): Promise<void> {
-  const target = new URL(toOrigin);
+async function replaceGuideHost(guideId: string, fromDomain: string, host: string): Promise<void> {
+  const typed = /^[a-z][a-z\d+.-]*:\/\//i.test(host) ? host : `//${host}`;
   await db.transaction('rw', db.steps, db.guides, async () => {
     const steps = await db.steps.where('guideId').equals(guideId).toArray();
     const moved = steps
       .filter((step) => extractDomain(step.url) === fromDomain)
       .map((step) => {
         const url = new URL(step.url);
+        const target = new URL(typed, url);
+        if (!/^https?:$/.test(target.protocol)) throw new TypeError(`Unsupported scheme ${target.protocol}`);
         url.protocol = target.protocol;
         url.hostname = target.hostname;
         url.port = target.port;
