@@ -1,4 +1,4 @@
-import { type AiChoice, KEY_PROVIDER_LABELS } from '@mimik/core/capture/ai/keys';
+import { type AiChoice, type AiServer, KEY_PROVIDER_LABELS, SERVER } from '@mimik/core/capture/ai/keys';
 import type { VoiceProvider } from '@mimik/core/capture/voice/transcribe';
 import { i18n, localStorage } from '@mimik/core/env';
 import { Mic } from 'lucide-react';
@@ -9,14 +9,18 @@ import { useApiKeys } from '../../ai/hooks/use-api-keys';
 import type { ValidateKey } from '../../ai/types';
 import { Switch } from '../../common/components/Switch';
 import { MicrophonePicker } from '../../voice/components/MicrophonePicker';
+import { TranscriptionModelField } from '../../voice/components/TranscriptionModelField';
 
-const VOICE_PROVIDERS: ProviderOption<VoiceProvider>[] = [
+type KeyedVoiceProvider = Exclude<VoiceProvider, 'server'>;
+
+const VOICE_PROVIDERS: ProviderOption<KeyedVoiceProvider>[] = [
   { value: 'openai', label: KEY_PROVIDER_LABELS.openai, logo: 'openai', available: true },
   { value: 'groq', label: KEY_PROVIDER_LABELS.groq, logo: 'groq', available: true },
 ];
 
 interface VoiceNarrationRowProps {
   aiProvider: AiChoice;
+  server: AiServer;
   validate: ValidateKey;
   requestMicrophoneAccess: () => Promise<void>;
   microphoneAccess?: ReactNode;
@@ -25,6 +29,7 @@ interface VoiceNarrationRowProps {
 
 export function VoiceNarrationRow({
   aiProvider,
+  server,
   validate,
   requestMicrophoneAccess,
   microphoneAccess,
@@ -34,13 +39,19 @@ export function VoiceNarrationRow({
   const [enabled, setEnabled] = useState(false);
   const [provider, setProvider] = useState<VoiceProvider>('openai');
   const [microphoneId, setMicrophoneId] = useState('');
+  const [serverModel, setServerModel] = useState('');
   const sharesKey = aiProvider === 'openai';
+  const sharesServer = aiProvider === SERVER && server.protocol === 'openai' && Boolean(server.url.trim());
+  const keyedProvider: KeyedVoiceProvider = provider === SERVER ? 'openai' : provider;
 
   useEffect(() => {
-    void localStorage.get(['voiceEnabled', 'voiceProvider', 'voiceMicrophoneId']).then((stored) => {
+    void localStorage.get(['voiceEnabled', 'voiceProvider', 'voiceMicrophoneId', 'voiceServerModel']).then((stored) => {
       setEnabled(stored.voiceEnabled === true);
-      if (stored.voiceProvider === 'openai' || stored.voiceProvider === 'groq') setProvider(stored.voiceProvider);
+      if (stored.voiceProvider === 'openai' || stored.voiceProvider === 'groq' || stored.voiceProvider === SERVER) {
+        setProvider(stored.voiceProvider);
+      }
       if (typeof stored.voiceMicrophoneId === 'string') setMicrophoneId(stored.voiceMicrophoneId);
+      if (typeof stored.voiceServerModel === 'string') setServerModel(stored.voiceServerModel);
     });
   }, []);
 
@@ -48,6 +59,13 @@ export function VoiceNarrationRow({
     setProvider(next);
     void localStorage.set({ voiceProvider: next });
   };
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: follows the AI choice only while narration is on
+  useEffect(() => {
+    if (!enabled) return;
+    if (sharesServer && provider !== SERVER) choose(SERVER);
+    else if (!sharesServer && provider === SERVER) choose('openai');
+  }, [enabled, sharesServer]);
 
   const toggle = (on: boolean) => {
     setEnabled(on);
@@ -69,21 +87,31 @@ export function VoiceNarrationRow({
       </div>
       {enabled && (
         <>
-          {!sharesKey && (
+          {sharesServer && (
+            <TranscriptionModelField
+              value={serverModel}
+              onChange={(next) => {
+                setServerModel(next);
+                void localStorage.set({ voiceServerModel: next });
+              }}
+              inputClassName="h-10 rounded-[9px] px-3 text-[12.5px]"
+            />
+          )}
+          {!sharesKey && !sharesServer && (
             <div className="flex flex-col gap-2">
               <p className="text-[11.5px] text-muted-foreground">{i18n.t('onboarding.voiceNeedsKey')}</p>
               <ProviderSelect
-                value={provider}
+                value={keyedProvider}
                 onChange={choose}
                 options={VOICE_PROVIDERS}
                 triggerClassName="h-10 w-full rounded-[9px] px-3 text-[12.5px]"
               />
               <ProviderKeyRow
-                key={provider}
+                key={keyedProvider}
                 bare
-                provider={provider}
-                value={keys.keys[provider] ?? ''}
-                onChange={(next) => keys.setKey(provider, next)}
+                provider={keyedProvider}
+                value={keys.keys[keyedProvider] ?? ''}
+                onChange={(next) => keys.setKey(keyedProvider, next)}
                 validate={validate}
               />
             </div>

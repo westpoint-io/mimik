@@ -160,6 +160,8 @@ settings:
   protocolOpenai: "OpenAI"
   protocolAnthropic: "Anthropic"
   noServer: "Ainda não há endereço de servidor."
+  voiceServerNeedsOpenai: "A narração precisa de um servidor compatível com OpenAI."
+  transcriptionModel: "Modelo de transcrição"
   noKeyFor: "Ainda não há chave da $1."
   addOneInKeys: "Adicione uma em Chaves de API."
   addKey: "Adicionar chave"

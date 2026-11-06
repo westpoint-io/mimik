@@ -160,6 +160,8 @@ settings:
   protocolOpenai: "OpenAI"
   protocolAnthropic: "Anthropic"
   noServer: "尚未填写服务器地址。"
+  voiceServerNeedsOpenai: "语音讲解需要兼容 OpenAI 的服务器。"
+  transcriptionModel: "转录模型"
   noKeyFor: "尚未添加 $1 密钥。"
   addOneInKeys: "请在 API 密钥中添加。"
   addKey: "添加密钥"

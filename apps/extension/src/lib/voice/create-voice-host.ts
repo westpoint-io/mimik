@@ -1,4 +1,5 @@
 import { logger } from '@mimik/core/logger';
+import { canTranscribe } from '@/core/capture/voice/can-transcribe';
 import { MicRecorder } from '@/core/capture/voice/mic-recorder';
 import { EMPTY_NARRATION, narrateRecording, type VoiceRecording } from '@/core/capture/voice/narrate-recording';
 import { NarrationSlicer } from '@/core/capture/voice/narration-slicer';
@@ -136,7 +137,7 @@ export function createVoiceHost(): VoiceHost {
     if (!recorder.recording) {
       return { ok: false, reason: 'not-recording', error: 'Microphone capture is not running' };
     }
-    if (!request.settings?.apiKey) {
+    if (!request.settings || !canTranscribe(request.settings)) {
       return { ok: false, reason: 'missing-api-key', error: 'No transcription API key is configured' };
     }
 
@@ -171,7 +172,7 @@ export function createVoiceHost(): VoiceHost {
     }
 
     const settings = request.settings;
-    if (!settings?.apiKey) {
+    if (!settings || !canTranscribe(settings)) {
       return { ok: false, reason: 'missing-api-key', error: 'No transcription API key is configured' };
     }
 
