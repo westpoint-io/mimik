@@ -303,6 +303,8 @@ export function GuideContent({
   const actionCount = actionSteps(viewSteps).length;
   const domain = getMostCommonDomain(viewSteps);
   const singleHost = viewSteps.every((s) => !s.url || extractDomain(s.url) === domain);
+  const hostUrl = viewSteps.find((s) => s.url && extractDomain(s.url) === domain)?.url;
+  const origin = hostUrl ? new URL(hostUrl).origin : '';
   const editingScreenshot = editingStepId ? data.screenshots.get(editingStepId) : undefined;
   const animatingTitle = preview ? null : typingTitle;
   const untitledPending = !preview && !typingTitle && title === i18n.t('guide.untitled') && viewSteps.length > 0;
@@ -311,15 +313,13 @@ export function GuideContent({
 
   const handleHostCommit = (input: HTMLInputElement) => {
     const value = input.value.trim();
-    if (!value || value === domain) return;
-    try {
-      const origin = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`).origin;
-      replaceGuideHost(guideId, domain, origin)
-        .then(loadGuide)
-        .catch((err) => logger.error(' Guide host change failed', err));
-    } catch {
-      input.value = domain;
-    }
+    if (!value || value === origin) return;
+    replaceGuideHost(guideId, domain, value)
+      .then(loadGuide)
+      .catch((err) => {
+        input.value = origin;
+        logger.error(' Guide host change failed', err);
+      });
   };
 
   return (
@@ -500,9 +500,9 @@ export function GuideContent({
                       domain
                     ) : (
                       <input
-                        key={domain}
-                        defaultValue={domain}
-                        size={Math.max(domain.length, 1)}
+                        key={origin}
+                        defaultValue={origin}
+                        size={Math.max(origin.length, 1)}
                         aria-label={i18n.t('editor.guideHost')}
                         onInput={(e) => {
                           e.currentTarget.size = Math.max(e.currentTarget.value.length, 1);
