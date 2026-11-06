@@ -4,12 +4,13 @@ import { i18n } from '@mimik/core/env';
 import { formatDate } from '@mimik/core/export/utils';
 import { isReplayable } from '@mimik/core/guideme/session';
 import { actionSteps } from '@mimik/core/guides/blocks';
-import { getMostCommonDomain } from '@mimik/core/guides/domain';
+import { extractDomain, getMostCommonDomain } from '@mimik/core/guides/domain';
 import {
   deleteStep,
   getGuide,
   hasTranscript,
   onGuidesChanged,
+  replaceGuideHost,
   updateGuideDescription,
   updateGuideTitle,
   updateStepDescription,
@@ -301,11 +302,25 @@ export function GuideContent({
   const viewScreenshots = previewView ? previewView.screenshots : data.screenshots;
   const actionCount = actionSteps(viewSteps).length;
   const domain = getMostCommonDomain(viewSteps);
+  const singleHost = viewSteps.every((s) => !s.url || extractDomain(s.url) === domain);
+  const hostUrl = viewSteps.find((s) => s.url && extractDomain(s.url) === domain)?.url;
+  const origin = hostUrl ? new URL(hostUrl).origin : '';
   const editingScreenshot = editingStepId ? data.screenshots.get(editingStepId) : undefined;
   const animatingTitle = preview ? null : typingTitle;
   const untitledPending = !preview && !typingTitle && title === i18n.t('guide.untitled') && viewSteps.length > 0;
   const metaGenerating = (untitledPending || animatingTitle !== null) && !desc.text;
   const readOnly = !editing || preview !== null;
+
+  const handleHostCommit = (input: HTMLInputElement) => {
+    const value = input.value.trim();
+    if (!value || value === origin) return;
+    replaceGuideHost(guideId, domain, value)
+      .then(loadGuide)
+      .catch((err) => {
+        input.value = origin;
+        logger.error(' Guide host change failed', err);
+      });
+  };
 
   return (
     <div className="flex flex-col min-h-[calc(100vh-64px)]">
@@ -481,7 +496,24 @@ export function GuideContent({
                 {domain && (
                   <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground bg-card border border-border pl-1.5 pr-2.5 py-0.5 rounded-full">
                     <FaviconImg domain={domain} size={14} className="rounded-full" />
-                    {domain}
+                    {readOnly || !singleHost ? (
+                      domain
+                    ) : (
+                      <input
+                        key={origin}
+                        defaultValue={origin}
+                        size={Math.max(origin.length, 1)}
+                        aria-label={i18n.t('editor.guideHost')}
+                        onInput={(e) => {
+                          e.currentTarget.size = Math.max(e.currentTarget.value.length, 1);
+                        }}
+                        onBlur={(e) => handleHostCommit(e.currentTarget)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') e.currentTarget.blur();
+                        }}
+                        className="field-sizing-content bg-transparent focus:outline-none"
+                      />
+                    )}
                   </span>
                 )}
                 {onGuideMe && !editing && !preview && viewSteps.some(isReplayable) && (

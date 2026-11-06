@@ -5,7 +5,7 @@ import { client, i18n } from '@/core/env';
 import type { ScreenshotEdits } from '@/core/screenshot/types';
 import type { ParsedBundle } from '@/core/transfer/parse';
 import { db } from './db';
-import { getMostCommonDomain } from './domain';
+import { extractDomain, getMostCommonDomain } from './domain';
 import { hashPayload } from './snapshot-hash';
 import { sanitizeGuideTitle } from './title';
 import type {
@@ -734,6 +734,27 @@ async function deleteStep(guideId: string, stepId: string): Promise<void> {
   await deleteSteps(guideId, [stepId]);
 }
 
+async function replaceGuideHost(guideId: string, fromDomain: string, host: string): Promise<void> {
+  const typed = /^[a-z][a-z\d+.-]*:\/\//i.test(host) ? host : `//${host}`;
+  await db.transaction('rw', db.steps, db.guides, async () => {
+    const steps = await db.steps.where('guideId').equals(guideId).toArray();
+    const moved = steps
+      .filter((step) => extractDomain(step.url) === fromDomain)
+      .map((step) => {
+        const url = new URL(step.url);
+        const target = new URL(typed, url);
+        if (!/^https?:$/.test(target.protocol)) throw new TypeError(`Unsupported scheme ${target.protocol}`);
+        url.protocol = target.protocol;
+        url.hostname = target.hostname;
+        url.port = target.port;
+        return { ...step, url: url.href };
+      });
+    await db.steps.bulkPut(moved);
+    await db.guides.update(guideId, { updatedAt: Date.now() });
+  });
+  notifyGuidesChanged({ type: 'mutated' });
+}
+
 async function getGuideDomain(guideId: string): Promise<string> {
   const steps = await db.steps.where('guideId').equals(guideId).sortBy('index');
   return getMostCommonDomain(steps);
@@ -900,6 +921,7 @@ export const dexieStore = {
   findExistingStepIds,
   deleteSteps,
   deleteStep,
+  replaceGuideHost,
   getGuideDomain,
   allScreenshotIds,
   saveScreenshot,
