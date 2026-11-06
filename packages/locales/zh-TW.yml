@@ -369,6 +369,7 @@ confirmDelete:
   confirm: "永久刪除"
 
 editor:
+  guideHost: "網站位址"
   backToLibrary: "返回指南庫"
   openInDashboard: "開啟"
   openInDashboardHint: "在儀表板中開啟以編輯或匯出"
