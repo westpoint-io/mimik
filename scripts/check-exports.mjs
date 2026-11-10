@@ -36,7 +36,7 @@ function callables(sf) {
 }
 
 const problems = [];
-for (const file of ROOTS.flatMap(walk).map((f) => relative('.', f))) {
+for (const file of ROOTS.flatMap(walk).map((f) => relative('.', f).replaceAll('\\', '/'))) {
   if (SKIP.test(file)) continue;
   const sf = ts.createSourceFile(file, readFileSync(file, 'utf8'), ts.ScriptTarget.Latest, true);
   const all = callables(sf);

@@ -28,6 +28,17 @@ export type BlockType = 'heading' | 'callout';
 
 export type CalloutVariant = 'info' | 'warning' | 'error' | 'success' | 'custom';
 
+export interface GroupedSubStep {
+  id: string;
+  index: number;
+  description: string;
+  action?: string;
+  inputValue?: string;
+  elementMeta?: ElementMeta;
+  markerId?: string;
+  screenshotId?: string;
+}
+
 export interface Step {
   id: string;
   guideId: string;
@@ -47,6 +58,7 @@ export interface Step {
   blockType?: BlockType;
   calloutVariant?: CalloutVariant;
   calloutColor?: string;
+  groupedSteps?: GroupedSubStep[];
 }
 
 export interface ScreenshotBounds {

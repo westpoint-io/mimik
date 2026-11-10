@@ -2,7 +2,7 @@ import { buildFallbackDescription } from '@/core/capture/step-description';
 import type { NarrationUpdate } from '@/core/capture/voice/narration-updates';
 import type { NarrationTranscript } from '@/core/capture/voice/types';
 import { client, i18n } from '@/core/env';
-import type { ScreenshotEdits } from '@/core/screenshot/types';
+import type { Annotation, ScreenshotEdits } from '@/core/screenshot/types';
 import type { ParsedBundle } from '@/core/transfer/parse';
 import { db } from './db';
 import { getMostCommonDomain } from './domain';
@@ -13,6 +13,7 @@ import type {
   CalloutVariant,
   DescriptionSource,
   ElementMeta,
+  GroupedSubStep,
   Guide,
   GuideTranscript,
   Screenshot,
@@ -730,6 +731,138 @@ async function deleteSteps(guideId: string, stepIds: readonly string[]): Promise
   });
 }
 
+async function groupSteps(guideId: string, stepIds: readonly string[]): Promise<string | null> {
+  if (stepIds.length <= 1) return null;
+  return await db.transaction('rw', [db.guides, db.steps, db.screenshots], async () => {
+    const guide = await db.guides.get(guideId);
+    if (!guide) return null;
+
+    const orderedSteps = await db.steps.where('guideId').equals(guideId).sortBy('index');
+    const selectedSteps = orderedSteps.filter((s) => stepIds.includes(s.id));
+    if (selectedSteps.length <= 1) return null;
+
+    const primary = selectedSteps.find((s) => !!s.screenshotId) ?? selectedSteps[0]!;
+    const secondarySteps = selectedSteps.filter((s) => s.id !== primary.id);
+    const secondaryIds = new Set(secondarySteps.map((s) => s.id));
+
+    const screenshot = primary.screenshotId ? await db.screenshots.get(primary.screenshotId) : undefined;
+
+    const markers: Annotation[] = [];
+    const groupedSubs: GroupedSubStep[] = selectedSteps.map((s, idx) => {
+      const number = idx + 1;
+      const rect = s.elementMeta?.rect;
+      const click = s.elementMeta?.clickPoint;
+      const x = click?.x ?? (rect ? rect.x + 14 : 20 + idx * 30);
+      const y = click?.y ?? (rect ? rect.y + 14 : 20);
+
+      markers.push({
+        id: `marker-${s.id}`,
+        type: 'marker',
+        x,
+        y,
+        number,
+        target: rect && rect.width > 0 && rect.height > 0 ? rect : undefined,
+        color: '#4F46E5',
+      });
+
+      return {
+        id: s.id,
+        index: number,
+        description: s.description,
+        action: s.action,
+        inputValue: s.inputValue,
+        elementMeta: s.elementMeta,
+        markerId: `marker-${s.id}`,
+        screenshotId: s.screenshotId,
+      };
+    });
+
+    if (screenshot) {
+      const existing = (screenshot.edits?.annotations ?? []).filter((a) => a.type !== 'marker');
+      await db.screenshots.update(screenshot.id, {
+        edits: {
+          ...screenshot.edits,
+          target: null,
+          annotations: [...existing, ...markers],
+        },
+      });
+    }
+
+    await db.steps.update(primary.id, {
+      groupedSteps: groupedSubs,
+    });
+
+    await db.steps.bulkDelete([...secondaryIds]);
+    const remaining = await db.steps.where('guideId').equals(guideId).sortBy('index');
+    await db.steps.bulkPut(remaining.map((step, index) => ({ ...step, index })));
+
+    await db.guides.update(guideId, {
+      stepIds: guide.stepIds.filter((id) => !secondaryIds.has(id)),
+      updatedAt: Date.now(),
+    });
+
+    return primary.id;
+  });
+}
+
+async function ungroupStep(guideId: string, stepId: string): Promise<boolean> {
+  return await db.transaction('rw', [db.guides, db.steps, db.screenshots], async () => {
+    const guide = await db.guides.get(guideId);
+    const step = await db.steps.get(stepId);
+    if (!guide || !step?.groupedSteps || step.groupedSteps.length <= 1) return false;
+
+    const screenshot = step.screenshotId ? await db.screenshots.get(step.screenshotId) : undefined;
+    if (screenshot?.edits?.annotations) {
+      const cleaned = screenshot.edits.annotations.filter((a) => a.type !== 'marker');
+      await db.screenshots.update(screenshot.id, {
+        edits: {
+          ...screenshot.edits,
+          annotations: cleaned.length > 0 ? cleaned : undefined,
+        },
+      });
+    }
+
+    const { groupedSteps, ...parentRest } = step;
+    const baseIndex = step.index;
+
+    const restoredSteps: Step[] = groupedSteps.map((sub, idx) => ({
+      ...parentRest,
+      id: sub.id,
+      index: baseIndex + idx,
+      description: sub.description,
+      action: sub.action ?? parentRest.action ?? 'click',
+      inputValue: sub.inputValue,
+      elementMeta: sub.elementMeta,
+      screenshotId: sub.screenshotId ?? parentRest.screenshotId,
+      groupedSteps: undefined,
+    }));
+
+    await db.steps.put(restoredSteps[0]!);
+    if (restoredSteps.length > 1) {
+      await db.steps.bulkAdd(restoredSteps.slice(1));
+    }
+
+    const allSteps = await db.steps.where('guideId').equals(guideId).sortBy('index');
+    await db.steps.bulkPut(allSteps.map((s, index) => ({ ...s, index })));
+
+    const newStepIds: string[] = [];
+    for (const id of guide.stepIds) {
+      if (id === stepId) {
+        newStepIds.push(...restoredSteps.map((s) => s.id));
+      } else {
+        newStepIds.push(id);
+      }
+    }
+
+    await db.guides.update(guideId, {
+      stepIds: newStepIds,
+      updatedAt: Date.now(),
+    });
+
+    return true;
+  });
+}
+
 async function deleteStep(guideId: string, stepId: string): Promise<void> {
   await deleteSteps(guideId, [stepId]);
 }
@@ -900,6 +1033,8 @@ export const dexieStore = {
   findExistingStepIds,
   deleteSteps,
   deleteStep,
+  groupSteps,
+  ungroupStep,
   getGuideDomain,
   allScreenshotIds,
   saveScreenshot,

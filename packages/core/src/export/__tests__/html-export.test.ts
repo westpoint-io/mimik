@@ -137,4 +137,20 @@ describe('exportGuideAsHTML mixed browser and desktop steps', () => {
     expect(html).not.toContain('<a href="">');
     expect(html.match(/Excel — Budget\.xlsx<\/a>/)).toBeNull();
   });
+
+  it('renders nested sub-steps when groupedSteps are present', async () => {
+    const step: Step = {
+      ...makeStep(0),
+      groupedSteps: [
+        { id: 'sub-1', index: 1, description: 'First action' },
+        { id: 'sub-2', index: 2, description: 'Second action' },
+      ],
+    };
+    const shots = new Map([[step.id, makeScreenshot(step.id)]]);
+    const html = await render([step], shots);
+
+    expect(html).toContain('First action');
+    expect(html).toContain('Second action');
+    expect(html).toContain('<ol');
+  });
 });

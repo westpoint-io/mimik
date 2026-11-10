@@ -377,6 +377,9 @@ editor:
   deleteThisStep: "Delete this step?"
   selectStep: Select step
   selectedCount: "$1 selected"
+  groupSteps: "Group steps"
+  ungroupStep: "Ungroup"
+  groupedCount: "$1 actions"
   deleteSelectedStep: "Delete $1 selected step?"
   deleteSelectedSteps: "Delete $1 selected steps?"
   copyTo: Copy to

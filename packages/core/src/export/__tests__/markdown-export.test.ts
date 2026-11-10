@@ -216,4 +216,21 @@ describe('exportGuideAsMarkdown', () => {
     const md = await exportGuideAsMarkdown(guide, steps, new Map());
     expect(md).toContain('export.stepsCount[2]');
   });
+
+  it('renders nested sub-steps when groupedSteps are present', async () => {
+    const guide = makeGuide();
+    const steps = [
+      makeStep({
+        index: 0,
+        description: 'Fill out the form',
+        groupedSteps: [
+          { id: 'sub-1', index: 1, description: 'Enter username' },
+          { id: 'sub-2', index: 2, description: 'Enter password' },
+        ],
+      }),
+    ];
+
+    const md = await exportGuideAsMarkdown(guide, steps, new Map());
+    expect(md).toContain('1. Enter username\n2. Enter password');
+  });
 });
