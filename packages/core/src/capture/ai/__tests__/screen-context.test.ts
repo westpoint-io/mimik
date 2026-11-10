@@ -31,6 +31,15 @@ describe('serializeScreenContext', () => {
     expect(text).toContain('→ Target: button "Save" (click)');
   });
 
+  it('leaves out a name that is a code identifier', () => {
+    expect(serializeScreenContext('click', meta({ role: 'textbox', name: 'source_view' }))).toContain(
+      '→ Target: text field (click)',
+    );
+    expect(serializeScreenContext('click', meta({ role: 'button', name: 'Save' }))).toContain(
+      '→ Target: button "Save" (click)',
+    );
+  });
+
   it('calls a secondary-button click a right-click', () => {
     expect(serializeScreenContext('auxclick', meta({ role: 'listitem', ariaLabel: '1+3' }))).toContain(
       '→ Target: list item "1+3" (right-click)',
