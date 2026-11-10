@@ -1,5 +1,6 @@
 import type { ElementMeta } from '@/core/guides/types';
 import { isIdentifier } from '../is-identifier';
+import { readableAction } from './readable-action';
 
 const READABLE_ROLES: Record<string, string> = {
   banner: 'title bar',
@@ -31,7 +32,7 @@ export function serializeScreenContext(action: string, meta: ElementMeta, previo
   const name = meta.ariaLabel ?? (isIdentifier(meta.name) ? null : meta.name);
   const role = meta.role ? (READABLE_ROLES[meta.role] ?? meta.role) : 'control';
   const control = [role, name ? `"${name}"` : null].filter(Boolean).join(' ');
-  lines.push(`→ Target: ${control} (${action.startsWith('keydown:') ? 'key press' : action})`);
+  lines.push(`→ Target: ${control} (${action.startsWith('keydown:') ? 'key press' : readableAction(action)})`);
 
   if (meta.textContent) lines.push(`Value: "${meta.textContent.slice(0, 120)}"`);
   if (meta.altText) lines.push(`Help: "${meta.altText}"`);

@@ -40,6 +40,12 @@ describe('serializeScreenContext', () => {
     );
   });
 
+  it('calls a secondary-button click a right-click', () => {
+    expect(serializeScreenContext('auxclick', meta({ role: 'listitem', ariaLabel: '1+3' }))).toContain(
+      '→ Target: list item "1+3" (right-click)',
+    );
+  });
+
   it('carries the typed value and says a key press is one', () => {
     expect(serializeScreenContext('input', meta({ role: 'textbox', textContent: 'hello' }))).toContain(
       'Value: "hello"',
