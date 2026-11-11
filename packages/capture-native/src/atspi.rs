@@ -13,7 +13,7 @@ use zbus::zvariant::{DynamicType, OwnedObjectPath, OwnedValue, Value};
 
 use crate::atspimap::{
   control_role_mask, control_roles, has_state, menu_item_mask, role, state_set, PASSWORD_TEXT, STATE_ACTIVE,
-  STATE_FOCUSED, STATE_SELECTED, STATE_SHOWING,
+  STATE_EXPANDED, STATE_FOCUSED, STATE_SELECTED, STATE_SHOWING,
 };
 use crate::hit::{is_control, is_label, smallest_under, Bounds, PROMOTE_DEPTH};
 use crate::{ElementNode, ElementRect, UiElement};
@@ -33,6 +33,7 @@ const GTK4: &str = "GTK";
 const CALL_TIMEOUT: Duration = Duration::from_millis(300);
 const MAX_DEPTH: usize = 40;
 const MAX_ANCESTORS: usize = 4;
+const DROPDOWN_DEPTH: usize = 3;
 const MAX_CHILDREN: usize = 12;
 const MAX_VALUE: i32 = 2000;
 const FOCUS_SEARCH_LIMIT: usize = 600;
@@ -789,11 +790,55 @@ fn controls_under(window: &Node, x: i32, y: i32) -> Option<Node> {
   matching_under(window, control_role_mask(), x, y)
 }
 
+fn dropdown_of(item: &Node) -> Option<Node> {
+  let mut current = item.parent();
+  for _ in 0..DROPDOWN_DEPTH {
+    let node = current?;
+    if role_name(&node).as_deref() == Some("combobox") {
+      return Some(node);
+    }
+    current = node.parent();
+  }
+  None
+}
+
+fn dropdown_owning(item: &Node, x: i32, y: i32) -> Option<Node> {
+  let dropdown = dropdown_of(item)?;
+  let closed = !has_state(&dropdown.states(), STATE_EXPANDED);
+  let on_it = dropdown.extents().is_some_and(|rect| covers(&rect, x, y));
+  (closed || on_it).then_some(dropdown)
+}
+
+fn in_open_dropdown_row(item: &Node, (_, top, _, bottom): Bounds, x: i32, y: i32) -> bool {
+  (top..bottom).contains(&y)
+    && dropdown_of(item).is_some_and(|dropdown| {
+      has_state(&dropdown.states(), STATE_EXPANDED)
+        && dropdown
+          .extents()
+          .is_some_and(|rect| f64::from(x) >= rect.x && f64::from(x) < rect.x + rect.width)
+    })
+}
+
 fn menu_item_under(window: &Node, x: i32, y: i32) -> Option<Node> {
-  matching_under(window, menu_item_mask(), x, y)
+  let found = showing(window, menu_item_mask());
+  let boxes: Vec<Bounds> = found.iter().map(|(_, bounds)| *bounds).collect();
+  if let Some(index) = smallest_under(&boxes, x, y) {
+    let item = &found[index].0;
+    return dropdown_owning(item, x, y).is_none().then(|| item.clone());
+  }
+  found
+    .into_iter()
+    .find(|(item, bounds)| in_open_dropdown_row(item, *bounds, x, y))
+    .map(|(item, _)| item)
 }
 
 fn matching_under(window: &Node, roles: Vec<i32>, x: i32, y: i32) -> Option<Node> {
+  let found = showing(window, roles);
+  let boxes: Vec<Bounds> = found.iter().map(|(_, bounds)| *bounds).collect();
+  smallest_under(&boxes, x, y).map(|index| found[index].0.clone())
+}
+
+fn showing(window: &Node, roles: Vec<i32>) -> Vec<(Node, Bounds)> {
   let rule: MatchRule = (
     state_set(STATE_SHOWING),
     MATCH_ALL,
@@ -805,29 +850,28 @@ fn matching_under(window: &Node, roles: Vec<i32>, x: i32, y: i32) -> Option<Node
     MATCH_NONE,
     false,
   );
-  let found: Vec<Reference> = window.call(
-    COLLECTION,
-    "GetMatches",
-    &(rule, SORT_CANONICAL, CONTROL_SCAN_LIMIT, true),
-  )?;
-  let nodes: Vec<Node> = found
+  let found: Vec<Reference> = window
+    .call(
+      COLLECTION,
+      "GetMatches",
+      &(rule, SORT_CANONICAL, CONTROL_SCAN_LIMIT, true),
+    )
+    .unwrap_or_default();
+  found
     .into_iter()
     .filter_map(|reference| window.related(reference))
-    .collect();
-  let boxes: Vec<Bounds> = nodes
-    .iter()
     .map(|node| {
-      node.extents().map_or((0, 0, 0, 0), |rect| {
+      let bounds = node.extents().map_or((0, 0, 0, 0), |rect| {
         (
           rect.x as i32,
           rect.y as i32,
           (rect.x + rect.width) as i32,
           (rect.y + rect.height) as i32,
         )
-      })
+      });
+      (node, bounds)
     })
-    .collect();
-  smallest_under(&boxes, x, y).map(|index| nodes[index].clone())
+    .collect()
 }
 
 fn unresolved(node: &Node) -> bool {
@@ -1061,6 +1105,7 @@ pub fn element_at_point(x: i32, y: i32) -> Option<UiElement> {
       hit
     };
     let hit = menu_item_under(&window, x, y).unwrap_or(hit);
+    let hit = dropdown_owning(&hit, x, y).unwrap_or(hit);
     Some(full(&hit))
   })
 }

@@ -59,6 +59,7 @@ const ROLES: &[(u32, &str)] = &[
 
 pub const PASSWORD_TEXT: u32 = 40;
 pub const STATE_ACTIVE: u32 = 1;
+pub const STATE_EXPANDED: u32 = 10;
 pub const STATE_FOCUSED: u32 = 12;
 pub const STATE_SELECTED: u32 = 23;
 pub const STATE_SHOWING: u32 = 25;
