@@ -26,9 +26,33 @@ pub fn is_control(role: Option<&str>) -> bool {
   role.is_some_and(|role| CONTROLS.contains(&role))
 }
 
+#[cfg(any(target_os = "linux", test))]
+pub fn is_dropdown_part(role: Option<&str>) -> bool {
+  matches!(role, Some("menuitem" | "listitem" | "menu" | "list"))
+}
+
+#[cfg(any(target_os = "linux", test))]
+pub fn is_option(role: Option<&str>) -> bool {
+  matches!(role, Some("menuitem" | "listitem"))
+}
+
+#[cfg(any(target_os = "linux", test))]
+pub fn in_row((_, top, _, bottom): Bounds, (left, _, right, _): Bounds, x: i32, y: i32) -> bool {
+  (top..bottom).contains(&y) && (left..right).contains(&x)
+}
+
+#[cfg(any(target_os = "linux", test))]
+pub fn dropdown_takes(expanded: Option<bool>, on_dropdown: bool, on_option: bool) -> bool {
+  match expanded {
+    Some(false) => true,
+    Some(true) => on_dropdown && !on_option,
+    None => false,
+  }
+}
+
 #[cfg(test)]
 mod tests {
-  use super::{is_control, is_label, smallest_under};
+  use super::{dropdown_takes, in_row, is_control, is_dropdown_part, is_label, is_option, smallest_under};
 
   const PANEL: (i32, i32, i32, i32) = (0, 0, 400, 600);
   const ITEM: (i32, i32, i32, i32) = (10, 50, 390, 90);
@@ -63,5 +87,47 @@ mod tests {
     assert!(is_control(Some("button")));
     assert!(!is_control(Some("group")));
     assert!(!is_control(None));
+  }
+
+  const LIST: (i32, i32, i32, i32) = (100, 200, 500, 400);
+  const OPTION: (i32, i32, i32, i32) = (102, 220, 300, 240);
+
+  #[test]
+  fn an_option_row_spans_its_list() {
+    assert!(in_row(OPTION, LIST, 450, 230));
+    assert!(in_row(OPTION, LIST, 102, 220));
+    assert!(!in_row(OPTION, LIST, 500, 230));
+    assert!(!in_row(OPTION, LIST, 450, 240));
+    assert!(!in_row(OPTION, LIST, 50, 230));
+  }
+
+  #[test]
+  fn a_closed_dropdown_takes_its_hidden_options() {
+    assert!(dropdown_takes(Some(false), false, false));
+    assert!(dropdown_takes(Some(false), true, true));
+  }
+
+  #[test]
+  fn an_open_dropdown_takes_only_its_button() {
+    assert!(dropdown_takes(Some(true), true, false));
+    assert!(!dropdown_takes(Some(true), true, true));
+    assert!(!dropdown_takes(Some(true), false, false));
+  }
+
+  #[test]
+  fn an_unknown_dropdown_state_keeps_the_hit() {
+    assert!(!dropdown_takes(None, true, false));
+    assert!(!dropdown_takes(None, false, true));
+  }
+
+  #[test]
+  fn only_list_parts_belong_to_a_dropdown() {
+    assert!(is_dropdown_part(Some("menuitem")));
+    assert!(is_dropdown_part(Some("listitem")));
+    assert!(is_dropdown_part(Some("menu")));
+    assert!(!is_dropdown_part(Some("textbox")));
+    assert!(!is_dropdown_part(None));
+    assert!(is_option(Some("listitem")));
+    assert!(!is_option(Some("menu")));
   }
 }
