@@ -8,10 +8,10 @@
     "./*": "./src/*"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^3.0.89",
-    "@ai-sdk/openai": "^3.0.77",
+    "@ai-sdk/anthropic": "^3.0.138",
+    "@ai-sdk/openai": "^3.0.136",
     "@fontsource/poppins": "^5.3.0",
-    "ai": "^6.0.214",
+    "ai": "^6.0.322",
     "css-selector-generator": "^3.9.4",
     "dexie": "^4.4.7",
     "docx": "^9.15.2",
