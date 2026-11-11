@@ -790,4 +790,5 @@ module.exports.keyLabel = nativeBinding.keyLabel
 module.exports.releaseWebContent = nativeBinding.releaseWebContent
 module.exports.resolveKey = nativeBinding.resolveKey
 module.exports.startInputHook = nativeBinding.startInputHook
+module.exports.wakeApps = nativeBinding.wakeApps
 module.exports.windowAt = nativeBinding.windowAt

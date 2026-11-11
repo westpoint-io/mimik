@@ -82,4 +82,6 @@ export interface UiElement {
   children: Array<ElementNode>
 }
 
+export declare function wakeApps(): void
+
 export declare function windowAt(x: number, y: number): ActiveWindow | null

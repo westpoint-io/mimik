@@ -197,6 +197,12 @@ pub fn enable_accessibility() {
 }
 
 #[napi]
+pub fn wake_apps() {
+  #[cfg(target_os = "linux")]
+  std::thread::spawn(atspi::wake_apps);
+}
+
+#[napi]
 pub fn is_supported() -> bool {
   cfg!(any(windows, target_os = "macos", target_os = "linux"))
 }
