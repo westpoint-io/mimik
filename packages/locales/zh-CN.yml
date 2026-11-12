@@ -370,6 +370,7 @@ confirmDelete:
 
 editor:
   guideHost: 网站地址
+  guideHostInvalid: "请输入网址，例如 https://example.com"
   backToLibrary: 返回资料库
   openInDashboard: 打开
   openInDashboardHint: 在仪表盘中打开以编辑或导出

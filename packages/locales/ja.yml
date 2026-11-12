@@ -370,6 +370,7 @@ confirmDelete:
 
 editor:
   guideHost: "ウェブサイトのアドレス"
+  guideHostInvalid: "https://example.com のようなウェブアドレスを入力してください"
   backToLibrary: "ライブラリに戻る"
   openInDashboard: "開く"
   openInDashboardHint: "ダッシュボードで開いて編集またはエクスポート"

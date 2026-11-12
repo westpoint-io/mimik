@@ -370,6 +370,7 @@ confirmDelete:
 
 editor:
   guideHost: Адрес сайта
+  guideHostInvalid: "Введите веб-адрес, например https://example.com"
   backToLibrary: Назад к библиотеке
   openInDashboard: Открыть
   openInDashboardHint: "Откройте в дашборде, чтобы редактировать или экспортировать"

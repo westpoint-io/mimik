@@ -370,6 +370,7 @@ confirmDelete:
 
 editor:
   guideHost: Website address
+  guideHostInvalid: "Enter a web address like https://example.com"
   backToLibrary: Back to library
   openInDashboard: Open
   openInDashboardHint: Open in the dashboard to edit or export

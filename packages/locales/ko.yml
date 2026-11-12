@@ -370,6 +370,7 @@ confirmDelete:
 
 editor:
   guideHost: "웹사이트 주소"
+  guideHostInvalid: "https://example.com 같은 웹 주소를 입력하세요"
   backToLibrary: "라이브러리로 돌아가기"
   openInDashboard: "열기"
   openInDashboardHint: "대시보드에서 열어 편집하거나 내보낼 수 있어요"
