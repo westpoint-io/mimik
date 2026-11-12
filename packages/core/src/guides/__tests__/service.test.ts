@@ -272,13 +272,16 @@ describe('replaceGuideHost', () => {
     expect((await db.steps.get('s2'))!.url).toBe('http://localhost:8080/api');
   });
 
-  it.each(['not a host', 'ftp://app.example.com'])('rejects %s and leaves the steps alone', async (host) => {
-    await seedGuide('g1', { stepIds: ['s1'] });
-    await db.steps.add(makeStep({ id: 's1', guideId: 'g1', url: 'http://localhost:3000/orders' }));
+  it.each(['not a host', 'ftp://app.example.com', 'intranet', 'https://intranet:8080', '.com', 'app..com'])(
+    'rejects %s and leaves the steps alone',
+    async (host) => {
+      await seedGuide('g1', { stepIds: ['s1'] });
+      await db.steps.add(makeStep({ id: 's1', guideId: 'g1', url: 'http://localhost:3000/orders' }));
 
-    await expect(replaceGuideHost('g1', 'http://localhost:3000', host)).rejects.toThrow();
-    expect((await db.steps.get('s1'))!.url).toBe('http://localhost:3000/orders');
-  });
+      await expect(replaceGuideHost('g1', 'http://localhost:3000', host)).rejects.toThrow();
+      expect((await db.steps.get('s1'))!.url).toBe('http://localhost:3000/orders');
+    },
+  );
 });
 
 describe('toggleStar', () => {

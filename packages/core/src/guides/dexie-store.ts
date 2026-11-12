@@ -744,6 +744,10 @@ async function replaceGuideHost(guideId: string, fromOrigin: string, host: strin
         const url = new URL(step.url);
         const target = new URL(typed, url);
         if (!/^https?:$/.test(target.protocol)) throw new TypeError(`Unsupported scheme ${target.protocol}`);
+        const { hostname } = target;
+        if (hostname !== 'localhost' && !hostname.startsWith('[') && !/^[^.]+(\.[^.]+)+$/.test(hostname)) {
+          throw new TypeError(`Not a web address ${hostname}`);
+        }
         url.protocol = target.protocol;
         url.hostname = target.hostname;
         url.port = target.port;
