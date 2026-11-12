@@ -5,7 +5,7 @@ import { client, i18n } from '@/core/env';
 import type { ScreenshotEdits } from '@/core/screenshot/types';
 import type { ParsedBundle } from '@/core/transfer/parse';
 import { db } from './db';
-import { extractDomain, getMostCommonDomain } from './domain';
+import { getMostCommonDomain } from './domain';
 import { hashPayload } from './snapshot-hash';
 import { sanitizeGuideTitle } from './title';
 import type {
@@ -734,12 +734,12 @@ async function deleteStep(guideId: string, stepId: string): Promise<void> {
   await deleteSteps(guideId, [stepId]);
 }
 
-async function replaceGuideHost(guideId: string, fromDomain: string, host: string): Promise<void> {
+async function replaceGuideHost(guideId: string, fromOrigin: string, host: string): Promise<void> {
   const typed = /^[a-z][a-z\d+.-]*:\/\//i.test(host) ? host : `//${host}`;
   await db.transaction('rw', db.steps, db.guides, async () => {
     const steps = await db.steps.where('guideId').equals(guideId).toArray();
     const moved = steps
-      .filter((step) => extractDomain(step.url) === fromDomain)
+      .filter((step) => URL.parse(step.url)?.origin === fromOrigin)
       .map((step) => {
         const url = new URL(step.url);
         const target = new URL(typed, url);

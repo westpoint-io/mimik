@@ -243,7 +243,7 @@ describe('replaceGuideHost', () => {
       makeStep({ id: 's2', guideId: 'g1', index: 1, url: 'https://accounts.google.com/signin' }),
     ]);
 
-    await replaceGuideHost('g1', 'localhost', 'https://app.example.com');
+    await replaceGuideHost('g1', 'http://localhost:3000', 'https://app.example.com');
 
     expect((await db.steps.get('s1'))!.url).toBe('https://app.example.com/orders/7?tab=items#notes');
     expect((await db.steps.get('s2'))!.url).toBe('https://accounts.google.com/signin');
@@ -254,16 +254,29 @@ describe('replaceGuideHost', () => {
     await seedGuide('g1', { stepIds: ['s1'] });
     await db.steps.add(makeStep({ id: 's1', guideId: 'g1', url: 'http://localhost:3000/orders' }));
 
-    await replaceGuideHost('g1', 'localhost', 'www.example.com:9090');
+    await replaceGuideHost('g1', 'http://localhost:3000', 'www.example.com:9090');
 
     expect((await db.steps.get('s1'))!.url).toBe('http://www.example.com:9090/orders');
+  });
+
+  it('leaves steps on another port of the same host alone', async () => {
+    await seedGuide('g1', { stepIds: ['s1', 's2'] });
+    await db.steps.bulkAdd([
+      makeStep({ id: 's1', guideId: 'g1', url: 'http://localhost:3000/orders' }),
+      makeStep({ id: 's2', guideId: 'g1', index: 1, url: 'http://localhost:8080/api' }),
+    ]);
+
+    await replaceGuideHost('g1', 'http://localhost:3000', 'https://app.example.com');
+
+    expect((await db.steps.get('s1'))!.url).toBe('https://app.example.com/orders');
+    expect((await db.steps.get('s2'))!.url).toBe('http://localhost:8080/api');
   });
 
   it.each(['not a host', 'ftp://app.example.com'])('rejects %s and leaves the steps alone', async (host) => {
     await seedGuide('g1', { stepIds: ['s1'] });
     await db.steps.add(makeStep({ id: 's1', guideId: 'g1', url: 'http://localhost:3000/orders' }));
 
-    await expect(replaceGuideHost('g1', 'localhost', host)).rejects.toThrow();
+    await expect(replaceGuideHost('g1', 'http://localhost:3000', host)).rejects.toThrow();
     expect((await db.steps.get('s1'))!.url).toBe('http://localhost:3000/orders');
   });
 });
