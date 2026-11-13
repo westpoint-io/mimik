@@ -35,6 +35,7 @@ import { useFullview } from '../../stores/use-fullview';
 import { useWideLayout } from '../hooks/use-wide-layout';
 import { buildPreview } from '../lib/build-preview';
 import type { PreviewData } from '../types';
+import { GuideHostField } from './GuideHostField';
 import { GuideOutline } from './GuideOutline';
 import { GuideStepList } from './GuideStepList';
 
@@ -301,6 +302,9 @@ export function GuideContent({
   const viewScreenshots = previewView ? previewView.screenshots : data.screenshots;
   const actionCount = actionSteps(viewSteps).length;
   const domain = getMostCommonDomain(viewSteps);
+  const origins = new Set(viewSteps.flatMap((s) => (s.url ? [URL.parse(s.url)?.origin] : [])));
+  const [origin = ''] = origins;
+  const singleHost = origins.size === 1 && /^https?:/.test(origin);
   const editingScreenshot = editingStepId ? data.screenshots.get(editingStepId) : undefined;
   const animatingTitle = preview ? null : typingTitle;
   const untitledPending = !preview && !typingTitle && title === i18n.t('guide.untitled') && viewSteps.length > 0;
@@ -478,12 +482,21 @@ export function GuideContent({
                     ? i18n.t('guide.stepCountPlural', [String(actionCount)])
                     : i18n.t('guide.stepCount', [String(actionCount)])}
                 </span>
-                {domain && (
-                  <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground bg-card border border-border pl-1.5 pr-2.5 py-0.5 rounded-full">
-                    <FaviconImg domain={domain} size={14} className="rounded-full" />
-                    {domain}
-                  </span>
-                )}
+                {domain &&
+                  (readOnly || !singleHost ? (
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground bg-card border border-border pl-1.5 pr-2.5 py-0.5 rounded-full">
+                      <FaviconImg domain={domain} size={14} className="rounded-full" />
+                      {domain}
+                    </span>
+                  ) : (
+                    <GuideHostField
+                      key={origin}
+                      guideId={guideId}
+                      domain={domain}
+                      origin={origin}
+                      onChanged={loadGuide}
+                    />
+                  ))}
                 {onGuideMe && !editing && !preview && viewSteps.some(isReplayable) && (
                   <button
                     onClick={() => onGuideMe(guideId)}

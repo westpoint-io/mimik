@@ -37,6 +37,7 @@ import {
   getTrashedGuides,
   permanentlyDeleteGuide,
   reorderSteps,
+  replaceGuideHost,
   softDeleteGuide,
   toggleStar,
   updateGuideDescription,
@@ -232,6 +233,55 @@ describe('reorderSteps', () => {
     expect(steps.map((s) => s.id)).toEqual(['s3', 's1', 's2']);
     expect(steps.map((s) => s.index)).toEqual([0, 1, 2]);
   });
+});
+
+describe('replaceGuideHost', () => {
+  it('moves steps on the guide domain to the new host and keeps their path', async () => {
+    await seedGuide('g1', { stepIds: ['s1', 's2'] });
+    await db.steps.bulkAdd([
+      makeStep({ id: 's1', guideId: 'g1', url: 'http://localhost:3000/orders/7?tab=items#notes' }),
+      makeStep({ id: 's2', guideId: 'g1', index: 1, url: 'https://accounts.google.com/signin' }),
+    ]);
+
+    await replaceGuideHost('g1', 'http://localhost:3000', 'https://app.example.com');
+
+    expect((await db.steps.get('s1'))!.url).toBe('https://app.example.com/orders/7?tab=items#notes');
+    expect((await db.steps.get('s2'))!.url).toBe('https://accounts.google.com/signin');
+    expect(broadcastMessages).toContainEqual({ type: 'mutated' });
+  });
+
+  it('uses the host as typed and keeps the step scheme when none is typed', async () => {
+    await seedGuide('g1', { stepIds: ['s1'] });
+    await db.steps.add(makeStep({ id: 's1', guideId: 'g1', url: 'http://localhost:3000/orders' }));
+
+    await replaceGuideHost('g1', 'http://localhost:3000', 'www.example.com:9090');
+
+    expect((await db.steps.get('s1'))!.url).toBe('http://www.example.com:9090/orders');
+  });
+
+  it('leaves steps on another port of the same host alone', async () => {
+    await seedGuide('g1', { stepIds: ['s1', 's2'] });
+    await db.steps.bulkAdd([
+      makeStep({ id: 's1', guideId: 'g1', url: 'http://localhost:3000/orders' }),
+      makeStep({ id: 's2', guideId: 'g1', index: 1, url: 'http://localhost:8080/api' }),
+    ]);
+
+    await replaceGuideHost('g1', 'http://localhost:3000', 'https://app.example.com');
+
+    expect((await db.steps.get('s1'))!.url).toBe('https://app.example.com/orders');
+    expect((await db.steps.get('s2'))!.url).toBe('http://localhost:8080/api');
+  });
+
+  it.each(['not a host', 'ftp://app.example.com', 'intranet', 'https://intranet:8080', '.com', 'app..com'])(
+    'rejects %s and leaves the steps alone',
+    async (host) => {
+      await seedGuide('g1', { stepIds: ['s1'] });
+      await db.steps.add(makeStep({ id: 's1', guideId: 'g1', url: 'http://localhost:3000/orders' }));
+
+      await expect(replaceGuideHost('g1', 'http://localhost:3000', host)).rejects.toThrow();
+      expect((await db.steps.get('s1'))!.url).toBe('http://localhost:3000/orders');
+    },
+  );
 });
 
 describe('toggleStar', () => {

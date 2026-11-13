@@ -734,6 +734,31 @@ async function deleteStep(guideId: string, stepId: string): Promise<void> {
   await deleteSteps(guideId, [stepId]);
 }
 
+async function replaceGuideHost(guideId: string, fromOrigin: string, host: string): Promise<void> {
+  const typed = /^[a-z][a-z\d+.-]*:\/\//i.test(host) ? host : `//${host}`;
+  await db.transaction('rw', db.steps, db.guides, async () => {
+    const steps = await db.steps.where('guideId').equals(guideId).toArray();
+    const moved = steps
+      .filter((step) => URL.parse(step.url)?.origin === fromOrigin)
+      .map((step) => {
+        const url = new URL(step.url);
+        const target = new URL(typed, url);
+        if (!/^https?:$/.test(target.protocol)) throw new TypeError(`Unsupported scheme ${target.protocol}`);
+        const { hostname } = target;
+        if (hostname !== 'localhost' && !hostname.startsWith('[') && !/^[^.]+(\.[^.]+)+$/.test(hostname)) {
+          throw new TypeError(`Not a web address ${hostname}`);
+        }
+        url.protocol = target.protocol;
+        url.hostname = target.hostname;
+        url.port = target.port;
+        return { ...step, url: url.href };
+      });
+    await db.steps.bulkPut(moved);
+    await db.guides.update(guideId, { updatedAt: Date.now() });
+  });
+  notifyGuidesChanged({ type: 'mutated' });
+}
+
 async function getGuideDomain(guideId: string): Promise<string> {
   const steps = await db.steps.where('guideId').equals(guideId).sortBy('index');
   return getMostCommonDomain(steps);
@@ -900,6 +925,7 @@ export const dexieStore = {
   findExistingStepIds,
   deleteSteps,
   deleteStep,
+  replaceGuideHost,
   getGuideDomain,
   allScreenshotIds,
   saveScreenshot,

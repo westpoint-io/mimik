@@ -369,6 +369,8 @@ confirmDelete:
   confirm: "Supprimer définitivement"
 
 editor:
+  guideHost: Adresse du site web
+  guideHostInvalid: "Saisissez une adresse web comme https://example.com"
   backToLibrary: "Retour à la bibliothèque"
   openInDashboard: Ouvrir
   openInDashboardHint: Ouvrir dans le tableau de bord pour modifier ou exporter
