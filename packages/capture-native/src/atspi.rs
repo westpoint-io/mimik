@@ -235,6 +235,15 @@ fn wake(app: &Node) {
   let _: Option<HashMap<String, String>> = app.call(ACCESSIBLE, "GetAttributes", &());
 }
 
+pub fn wake_apps() {
+  with_session(|session| {
+    for app in apps(session) {
+      wake(&app);
+    }
+    Some(())
+  });
+}
+
 fn wake_sleeping(session: &Session) {
   for app in apps(session) {
     if !has_window(&app) {
@@ -393,8 +402,8 @@ fn app_for(session: &mut Session, pid: u32) -> Option<Node> {
       .cloned()
       .or_else(|| owned.into_iter().next())?,
   };
+  wake(&chosen);
   if !has_window(&chosen) {
-    wake(&chosen);
     let deadline = std::time::Instant::now() + WAKE_WAIT;
     while !has_window(&chosen) && std::time::Instant::now() < deadline {
       std::thread::sleep(WAKE_POLL);

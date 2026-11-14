@@ -103,6 +103,11 @@ export async function enableAccessibility(): Promise<void> {
   native?.enableAccessibility();
 }
 
+export async function wakeApps(): Promise<void> {
+  const native = await load();
+  native?.wakeApps();
+}
+
 export async function elementLookupAvailable(): Promise<boolean> {
   const native = await load();
   return native?.isSupported() ?? false;

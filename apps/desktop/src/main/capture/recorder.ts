@@ -15,6 +15,7 @@ import {
   releaseWebContent,
   resolveKey,
   type ScreenElement,
+  wakeApps,
 } from './element';
 import { type FocusedWindowResult, focusedWindow, windowAt } from './focused-window';
 import { type InputAction, InputHook, type KeyAction, type PointerAction } from './input-hook';
@@ -87,6 +88,7 @@ export interface RecorderHooks {
   resolve?: (keycode: number, shift: boolean, ctrl: boolean, alt: boolean) => Promise<string | null>;
   reset?: () => Promise<void>;
   release?: () => Promise<void>;
+  wake?: () => Promise<void>;
   drained?: () => void;
   progress?: (fraction: number, ms: number) => void;
   aimed?: (aim: { x: number; y: number; aspect: number }) => void;
@@ -234,6 +236,7 @@ export class DesktopRecorder {
   private readonly resolve: (keycode: number, shift: boolean, ctrl: boolean, alt: boolean) => Promise<string | null>;
   private readonly reset: () => Promise<void>;
   private readonly release: () => Promise<void>;
+  private readonly wake: () => Promise<void>;
   private readonly drained: () => void;
   private readonly progress: (fraction: number, ms: number) => void;
   private readonly aimed: (aim: { x: number; y: number; aspect: number }) => void;
@@ -258,6 +261,7 @@ export class DesktopRecorder {
     this.resolve = hooks.resolve ?? resolveKey;
     this.reset = hooks.reset ?? clearDeadKey;
     this.release = hooks.release ?? releaseWebContent;
+    this.wake = hooks.wake ?? wakeApps;
     this.drained = hooks.drained ?? (() => {});
     this.progress = hooks.progress ?? (() => {});
     this.aimed = hooks.aimed ?? (() => {});
@@ -273,6 +277,7 @@ export class DesktopRecorder {
     if (!started.ok) return { ok: false, reason: started.reason, detail: started.detail };
     this.running = true;
     this.lastClick = null;
+    void this.wake().catch(() => undefined);
     return { ok: true };
   }
 
