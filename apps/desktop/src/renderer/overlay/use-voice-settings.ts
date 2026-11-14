@@ -2,7 +2,7 @@ import { readVoiceSettings, type VoiceSettings } from '@mimik/core/capture/voice
 import { useEffect, useState } from 'react';
 
 export function useVoiceSettings(): VoiceSettings {
-  const [voice, setVoice] = useState<VoiceSettings>({ enabled: false, hasApiKey: false });
+  const [voice, setVoice] = useState<VoiceSettings>({ enabled: false, hasApiKey: false, blocker: 'missing-api-key' });
 
   useEffect(() => {
     const read = () => void readVoiceSettings().then(setVoice);

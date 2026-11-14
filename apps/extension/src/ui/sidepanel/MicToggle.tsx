@@ -2,8 +2,9 @@ import { logger } from '@mimik/core/logger';
 import { MicButton } from '@mimik/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { browser, i18n } from '#imports';
-import { hasVoiceApiKey, VOICE_KEY_SETTINGS } from '@/core/capture/voice/api-key';
+import { resolveVoiceApiKey, VOICE_KEY_SETTINGS } from '@/core/capture/voice/api-key';
 import { micToggleState } from '@/core/capture/voice/mic-toggle-state';
+import { type TranscriptionBlocker, transcriptionBlocker } from '@/core/capture/voice/transcription-blocker';
 import { getActiveTab } from '@/lib/browser-api/get-active-tab';
 import { localStorage } from '@/lib/browser-api/local-storage';
 import { sendMessage } from '@/lib/messaging';
@@ -18,13 +19,13 @@ interface MicToggleProps {
 }
 
 export function MicToggle({ enabled, live, paused = false, onChange }: MicToggleProps) {
-  const [keyed, setKeyed] = useState(false);
+  const [blocker, setBlocker] = useState<TranscriptionBlocker | null>('missing-api-key');
 
   useEffect(() => {
     let active = true;
     const read = () =>
       localStorage.get([...VOICE_KEY_SETTINGS]).then((stored) => {
-        if (active) setKeyed(hasVoiceApiKey(stored));
+        if (active) setBlocker(transcriptionBlocker(resolveVoiceApiKey(stored)));
       });
 
     void read();
@@ -40,7 +41,7 @@ export function MicToggle({ enabled, live, paused = false, onChange }: MicToggle
     };
   }, []);
 
-  const { locked, labelKey } = micToggleState(enabled, keyed, paused);
+  const { locked, labelKey } = micToggleState(enabled, blocker, paused);
 
   const toggle = useCallback(async () => {
     if (locked) return;
