@@ -1,4 +1,5 @@
 import { applyNarrationResult } from '@mimik/core/capture/voice/apply-narration-result';
+import { canTranscribe } from '@mimik/core/capture/voice/can-transcribe';
 import { deferDescription } from '@mimik/core/capture/voice/deferred-descriptions';
 import { describeStepNow, describeUnnarratedSteps } from '@mimik/core/capture/voice/describe-unnarrated';
 import { MicRecorder } from '@mimik/core/capture/voice/mic-recorder';
@@ -137,8 +138,8 @@ export class DesktopNarration {
   private async open(): Promise<MicRecorder | null> {
     const voice = await readVoiceSettings();
     if (!voice.enabled) return null;
-    if (!voice.hasApiKey) {
-      this.report({ phase: 'error', reason: 'missing-api-key' });
+    if (voice.blocker) {
+      this.report({ phase: 'error', reason: voice.blocker });
       return null;
     }
     const mic = new MicRecorder(assetUrl('mic-frames.js'), {
@@ -171,7 +172,7 @@ export class DesktopNarration {
 
   private async transcribe(guideId: string, audio: VoiceRecording, marks: StepMark[]): Promise<string[]> {
     const settings = await readTranscriptionSettings();
-    if (!settings.apiKey) return [];
+    if (!canTranscribe(settings)) return [];
     const updates = await applyNarrationResult(guideId, await narrateRecording(audio, marks, settings));
     this.narrated += updates.length;
     for (const { stepId, description } of updates) {

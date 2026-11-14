@@ -56,8 +56,12 @@ describe('voiceNotice', () => {
     });
   });
 
-  it('offers settings only when the key is the thing that is missing', () => {
+  it('offers settings only when the key or the server is the thing that is missing', () => {
     expect(voiceNotice(update('error', { reason: 'missing-api-key' }), true)?.showSettings).toBe(true);
+    expect(voiceNotice(update('error', { reason: 'server-not-ready' }), true)).toMatchObject({
+      titleKey: 'voice.errorServerNotReady',
+      showSettings: true,
+    });
     expect(voiceNotice(update('error', { reason: 'permission-denied' }), true)?.showSettings).toBe(false);
   });
 

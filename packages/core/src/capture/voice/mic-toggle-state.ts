@@ -1,14 +1,25 @@
+import type { TranscriptionBlocker } from './transcription-blocker';
+
 export interface MicToggleState {
   locked: boolean;
   labelKey: string;
 }
 
-export function micToggleState(enabled: boolean, keyed: boolean, paused: boolean): MicToggleState {
-  const locked = (!keyed && !enabled) || paused;
+const BLOCKED_KEYS: Record<TranscriptionBlocker, string> = {
+  'missing-api-key': 'voice.needsApiKey',
+  'server-not-ready': 'voice.errorServerNotReady',
+};
+
+export function micToggleState(
+  enabled: boolean,
+  blocker: TranscriptionBlocker | null,
+  paused: boolean,
+): MicToggleState {
+  const locked = (blocker !== null && !enabled) || paused;
   const labelKey = paused
     ? 'voice.pausedWithCapture'
-    : locked
-      ? 'voice.needsApiKey'
+    : locked && blocker
+      ? BLOCKED_KEYS[blocker]
       : enabled
         ? 'voice.turnOff'
         : 'voice.turnOn';
