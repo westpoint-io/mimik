@@ -1,6 +1,6 @@
 import type { Screenshot, ScreenshotBounds } from '@/core/guides/types';
 import type { Annotation, ClickTarget } from './types';
-import { DEFAULT_TARGET_COLOR } from './types';
+import { DEFAULT_MARKER_RADIUS, DEFAULT_TARGET_COLOR } from './types';
 
 const PAD_RATIO = 0.3;
 const MAX_PAD_MULTIPLE = 6;
@@ -134,6 +134,10 @@ export function annotationBounds(a: Annotation): ScreenshotBounds {
     case 'redact':
     case 'target':
       return { x: a.x, y: a.y, width: a.w, height: a.h };
+    case 'marker': {
+      const r = a.radius ?? DEFAULT_MARKER_RADIUS;
+      return a.target ?? { x: a.x - r, y: a.y - r, width: r * 2, height: r * 2 };
+    }
     case 'arrow':
       return {
         x: Math.min(a.x1, a.x2),
@@ -176,6 +180,13 @@ export function moveAnnotation(a: Annotation, dx: number, dy: number): Annotatio
     case 'target':
     case 'text':
       return { ...a, x: a.x + dx, y: a.y + dy };
+    case 'marker':
+      return {
+        ...a,
+        x: a.x + dx,
+        y: a.y + dy,
+        target: a.target ? { ...a.target, x: a.target.x + dx, y: a.target.y + dy } : undefined,
+      };
     case 'arrow':
       return { ...a, x1: a.x1 + dx, y1: a.y1 + dy, x2: a.x2 + dx, y2: a.y2 + dy };
     case 'freehand':
@@ -214,6 +225,10 @@ export function resizeAnnotation(a: Annotation, handle: Handle, dx: number, dy: 
       return { ...a, x1: mapX(a.x1), y1: mapY(a.y1), x2: mapX(a.x2), y2: mapY(a.y2) };
     }
     return { ...a, points: a.points.map((p, i) => (i % 2 === 0 ? mapX(p) : mapY(p))) };
+  }
+
+  if (a.type === 'marker') {
+    return a;
   }
 
   return {

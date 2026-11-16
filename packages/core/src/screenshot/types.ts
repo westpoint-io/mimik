@@ -14,6 +14,7 @@ export const TARGET_COLORS = [
 ] as const;
 
 export const DEFAULT_TARGET_COLOR = '#4F46E5';
+export const DEFAULT_MARKER_RADIUS = 14;
 
 export interface ClickTarget extends ScreenshotBounds {
   border: TargetBorder;
@@ -136,7 +137,17 @@ export type Annotation =
     }
   | { id: string; type: 'freehand'; points: number[]; color: string; lineWidth?: LineWidth }
   | { id: string; type: 'redact'; x: number; y: number; w: number; h: number; style: 'blur' | 'solid' }
-  | { id: string; type: 'target'; x: number; y: number; w: number; h: number; color: string; border: TargetBorder };
+  | { id: string; type: 'target'; x: number; y: number; w: number; h: number; color: string; border: TargetBorder }
+  | {
+      id: string;
+      type: 'marker';
+      x: number;
+      y: number;
+      number: number;
+      color?: string;
+      radius?: number;
+      target?: ScreenshotBounds;
+    };
 
 export interface ScreenshotEdits {
   viewport?: ScreenshotBounds;

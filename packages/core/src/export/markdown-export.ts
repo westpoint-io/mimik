@@ -38,6 +38,13 @@ export async function exportGuideAsMarkdown(
     const num = String(numbers.get(step.id) ?? 0).padStart(2, '0');
     lines.push(`## ${i18n.t('export.stepLabel', [num])}: ${step.description}`, '');
 
+    if (step.groupedSteps && step.groupedSteps.length > 0) {
+      for (const sub of step.groupedSteps) {
+        lines.push(`${sub.index}. ${sub.description}`);
+      }
+      lines.push('');
+    }
+
     const screenshot = screenshots.get(step.id);
     if (screenshot) {
       const rendered = await renderScreenshot(screenshot);

@@ -1,5 +1,5 @@
 import type { Annotation, ArrowEnd } from './types';
-import { DEFAULT_LINE_HEIGHT, FONT_FAMILIES, LINE_WIDTHS } from './types';
+import { DEFAULT_LINE_HEIGHT, DEFAULT_MARKER_RADIUS, FONT_FAMILIES, LINE_WIDTHS } from './types';
 
 export type Ctx = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 
@@ -180,6 +180,26 @@ export function drawAnnotation(ctx: Ctx, a: Annotation, originX: number, originY
       for (let i = 2; i < a.points.length; i += 2) ctx.lineTo(a.points[i]!, a.points[i + 1]!);
       ctx.stroke();
       break;
+    case 'marker': {
+      if (a.target) {
+        ctx.strokeStyle = a.color ?? '#4F46E5';
+        ctx.lineWidth = TARGET_STROKE;
+        drawRoundedRect(ctx, a.target.x, a.target.y, a.target.width, a.target.height, TARGET_RADIUS);
+        ctx.stroke();
+      }
+      const r = a.radius ?? DEFAULT_MARKER_RADIUS;
+      ctx.fillStyle = a.color ?? '#4F46E5';
+      ctx.beginPath();
+      ctx.arc(a.x, a.y, r, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = `700 ${Math.round(r * 1.1)}px ${FONT_FAMILIES['sans-serif']}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(a.number), a.x, a.y);
+      break;
+    }
     case 'redact':
       if (a.style === 'solid') {
         ctx.fillStyle = '#1E1B4B';

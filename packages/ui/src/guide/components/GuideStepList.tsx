@@ -1,11 +1,11 @@
 import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import { i18n } from '@mimik/core/env';
 import { isBlock, stepNumbers } from '@mimik/core/guides/blocks';
-import { copySteps, createSnapshot, deleteSteps, insertBlock } from '@mimik/core/guides/service';
+import { copySteps, createSnapshot, deleteSteps, groupSteps, insertBlock } from '@mimik/core/guides/service';
 import type { BlockType, Screenshot, Step } from '@mimik/core/guides/types';
 import { logger } from '@mimik/core/logger';
 import { dominantRatio } from '@mimik/core/screenshot/geometry';
-import { Copy, Trash2 } from 'lucide-react';
+import { Copy, Layers, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ConfirmDialog } from '../../common/components/ConfirmDialog';
 import { Toast } from '../../common/components/Toast';
@@ -135,6 +135,19 @@ export function GuideStepList({
     onChanged?.();
   };
 
+  const handleGroup = async () => {
+    const ids = steps.filter((step) => selectedStepIds.has(step.id)).map((step) => step.id);
+    if (ids.length < 2) return;
+    try {
+      if (await createSnapshot(guideId)) bumpHistoryRefresh();
+    } catch (err) {
+      logger.error(' Snapshot before group steps failed', err);
+    }
+    await groupSteps(guideId, ids);
+    clearStepSelection();
+    onChanged?.();
+  };
+
   const handleCopy = async (targetGuideId: string | null) => {
     setCopyOpen(false);
     const ids = steps.filter((step) => selectedStepIds.has(step.id)).map((step) => step.id);
@@ -230,6 +243,12 @@ export function GuideStepList({
           <span className="text-[12px] font-medium text-foreground">
             {i18n.t('editor.selectedCount', [String(selectedCount)])}
           </span>
+          {selectedCount > 1 && (
+            <Button size="sm" variant="outline" onClick={handleGroup}>
+              <Layers size={13} />
+              {i18n.t('editor.groupSteps')}
+            </Button>
+          )}
           <Button size="sm" onClick={() => setCopyOpen(true)}>
             <Copy size={13} />
             {i18n.t('editor.copyTo')}

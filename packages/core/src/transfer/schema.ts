@@ -152,6 +152,8 @@ function annotations(value: unknown): Annotation[] | undefined {
           a.points.every((n) => bounded(n) !== undefined) &&
           typeof a.color === 'string'
         );
+      case 'marker':
+        return bounded(a.x) !== undefined && bounded(a.y) !== undefined && typeof a.number === 'number';
       default:
         return false;
     }

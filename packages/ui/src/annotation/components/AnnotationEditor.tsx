@@ -862,13 +862,13 @@ export function AnnotationEditor({ screenshot, tool, onDone, onCancel }: Annotat
                     {selected.type !== 'redact' && (
                       <ColorPopover
                         label={i18n.t('annotationEditor.lineColor')}
-                        value={selected.color}
+                        value={selected.color ?? '#4F46E5'}
                         onChange={handleColorSelect}
                       >
                         <button
                           type="button"
                           className="w-6 h-6 rounded-full border-2 border-primary-foreground/25"
-                          style={{ backgroundColor: selected.color }}
+                          style={{ backgroundColor: selected.color ?? '#4F46E5' }}
                         />
                       </ColorPopover>
                     )}
@@ -918,31 +918,34 @@ export function AnnotationEditor({ screenshot, tool, onDone, onCancel }: Annotat
                         </button>
                       </ColorPopover>
                     )}
-                    {selected.type !== 'text' && selected.type !== 'redact' && selected.type !== 'target' && (
-                      <MenuPopover
-                        label={i18n.t('annotationEditor.lineWidth')}
-                        items={LINE_WIDTH_ORDER.map((w) => (
-                          <DropdownMenuItem key={w} onSelect={() => setProp('lineWidth', w)}>
+                    {selected.type !== 'text' &&
+                      selected.type !== 'redact' &&
+                      selected.type !== 'target' &&
+                      selected.type !== 'marker' && (
+                        <MenuPopover
+                          label={i18n.t('annotationEditor.lineWidth')}
+                          items={LINE_WIDTH_ORDER.map((w) => (
+                            <DropdownMenuItem key={w} onSelect={() => setProp('lineWidth', w)}>
+                              <span
+                                className={`w-16 rounded-full ${LINE_WIDTHS[w] ? 'bg-foreground' : 'bg-foreground/20'}`}
+                                style={{ height: LINE_WIDTHS[w] || 2 }}
+                              />
+                            </DropdownMenuItem>
+                          ))}
+                        >
+                          <button type="button" className={TOOLBAR_TRIGGER}>
                             <span
-                              className={`w-16 rounded-full ${LINE_WIDTHS[w] ? 'bg-foreground' : 'bg-foreground/20'}`}
-                              style={{ height: LINE_WIDTHS[w] || 2 }}
+                              className={`w-7 rounded-full ${
+                                LINE_WIDTHS[selected.lineWidth ?? 'ms']
+                                  ? 'bg-primary-foreground'
+                                  : 'bg-primary-foreground/25'
+                              }`}
+                              style={{ height: LINE_WIDTHS[selected.lineWidth ?? 'ms'] || 2 }}
                             />
-                          </DropdownMenuItem>
-                        ))}
-                      >
-                        <button type="button" className={TOOLBAR_TRIGGER}>
-                          <span
-                            className={`w-7 rounded-full ${
-                              LINE_WIDTHS[selected.lineWidth ?? 'ms']
-                                ? 'bg-primary-foreground'
-                                : 'bg-primary-foreground/25'
-                            }`}
-                            style={{ height: LINE_WIDTHS[selected.lineWidth ?? 'ms'] || 2 }}
-                          />
-                          <ChevronDown size={10} className="opacity-60" />
-                        </button>
-                      </MenuPopover>
-                    )}
+                            <ChevronDown size={10} className="opacity-60" />
+                          </button>
+                        </MenuPopover>
+                      )}
                     {selected.type === 'box' && (
                       <Stepper
                         label={i18n.t('annotationEditor.cornerRadius')}

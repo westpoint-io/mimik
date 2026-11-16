@@ -21,6 +21,8 @@ const TRACKED = [
   'lineCap',
   'lineJoin',
   'font',
+  'textAlign',
+  'textBaseline',
   'filter',
   'imageSmoothingEnabled',
 ];
@@ -278,6 +280,30 @@ describe('drawAnnotation target', () => {
   });
 });
 
+describe('drawAnnotation marker', () => {
+  const base = { id: 'm', type: 'marker', x: 20, y: 30, number: 1 } as const;
+
+  it('draws a circular badge with centered step number', () => {
+    const r = recorder();
+    drawAnnotation(r.ctx, base, 0, 0);
+
+    expect(r.first('arc')).toEqual([20, 30, 14, 0, Math.PI * 2]);
+    expect(r.first('fillText')).toEqual(['1', 20, 30]);
+    expect(r.first('set:textAlign')).toEqual(['center']);
+    expect(r.first('set:textBaseline')).toEqual(['middle']);
+    expect(r.count('fill')).toBe(1);
+  });
+
+  it('draws a target rectangle when target bounds are provided', () => {
+    const r = recorder();
+    drawAnnotation(r.ctx, { ...base, target: { x: 10, y: 15, width: 80, height: 40 } }, 0, 0);
+
+    expect(r.count('stroke')).toBe(1);
+    expect(r.count('fill')).toBe(1);
+    expect(r.first('fillText')).toEqual(['1', 20, 30]);
+  });
+});
+
 describe('drawAnnotation arrow', () => {
   const base = { id: 'a', type: 'arrow', x1: 0, y1: 0, x2: 100, y2: 0, color: '#2563EB' } as const;
 
@@ -398,6 +424,7 @@ describe('drawAnnotation state isolation', () => {
     { id: '6', type: 'freehand', points: [0, 0, 1, 1], color: '#000' },
     { id: '7', type: 'redact', x: 0, y: 0, w: 1, h: 1, style: 'solid' },
     { id: '8', type: 'redact', x: 0, y: 0, w: 1, h: 1, style: 'blur' },
+    { id: '9', type: 'marker', x: 0, y: 0, number: 1, color: '#4F46E5' },
   ];
 
   it.each(each.map((a) => [`${a.type}:${a.id}`, a] as const))('balances save and restore for %s', (_label, a) => {
