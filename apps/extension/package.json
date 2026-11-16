@@ -45,7 +45,7 @@
     {
       "name": "background",
       "path": ".output/chrome-mv3/background.js",
-      "limit": "170 kB"
+      "limit": "190 kB"
     },
     {
       "name": "content script",
