@@ -14,12 +14,12 @@
     "ai": "^6.0.330",
     "css-selector-generator": "^3.9.4",
     "dexie": "^4.4.7",
-    "docx": "^9.15.2",
+    "docx": "^9.15.3",
     "fflate": "^0.8.3",
     "gifenc": "^1.0.3",
     "jspdf": "^4.2.1",
-    "mediabunny": "^1.65.1",
+    "mediabunny": "^1.65.2",
     "p-queue": "^9.3.5",
-    "xstate": "^5.33.3"
+    "xstate": "^5.33.4"
   }
 }
