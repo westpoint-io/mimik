@@ -5,9 +5,12 @@ import { shadeOf } from '@mimik/core/screenshot/color';
 import { drawAnnotation, drawRoundedRect, TARGET_RADIUS, TARGET_STROKE } from '@mimik/core/screenshot/draw';
 import {
   annotationBounds,
+  clamp,
   cropTo,
   type Handle,
   hitTest,
+  isOffImage,
+  keepInside,
   moveAnnotation,
   resizeAnnotation,
   resolveTarget,
@@ -92,7 +95,7 @@ interface TextEditorState {
 }
 
 type DragState =
-  | { mode: 'move'; id: string; lastX: number; lastY: number }
+  | { mode: 'move'; id: string; origin: Annotation; startX: number; startY: number }
   | { mode: 'resize'; id: string; handle: Handle; lastX: number; lastY: number }
   | { mode: 'crop'; start: { x: number; y: number }; rect: ScreenshotBounds }
   | { mode: 'cropResize'; handle: Handle; rect: ScreenshotBounds; lastX: number; lastY: number }
@@ -145,14 +148,17 @@ export function AnnotationEditor({ screenshot, tool, onDone, onCancel }: Annotat
   const [activeTool, setActiveTool] = useState<EditorTool>(
     tool === 'crop' ? 'crop' : tool === 'redact' ? 'redact' : 'box',
   );
+  const img = { width: screenshot.width, height: screenshot.height };
   const [annotations, setAnnotations] = useState<Annotation[]>(() => {
     const existing = screenshot.edits?.annotations ?? [];
     const t = resolveTarget(screenshot);
-    if (!t) return existing;
-    return [
-      ...existing,
-      { id: TARGET_ID, type: 'target', x: t.x, y: t.y, w: t.width, h: t.height, color: t.color, border: t.border },
-    ];
+    const all: Annotation[] = t
+      ? [
+          ...existing,
+          { id: TARGET_ID, type: 'target', x: t.x, y: t.y, w: t.width, h: t.height, color: t.color, border: t.border },
+        ]
+      : existing;
+    return all.map((a) => (isOffImage(a, img) ? keepInside(a, img) : a));
   });
   const [viewport, setViewport] = useState<ScreenshotBounds | undefined>(screenshot.edits?.viewport);
   const [selectedId, setSelectedId] = useState<string | null>(tool === 'target' ? TARGET_ID : null);
@@ -216,7 +222,9 @@ export function AnnotationEditor({ screenshot, tool, onDone, onCancel }: Annotat
   const patchSelected = (patch: Record<string, unknown>) => {
     if (!selectedId || selectedId === TARGET_ID) return;
     pushHistory();
-    setAnnotations((prev) => prev.map((a) => (a.id === selectedId ? ({ ...a, ...patch } as Annotation) : a)));
+    setAnnotations((prev) =>
+      prev.map((a) => (a.id === selectedId ? keepInside({ ...a, ...patch } as Annotation, img) : a)),
+    );
   };
 
   const updateTarget = (patch: { color?: string; border?: TargetBorder }) => {
@@ -240,7 +248,10 @@ export function AnnotationEditor({ screenshot, tool, onDone, onCancel }: Annotat
     const rect = canvas.getBoundingClientRect();
     const scaleX = rect.width ? canvas.width / rect.width : 1;
     const scaleY = rect.height ? canvas.height / rect.height : 1;
-    return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+    return {
+      x: clamp((e.clientX - rect.left) * scaleX, 0, canvas.width),
+      y: clamp((e.clientY - rect.top) * scaleY, 0, canvas.height),
+    };
   }, []);
 
   useEffect(() => {
@@ -436,7 +447,7 @@ export function AnnotationEditor({ screenshot, tool, onDone, onCancel }: Annotat
     if (hit) {
       pushHistory();
       setSelectedId(hit.id);
-      dragRef.current = { mode: 'move', id: hit.id, lastX: p.x, lastY: p.y };
+      dragRef.current = { mode: 'move', id: hit.id, origin: hit, startX: p.x, startY: p.y };
       gesture.setGrabbing(true);
       return;
     }
@@ -491,13 +502,18 @@ export function AnnotationEditor({ screenshot, tool, onDone, onCancel }: Annotat
     const p = toImageSpace(e);
 
     if (drag.mode === 'move' || drag.mode === 'resize') {
-      const dx = p.x - drag.lastX;
-      const dy = p.y - drag.lastY;
-      drag.lastX = p.x;
-      drag.lastY = p.y;
+      const dx = p.x - (drag.mode === 'move' ? drag.startX : drag.lastX);
+      const dy = p.y - (drag.mode === 'move' ? drag.startY : drag.lastY);
+      if (drag.mode === 'resize') {
+        drag.lastX = p.x;
+        drag.lastY = p.y;
+      }
       const next = annotationsRef.current.map((a) => {
         if (a.id !== drag.id) return a;
-        return drag.mode === 'move' ? moveAnnotation(a, dx, dy) : resizeAnnotation(a, drag.handle, dx, dy);
+        return keepInside(
+          drag.mode === 'move' ? moveAnnotation(drag.origin, dx, dy) : resizeAnnotation(a, drag.handle, dx, dy),
+          img,
+        );
       });
       setAnnotations(next);
       const moved = next.find((a) => a.id === drag.id);
@@ -661,20 +677,23 @@ export function AnnotationEditor({ screenshot, tool, onDone, onCancel }: Annotat
       setSelectedId(id);
       setAnnotations((prev) => [
         ...prev,
-        {
-          id,
-          type: 'text',
-          x: textEditor.x,
-          y: textEditor.y,
-          text: textValue.trim(),
-          color,
-          size: text.fontSize,
-          ...measureText(textValue.trim(), text.fontSize, text.fontFamily, text.bold, text.italic),
-          fontFamily: text.fontFamily,
-          bold: text.bold,
-          italic: text.italic,
-          lineHeight: text.lineHeight,
-        },
+        keepInside(
+          {
+            id,
+            type: 'text',
+            x: textEditor.x,
+            y: textEditor.y,
+            text: textValue.trim(),
+            color,
+            size: text.fontSize,
+            ...measureText(textValue.trim(), text.fontSize, text.fontFamily, text.bold, text.italic),
+            fontFamily: text.fontFamily,
+            bold: text.bold,
+            italic: text.italic,
+            lineHeight: text.lineHeight,
+          },
+          img,
+        ),
       ]);
     }
     setTextEditor(null);
@@ -890,7 +909,13 @@ export function AnnotationEditor({ screenshot, tool, onDone, onCancel }: Annotat
                           type="button"
                           onClick={() => {
                             pushHistory();
-                            const copy = { ...moveAnnotation(selected, 24, 24), id: crypto.randomUUID() };
+                            const b = annotationBounds(selected);
+                            const dx = b.x + b.width + 24 <= img.width ? 24 : -24;
+                            const dy = b.y + b.height + 24 <= img.height ? 24 : -24;
+                            const copy = {
+                              ...keepInside(moveAnnotation(selected, dx, dy), img),
+                              id: crypto.randomUUID(),
+                            };
                             setAnnotations((prev) => [...prev, copy]);
                             setSelectedId(copy.id);
                           }}

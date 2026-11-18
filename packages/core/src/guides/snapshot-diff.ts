@@ -11,6 +11,8 @@ interface DiffStep {
 
 interface DiffScreenshot {
   id: string;
+  width: number;
+  height: number;
   edits?: ScreenshotEdits;
   bounds?: ScreenshotBounds;
   pixelRatio?: number;
@@ -49,8 +51,8 @@ function stableStringify(value: unknown): string {
 }
 
 function rowFor(snapshot: SnapshotLike, screenshotId: string | undefined): DiffScreenshot {
-  if (!screenshotId) return { id: '' };
-  return snapshot.screenshots.find((row) => row.id === screenshotId) ?? { id: screenshotId };
+  if (!screenshotId) return { id: '', width: 0, height: 0 };
+  return snapshot.screenshots.find((row) => row.id === screenshotId) ?? { id: screenshotId, width: 0, height: 0 };
 }
 
 function altOf(edits: ScreenshotEdits): string {
