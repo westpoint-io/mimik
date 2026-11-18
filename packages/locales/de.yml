@@ -798,6 +798,7 @@ voice:
   narrated: "Sprachkommentar zu $1 Schritt hinzugefügt."
   narratedPlural: "Sprachkommentar zu $1 Schritten hinzugefügt."
   narratedNone: "Kein Teil deines Sprachkommentars passte zu einem Schritt."
+  narratedUnscored: "Dein Server hat keine Konfidenzwerte geliefert, daher wurde nichts von deinem Sprachkommentar übernommen."
   guideSafe: "Deine Anleitung und die Screenshots sind nicht betroffen."
   openSettings: Einstellungen öffnen
   errorPermissionDenied: "Der Mikrofonzugriff wurde blockiert."

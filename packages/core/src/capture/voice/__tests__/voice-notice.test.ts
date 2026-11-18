@@ -89,6 +89,18 @@ describe('voiceNotice', () => {
     expect(notice?.titleSubstitutions).toBeUndefined();
   });
 
+  it('blames the missing scores when the server sent none and nothing was used', () => {
+    expect(voiceNotice(update('idle', { narrated: 0, unscored: true }), true)).toMatchObject({
+      tone: 'failed',
+      titleKey: 'voice.narratedUnscored',
+      showSettings: true,
+    });
+    expect(voiceNotice(update('idle', { narrated: 2, unscored: true }), true)?.titleKey).toBe('voice.narratedPlural');
+    expect(voiceSignature(update('idle', { narrated: 0, unscored: true }))).not.toBe(
+      voiceSignature(update('idle', { narrated: 0 })),
+    );
+  });
+
   it('withholds a result the user never watched arrive', () => {
     expect(voiceNotice(update('idle', { narrated: 4 }), false)).toBeNull();
   });

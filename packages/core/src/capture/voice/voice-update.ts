@@ -17,4 +17,5 @@ export interface VoiceUpdate {
   reason?: VoiceErrorReason;
   error?: string;
   narrated?: number;
+  unscored?: boolean;
 }

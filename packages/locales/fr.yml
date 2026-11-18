@@ -798,6 +798,7 @@ voice:
   narrated: "Narration ajoutée à $1 étape."
   narratedPlural: "Narration ajoutée à $1 étapes."
   narratedNone: "Aucune narration ne correspond à une étape."
+  narratedUnscored: "Votre serveur n'a renvoyé aucun score de confiance, la narration n'a donc pas été utilisée."
   guideSafe: "Votre guide et vos captures ne sont pas affectés."
   openSettings: "Ouvrir les Paramètres"
   errorPermissionDenied: "L'accès au micro a été bloqué."
