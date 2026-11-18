@@ -160,6 +160,8 @@ settings:
   protocolOpenai: OpenAI
   protocolAnthropic: Anthropic
   noServer: Адрес сервера ещё не указан.
+  voiceServerNeedsOpenai: "Для озвучки нужен сервер, совместимый с OpenAI."
+  transcriptionModel: "Модель транскрибации"
   noKeyFor: Ключа $1 ещё нет.
   addOneInKeys: Добавьте его в разделе «API-ключи».
   addKey: Добавить ключ
@@ -792,6 +794,7 @@ voice:
   errorNoDevice: "Микрофон не найден, поэтому ничего не было озвучено."
   errorNoAudio: "Микрофон не записал звука, поэтому транскрибировать было нечего."
   errorMissingApiKey: Для озвучки нужен провайдер транскрипции и API-ключ.
+  errorServerNotReady: "Для озвучки нужен адрес сервера с протоколом OpenAI."
   errorStreamEnded: "Микрофон остановился посреди записи, поэтому озвучка закончилась раньше."
   errorNotRecording: "Озвучка не работала, поэтому транскрибировать было нечего."
   errorAlreadyRecording: "Озвучка уже работала, поэтому эта запись не была озвучена."

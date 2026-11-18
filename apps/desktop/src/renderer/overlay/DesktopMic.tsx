@@ -5,7 +5,7 @@ import { useVoiceSettings } from './use-voice-settings';
 
 export function DesktopMic({ paused }: { paused: boolean }) {
   const voice = useVoiceSettings();
-  const mic = micToggleState(voice.enabled, voice.hasApiKey, paused);
+  const mic = micToggleState(voice.enabled, voice.blocker, paused);
   return (
     <MicButton
       id="mic"

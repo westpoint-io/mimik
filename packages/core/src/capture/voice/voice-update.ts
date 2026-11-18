@@ -7,6 +7,7 @@ export type VoiceErrorReason =
   | 'not-recording'
   | 'already-recording'
   | 'missing-api-key'
+  | 'server-not-ready'
   | 'stream-ended'
   | 'unsupported'
   | 'unknown';

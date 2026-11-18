@@ -37,7 +37,7 @@ export function voiceNotice(update: VoiceUpdate, seenLive: boolean): VoiceNotice
       signature,
       titleKey: voiceErrorKey(update.reason),
       bodyKey: 'voice.guideSafe',
-      showSettings: update.reason === 'missing-api-key',
+      showSettings: update.reason === 'missing-api-key' || update.reason === 'server-not-ready',
       autoDismissMs: null,
     };
   }
