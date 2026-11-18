@@ -399,6 +399,8 @@ editor:
   stepsCopied: "$1 steps copied from “$2”"
   newStep: New
   copyScreenshot: Copy screenshot
+  screenshotCopied: Copied
+  copyScreenshotFailed: "Couldn't copy the screenshot. Try again."
   noScreenshot: No screenshot
   edit: Edit
   done: Done

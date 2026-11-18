@@ -399,6 +399,8 @@ editor:
   stepsCopied: "Шаги ($1) скопированы из «$2»"
   newStep: Новый
   copyScreenshot: Копировать скриншот
+  screenshotCopied: Скопировано
+  copyScreenshotFailed: Не удалось скопировать скриншот. Попробуйте ещё раз.
   noScreenshot: Нет скриншота
   edit: Редактировать
   done: Готово

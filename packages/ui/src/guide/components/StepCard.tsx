@@ -5,9 +5,10 @@ import type { Screenshot, Step } from '@mimik/core/guides/types';
 import { logger } from '@mimik/core/logger';
 import { imageDimensions, renderScreenshot } from '@mimik/core/screenshot/render';
 import { Check, Copy, Loader2, Trash2, Undo2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAskAi } from '../../ai/hooks/use-ask-ai';
 import { ConfirmDialog } from '../../common/components/ConfirmDialog';
+import { Toast } from '../../common/components/Toast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
 import { ImagePlaceholder } from './ImagePlaceholder';
 import { ScreenshotView } from './ScreenshotView';
@@ -46,6 +47,8 @@ export function StepCard({
   const [description, setDescription] = useState(step.description);
   const shortcut = splitAtShortcut(step.description, step.action);
   const [copied, setCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState<string | null>(null);
+  const dismissCopyFailed = useCallback(() => setCopyFailed(null), []);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
@@ -83,12 +86,13 @@ export function StepCard({
   const handleCopy = async () => {
     if (!screenshot) return;
     try {
-      const rendered = await renderScreenshot(screenshot, { format: 'image/png' });
+      const rendered = renderScreenshot(screenshot, { format: 'image/png' });
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': rendered })]);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch (err) {
       logger.error(' Copy to clipboard failed', err);
+      setCopyFailed(i18n.t('editor.copyScreenshotFailed'));
     }
   };
 
@@ -187,7 +191,7 @@ export function StepCard({
                     {copied ? <Check size={13} /> : <Copy size={13} />}
                   </button>
                 </TooltipTrigger>
-                <TooltipContent>{i18n.t('editor.copyScreenshot')}</TooltipContent>
+                <TooltipContent>{i18n.t(copied ? 'editor.screenshotCopied' : 'editor.copyScreenshot')}</TooltipContent>
               </Tooltip>
             )}
             {!readOnly && (
@@ -213,6 +217,7 @@ export function StepCard({
         onConfirm={handleDelete}
         onCancel={() => setConfirmDelete(false)}
       />
+      <Toast message={copyFailed} onDismiss={dismissCopyFailed} />
     </div>
   );
 }

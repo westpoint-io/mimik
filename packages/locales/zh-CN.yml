@@ -399,6 +399,8 @@ editor:
   stepsCopied: "已从“$2”复制 $1 个步骤"
   newStep: 新
   copyScreenshot: 复制截图
+  screenshotCopied: 已复制
+  copyScreenshotFailed: "无法复制截图，请重试。"
   noScreenshot: 无截图
   edit: 编辑
   done: 完成

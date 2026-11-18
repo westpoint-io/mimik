@@ -399,6 +399,8 @@ editor:
   stepsCopied: '"$2"에서 단계 $1개를 복사했어요'
   newStep: "신규"
   copyScreenshot: "스크린샷 복사"
+  screenshotCopied: "복사됨"
+  copyScreenshotFailed: "스크린샷을 복사하지 못했어요. 다시 시도해 주세요."
   noScreenshot: "스크린샷 없음"
   edit: "편집"
   done: "완료"

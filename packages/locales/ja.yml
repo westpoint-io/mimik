@@ -399,6 +399,8 @@ editor:
   stepsCopied: "「$2」から$1件のステップをコピーしました"
   newStep: "新規"
   copyScreenshot: "スクリーンショットをコピー"
+  screenshotCopied: "コピー済み"
+  copyScreenshotFailed: "スクリーンショットをコピーできませんでした。もう一度お試しください。"
   noScreenshot: "スクリーンショットなし"
   edit: "編集"
   done: "完了"
