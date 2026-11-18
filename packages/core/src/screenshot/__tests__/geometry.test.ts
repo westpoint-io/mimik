@@ -4,6 +4,8 @@ import {
   annotationBounds,
   cropTo,
   hitTest,
+  isOffImage,
+  keepInside,
   moveAnnotation,
   panBy,
   resizeAnnotation,
@@ -85,6 +87,43 @@ describe('resolveTarget', () => {
     expect(
       resolveTarget(makeScreenshot({ bounds: { x: 5, y: 5, width: 9, height: 9 }, edits: { target: null } })),
     ).toBe(null);
+  });
+
+  it('puts a target moved off the picture back where it was recorded', () => {
+    const s = makeScreenshot({
+      bounds: { x: 300, y: 200, width: 50, height: 20 },
+      pixelRatio: 2,
+      edits: { target: { x: 1700, y: 400, width: 100, height: 40, border: 'solid', color: '#F43F5E' } },
+    });
+    expect(resolveTarget(s)).toEqual({ x: 600, y: 400, width: 100, height: 40, border: 'solid', color: '#F43F5E' });
+  });
+
+  it('moves a target off the picture to the nearest edge when nothing was recorded', () => {
+    const s = makeScreenshot({
+      edits: { target: { x: 1700, y: 400, width: 100, height: 40, border: 'dashed', color: '#fff' } },
+    });
+    expect(resolveTarget(s)).toMatchObject({ x: 900, y: 400, width: 100, height: 40 });
+  });
+
+  it('moves a target off the picture to the nearest edge when the recorded position is off it too', () => {
+    const s = makeScreenshot({
+      bounds: { x: 2000, y: 10, width: 50, height: 20 },
+      edits: { target: { x: -300, y: 400, width: 100, height: 40, border: 'dashed', color: '#fff' } },
+    });
+    expect(resolveTarget(s)).toMatchObject({ x: 0, y: 400, width: 100, height: 40 });
+  });
+
+  it('trims a recorded target that runs past the edge to the part on the picture', () => {
+    const s = makeScreenshot({ bounds: { x: 980, y: -5, width: 50, height: 20 } });
+    expect(resolveTarget(s)).toMatchObject({ x: 980, y: 0, width: 20, height: 15 });
+  });
+
+  it('keeps the place and size the user chose when only part of their target runs past the edge', () => {
+    const s = makeScreenshot({
+      bounds: { x: 100, y: 100, width: 20, height: 20 },
+      edits: { target: { x: 950, y: 10, width: 100, height: 20, border: 'dashed', color: '#fff' } },
+    });
+    expect(resolveTarget(s)).toMatchObject({ x: 950, y: 10, width: 50, height: 20 });
   });
 
   it('reports no target rather than one pinned to the origin when the element vanished before measuring', () => {
@@ -255,5 +294,72 @@ describe('viewport padding on a large frame', () => {
   it('leaves a browser-sized target as it was', () => {
     const viewport = resolveViewport(shot(1440, 900, 120, 40));
     expect(viewport.width).toBeCloseTo(552, 0);
+  });
+});
+
+describe('keepInside', () => {
+  const img = { width: 1600, height: 1000 };
+  const target: Annotation = {
+    id: 't',
+    type: 'target',
+    x: 1700,
+    y: 700,
+    w: 220,
+    h: 70,
+    color: '#4F46E5',
+    border: 'dashed',
+  };
+
+  it('leaves an annotation that is already on the image alone', () => {
+    const box: Annotation = { id: 'b', type: 'box', x: 100, y: 100, w: 50, h: 50, color: '#000' };
+    expect(keepInside(box, img)).toEqual(box);
+  });
+
+  it('pulls a target saved past the right edge back onto the image', () => {
+    expect(keepInside(target, img)).toMatchObject({ x: 1380, y: 700, w: 220, h: 70 });
+  });
+
+  it('pulls a target above and left of the image back to the corner', () => {
+    expect(keepInside({ ...target, x: -500, y: -40 }, img)).toMatchObject({ x: 0, y: 0, w: 220, h: 70 });
+  });
+
+  it('shrinks a box larger than the image to the image', () => {
+    const box: Annotation = { id: 'b', type: 'box', x: -10, y: 5, w: 2000, h: 1200, color: '#000' };
+    expect(keepInside(box, img)).toMatchObject({ x: 0, y: 0, w: 1600, h: 1000 });
+  });
+
+  it('moves an arrow back without bending it', () => {
+    const arrow: Annotation = { id: 'a', type: 'arrow', x1: 1550, y1: 100, x2: 1650, y2: 200, color: '#000' };
+    expect(keepInside(arrow, img)).toMatchObject({ x1: 1500, y1: 100, x2: 1600, y2: 200 });
+  });
+
+  it('keeps both ends of an arrow longer than the image on it', () => {
+    const arrow: Annotation = { id: 'a', type: 'arrow', x1: -100, y1: 10, x2: 1900, y2: 20, color: '#000' };
+    expect(keepInside(arrow, img)).toMatchObject({ x1: 0, y1: 10, x2: 1600, y2: 20 });
+  });
+
+  it('moves a freehand stroke back onto the image', () => {
+    const stroke: Annotation = { id: 'f', type: 'freehand', points: [10, 990, 20, 1040], color: '#000' };
+    expect(keepInside(stroke, img)).toMatchObject({ points: [10, 950, 20, 1000] });
+  });
+
+  it('moves text down until its top is on the image', () => {
+    const text: Annotation = { id: 'x', type: 'text', x: 10, y: 5, text: 'Hi', color: '#000', size: 32, w: 40, h: 45 };
+    const kept = keepInside(text, img);
+    expect(annotationBounds(kept).y).toBe(0);
+  });
+});
+
+describe('isOffImage', () => {
+  const img = { width: 1600, height: 1000 };
+
+  it('counts a shape with any part on the picture as on it', () => {
+    expect(isOffImage({ id: 'b', type: 'box', x: 1590, y: 10, w: 50, h: 50, color: '#000' }, img)).toBe(false);
+    expect(isOffImage({ id: 'a', type: 'arrow', x1: 10, y1: 20, x2: 300, y2: 20, color: '#000' }, img)).toBe(false);
+  });
+
+  it('flags a shape with nothing left on the picture', () => {
+    expect(isOffImage({ id: 'b', type: 'box', x: 1700, y: 10, w: 50, h: 50, color: '#000' }, img)).toBe(true);
+    expect(isOffImage({ id: 'b', type: 'box', x: 10, y: -90, w: 50, h: 50, color: '#000' }, img)).toBe(true);
   });
 });
