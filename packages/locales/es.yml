@@ -401,6 +401,14 @@ editor:
   copyScreenshot: Copiar captura
   screenshotCopied: Copiada
   copyScreenshotFailed: No se pudo copiar la captura. Inténtalo de nuevo.
+  duplicate: Duplicar
+  duplicateStep: Duplicar paso
+  duplicateBelow: Duplicar debajo
+  duplicateAbove: Duplicar encima
+  duplicateToStep: Como paso
+  duplicateGo: OK
+  duplicateLandsAt: "paso $1"
+  duplicateFailed: No se pudo duplicar. Inténtalo de nuevo.
   noScreenshot: Sin captura
   edit: Editar
   done: Listo

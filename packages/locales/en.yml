@@ -401,6 +401,14 @@ editor:
   copyScreenshot: Copy screenshot
   screenshotCopied: Copied
   copyScreenshotFailed: "Couldn't copy the screenshot. Try again."
+  duplicate: Duplicate
+  duplicateStep: Duplicate step
+  duplicateBelow: Duplicate below
+  duplicateAbove: Duplicate above
+  duplicateToStep: To step
+  duplicateGo: Go
+  duplicateLandsAt: "step $1"
+  duplicateFailed: Couldn't duplicate. Try again.
   noScreenshot: No screenshot
   edit: Edit
   done: Done
