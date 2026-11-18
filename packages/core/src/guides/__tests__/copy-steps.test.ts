@@ -135,6 +135,38 @@ describe('copySteps', () => {
     expect(await getTranscripts('src')).toHaveLength(1);
   });
 
+  it('duplicates steps inside their own guide at the position asked for', async () => {
+    await seedGuide('src', ['a', 'b', 'c']);
+
+    const result = (await copySteps('src', ['a'], 'src', 2))!;
+
+    const guide = (await getGuide('src'))!;
+    expect(guide.steps.map((step) => step.description)).toEqual(['a', 'b', 'a', 'c']);
+    expect(guide.steps.map((step) => step.index)).toEqual([0, 1, 2, 3]);
+    expect(guide.guide.stepIds).toEqual(guide.steps.map((step) => step.id));
+    expect(guide.guide.stepIds[2]).toBe(result.stepIds[0]);
+    expect(guide.screenshots.get(result.stepIds[0]!)?.edits).toEqual({ zoomLevel: 2, alt: 'Billing button' });
+  });
+
+  it('forgets the words a duplicate took from a hand-added transcript line', async () => {
+    await seedGuide('src', ['a', 'b']);
+    await db.steps.update('a', { description: 'a Open billing', descriptionSource: 'manual' });
+    await db.transcripts.add({
+      id: 't1',
+      guideId: 'src',
+      epochMs: 1,
+      createdAt: 1,
+      lines: [{ start: 0, end: 1, text: 'Open billing', stepId: 'a', rejectReason: null, addedByHand: true }],
+    });
+
+    const result = (await copySteps('src', ['a'], 'src', 1))!;
+    await deleteTranscripts('src');
+
+    const steps = (await getGuide('src'))!.steps;
+    expect(steps.find((step) => step.id === result.stepIds[0])!.description).toBe('a');
+    expect(steps.find((step) => step.id === 'a')!.description).toBe('a');
+  });
+
   it('copies nothing when the target guide is missing or in the trash', async () => {
     await seedGuide('src', ['a']);
     await seedGuide('gone', [], { deletedAt: 5 });

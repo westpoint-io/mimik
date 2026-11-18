@@ -399,6 +399,16 @@ editor:
   stepsCopied: "Шаги ($1) скопированы из «$2»"
   newStep: Новый
   copyScreenshot: Копировать скриншот
+  screenshotCopied: Скопировано
+  copyScreenshotFailed: Не удалось скопировать скриншот. Попробуйте ещё раз.
+  duplicate: Дублировать
+  duplicateStep: Дублировать шаг
+  duplicateBelow: Дублировать ниже
+  duplicateAbove: Дублировать выше
+  duplicateToStep: Номер шага
+  duplicateGo: ОК
+  duplicateLandsAt: "шаг $1"
+  duplicateFailed: Не удалось создать копию. Попробуйте ещё раз.
   noScreenshot: Нет скриншота
   edit: Редактировать
   done: Готово

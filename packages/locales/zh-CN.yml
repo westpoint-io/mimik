@@ -399,6 +399,16 @@ editor:
   stepsCopied: "已从“$2”复制 $1 个步骤"
   newStep: 新
   copyScreenshot: 复制截图
+  screenshotCopied: 已复制
+  copyScreenshotFailed: "无法复制截图，请重试。"
+  duplicate: 创建副本
+  duplicateStep: 创建步骤副本
+  duplicateBelow: 在下方创建副本
+  duplicateAbove: 在上方创建副本
+  duplicateToStep: 步骤序号
+  duplicateGo: 确定
+  duplicateLandsAt: "第 $1 步"
+  duplicateFailed: "无法创建副本，请重试。"
   noScreenshot: 无截图
   edit: 编辑
   done: 完成

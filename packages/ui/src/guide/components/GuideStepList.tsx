@@ -1,11 +1,12 @@
 import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import { i18n } from '@mimik/core/env';
 import { isBlock, stepNumbers } from '@mimik/core/guides/blocks';
+import { type DuplicatePlace, duplicateIndex } from '@mimik/core/guides/duplicate-index';
 import { copySteps, createSnapshot, deleteSteps, insertBlock } from '@mimik/core/guides/service';
 import type { BlockType, Screenshot, Step } from '@mimik/core/guides/types';
 import { logger } from '@mimik/core/logger';
 import { dominantRatio } from '@mimik/core/screenshot/geometry';
-import { Copy, Trash2 } from 'lucide-react';
+import { Copy, CopyPlus, Trash2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ConfirmDialog } from '../../common/components/ConfirmDialog';
 import { Toast } from '../../common/components/Toast';
@@ -14,6 +15,7 @@ import { useFullview } from '../../stores/use-fullview';
 import { openCopiedSteps } from '../lib/open-copied-steps';
 import { BlockCard } from './BlockCard';
 import { CopyStepsDialog } from './CopyStepsDialog';
+import { DuplicateMenu } from './DuplicateMenu';
 import { EmptyGuideState } from './EmptyGuideState';
 import { InsertBlockMenu } from './InsertBlockMenu';
 import { StepCard } from './StepCard';
@@ -54,6 +56,8 @@ export function GuideStepList({
     clearStepSelection,
     guideTitle,
     newStepIds,
+    setNewStepIds,
+    scrollToStep,
   } = useFullview((s) => ({
     scrollToStepId: s.scrollToStepId,
     setActiveStepId: s.setActiveStepId,
@@ -63,6 +67,8 @@ export function GuideStepList({
     clearStepSelection: s.clearStepSelection,
     guideTitle: s.guideTitle,
     newStepIds: s.newStepIds,
+    setNewStepIds: s.setNewStepIds,
+    scrollToStep: s.scrollToStep,
   }));
 
   const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
@@ -73,7 +79,10 @@ export function GuideStepList({
   const jumpingTo = useRef<string | null>(null);
   const frameRatio = dominantRatio(screenshots);
   const numbers = stepNumbers(steps);
+  const stepCount = numbers.size;
   const selectedCount = steps.filter((step) => selectedStepIds.has(step.id)).length;
+  const landsAt = (place: DuplicatePlace) =>
+    steps.slice(0, duplicateIndex(steps, selectedStepIds, place)).filter((step) => !isBlock(step)).length + 1;
   const recordAt = onCaptureMore
     ? (atIndex: number) => () =>
         onCaptureMore({
@@ -154,6 +163,22 @@ export function GuideStepList({
     }
   };
 
+  const handleDuplicate = async (picked: ReadonlySet<string>, place: DuplicatePlace) => {
+    const ids = steps.filter((step) => picked.has(step.id)).map((step) => step.id);
+    try {
+      if (await createSnapshot(guideId)) bumpHistoryRefresh();
+      const copied = await copySteps(guideId, ids, guideId, duplicateIndex(steps, picked, place));
+      if (!copied) throw new Error('guide not found');
+      if (picked === selectedStepIds) clearStepSelection();
+      setNewStepIds(new Set(copied.stepIds));
+      await onChanged?.();
+      if (copied.stepIds[0]) scrollToStep(copied.stepIds[0]);
+    } catch (err) {
+      logger.error(' Duplicating steps failed', err);
+      setCopyFailed(i18n.t('editor.duplicateFailed'));
+    }
+  };
+
   if (steps.length === 0) {
     return (
       <div className="flex flex-col">
@@ -209,6 +234,8 @@ export function GuideStepList({
                   onDescriptionChange={onDescriptionChange}
                   onDelete={onDelete}
                   onOpenEditor={onOpenEditor}
+                  onDuplicate={(stepId, place) => void handleDuplicate(new Set([stepId]), place)}
+                  stepCount={stepCount}
                   readOnly={readOnly}
                   hasApiKey={hasApiKey}
                   onChanged={onChanged}
@@ -230,6 +257,18 @@ export function GuideStepList({
           <span className="text-[12px] font-medium text-foreground">
             {i18n.t('editor.selectedCount', [String(selectedCount)])}
           </span>
+          <DuplicateMenu
+            belowStep={landsAt('below')}
+            aboveStep={landsAt('above')}
+            lastStep={stepCount + 1}
+            onDuplicate={(place) => void handleDuplicate(selectedStepIds, place)}
+            align="center"
+          >
+            <Button variant="outline" size="sm">
+              <CopyPlus size={13} />
+              {i18n.t('editor.duplicate')}
+            </Button>
+          </DuplicateMenu>
           <Button size="sm" onClick={() => setCopyOpen(true)}>
             <Copy size={13} />
             {i18n.t('editor.copyTo')}

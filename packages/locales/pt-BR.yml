@@ -399,6 +399,16 @@ editor:
   stepsCopied: "$1 passos copiados de “$2”"
   newStep: Novo
   copyScreenshot: Copiar captura
+  screenshotCopied: Copiada
+  copyScreenshotFailed: Não foi possível copiar a captura. Tente novamente.
+  duplicate: Duplicar
+  duplicateStep: Duplicar passo
+  duplicateBelow: Duplicar abaixo
+  duplicateAbove: Duplicar acima
+  duplicateToStep: Como passo
+  duplicateGo: OK
+  duplicateLandsAt: "passo $1"
+  duplicateFailed: Não foi possível duplicar. Tente novamente.
   noScreenshot: Sem captura
   edit: Editar
   done: Pronto
