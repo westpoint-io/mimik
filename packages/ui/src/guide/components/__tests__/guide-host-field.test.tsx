@@ -7,8 +7,16 @@ import { GuideHostField } from '../GuideHostField';
 
 vi.mock('@mimik/core/guides/service', () => ({ replaceGuideHost: vi.fn() }));
 
-function renderField() {
-  render(<GuideHostField guideId="g1" domain="localhost" origin="http://localhost:3000" onChanged={vi.fn()} />);
+function renderField(onRejected = vi.fn()) {
+  render(
+    <GuideHostField
+      guideId="g1"
+      domain="localhost"
+      origin="http://localhost:3000"
+      onChanged={vi.fn()}
+      onRejected={onRejected}
+    />,
+  );
   return screen.getByRole('textbox') as HTMLInputElement;
 }
 
@@ -22,16 +30,18 @@ describe('GuideHostField', () => {
     expect(replaceGuideHost).not.toHaveBeenCalled();
   });
 
-  it('says why when the address is rejected, and clears it on the next edit', async () => {
+  it('reports a rejected address and marks the field until the next edit', async () => {
     vi.mocked(replaceGuideHost).mockRejectedValueOnce(new TypeError('Invalid URL'));
-    const input = renderField();
+    const onRejected = vi.fn();
+    const input = renderField(onRejected);
     fireEvent.change(input, { target: { value: 'not a host' } });
     fireEvent.blur(input);
 
-    expect((await screen.findByRole('alert')).textContent).toContain('editor.guideHostInvalid');
+    await vi.waitFor(() => expect(onRejected).toHaveBeenCalledOnce());
+    expect(input.getAttribute('aria-invalid')).toBe('true');
     expect(input.value).toBe('not a host');
 
     fireEvent.change(input, { target: { value: 'app.example.com' } });
-    expect(screen.queryByRole('alert')).toBeNull();
+    expect(input.getAttribute('aria-invalid')).toBe('false');
   });
 });
