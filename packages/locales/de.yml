@@ -184,6 +184,7 @@ settings:
   noKey: "Kein Schlüssel"
   voiceover: "Video-Voiceover"
   voiceoverHint: "Mimik spricht den Text jedes Schritts über das exportierte Video."
+  voiceoverServerNeedsOpenai: "Das Voice-over braucht einen OpenAI-kompatiblen Server."
   voice: "Stimme"
   voiceNarrationHint: "Erkläre den Ablauf laut, und Mimik formuliert jeden Schritt aus deinen Worten."
   voiceNarration: Sprachkommentar
@@ -518,7 +519,7 @@ exportPreview:
   audio: "Audio"
   audioSilent: "Stumm"
   audioNarrated: "Vertont"
-  voiceoverNoKey: "Füge in den Einstellungen einen OpenAI- oder ElevenLabs-Schlüssel hinzu, um Videos zu vertonen."
+  voiceoverNoKey: "Füge in den Einstellungen einen Voiceover-Schlüssel oder deinen eigenen Server hinzu, um Videos zu vertonen."
   videoLength: "Videolänge $1"
   videoLengthVoice: "Videolänge $1 → $2 mit Voiceover"
   voiceoverCost: "$1 Clips · etwa $2 Zeichen zur Sprachsynthese"

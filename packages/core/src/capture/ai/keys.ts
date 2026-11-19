@@ -69,7 +69,7 @@ export interface AiSettingsStored extends ApiKeySettings {
   aiServerHeaders?: unknown;
 }
 
-export const API_KEY_SETTINGS = [
+const API_KEY_SETTINGS = [
   'apiKeys',
   'aiApiKeys',
   'aiApiKey',

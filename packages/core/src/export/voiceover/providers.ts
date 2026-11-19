@@ -65,6 +65,16 @@ export const VOICEOVER_PROVIDERS = {
     catalog: true,
     keyPlaceholder: 'sk_...',
   },
+  server: {
+    label: 'Your server',
+    defaultBaseUrl: '',
+    defaultModel: 'tts-1',
+    models: [],
+    voices: [],
+    defaultVoice: 'alloy',
+    catalog: false,
+    keyPlaceholder: '',
+  },
 } satisfies Record<string, VoiceoverProviderConfig>;
 
 export type VoiceoverProviderKey = keyof typeof VOICEOVER_PROVIDERS;
@@ -88,11 +98,12 @@ export function voiceoverProvider(key: VoiceoverProviderKey): VoiceoverProviderC
 export function voiceForProvider(key: VoiceoverProviderKey, voiceId: string): string {
   const config = VOICEOVER_PROVIDERS[key];
   if (!voiceId) return config.defaultVoice;
-  if (config.catalog) return voiceId;
+  if (config.catalog || key === 'server') return voiceId;
   return config.voices.some((voice) => voice.id === voiceId) ? voiceId : config.defaultVoice;
 }
 
 export function modelForProvider(key: VoiceoverProviderKey, modelId: string): string {
   const config = VOICEOVER_PROVIDERS[key];
+  if (key === 'server') return modelId || config.defaultModel;
   return config.models.some((model) => model.id === modelId) ? modelId : config.defaultModel;
 }

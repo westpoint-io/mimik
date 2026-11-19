@@ -92,7 +92,8 @@ async function clipBuffer(
   config: VoiceoverConfig,
   signal?: AbortSignal,
 ): Promise<AudioBuffer> {
-  const key = await clipKey(config.provider, config.voiceId, config.modelId, segment.text);
+  const source = config.baseUrl ? `${config.provider}@${config.baseUrl}` : config.provider;
+  const key = await clipKey(source, config.voiceId, config.modelId, segment.text);
   const cached = await readClip(key);
   if (cached) {
     try {

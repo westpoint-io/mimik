@@ -5,11 +5,12 @@ const decodeClip = vi.fn();
 const readClip = vi.fn();
 const writeClip = vi.fn();
 const deleteClip = vi.fn();
+const clipKey = vi.fn(async (_source: string, _voice: string, _model: string, text: string) => `key:${text}`);
 
 vi.mock('../client', () => ({ synthesizeSpeech: (...args: unknown[]) => synthesizeSpeech(...args) }));
 vi.mock('../audio', () => ({ decodeClip: (...args: unknown[]) => decodeClip(...args) }));
 vi.mock('../cache', () => ({
-  clipKey: async (_provider: string, _voice: string, _model: string, text: string) => `key:${text}`,
+  clipKey: (source: string, voice: string, model: string, text: string) => clipKey(source, voice, model, text),
   readClip: (...args: unknown[]) => readClip(...args),
   writeClip: (...args: unknown[]) => writeClip(...args),
   deleteClip: (...args: unknown[]) => deleteClip(...args),
@@ -89,5 +90,15 @@ describe('renderVoiceover', () => {
     await expect(previewing).rejects.toMatchObject({ name: 'AbortError' });
     expect((await downloading).get(0)).toBe(BUFFER);
     expect(synthesizeSpeech).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps the clips of each server apart in the cache', async () => {
+    synthesizeSpeech.mockResolvedValue(new ArrayBuffer(4));
+
+    await renderVoiceover(SEGMENTS, { ...CONFIG, provider: 'server', baseUrl: 'http://localhost:8880/v1' });
+    await renderVoiceover(SEGMENTS, CONFIG);
+
+    expect(clipKey).toHaveBeenNthCalledWith(1, 'server@http://localhost:8880/v1', 'alloy', 'tts-1', 'Open billing');
+    expect(clipKey).toHaveBeenNthCalledWith(2, 'openai', 'alloy', 'tts-1', 'Open billing');
   });
 });
