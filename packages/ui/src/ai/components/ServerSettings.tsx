@@ -49,11 +49,12 @@ export function ServerSettings({ server, onChange, validate }: ServerSettingsPro
       )}
       className="pb-1"
     >
-      <div className="-mt-1 divide-y divide-secondary">
+      <div className="@container -mt-1 divide-y divide-secondary">
         <div className="py-2.5">
           <label className="flex items-center gap-3">
-            <span className="w-[152px] shrink-0 text-[13px] font-semibold text-foreground">
+            <span className="flex w-[152px] shrink-0 flex-col text-[13px] font-semibold text-foreground">
               {i18n.t('settings.baseUrl')}
+              <KeyStatusPill status={keyCheck.status} compact className="hidden @max-[440px]:flex" />
             </span>
             <span className="relative flex min-w-0 flex-1">
               <Input
@@ -61,9 +62,9 @@ export function ServerSettings({ server, onChange, validate }: ServerSettingsPro
                 onChange={(e) => change({ url: e.target.value })}
                 onBlur={() => probe(server)}
                 placeholder="http://localhost:11434/v1"
-                className={`h-8 flex-1 text-[13px] rounded-lg border-border ${keyCheck.status ? 'pr-32' : ''}`}
+                className={`h-8 flex-1 text-[13px] rounded-lg border-border ${keyCheck.status ? 'pr-32 @max-[440px]:pr-3' : ''}`}
               />
-              <span className="pointer-events-none absolute right-2 top-1/2 flex -translate-y-1/2">
+              <span className="pointer-events-none absolute right-2 top-1/2 flex -translate-y-1/2 @max-[440px]:hidden">
                 <KeyStatusPill status={keyCheck.status} />
               </span>
             </span>
