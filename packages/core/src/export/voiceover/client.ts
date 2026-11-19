@@ -1,4 +1,3 @@
-import { normalizeBaseUrl } from '@/core/capture/ai/models';
 import { coreFetch } from '@/core/env';
 import type { VoiceoverConfig } from './config';
 import { type VoiceoverProviderKey, type VoiceoverVoice, voiceoverProvider } from './providers';
@@ -19,10 +18,12 @@ function authHeaders(provider: VoiceoverProviderKey, apiKey: string): Record<str
 
 export function speechRequest(config: VoiceoverConfig, text: string): SpeechRequest {
   const base =
-    config.provider === 'server'
-      ? normalizeBaseUrl(config.baseUrl ?? '')
-      : voiceoverProvider(config.provider).defaultBaseUrl;
-  const headers = { ...authHeaders(config.provider, config.apiKey), 'Content-Type': 'application/json' };
+    config.provider === 'server' ? (config.baseUrl ?? '') : voiceoverProvider(config.provider).defaultBaseUrl;
+  const headers = {
+    ...authHeaders(config.provider, config.apiKey),
+    ...config.headers,
+    'Content-Type': 'application/json',
+  };
 
   if (config.provider === 'elevenlabs') {
     return {

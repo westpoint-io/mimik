@@ -21,7 +21,7 @@ const server: VoiceoverConfig = {
   apiKey: '',
   voiceId: 'af_bella',
   modelId: 'kokoro',
-  baseUrl: 'http://localhost:8880/v1/',
+  baseUrl: 'http://localhost:8880/v1',
 };
 
 afterEach(() => vi.unstubAllGlobals());
@@ -57,6 +57,18 @@ describe('speechRequest', () => {
       voice: 'af_bella',
       input: 'Click Save',
       response_format: 'mp3',
+    });
+  });
+
+  it('sends the server its custom headers and keeps the body JSON', () => {
+    const request = speechRequest(
+      { ...server, apiKey: 'sk-local', headers: { 'X-Team': 'docs', 'Content-Type': 'text/plain' } },
+      'Click Save',
+    );
+    expect(request.headers).toEqual({
+      Authorization: 'Bearer sk-local',
+      'X-Team': 'docs',
+      'Content-Type': 'application/json',
     });
   });
 

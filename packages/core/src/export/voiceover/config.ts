@@ -1,4 +1,11 @@
-import { AI_CREDENTIAL_SETTINGS, type AiSettingsStored, readApiKeys, resolveServer } from '@/core/capture/ai/keys';
+import {
+  AI_CREDENTIAL_SETTINGS,
+  type AiSettingsStored,
+  readApiKeys,
+  requestHeaders,
+  resolveServer,
+} from '@/core/capture/ai/keys';
+import { normalizeBaseUrl } from '@/core/capture/ai/models';
 import { modelForProvider, type VoiceoverProviderKey, voiceForProvider, voiceoverProviderOrDefault } from './providers';
 
 export type VoiceoverApiKeys = Partial<Record<VoiceoverProviderKey, string>>;
@@ -22,16 +29,26 @@ export interface VoiceoverConfig {
   voiceId: string;
   modelId: string;
   baseUrl?: string;
+  headers?: Record<string, string>;
 }
 
 function trimmed(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
 }
 
-function credentials(provider: VoiceoverProviderKey, stored: VoiceoverSettings): { apiKey: string; baseUrl?: string } {
+function credentials(
+  provider: VoiceoverProviderKey,
+  stored: VoiceoverSettings,
+): Pick<VoiceoverConfig, 'apiKey' | 'baseUrl' | 'headers'> {
   if (provider !== 'server') return { apiKey: readApiKeys(stored)[provider] ?? '' };
   const server = resolveServer(stored);
-  return server?.protocol === 'openai' ? { apiKey: server.apiKey, baseUrl: server.url } : { apiKey: '' };
+  if (server?.protocol !== 'openai') return { apiKey: '' };
+  const headers = requestHeaders(server.headers);
+  return {
+    apiKey: server.apiKey,
+    baseUrl: normalizeBaseUrl(server.url),
+    ...(Object.keys(headers).length > 0 ? { headers } : {}),
+  };
 }
 
 export function resolveVoiceoverConfig(stored: VoiceoverSettings): VoiceoverConfig {

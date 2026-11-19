@@ -82,6 +82,15 @@ describe('resolveVoiceoverConfig with the provider set to server', () => {
     });
   });
 
+  it('drops a trailing slash from the address and passes the custom headers on', () => {
+    const config = resolveVoiceoverConfig({
+      ...server,
+      aiServerUrl: 'http://localhost:8880/v1/',
+      aiServerHeaders: [{ name: 'X-Team', value: 'docs' }],
+    });
+    expect(config).toMatchObject({ baseUrl: 'http://localhost:8880/v1', headers: { 'X-Team': 'docs' } });
+  });
+
   it('keeps any voice and model typed in', () => {
     expect(
       resolveVoiceoverConfig({ ...server, voiceoverVoiceId: ' af_bella ', voiceoverModelId: 'kokoro' }),
