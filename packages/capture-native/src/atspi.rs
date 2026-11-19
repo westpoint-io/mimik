@@ -236,12 +236,9 @@ fn wake(app: &Node) {
 }
 
 pub fn wake_apps() {
-  with_session(|session| {
-    for app in apps(session) {
-      wake(&app);
-    }
-    Some(())
-  });
+  for app in with_session(|session| Some(apps(session))).unwrap_or_default() {
+    wake(&app);
+  }
 }
 
 fn wake_sleeping(session: &Session) {
