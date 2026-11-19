@@ -272,16 +272,69 @@ describe('replaceGuideHost', () => {
     expect((await db.steps.get('s2'))!.url).toBe('http://localhost:8080/api');
   });
 
-  it.each(['not a host', 'ftp://app.example.com', 'intranet', 'https://intranet:8080', '.com', 'app..com'])(
-    'rejects %s and leaves the steps alone',
-    async (host) => {
-      await seedGuide('g1', { stepIds: ['s1'] });
-      await db.steps.add(makeStep({ id: 's1', guideId: 'g1', url: 'http://localhost:3000/orders' }));
+  it('moves link targets on the guide domain with the steps', async () => {
+    const meta = (href: string) => ({
+      textContent: null,
+      ariaLabel: null,
+      placeholder: null,
+      altText: null,
+      name: null,
+      role: null,
+      rect: { x: 0, y: 0, width: 1, height: 1 },
+      devicePixelRatio: 1,
+      href,
+    });
+    await seedGuide('g1', { stepIds: ['s1', 's2'] });
+    await db.steps.bulkAdd([
+      makeStep({
+        id: 's1',
+        guideId: 'g1',
+        url: 'http://localhost:3000/a',
+        elementMeta: meta('http://localhost:3000/b'),
+      }),
+      makeStep({
+        id: 's2',
+        guideId: 'g1',
+        index: 1,
+        url: 'http://localhost:3000/a',
+        elementMeta: meta('https://docs.example.com/'),
+      }),
+    ]);
 
-      await expect(replaceGuideHost('g1', 'http://localhost:3000', host)).rejects.toThrow();
-      expect((await db.steps.get('s1'))!.url).toBe('http://localhost:3000/orders');
-    },
-  );
+    await replaceGuideHost('g1', 'http://localhost:3000', 'https://app.example.com');
+
+    expect((await db.steps.get('s1'))!.elementMeta?.href).toBe('https://app.example.com/b');
+    expect((await db.steps.get('s2'))!.elementMeta?.href).toBe('https://docs.example.com/');
+  });
+
+  it.each([
+    ['devbox', 'http://devbox/orders'],
+    ['https://wiki:8080', 'https://wiki:8080/orders'],
+    ['https://app.example.com/', 'https://app.example.com/orders'],
+  ])('takes the internal or bare host %s', async (host, url) => {
+    await seedGuide('g1', { stepIds: ['s1'] });
+    await db.steps.add(makeStep({ id: 's1', guideId: 'g1', url: 'http://localhost:3000/orders' }));
+
+    await replaceGuideHost('g1', 'http://localhost:3000', host);
+
+    expect((await db.steps.get('s1'))!.url).toBe(url);
+  });
+
+  it.each([
+    'not a host',
+    'ftp://app.example.com',
+    '.com',
+    'app..com',
+    'https://app.example.com/staging',
+    'app.example.com?tab=1',
+    'app.example.com#top',
+  ])('rejects %s and leaves the steps alone', async (host) => {
+    await seedGuide('g1', { stepIds: ['s1'] });
+    await db.steps.add(makeStep({ id: 's1', guideId: 'g1', url: 'http://localhost:3000/orders' }));
+
+    await expect(replaceGuideHost('g1', 'http://localhost:3000', host)).rejects.toThrow();
+    expect((await db.steps.get('s1'))!.url).toBe('http://localhost:3000/orders');
+  });
 });
 
 describe('toggleStar', () => {
