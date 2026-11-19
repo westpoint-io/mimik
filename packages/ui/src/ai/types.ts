@@ -14,4 +14,5 @@ export type ValidateKey = (
   apiKey: string,
   baseUrl?: string,
   model?: string,
+  headers?: Record<string, string>,
 ) => Promise<KeyCheckResult | null>;

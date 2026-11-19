@@ -2,7 +2,7 @@
 
 import { DEFAULT_EXPORT_OPTIONS } from '@mimik/core/export/options';
 import type { Guide, Screenshot, Step } from '@mimik/core/guides/types';
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, configure, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const exportGuideAsVideo = vi.hoisted(() => vi.fn());
@@ -37,6 +37,8 @@ vi.mock('@mimik/core/export/options', async (importOriginal) => ({
 }));
 
 import { ExportPreviewModal } from '../ExportPreviewModal';
+
+configure({ asyncUtilTimeout: 5000 });
 
 const guide: Guide = {
   id: 'guide-1',

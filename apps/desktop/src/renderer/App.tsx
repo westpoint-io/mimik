@@ -109,6 +109,7 @@ export function App() {
             guideId={route.guideId}
             initialStepId={route.stepId}
             initialTool={route.tool}
+            copied={route.copied}
             onCaptureMore={(insert) => setSheet({ insert })}
           />
         ) : (

@@ -12,14 +12,14 @@ interface FaviconImgProps {
 }
 
 export function FaviconImg({ domain, size = 20, className = '', letterOnly = false, appId }: FaviconImgProps) {
-  const [failed, setFailed] = useState(false);
+  const [failedSrc, setFailedSrc] = useState('');
   const src = letterOnly
     ? (appId && appIcons.url(appId)) || ''
     : domain
       ? getFaviconUrl(domain, size > 32 ? 64 : 32)
       : '';
 
-  if (!src || failed) {
+  if (!src || failedSrc === src) {
     const { letter, gradient } = getDomainInitial(domain || '?');
     const fontSize = Math.max(Math.round(size * 0.55), 6);
     return (
@@ -51,7 +51,7 @@ export function FaviconImg({ domain, size = 20, className = '', letterOnly = fal
       alt=""
       className={className}
       style={{ width: size, height: size, flexShrink: 0 }}
-      onError={() => setFailed(true)}
+      onError={() => setFailedSrc(src)}
     />
   );
 }

@@ -1,5 +1,6 @@
 import '@/lib/core-env';
 import '@/lib/ui-env';
+import { isLive } from '@mimik/core/capture/is-live';
 import { logger } from '@mimik/core/logger';
 import { defineContentScript } from 'wxt/utils/define-content-script';
 import { browser } from '#imports';
@@ -8,12 +9,28 @@ import { shouldReopenBlur } from '@/blur/restore';
 import { CaptureSession } from '@/capture/session';
 import { showStartNotification } from '@/core/capture/start-notification';
 import { GuideMeController } from '@/guideme/content';
+import { localStorage } from '@/lib/browser-api/local-storage';
 import { sendMessage } from '@/lib/messaging';
 import { TabMessage } from '@/lib/tab-messages';
+import { CardFrame } from '@/page-ui/card-frame';
 
 const CLEANUP_EVENT = `mimik_cleanup_${browser.runtime.id}`;
+const HIDE_CARD_WAIT_MS = 80;
 
-function createTabMessageHandler(session: CaptureSession, guideMe: GuideMeController, blurManager: BlurManager) {
+async function showCardWhileLive(card: CardFrame | null): Promise<void> {
+  if (!card || card.mounted) return;
+  const { recordingCard } = await localStorage.get(['recordingCard']);
+  if (recordingCard !== true) return;
+  const current = await sendMessage('getState', undefined).catch(() => null);
+  if (current && isLive(current.state)) card.mount();
+}
+
+function createTabMessageHandler(
+  session: CaptureSession,
+  guideMe: GuideMeController,
+  blurManager: BlurManager,
+  card: CardFrame | null,
+) {
   return function handleTabMessage(msg: Record<string, unknown>, _sender: unknown, sendResponse: (r: unknown) => void) {
     if (session.isDisabled) return false;
 
@@ -29,6 +46,7 @@ function createTabMessageHandler(session: CaptureSession, guideMe: GuideMeContro
       case TabMessage.ATTACH_CAPTURE:
         if (msg.guideId) {
           session.start(msg.guideId as string);
+          void showCardWhileLive(card);
           sendResponse({ started: true });
         }
         return true;
@@ -74,6 +92,31 @@ function createTabMessageHandler(session: CaptureSession, guideMe: GuideMeContro
         sendResponse({ stopped: true });
         return true;
 
+      case TabMessage.HIDE_CARD: {
+        if (!card?.mounted) return false;
+        card.setHidden(true);
+        let replied = false;
+        const reply = () => {
+          if (replied) return;
+          replied = true;
+          sendResponse({ hidden: true });
+        };
+        requestAnimationFrame(() => requestAnimationFrame(reply));
+        setTimeout(reply, HIDE_CARD_WAIT_MS);
+        return true;
+      }
+
+      case TabMessage.SHOW_CARD:
+        card?.setHidden(false);
+        return false;
+
+      case TabMessage.TOGGLE_CARD:
+        if (!card) return false;
+        if (card.mounted) card.unmount();
+        else card.mount();
+        sendResponse({ shown: card.mounted });
+        return true;
+
       default:
         return false;
     }
@@ -97,13 +140,16 @@ export default defineContentScript({
       blurManager.start();
     });
     const guideMe = new GuideMeController();
-    const handleTabMessage = createTabMessageHandler(session, guideMe, blurManager);
+    const card = window.self === window.top ? new CardFrame() : null;
+    const handleTabMessage = createTabMessageHandler(session, guideMe, blurManager, card);
+    void showCardWhileLive(card);
 
     document.addEventListener(CLEANUP_EVENT, () => {
       session.dispose();
       guideMe.dispose();
       browser.runtime.onMessage.removeListener(handleTabMessage);
       blurManager.stop();
+      card?.unmount();
     });
 
     window.addEventListener('beforeunload', () => session.stop());

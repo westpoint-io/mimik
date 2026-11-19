@@ -1,0 +1,13 @@
+@import "@mimik/ui/global.css";
+
+@source ".";
+
+html,
+body,
+body > div {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+  user-select: none;
+}

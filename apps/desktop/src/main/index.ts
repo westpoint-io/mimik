@@ -3,22 +3,37 @@ import { basename, join } from 'node:path';
 import type { AiFailureUpdate } from '@mimik/core/capture/ai/errors';
 import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
 import { captureStateUpdate } from '@mimik/core/capture/capture-state-update';
+import type { CardNarration, CardStep } from '@mimik/core/capture/card-view';
 import { isLive } from '@mimik/core/capture/is-live';
 import { CaptureState, captureMachine } from '@mimik/core/capture/machine';
 import { shortcutLabel } from '@mimik/core/capture/shortcut-label';
 import { NARRATION_SETTLE_MS } from '@mimik/core/capture/voice/narration-settle-ms';
-import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, protocol, screen, shell, Tray } from 'electron';
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  Menu,
+  type MenuItemConstructorOptions,
+  nativeImage,
+  protocol,
+  screen,
+  shell,
+  Tray,
+} from 'electron';
 import { createActor } from 'xstate';
 import { registerAiFetch } from './ai-fetch';
 import { APP_ICON_SCHEME, registerAppIconProtocol } from './app-icon';
 import { ask } from './ask';
+import { enableAccessibility } from './capture/element';
+import { InputHook } from './capture/input-hook';
 import { DesktopRecorder, frameFor } from './capture/recorder';
 import { grabDisplay } from './capture/screenshot';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from './capture/screenshot-store';
 import { type CaptureMode, type CaptureSettings, loadSettings, saveSettings } from './capture/settings';
 import { mainI18n } from './i18n';
-import type { DesktopStateUpdate } from './ipc';
-import { CaptureOverlay, type OverlayCommand, type OverlayNarration, type OverlayStep } from './overlay';
+import type { DesktopStateUpdate, UpdateStatus } from './ipc';
+import { CaptureOverlay, type OverlayCommand } from './overlay';
 import {
   askMicrophone,
   captureWasHeld,
@@ -29,7 +44,9 @@ import {
   requestPermission,
 } from './permissions';
 import { bindShortcuts, type ShortcutName, shortcutMap, unbindShortcuts } from './shortcuts';
-import { checkForUpdates } from './updater';
+import { createUpdater } from './updater';
+
+if (process.platform === 'linux' && !InputHook.unsupportedSession()) delete process.env.WAYLAND_DISPLAY;
 
 const FINISH_TIMEOUT_MS = NARRATION_SETTLE_MS + 15_000;
 
@@ -42,7 +59,7 @@ let ending = false;
 let insert: CaptureInsert | null = null;
 let describing = true;
 let captureSettings: CaptureSettings | null = null;
-let steps: OverlayStep[] = [];
+let steps: CardStep[] = [];
 
 let pendingStart: (() => void) | null = captureWasHeld()
   ? () => mainWindow?.webContents.send('mimik:capture:openSheet')
@@ -72,7 +89,25 @@ function warmScreenCapture(): void {
   void grabDisplay(screen.getCursorScreenPoint()).catch(() => undefined);
 }
 
+const EXTENSION_URL = 'https://chromewebstore.google.com/detail/mimik/jmfohdaflahliammccpiadmkcibohgha';
+
+async function explainWayland(): Promise<void> {
+  const { response } = await dialog.showMessageBox({
+    type: 'info',
+    message: mainI18n.t('desktop.cannotRecord'),
+    detail: mainI18n.t('desktop.needsX11'),
+    buttons: [mainI18n.t('desktop.getExtension'), mainI18n.t('common.close')],
+    defaultId: 1,
+    cancelId: 1,
+  });
+  if (response === 0) await shell.openExternal(EXTENSION_URL);
+}
+
 function whenPermitted(start: () => void): void {
+  if (InputHook.unsupportedSession()) {
+    void explainWayland();
+    return;
+  }
   const granted = readPermissions();
   if (granted.accessibility && granted.screen) {
     warmScreenCapture();
@@ -184,6 +219,73 @@ function closeSplash(then: () => void): void {
   setTimeout(close, Math.max(0, SPLASH_MIN_MS - (Date.now() - splashShownAt)));
 }
 
+const RELEASE_NOTES_URL = 'https://github.com/westpoint-io/mimik/releases/tag/desktop-v';
+let updater: ReturnType<typeof createUpdater> | null = null;
+let updateWindow: BrowserWindow | null = null;
+let updatePromptDue = false;
+let lastUpdatePhase: UpdateStatus['phase'] = 'idle';
+
+function onUpdateStatus(status: UpdateStatus): void {
+  for (const win of BrowserWindow.getAllWindows()) win.webContents.send('mimik:updates:status', status);
+  refreshTrayMenu();
+  if (status.phase === 'ready' && lastUpdatePhase !== 'ready') updatePromptDue = true;
+  lastUpdatePhase = status.phase;
+  promptUpdate();
+}
+
+function promptUpdate(): void {
+  if (!updatePromptDue || isLive(capture.getSnapshot().value)) return;
+  updatePromptDue = false;
+  if (updateWindow) {
+    updateWindow.show();
+    return;
+  }
+  updateWindow = new BrowserWindow({
+    width: 420,
+    height: 176,
+    frame: false,
+    transparent: true,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    alwaysOnTop: true,
+    show: false,
+    center: true,
+    title: mainI18n.t('desktop.updateReady'),
+    icon: resource(process.platform === 'win32' ? 'icon.ico' : 'icon.png'),
+    webPreferences: {
+      preload: join(__dirname, '../preload/index.cjs'),
+      sandbox: false,
+      contextIsolation: true,
+      nodeIntegration: false,
+    },
+  });
+  updateWindow.once('ready-to-show', () => updateWindow?.show());
+  updateWindow.on('closed', () => {
+    updateWindow = null;
+  });
+  if (process.env.ELECTRON_RENDERER_URL) updateWindow.loadURL(`${process.env.ELECTRON_RENDERER_URL}/update.html`);
+  else updateWindow.loadFile(join(__dirname, '../renderer/update.html'));
+}
+
+function updateMenuItem(): MenuItemConstructorOptions {
+  const status = updater?.status();
+  if (status?.phase === 'checking') return { label: mainI18n.t('desktop.trayChecking'), enabled: false };
+  if (status?.phase === 'downloading') {
+    return { label: mainI18n.t('desktop.trayDownloading', [String(status.percent)]), enabled: false };
+  }
+  if (status?.phase === 'ready')
+    return { label: mainI18n.t('desktop.restartToUpdate'), click: () => updater?.install() };
+  return {
+    label: mainI18n.t('desktop.checkUpdates'),
+    click: () => {
+      updater?.check(true);
+      openInWindow('settings');
+    },
+  };
+}
+
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1100,
@@ -243,6 +345,7 @@ function refreshTrayMenu(): void {
       { label: mainI18n.t('capture.startCapture'), click: () => openInWindow('capture') },
       { label: mainI18n.t('settings.title'), click: () => openInWindow('settings') },
       { type: 'separator' },
+      updateMenuItem(),
       { label: mainI18n.t('desktop.version', [app.getVersion()]), enabled: false },
       { type: 'separator' },
       { label: mainI18n.t('desktop.trayQuit'), click: () => quit() },
@@ -450,7 +553,15 @@ if (!app.requestSingleInstanceLock()) {
         return null;
       }
     });
-    ipcMain.handle('mimik:updates:check', () => checkForUpdates({ notifyWhenUpToDate: true }));
+    updater = createUpdater(onUpdateStatus);
+    capture.subscribe(() => promptUpdate());
+    ipcMain.handle('mimik:updates:check', () => updater?.check(true));
+    ipcMain.handle('mimik:updates:status', () => updater?.status());
+    ipcMain.handle('mimik:updates:install', () => updater?.install());
+    ipcMain.handle('mimik:updates:notes', () => {
+      const version = updater?.status().version;
+      if (version) void shell.openExternal(`${RELEASE_NOTES_URL}${version}`);
+    });
     ipcMain.handle('mimik:screenshots:sweep', (_event, keep: string[]) => sweepScreenshots(keep));
     ipcMain.on('mimik:app:relocalise', () => {
       for (const win of BrowserWindow.getAllWindows()) win.webContents.reload();
@@ -495,7 +606,7 @@ if (!app.requestSingleInstanceLock()) {
           guideId,
         }).catch(() => undefined);
         if (reply?.stepId && reply.title) {
-          const step: OverlayStep = {
+          const step: CardStep = {
             id: reply.stepId,
             number: steps.length + 1 + (insert?.afterStep ?? 0),
             title: reply.title,
@@ -531,7 +642,7 @@ if (!app.requestSingleInstanceLock()) {
       applyShortcuts();
       return captureSettings;
     });
-    ipcMain.on('mimik:capture:narration', (_event, narration: OverlayNarration | null) =>
+    ipcMain.on('mimik:capture:narration', (_event, narration: CardNarration | null) =>
       overlay?.setNarration(narration),
     );
     ipcMain.on(
@@ -602,7 +713,8 @@ if (!app.requestSingleInstanceLock()) {
     applyShortcuts();
     createWindow();
     createTray();
-    checkForUpdates({ notifyWhenUpToDate: false });
+    updater?.start();
+    void enableAccessibility();
   });
 
   app.on('activate', () => showWindow());

@@ -1,5 +1,6 @@
 import type { ActiveWindow } from '@mimik/capture-native';
 import { screen } from 'electron';
+import { linuxApp } from './linux-app';
 import { loadNative } from './native';
 
 export interface FocusedWindow {
@@ -77,7 +78,10 @@ export async function focusedWindow(): Promise<FocusedWindowResult> {
       ok: true,
       window: {
         title: found.title || null,
-        app: { name: found.owner.name, id: 'bundleId' in found.owner ? found.owner.bundleId : found.owner.path },
+        app:
+          found.platform === 'linux'
+            ? await linuxApp(found)
+            : { name: found.owner.name, id: 'bundleId' in found.owner ? found.owner.bundleId : found.owner.path },
         bounds: toDip(found.bounds ?? null),
       },
     };

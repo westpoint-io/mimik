@@ -4,6 +4,7 @@
 @import "@fontsource/poppins/700.css";
 @import "@fontsource/poppins/800.css";
 @import "tailwindcss";
+@import "tw-animate-css";
 @import "./theme.css";
 
 @source ".";
@@ -32,26 +33,8 @@ input[type="checkbox"]:not(:disabled) {
   animation: gradient-text 3s ease infinite;
 }
 
-@keyframes drawer-in {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
-}
-
-@keyframes drawer-out {
-  from { transform: translateX(0); }
-  to { transform: translateX(-100%); }
-}
-
-@utility animate-drawer-in {
-  animation: drawer-in 200ms ease-out;
-  @media (prefers-reduced-motion: reduce) {
-    animation: none;
-  }
-}
-
-@utility animate-drawer-out {
-  animation: drawer-out 150ms ease-in;
-  @media (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: reduce) {
+  [data-slot][data-state] {
     animation: none;
   }
 }
@@ -247,4 +230,56 @@ input[type="checkbox"]:not(:disabled) {
   .animate-rise {
     animation: none;
   }
+}
+
+@property --p {
+  syntax: "<integer>";
+  inherits: true;
+  initial-value: 0;
+}
+
+.film::before {
+  content: "";
+  position: absolute;
+  inset: 8% 8% 16%;
+  border: 1px solid var(--color-lavender);
+  border-radius: 1px;
+  background:
+    linear-gradient(var(--color-lavender), var(--color-lavender)) 0 0 / 100% 14% no-repeat,
+    linear-gradient(var(--color-lavender), var(--color-lavender)) 28% 0 / 1px 100% no-repeat,
+    linear-gradient(#e0e7ff, #e0e7ff) 8% 34% / 14% 8% no-repeat,
+    linear-gradient(#e0e7ff, #e0e7ff) 8% 54% / 16% 8% no-repeat,
+    linear-gradient(#e0e7ff, #e0e7ff) 8% 74% / 12% 8% no-repeat,
+    linear-gradient(#e0e7ff, #e0e7ff) 78% 34% / 52% 8% no-repeat,
+    linear-gradient(#e0e7ff, #e0e7ff) 70% 54% / 42% 8% no-repeat;
+}
+
+@keyframes breathe {
+  50% { opacity: 0.35; }
+}
+
+@keyframes rest {
+  0%, 100% { transform: translateY(0); opacity: 0.7; }
+  50% { transform: translateY(-4px); opacity: 1; }
+}
+
+@keyframes arrive {
+  from { opacity: 0; transform: translateY(3px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes mimik-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes step-pop {
+  0% { opacity: 0; transform: translateY(5px); }
+  14%, 82% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateY(5px); }
+}
+
+@keyframes shot-pop {
+  0%, 100% { opacity: 0.55; transform: scale(0.97); }
+  18%, 86% { opacity: 1; transform: none; }
 }

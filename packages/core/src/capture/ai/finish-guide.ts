@@ -31,7 +31,14 @@ export async function finishGuide(guideId: string, { fallbackTitle, settleNarrat
     await settle();
     const inputs = await resolveGuideMetaInputs(guideId);
     const meta = inputs.ok
-      ? await generateGuideMeta(inputs.steps, inputs.provider, inputs.model, inputs.apiKey, inputs.baseUrl)
+      ? await generateGuideMeta(
+          inputs.steps,
+          inputs.provider,
+          inputs.model,
+          inputs.apiKey,
+          inputs.baseUrl,
+          inputs.headers,
+        )
       : null;
     if (!meta) {
       await applyFallbackTitle();

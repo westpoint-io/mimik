@@ -1,5 +1,4 @@
 import { describeStep } from '@mimik/core/capture/ai/describe-step';
-import { SCREEN_STEP_DESCRIPTION_PROMPT } from '@mimik/core/capture/ai/prompts';
 import { serializeScreenContext } from '@mimik/core/capture/ai/screen-context';
 import { type StepNarration, writeStep } from '@mimik/core/capture/write-step';
 import { localStorage } from '@mimik/core/env';
@@ -59,10 +58,7 @@ export class DesktopCaptureSink {
     const describe = async () => {
       const steps = await getStepsForGuide(data.guideId);
       const previous = steps[steps.findIndex((step) => step.id === stepId) - 1];
-      const { text, failure } = await describeStep(
-        serializeScreenContext(data.action, meta, previous?.description),
-        SCREEN_STEP_DESCRIPTION_PROMPT,
-      );
+      const { text, failure } = await describeStep(serializeScreenContext(data.action, meta, previous?.description));
       await clearStepAiPending(stepId, text ?? undefined);
       const written = (await getStep(stepId))?.descriptionSource === 'ai';
       window.mimik.capture.described(stepId, written ? text : null, failure);

@@ -39,6 +39,17 @@ describe('getAIDescription', () => {
     vi.mocked(localStorage.get).mockResolvedValue({ aiLanguage: 'en' });
   });
 
+  it('sends saved instructions after the step details', async () => {
+    vi.mocked(localStorage.get).mockResolvedValue({
+      aiLanguage: 'en',
+      aiPrompts: { steps: { instructions: 'Call the product Acme.' } },
+    });
+    await getAIDescription(serializeDOMContext(makeContext()), 'openai', 'gpt-4o-mini', 'key');
+    const prompt = generateTextMock.mock.calls[0]![0].prompt as string;
+    expect(prompt.indexOf('Call the product Acme.')).toBeGreaterThan(-1);
+    expect(prompt.indexOf('Call the product Acme.')).toBeGreaterThan(prompt.indexOf('Step details:'));
+  });
+
   it('leaves no placeholder unfilled', async () => {
     expect(await promptFor('en')).not.toMatch(/\{\{\w+\}\}/);
   });

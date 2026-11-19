@@ -17,7 +17,7 @@ vi.mock('@/core/capture/voice/describe-unnarrated', () => ({
   describeUnnarratedSteps: vi.fn(),
 }));
 
-import { applyNarration, takeNarrated } from '../voice';
+import { applyNarration, getVoiceUpdate, takeNarrated } from '../voice';
 
 const transcript = {
   epochMs: 1_700_000_000_000,
@@ -87,5 +87,30 @@ describe('applying a narration result', () => {
       [{ stepId: 's1', description: 'Open the billing tab' }],
       1_700_000_000_000,
     );
+  });
+
+  it('forgets unscored lines once the narration count is taken', async () => {
+    const unscored = {
+      epochMs: transcript.epochMs,
+      lines: [{ start: 1, end: 3, text: 'Open the billing tab', stepId: null, rejectReason: 'unscored' }],
+    };
+    const empty = { epochMs: transcript.epochMs, lines: [] };
+
+    await applyNarration('g1', { descriptions: [], transcript: unscored, stats }, false);
+    takeNarrated('g1');
+    await applyNarration('g1', { descriptions: [], transcript: empty, stats }, true);
+
+    expect(getVoiceUpdate()).toEqual({ type: 'VOICE_UPDATE', phase: 'idle', narrated: 0 });
+  });
+
+  it('reports unscored lines when nothing was narrated', async () => {
+    const unscored = {
+      epochMs: transcript.epochMs,
+      lines: [{ start: 1, end: 3, text: 'Open the billing tab', stepId: null, rejectReason: 'unscored' }],
+    };
+
+    await applyNarration('g1', { descriptions: [], transcript: unscored, stats }, true);
+
+    expect(getVoiceUpdate()).toEqual({ type: 'VOICE_UPDATE', phase: 'idle', narrated: 0, unscored: true });
   });
 });

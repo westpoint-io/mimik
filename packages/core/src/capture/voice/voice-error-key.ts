@@ -5,6 +5,7 @@ const VOICE_ERROR_KEYS: Record<VoiceErrorReason, string> = {
   'no-device': 'voice.errorNoDevice',
   'no-audio': 'voice.errorNoAudio',
   'missing-api-key': 'voice.errorMissingApiKey',
+  'server-not-ready': 'voice.errorServerNotReady',
   'stream-ended': 'voice.errorStreamEnded',
   'not-recording': 'voice.errorNotRecording',
   'already-recording': 'voice.errorAlreadyRecording',

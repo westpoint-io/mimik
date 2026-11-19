@@ -4,6 +4,7 @@ import {
   migrateApiKeys,
   parseApiKeys,
   readApiKeys,
+  requestHeaders,
   resolveAiCredentials,
   resolveServer,
   withKey,
@@ -121,6 +122,30 @@ describe('resolveAiCredentials', () => {
   it('needs a model for your own server, because it has no default to fall back on', () => {
     expect(resolveAiCredentials({ aiProvider: 'server', aiServerUrl: 'http://localhost:11434/v1' })).toBeNull();
   });
+
+  it('sends your own server its headers, and never another provider', () => {
+    const stored = {
+      aiServerUrl: 'http://gateway:8080/v1',
+      aiModel: 'llama3.2',
+      aiServerHeaders: [{ name: 'X-Org', value: 'acme' }],
+      apiKeys: { openai: 'sk-openai' },
+    };
+    expect(resolveAiCredentials({ ...stored, aiProvider: 'server' })?.headers).toEqual({ 'X-Org': 'acme' });
+    expect(resolveAiCredentials({ ...stored, aiProvider: 'openai' })).not.toHaveProperty('headers');
+  });
+});
+
+describe('requestHeaders', () => {
+  it('drops rows a request could not carry', () => {
+    expect(
+      requestHeaders([
+        { name: ' X-Org ', value: ' acme ' },
+        { name: '', value: 'orphan' },
+        { name: 'Bad Name', value: 'x' },
+        { name: 'X-Split', value: 'a\r\nInjected: 1' },
+      ]),
+    ).toEqual({ 'X-Org': 'acme' });
+  });
 });
 
 describe('an own server saved before API keys had a section', () => {
@@ -133,7 +158,12 @@ describe('an own server saved before API keys had a section', () => {
 
   it('still counts as your own server, with the key it was saved with', () => {
     expect(aiChoice(legacy)).toBe('server');
-    expect(resolveServer(legacy)).toEqual({ url: 'http://localhost:11434/v1', protocol: 'openai', apiKey: 'ollama' });
+    expect(resolveServer(legacy)).toEqual({
+      url: 'http://localhost:11434/v1',
+      protocol: 'openai',
+      apiKey: 'ollama',
+      headers: [],
+    });
   });
 
   it('is not mistaken for one once the address has moved to its own setting', () => {

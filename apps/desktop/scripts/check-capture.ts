@@ -77,16 +77,19 @@ app.whenReady().then(async () => {
   );
 
   const lookup = await elementLookupAvailable();
-  const element = lookup ? await elementAt(point) : null;
-  if (lookup && !element) failures++;
+  const session = process.platform !== 'linux' || process.env.XDG_SESSION_TYPE === 'x11';
+  const element = lookup && session ? await elementAt(point) : null;
+  if (lookup && session && !element) failures++;
   line(
     'element at point',
-    lookup ? (element ? 'ok' : 'fail') : 'n/a',
-    lookup
+    lookup && session ? (element ? 'ok' : 'fail') : 'n/a',
+    lookup && session
       ? element
         ? `${element.role ?? 'no role'} — ${element.ariaLabel ?? '(unnamed)'}`
         : 'no element resolved under the cursor'
-      : 'the accessibility addon has no build for this platform',
+      : lookup
+        ? 'Element lookup needs an X11 session'
+        : 'the accessibility addon has no build for this platform',
   );
 
   const named = lookup ? await keyLabel(28) : null;

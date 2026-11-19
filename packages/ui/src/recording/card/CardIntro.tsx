@@ -1,4 +1,4 @@
-import { CameraMascot } from '@mimik/ui';
+import { CameraMascot } from '../../common/components/CameraMascot';
 
 interface CardIntroProps {
   hidden: boolean;

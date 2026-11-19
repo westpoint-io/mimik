@@ -5,13 +5,17 @@ import { browser } from '#imports';
 import { startRecordingInTab } from '@/capture/start-recording-in-tab';
 import { openSidebar } from '@/lib/browser-api/open-sidebar';
 import { sendMessage } from '@/lib/messaging';
+import { useCardOnIcon } from '@/ui/shared/hooks/use-card-on-icon';
 import { useLetterNotice } from '@/ui/shared/hooks/use-letter-notice';
+import { useRecordingCard } from '@/ui/shared/hooks/use-recording-card';
 import { useUpdateNotice } from '@/ui/shared/hooks/use-update-notice';
 import { LetterDialog } from '@/ui/shared/LetterDialog';
 import { BackgroundVoiceNotice } from './components/BackgroundVoiceNotice';
 import { CaptureTabDialog } from './components/CaptureTabDialog';
 
 export function FullViewApp() {
+  const card = useRecordingCard();
+  useCardOnIcon();
   const route = useRoute();
   const [pendingCapture, setPendingCapture] = useState<{ insert?: CaptureInsert } | null>(null);
   const updateNotice = useUpdateNotice();
@@ -40,6 +44,7 @@ export function FullViewApp() {
             guideId={route.guideId}
             initialStepId={route.stepId}
             initialTool={route.tool}
+            copied={route.copied}
             onCaptureMore={(insert) => setPendingCapture({ insert })}
             onGuideMe={(guideId) => {
               openSidebar();
@@ -56,7 +61,7 @@ export function FullViewApp() {
             const target = pendingCapture;
             setPendingCapture(null);
             if (!target) return;
-            openSidebar();
+            if (!card) openSidebar();
             void startRecordingInTab(tabId, target.insert);
           }}
         />

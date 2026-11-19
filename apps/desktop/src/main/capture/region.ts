@@ -22,12 +22,12 @@ export function defaultRegion(): Rect {
 }
 
 export function clampToDisplays(region: Rect): Rect {
-  const { workArea } = screen.getDisplayMatching(region);
-  const width = Math.min(Math.max(region.width, MIN_REGION.width), workArea.width);
-  const height = Math.min(Math.max(region.height, MIN_REGION.height), workArea.height);
+  const { bounds } = screen.getDisplayMatching(region);
+  const width = Math.min(Math.max(region.width, MIN_REGION.width), bounds.width);
+  const height = Math.min(Math.max(region.height, MIN_REGION.height), bounds.height);
   return {
-    x: Math.min(Math.max(region.x, workArea.x), workArea.x + workArea.width - width),
-    y: Math.min(Math.max(region.y, workArea.y), workArea.y + workArea.height - height),
+    x: Math.min(Math.max(region.x, bounds.x), bounds.x + bounds.width - width),
+    y: Math.min(Math.max(region.y, bounds.y), bounds.y + bounds.height - height),
     width,
     height,
   };

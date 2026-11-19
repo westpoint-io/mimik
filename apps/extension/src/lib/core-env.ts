@@ -9,3 +9,7 @@ configureCore({
   assetUrl: (path) => getExtensionURL(path as never),
   storage: localStorage,
 });
+
+if (globalThis.document && location.href.startsWith(getExtensionURL('/' as never))) {
+  document.documentElement.lang = i18n.t('meta.locale' as never);
+}

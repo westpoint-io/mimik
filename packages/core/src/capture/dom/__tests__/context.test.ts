@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { describe, expect, it } from 'vitest';
-import { extractDOMContext } from '../context';
+import { extractDOMContext, serializeDOMContext } from '../context';
 
 function targetName(html: string): string | null {
   document.body.innerHTML = html;
@@ -32,5 +32,13 @@ describe('extractDOMContext target name', () => {
 
   it('keeps punctuation that belongs to the label', () => {
     expect(targetName('<div id="target" role="menuitem">Open…</div>')).toBe('Open…');
+  });
+});
+
+describe('serializeDOMContext', () => {
+  it('calls a secondary-button click a right-click', () => {
+    document.body.innerHTML = '<button id="target">Open</button>';
+    const ctx = extractDOMContext(document.getElementById('target')!, 'auxclick');
+    expect(serializeDOMContext(ctx)).toContain('→ Target: button "Open" (right-click)');
   });
 });

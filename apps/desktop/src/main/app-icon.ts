@@ -1,5 +1,7 @@
+import { readFile } from 'node:fs/promises';
 import { isAbsolute } from 'node:path';
 import { app, type NativeImage, nativeImage, protocol } from 'electron';
+import { desktopEntries } from './capture/desktop-entries';
 
 export const APP_ICON_SCHEME = 'mimik-app-icon';
 const ICON_PX = 64;
@@ -19,6 +21,14 @@ export function registerAppIconProtocol(): void {
     const path = new URL(request.url).searchParams.get('path');
     if (!path || !isAbsolute(path)) return new Response(null, { status: 404 });
     try {
+      if (process.platform === 'linux') {
+        const file = desktopEntries()
+          .find((entry) => entry.file === path)
+          ?.iconFile();
+        if (!file) return new Response(null, { status: 404 });
+        const type = file.endsWith('.svg') ? 'image/svg+xml' : 'image/png';
+        return new Response(new Uint8Array(await readFile(file)), { headers: { 'content-type': type } });
+      }
       const icon = await iconFor(path);
       if (icon.isEmpty()) return new Response(null, { status: 404 });
       return new Response(new Uint8Array(icon.toPNG()), { headers: { 'content-type': 'image/png' } });

@@ -12,7 +12,10 @@ interface Seen {
 
 const TEXT = 'Clicked the Update profile button';
 
-function startMockServer(models: string[]): Promise<{ server: Server; seen: Seen[]; url: string }> {
+function startMockServer(
+  models: string[],
+  required?: [string, string],
+): Promise<{ server: Server; seen: Seen[]; url: string }> {
   const seen: Seen[] = [];
   const server = createServer((req, res) => {
     const path = new URL(req.url ?? '/', 'http://x').pathname;
@@ -25,6 +28,8 @@ function startMockServer(models: string[]): Promise<{ server: Server; seen: Seen
       res.end(JSON.stringify(body));
     };
     if (key === 'bad') return send(401, { error: { message: 'Invalid API key' } });
+    if (required && req.headers[required[0]] !== required[1])
+      return send(401, { error: { message: 'missing header' } });
     if (path.endsWith('/models')) return send(200, { object: 'list', data: models.map((id) => ({ id })) });
     let raw = '';
     req.on('data', (c) => {
@@ -80,12 +85,14 @@ function startMockServer(models: string[]): Promise<{ server: Server; seen: Seen
 
 let openai: { server: Server; seen: Seen[]; url: string };
 let anthropic: { server: Server; seen: Seen[]; url: string };
+let gateway: { server: Server; seen: Seen[]; url: string };
 let OPENAI_URL: string;
 let ANTHROPIC_URL: string;
 
 beforeAll(async () => {
   openai = await startMockServer(['mock-tiny', 'mock-large']);
   anthropic = await startMockServer(['claude-local']);
+  gateway = await startMockServer(['mock-tiny'], ['x-org', 'acme']);
   OPENAI_URL = openai.url;
   ANTHROPIC_URL = anthropic.url;
 });
@@ -93,6 +100,7 @@ beforeAll(async () => {
 afterAll(() => {
   openai?.server.close();
   anthropic?.server.close();
+  gateway?.server.close();
 });
 
 describe('a real custom server, real fetch, real SDK', () => {
@@ -165,5 +173,38 @@ describe('a real custom server, real fetch, real SDK', () => {
     const model = createModel('openai', 'mock-tiny', 'sk-test', '');
     expect(model.modelId).toBe('mock-tiny');
     expect(openai.seen.length).toBe(before);
+  });
+});
+
+describe('a custom server that requires a header', () => {
+  const headers = { 'x-org': 'acme' };
+
+  it('rejects the key check without the header and passes it with the header', async () => {
+    expect(await validateApiKey('openai', 'sk-test', gateway.url, 'mock-tiny')).toEqual({
+      valid: false,
+      reason: 'rejected',
+    });
+    expect(await validateApiKey('openai', 'sk-test', gateway.url, 'mock-tiny', headers)).toEqual({
+      valid: true,
+      models: ['mock-tiny'],
+    });
+    expect(await validateApiKey('openai', 'sk-test', gateway.url, undefined, headers)).toEqual({
+      valid: true,
+      models: ['mock-tiny'],
+    });
+  });
+
+  it('sends the header when generating, over both protocols', async () => {
+    const { text } = await generateText({
+      model: createModel('openai', 'mock-tiny', 'sk-test', gateway.url, headers),
+      prompt: 'Describe this step.',
+    });
+    expect(text).toBe(TEXT);
+    await expect(
+      generateText({
+        model: createModel('openai', 'mock-tiny', 'sk-test', gateway.url),
+        prompt: 'Describe this step.',
+      }),
+    ).rejects.toThrow();
   });
 });

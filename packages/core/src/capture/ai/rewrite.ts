@@ -34,7 +34,7 @@ export async function rewriteSelection(text: string, instruction: string): Promi
 
   try {
     const { text: raw } = await generateText({
-      model: createModel(keys.provider, keys.model, keys.apiKey, keys.baseUrl),
+      model: createModel(keys.provider, keys.model, keys.apiKey, keys.baseUrl, keys.headers),
       prompt: buildRewritePrompt(text, instruction, aiLanguage || 'en'),
       maxOutputTokens: 2048,
     });

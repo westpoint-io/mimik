@@ -7,11 +7,14 @@ function describeTyping(locale: string, value: string, label: string): string {
   return renderMessage(locale, 'steps.typeValueInto', [value, label]);
 }
 
+const TYPING = LOCALES.flatMap((locale) => [
+  [locale, 'steps.typeValueInto', (value: string) => describeTyping(locale, value, 'Password')] as const,
+  [locale, 'steps.type', (value: string) => renderMessage(locale, 'steps.type', [value])] as const,
+]);
+
 describe('localized typing step descriptions', () => {
-  it.each(LOCALES)('%s wraps the typed value in straight double quotes', (locale) => {
-    const description = describeTyping(locale, 'hunter2', 'Password');
-    expect(description).toContain('"hunter2"');
-    expect(description).not.toMatch(/[“”«»「」]/);
+  it.each(TYPING)('%s %s wraps the typed value in quotes the redaction recognises', (_locale, _key, render) => {
+    expect(render('hunter2')).toMatch(/"hunter2"|「hunter2」|『hunter2』|“hunter2”|«[\s\u202f]*hunter2[\s\u202f]*»/);
   });
 
   it.each(LOCALES)('%s names the field as well as the value', (locale) => {
@@ -34,8 +37,8 @@ describe('bundle redaction over localized descriptions', () => {
   ];
 
   for (const { name, value } of cases) {
-    it.each(LOCALES)(`%s redacts ${name}`, (locale) => {
-      const description = describeTyping(locale, value, 'Password');
+    it.each(TYPING)(`%s %s redacts ${name}`, (_locale, _key, render) => {
+      const description = render(value);
       expect(description).toContain(value);
 
       const scrubbed = scrubValues(description, typedValues([{ inputValue: value }]));
@@ -51,6 +54,8 @@ describe('bundle redaction over AI-written descriptions', () => {
     { name: 'a sentence closing with the quoted value', text: '在 $2 字段中输入 "$1"' },
     { name: 'a sentence quoting the value mid-way', text: 'Type "$1" in $2' },
     { name: 'a description the model wrapped whole', text: '"Type "$1" in $2"' },
+    { name: 'a Japanese sentence quoting the value in corner brackets', text: '$2 に「$1」と入力' },
+    { name: 'a Chinese sentence quoting the value in curly quotes', text: '在 $2 中输入“$1”' },
   ];
 
   for (const { name, text } of shapes) {

@@ -11,12 +11,13 @@ interface OutlineRowProps {
   number?: number;
   active: boolean;
   selected: boolean;
+  isNew?: boolean;
   dimmed: boolean;
   disabled: boolean;
   onActivate: (e: React.MouseEvent | React.KeyboardEvent) => void;
 }
 
-export function OutlineRow({ step, number, active, selected, dimmed, disabled, onActivate }: OutlineRowProps) {
+export function OutlineRow({ step, number, active, selected, isNew, dimmed, disabled, onActivate }: OutlineRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: step.id,
     disabled,
@@ -62,6 +63,9 @@ export function OutlineRow({ step, number, active, selected, dimmed, disabled, o
       )}
       {accent && <span className="w-2 h-2 mt-1.5 rounded-full shrink-0" style={{ background: accent }} />}
       <span className="flex-1 min-w-0 line-clamp-2 break-words">{outlineLabel(step)}</span>
+      {isNew && (
+        <span className="shrink-0 mt-0.5 text-[11px] font-semibold text-violet-dark">{i18n.t('editor.newStep')}</span>
+      )}
       {selected && (
         <span
           role="img"

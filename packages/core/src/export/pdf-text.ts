@@ -1,10 +1,16 @@
+import { i18n } from '@/core/env';
+
 const MM_PER_PT = 25.4 / 72;
 const RASTER_SCALE = 4;
 // Only a fallback, for engines that withhold the fontBoundingBox metrics.
 const ASCENT_RATIO = 0.8;
 const DESCENT_RATIO = 0.2;
-const RASTER_FONTS =
-  '"Noto Sans", "Noto Sans CJK SC", "Noto Sans CJK JP", "Microsoft YaHei", "PingFang SC", "Hiragino Sans", "Malgun Gothic", system-ui, -apple-system, "Segoe UI", Arial, sans-serif';
+const CJK_FONTS: Record<string, string> = {
+  'zh-CN': '"Noto Sans CJK SC", "Microsoft YaHei", "PingFang SC"',
+  ja: '"Noto Sans CJK JP", "Yu Gothic", "Hiragino Sans"',
+  'zh-TW': '"Noto Sans CJK TC", "Microsoft JhengHei", "PingFang TC"',
+  ko: '"Noto Sans CJK KR", "Malgun Gothic", "Apple SD Gothic Neo"',
+};
 
 const WINANSI_EXTRAS = new Set([
   0x20ac, 0x201a, 0x0192, 0x201e, 0x2026, 0x2020, 0x2021, 0x02c6, 0x2030, 0x0160, 0x2039, 0x0152, 0x017d, 0x2018,
@@ -78,8 +84,17 @@ export interface RasterText {
   ascent: number;
 }
 
+export function rasterFonts(locale: string): string {
+  const cjk = Object.keys(CJK_FONTS).sort((a, b) => Number(b === locale) - Number(a === locale));
+  return [
+    '"Noto Sans"',
+    ...cjk.map((key) => CJK_FONTS[key]),
+    'system-ui, -apple-system, "Segoe UI", Arial, sans-serif',
+  ].join(', ');
+}
+
 function fontSpec(sizePt: number, bold: boolean): string {
-  return `${bold ? 'bold ' : ''}${sizePt}px ${RASTER_FONTS}`;
+  return `${bold ? 'bold ' : ''}${sizePt}px ${rasterFonts(i18n.t('meta.locale'))}`;
 }
 
 export function measurer(sizePt: number, bold: boolean): ((s: string) => number) | null {

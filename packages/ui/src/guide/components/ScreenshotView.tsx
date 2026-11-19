@@ -7,6 +7,7 @@ import type { ScreenshotEdits } from '@mimik/core/screenshot/types';
 import { Download, ImageUp, Pencil, Trash2, ZoomIn, ZoomOut } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { ConfirmDialog } from '../../common/components/ConfirmDialog';
+import { useNearViewport } from '../../common/hooks/use-near-viewport';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -88,6 +89,8 @@ export function ScreenshotView({
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dragRef = useRef<DragState | null>(null);
+  const placeholderRef = useRef<HTMLDivElement>(null);
+  const near = useNearViewport(placeholderRef);
 
   const baseScreenshot = screenshotOverride ?? screenshot;
   const effectiveEdits = editsOverride ?? screenshot.edits;
@@ -119,6 +122,7 @@ export function ScreenshotView({
       setFullUrl(hit);
       return;
     }
+    if (!near && !fullUrl) return;
 
     let cancelled = false;
     const current: Screenshot = {
@@ -154,7 +158,7 @@ export function ScreenshotView({
     return () => {
       cancelled = true;
     };
-  }, [baseScreenshot, annotationsForRender, targetForRender, cache]);
+  }, [baseScreenshot, annotationsForRender, targetForRender, cache, near, fullUrl]);
 
   useEffect(() => {
     if (!fullUrl || showViewport) return;
@@ -308,7 +312,8 @@ export function ScreenshotView({
   if (!fullUrl) {
     return (
       <div
-        className={`rounded-lg bg-secondary p-4 flex flex-col gap-2.5 ${cover ? 'h-full' : ''} ${className}`}
+        ref={placeholderRef}
+        className={`rounded-lg bg-secondary p-4 flex flex-col gap-2.5 ${near ? '' : '[&_*]:animate-none'} ${cover ? 'h-full' : ''} ${className}`}
         style={cover ? undefined : { aspectRatio: ratio }}
       >
         <div className="h-7 rounded-md bg-border/60 animate-pulse" />

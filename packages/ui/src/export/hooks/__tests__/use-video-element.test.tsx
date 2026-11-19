@@ -6,19 +6,19 @@ import { useVideoElement } from '../use-video-element';
 
 afterEach(() => vi.restoreAllMocks());
 
-describe('useVideoElement', () => {
-  function Player() {
-    const player = useVideoElement(false);
-    return (
-      <>
-        <video ref={player.video} {...player.events}>
-          <track kind="captions" />
-        </video>
-        <output>{player.duration}</output>
-      </>
-    );
-  }
+function Player() {
+  const player = useVideoElement(false);
+  return (
+    <>
+      <video ref={player.video} {...player.events}>
+        <track kind="captions" />
+      </video>
+      <output>{player.duration}</output>
+    </>
+  );
+}
 
+describe('useVideoElement', () => {
   it('reads a duration the video already knew before the player mounted', () => {
     vi.spyOn(HTMLMediaElement.prototype, 'duration', 'get').mockReturnValue(46);
     render(<Player />);

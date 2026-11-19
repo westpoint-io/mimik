@@ -14,6 +14,16 @@ describe('resolveByLocale', () => {
     expect(resolveByLocale(TABLE, 'zh')).toBe('chinese');
   });
 
+  it('gives Traditional Chinese to every region and script that writes it', () => {
+    const table = { ...TABLE, 'zh-TW': 'traditional' };
+    for (const code of ['zh-TW', 'zh-HK', 'zh-MO', 'zh-Hant', 'zh-Hant-HK']) {
+      expect(resolveByLocale(table, code)).toBe('traditional');
+    }
+    expect(resolveByLocale(table, 'zh')).toBe('chinese');
+    expect(resolveByLocale(table, 'zh-SG')).toBe('chinese');
+    expect(resolveByLocale(table, 'zh-Hans')).toBe('chinese');
+  });
+
   it('ignores case', () => {
     expect(resolveByLocale(TABLE, 'ZH-CN')).toBe('chinese');
     expect(resolveByLocale(TABLE, 'Fr')).toBe('french');

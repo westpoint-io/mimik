@@ -51,12 +51,6 @@ const SUBROLES: &[(&str, &str)] = &[
   ("AXSecureTextField", "textbox"),
 ];
 
-const CONTROLS: &[&str] = &[
-  "button", "checkbox", "switch", "radio", "link", "menuitem", "tab", "treeitem", "row", "cell", "combobox",
-];
-
-pub const PROMOTE_DEPTH: usize = 3;
-
 pub fn role(role: Option<&str>, subrole: Option<&str>) -> Option<String> {
   let find = |table: &[(&str, &str)], key: Option<&str>| {
     key.and_then(|key| {
@@ -67,14 +61,6 @@ pub fn role(role: Option<&str>, subrole: Option<&str>) -> Option<String> {
     })
   };
   find(SUBROLES, subrole).or_else(|| find(ROLES, role))
-}
-
-pub fn is_label(role: Option<&str>) -> bool {
-  matches!(role, Some("text" | "img"))
-}
-
-pub fn is_control(role: Option<&str>) -> bool {
-  role.is_some_and(|role| CONTROLS.contains(&role))
 }
 
 const KEYCODES: &[(u32, u16)] = &[
@@ -129,39 +115,6 @@ const KEYCODES: &[(u32, u16)] = &[
   (0x56, 0x0a),
 ];
 
-const NAMED_KEYS: &[(u32, &str)] = &[
-  (0x1c, "Enter"),
-  (0x0f, "Tab"),
-  (0x01, "Escape"),
-  (0x0e, "Backspace"),
-  (0x39, "Space"),
-  (0x0e53, "Delete"),
-  (0x0e52, "Insert"),
-  (0x0e47, "Home"),
-  (0x0e4f, "End"),
-  (0x0e49, "PageUp"),
-  (0x0e51, "PageDown"),
-  (0xe048, "ArrowUp"),
-  (0xe050, "ArrowDown"),
-  (0xe04b, "ArrowLeft"),
-  (0xe04d, "ArrowRight"),
-];
-
-const FUNCTION_KEYS: &[(u32, u8)] = &[
-  (0x3b, 1),
-  (0x3c, 2),
-  (0x3d, 3),
-  (0x3e, 4),
-  (0x3f, 5),
-  (0x40, 6),
-  (0x41, 7),
-  (0x42, 8),
-  (0x43, 9),
-  (0x44, 10),
-  (0x57, 11),
-  (0x58, 12),
-];
-
 const MAC_ONLY_KEYS: &[(u16, u32)] = &[
   (0x24, 0x1c),
   (0x4c, 0x0e1c),
@@ -213,16 +166,6 @@ pub fn mac_keycode(keycode: u32) -> Option<u16> {
     .map(|(_, mac)| *mac)
 }
 
-pub fn named_key(keycode: u32) -> Option<String> {
-  if let Some((_, name)) = NAMED_KEYS.iter().find(|(vc, _)| *vc == keycode) {
-    return Some((*name).to_string());
-  }
-  FUNCTION_KEYS
-    .iter()
-    .find(|(vc, _)| *vc == keycode)
-    .map(|(_, number)| format!("F{number}"))
-}
-
 pub const MENU_BAR_LAYER: f64 = 24.0;
 
 pub struct LayeredWindow {
@@ -249,16 +192,9 @@ pub fn window_for_click(windows: &[LayeredWindow], front: Option<i32>) -> Option
     .map(|index| (index, true))
 }
 
-pub fn printable(text: &str) -> Option<String> {
-  (!text.is_empty() && text.chars().all(|found| !found.is_control())).then(|| text.to_string())
-}
-
 #[cfg(test)]
 mod tests {
-  use super::{
-    hook_keycode, is_control, is_label, mac_keycode, named_key, printable, role, window_for_click,
-    LayeredWindow, MENU_BAR_LAYER,
-  };
+  use super::{hook_keycode, mac_keycode, role, window_for_click, LayeredWindow, MENU_BAR_LAYER};
 
   #[test]
   fn mac_keys_come_back_as_hook_codes() {
@@ -300,29 +236,11 @@ mod tests {
   }
 
   #[test]
-  fn text_inside_a_control_is_a_label() {
-    assert!(is_label(Some("text")));
-    assert!(is_label(Some("img")));
-    assert!(!is_label(Some("button")));
-    assert!(is_control(Some("button")));
-    assert!(!is_control(Some("group")));
-    assert!(!is_control(None));
-  }
-
-  #[test]
   fn hook_codes_map_to_mac_virtual_keys() {
     assert_eq!(mac_keycode(0x1e), Some(0x00));
     assert_eq!(mac_keycode(0x10), Some(0x0c));
     assert_eq!(mac_keycode(0x0b), Some(0x1d));
     assert_eq!(mac_keycode(0xe048), None);
-  }
-
-  #[test]
-  fn named_and_function_keys_skip_the_layout() {
-    assert_eq!(named_key(0x1c).as_deref(), Some("Enter"));
-    assert_eq!(named_key(0xe04b).as_deref(), Some("ArrowLeft"));
-    assert_eq!(named_key(0x58).as_deref(), Some("F12"));
-    assert_eq!(named_key(0x1e), None);
   }
 
   fn window(pid: i32, layer: f64, under_point: bool) -> LayeredWindow {
@@ -354,12 +272,5 @@ mod tests {
     let dock = [window(3, 20.0, true), window(7, 0.0, true)];
     assert_eq!(window_for_click(&dock, Some(7)), None);
     assert_eq!(window_for_click(&menu_bar, None), None);
-  }
-
-  #[test]
-  fn control_characters_are_not_typing() {
-    assert_eq!(printable("é").as_deref(), Some("é"));
-    assert_eq!(printable("\u{13}"), None);
-    assert_eq!(printable(""), None);
   }
 }

@@ -1,46 +1,53 @@
 version: 2
 
-multi-ecosystem-groups:
-  dependencies:
-    schedule:
-      interval: weekly
-
 updates:
   - package-ecosystem: npm
     directory: /
-    patterns: ["*"]
-    multi-ecosystem-group: dependencies
+    schedule:
+      interval: weekly
     cooldown:
       default-days: 7
     commit-message:
       prefix: build
       include: scope
+    groups:
+      dependencies:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
-    patterns: ["*"]
-    multi-ecosystem-group: dependencies
+    schedule:
+      interval: weekly
     cooldown:
       default-days: 7
     commit-message:
       prefix: build
       include: scope
+    groups:
+      dependencies:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: cargo
     directory: /packages/capture-native
-    patterns: ["*"]
-    multi-ecosystem-group: dependencies
+    schedule:
+      interval: weekly
     cooldown:
       default-days: 7
     commit-message:
       prefix: build
       include: scope
+    groups:
+      dependencies:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]

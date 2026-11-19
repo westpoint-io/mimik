@@ -11,9 +11,24 @@ pub fn smallest_under(boxes: &[Bounds], x: i32, y: i32) -> Option<usize> {
     .map(|(index, _)| index)
 }
 
+const CONTROLS: &[&str] = &[
+  "button", "checkbox", "switch", "radio", "link", "menuitem", "tab", "treeitem", "row", "cell", "combobox",
+  "listitem",
+];
+
+pub const PROMOTE_DEPTH: usize = 3;
+
+pub fn is_label(role: Option<&str>) -> bool {
+  matches!(role, Some("text" | "img"))
+}
+
+pub fn is_control(role: Option<&str>) -> bool {
+  role.is_some_and(|role| CONTROLS.contains(&role))
+}
+
 #[cfg(test)]
 mod tests {
-  use super::smallest_under;
+  use super::{is_control, is_label, smallest_under};
 
   const PANEL: (i32, i32, i32, i32) = (0, 0, 400, 600);
   const ITEM: (i32, i32, i32, i32) = (10, 50, 390, 90);
@@ -38,5 +53,15 @@ mod tests {
   #[test]
   fn keeps_the_outer_element_when_sizes_tie() {
     assert_eq!(smallest_under(&[ITEM, ITEM], 100, 70), Some(0));
+  }
+
+  #[test]
+  fn text_inside_a_control_is_a_label() {
+    assert!(is_label(Some("text")));
+    assert!(is_label(Some("img")));
+    assert!(!is_label(Some("button")));
+    assert!(is_control(Some("button")));
+    assert!(!is_control(Some("group")));
+    assert!(!is_control(None));
   }
 }

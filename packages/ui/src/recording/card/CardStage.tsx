@@ -1,15 +1,16 @@
+import type { CardStep } from '@mimik/core/capture/card-view';
 import { splitAtShortcut } from '@mimik/core/capture/split-at-shortcut';
 import { i18n } from '@mimik/core/env';
-import { StepSourceBadge, Tooltip, TooltipContent, TooltipTrigger } from '@mimik/ui';
 import { Pause, Trash2 } from 'lucide-react';
 import type { ReactNode, Ref } from 'react';
-import type { OverlayStep } from '../../main/overlay';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
+import { StepSourceBadge } from '../../guide/components/StepSourceBadge';
 
 interface CardStageProps {
   stageRef: Ref<HTMLDivElement>;
   previewRef: Ref<HTMLDivElement>;
   titleRef: Ref<HTMLParagraphElement>;
-  step: OverlayStep | null;
+  step: CardStep | null;
   hidden: boolean;
   capturing: boolean;
   paused: boolean;
@@ -17,6 +18,7 @@ interface CardStageProps {
   arrived: boolean;
   shotSrc: string | null;
   onShotLoad: () => void;
+  onDelete: () => void;
   children: ReactNode;
 }
 
@@ -32,6 +34,7 @@ export function CardStage({
   arrived,
   shotSrc,
   onShotLoad,
+  onDelete,
   children,
 }: CardStageProps) {
   const title = step?.title ?? ' ';
@@ -72,7 +75,7 @@ export function CardStage({
               type="button"
               hidden={!step || capturing || armed}
               aria-label={i18n.t('recording.deleteStep')}
-              onClick={() => window.mimikOverlay.command('deleteStep')}
+              onClick={onDelete}
               className={`absolute top-2 right-2 flex size-7 items-center justify-center rounded-lg bg-card/95 text-foreground hover:text-destructive ${arrive}`}
             >
               <Trash2 size={13} />

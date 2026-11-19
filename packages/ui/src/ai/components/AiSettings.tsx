@@ -1,3 +1,4 @@
+import type { PromptSection } from '@mimik/core/capture/ai/custom-prompts';
 import { SERVER } from '@mimik/core/capture/ai/keys';
 import { CUSTOM_MODEL_VALUE } from '@mimik/core/capture/ai/models';
 import { AI_LANGUAGES, type AILanguageCode } from '@mimik/core/capture/ai/prompts';
@@ -10,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useAiSettings } from '../hooks/use-ai-settings';
 import type { ApiKeysState } from '../hooks/use-api-keys';
 import { aiProviderOptions } from '../lib/ai-provider-options';
+import { AiPromptsRow } from './AiPromptsRow';
 import { MissingKeyNote } from './MissingKeyNote';
 import { ProviderSelect } from './ProviderSelect';
 
@@ -17,9 +19,19 @@ interface AiSettingsProps {
   keys: ApiKeysState;
   onOpenKeys?: () => void;
   onChange?: (patch: Record<string, unknown>) => void;
+  onEditPrompts?: (section: PromptSection) => void;
+  promptsRequest?: PromptSection | null;
+  onPromptsRequestHandled?: () => void;
 }
 
-export function AiSettings({ keys, onOpenKeys, onChange }: AiSettingsProps) {
+export function AiSettings({
+  keys,
+  onOpenKeys,
+  onChange,
+  onEditPrompts,
+  promptsRequest,
+  onPromptsRequestHandled,
+}: AiSettingsProps) {
   const {
     provider,
     model,
@@ -34,7 +46,7 @@ export function AiSettings({ keys, onOpenKeys, onChange }: AiSettingsProps) {
     setLanguage,
     setForSteps,
     setForGuide,
-  } = useAiSettings({ onDirty: onChange });
+  } = useAiSettings({ onDirty: onChange, reloadOnFocus: true });
   const unused = !forSteps && !forGuide;
 
   const missing =
@@ -131,6 +143,14 @@ export function AiSettings({ keys, onOpenKeys, onChange }: AiSettingsProps) {
           {i18n.t('settings.aiUnusedNote')}
         </p>
       )}
+
+      <AiPromptsRow
+        onLanguageChange={setLanguage}
+        onEditPrompts={onEditPrompts}
+        onChange={onChange}
+        promptsRequest={promptsRequest}
+        onPromptsRequestHandled={onPromptsRequestHandled}
+      />
     </SettingsCard>
   );
 }

@@ -22,6 +22,10 @@ interface StartRecordingResponse {
   guideId: string;
 }
 
+interface StopRecordingData {
+  openGuide?: boolean;
+}
+
 interface StopRecordingResponse {
   success: boolean;
   guideId?: string;
@@ -76,6 +80,7 @@ interface ValidateApiKeyData {
   apiKey: string;
   baseUrl?: string;
   model?: string;
+  headers?: Record<string, string>;
 }
 
 interface ValidateApiKeyResponse {
@@ -120,8 +125,10 @@ interface ResumeCaptureResponse {
 
 interface MimikProtocol {
   getState(): CaptureStateUpdate;
+  toggleCardInPage(tabId: number): void;
+  removeStep(stepId: string): void;
   startRecording(data: StartRecordingData): StartRecordingResponse;
-  stopRecording(): StopRecordingResponse;
+  stopRecording(data: StopRecordingData | undefined): StopRecordingResponse;
   discardRecording(): DiscardRecordingResponse;
   captureStep(data: CaptureStepData): CaptureStepResponse;
   updateInputStep(data: UpdateInputStepData): UpdateInputStepResponse;

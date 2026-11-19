@@ -1,6 +1,6 @@
 import { i18n } from '@mimik/core/env';
-import { Check } from 'lucide-react';
 import { DemoCursor } from './DemoCursor';
+import { OnboardingChoice } from './OnboardingChoice';
 
 interface WritingChoiceProps {
   selected: boolean;
@@ -24,22 +24,13 @@ export function WritingChoice({
   onSelect,
 }: WritingChoiceProps) {
   return (
-    <button
-      type="button"
-      aria-pressed={selected}
-      onClick={onSelect}
-      className={`relative flex flex-col items-center gap-2.5 rounded-[14px] border-[1.5px] bg-card p-3 text-center transition-shadow ${
-        selected
-          ? 'border-primary shadow-[0_0_0_3px_var(--color-lavender)]'
-          : 'border-lavender/60 hover:border-lavender'
-      }`}
-    >
-      {selected && (
-        <span className="absolute -top-2.5 -right-2.5 flex size-[22px] items-center justify-center rounded-md bg-primary text-on-solid">
-          <Check size={14} strokeWidth={3} />
-        </span>
-      )}
-      <div className="relative aspect-video w-full overflow-hidden rounded-[10px] bg-gradient-to-b from-lavender/50 to-secondary">
+    <OnboardingChoice
+      selected={selected}
+      title={title}
+      message={message}
+      best={best}
+      onSelect={onSelect}
+      picture={
         <div className="light absolute inset-x-[10%] top-[14%] bottom-0 flex flex-col gap-[7%] rounded-t-lg bg-white px-[8%] pt-[8%] shadow-[0_4px_14px_rgba(30,27,75,0.12)]">
           <div className="relative h-[46%] rounded-[5px] bg-background bg-[linear-gradient(var(--color-lavender),var(--color-lavender)),linear-gradient(var(--color-lavender),var(--color-lavender))] bg-[length:45%_10%,65%_10%] bg-[position:8%_22%,8%_50%] bg-no-repeat">
             <span className="absolute top-[47%] left-[60%] h-[22%] w-[22%] rounded-[3px] bg-gray-200" />
@@ -67,12 +58,7 @@ export function WritingChoice({
             </span>
           </div>
         </div>
-      </div>
-      <b className="text-[14px] text-foreground">{title}</b>
-      <p className="text-[12px] leading-snug text-muted-foreground">{message}</p>
-      <span className="mt-auto rounded-[7px] bg-secondary px-2.5 py-1 text-[11px] font-semibold text-foreground">
-        {best}
-      </span>
-    </button>
+      }
+    />
   );
 }

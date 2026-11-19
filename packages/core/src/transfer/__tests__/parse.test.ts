@@ -1,4 +1,4 @@
-import { strToU8, zipSync } from 'fflate';
+import { strFromU8, strToU8, zipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
 import { readBundle } from '../parse';
 import { BUNDLE_VERSION, type BundleError, MANIFEST_PATH, parseManifest } from '../schema';
@@ -28,6 +28,27 @@ function manifest(overrides: Record<string, unknown> = {}) {
 function bundleFile(files: Record<string, Uint8Array>) {
   return new Blob([zipSync(files) as unknown as BlobPart]);
 }
+
+function claimingSize(files: Record<string, Uint8Array>, name: string, bytes: number) {
+  const zip = zipSync(files);
+  const view = new DataView(zip.buffer, zip.byteOffset, zip.byteLength);
+  const end = zip.length - 22;
+  let entry = view.getUint32(end + 16, true);
+  for (let i = 0; i < view.getUint16(end + 10, true); i++) {
+    const nameLength = view.getUint16(entry + 28, true);
+    if (strFromU8(zip.subarray(entry + 46, entry + 46 + nameLength)) === name) {
+      view.setUint32(entry + 24, bytes, true);
+      view.setUint32(view.getUint32(entry + 42, true) + 22, bytes, true);
+    }
+    entry += 46 + nameLength + view.getUint16(entry + 30, true) + view.getUint16(entry + 32, true);
+  }
+  return new Blob([zip as unknown as BlobPart]);
+}
+
+const withScreenshot = () => ({
+  [MANIFEST_PATH]: strToU8(JSON.stringify(manifest())),
+  'screenshots/ss-1.webp': new Uint8Array(1000),
+});
 
 const caught = async (file: Blob): Promise<BundleError> => {
   try {
@@ -87,8 +108,8 @@ describe('parseManifest', () => {
             stepId: 'step-1',
             file: 'screenshots/a.webp',
             mimeType: 'image/webp',
-            width: 1,
-            height: 1,
+            width: 100,
+            height: 100,
             edits: {
               annotations: [
                 { id: 'bad', type: 'redact', x: 1, y: 2 },
@@ -218,6 +239,77 @@ describe('parseManifest', () => {
     expect(withAnnotations([{ id: 'odd', type: 'freehand', points: [1, 2, 3], color: '#000' }])).toBeUndefined();
   });
 
+  describe('a screenshot whose edits reach past its edges', () => {
+    const shotWith = (edits: Record<string, unknown>) =>
+      parseManifest(
+        manifest({
+          screenshots: [
+            {
+              id: 'a',
+              stepId: 'step-1',
+              file: 'screenshots/a.webp',
+              mimeType: 'image/webp',
+              width: 800,
+              height: 600,
+              edits,
+            },
+          ],
+        }),
+      ).screenshots[0]!.edits;
+
+    it('pulls the click target back onto the screenshot', () => {
+      const target = { x: 900, y: -20, width: 100, height: 40, color: '#4F46E5', border: 'dashed' };
+      expect(shotWith({ target })?.target).toEqual({ ...target, x: 700, y: 0 });
+    });
+
+    it('puts a moved click target back where the element was recorded', () => {
+      const parsed = parseManifest(
+        manifest({
+          screenshots: [
+            {
+              id: 'a',
+              stepId: 'step-1',
+              file: 'screenshots/a.webp',
+              mimeType: 'image/webp',
+              width: 800,
+              height: 600,
+              bounds: { x: 250, y: 200, width: 60, height: 20 },
+              pixelRatio: 2,
+              edits: { target: { x: 900, y: 0, width: 120, height: 40, color: '#4F46E5', border: 'dashed' } },
+            },
+          ],
+        }),
+      );
+      expect(parsed.screenshots[0]!.edits?.target).toMatchObject({ x: 500, y: 400, width: 120, height: 40 });
+    });
+
+    it('shrinks a click target larger than the screenshot to its size', () => {
+      const target = { x: 0, y: 0, width: 5000, height: 4000, color: '#4F46E5', border: 'solid' };
+      expect(shotWith({ target })?.target).toMatchObject({ x: 0, y: 0, width: 800, height: 600 });
+    });
+
+    it('keeps every annotation on the screenshot and drops the ones with nothing on it', () => {
+      const annotations = [
+        { id: 'box', type: 'box', x: 790, y: 10, w: 50, h: 50, color: '#000' },
+        { id: 'arrow', type: 'arrow', x1: -30, y1: 10, x2: 20, y2: 60, color: '#000' },
+        { id: 'gone', type: 'box', x: 900, y: 10, w: 50, h: 50, color: '#000' },
+      ];
+      expect(shotWith({ annotations })?.annotations).toEqual([
+        { id: 'box', type: 'box', x: 750, y: 10, w: 50, h: 50, color: '#000' },
+        { id: 'arrow', type: 'arrow', x1: 0, y1: 10, x2: 50, y2: 60, color: '#000' },
+      ]);
+    });
+
+    it('keeps the crop on the screenshot', () => {
+      expect(shotWith({ viewport: { x: 700, y: 500, width: 400, height: 300 } })?.viewport).toEqual({
+        x: 400,
+        y: 300,
+        width: 400,
+        height: 300,
+      });
+    });
+  });
+
   it('titles a bundle with no title the way a new guide is titled', () => {
     const parsed = parseManifest(manifest({ guide: { title: '   ', createdAt: 1_700_000_000_000 } }));
     expect(parsed.guide.title).toBe('guide.untitled');
@@ -261,13 +353,6 @@ describe('readBundle', () => {
     expect((await caught(bundleFile({ 'readme.txt': strToU8('hi') }))).kind).toBe('not-a-bundle');
   });
 
-  it('refuses a zip bomb before inflating it', async () => {
-    const huge = new Uint8Array(210 * 1024 * 1024);
-    const bomb = bundleFile({ [MANIFEST_PATH]: strToU8(JSON.stringify(manifest())), 'screenshots/big.webp': huge });
-    expect(bomb.size).toBeLessThan(5 * 1024 * 1024);
-    expect((await caught(bomb)).kind).toBe('unreadable');
-  });
-
   it('reports a manifest that is not valid JSON', async () => {
     expect((await caught(bundleFile({ [MANIFEST_PATH]: strToU8('{ nope') }))).kind).toBe('not-a-bundle');
   });
@@ -279,5 +364,18 @@ describe('readBundle against a crafted archive', () => {
     for (let i = 0; i < 5_001; i++) files[`screenshots/${i}.webp`] = new Uint8Array(1);
 
     expect((await caught(bundleFile(files))).kind).toBe('unreadable');
+  });
+
+  it('refuses a zip bomb from the size it claims, before inflating it', async () => {
+    const bomb = claimingSize(withScreenshot(), 'screenshots/ss-1.webp', 210 * 1024 * 1024);
+
+    expect((await caught(bomb)).kind).toBe('unreadable');
+  });
+
+  it('takes the same forged archive under the limit, so the bomb is refused for its size alone', async () => {
+    const forged = claimingSize(withScreenshot(), 'screenshots/ss-1.webp', 150 * 1024 * 1024);
+
+    const { images } = await readBundle(forged);
+    expect(images.get('screenshots/ss-1.webp')).toBeInstanceOf(Blob);
   });
 });

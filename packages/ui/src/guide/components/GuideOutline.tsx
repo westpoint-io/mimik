@@ -34,16 +34,25 @@ interface GuideOutlineProps {
 }
 
 export function GuideOutline({ guideId, steps, readOnly, wide, onReorder }: GuideOutlineProps) {
-  const { activeStepId, scrollToStep, collapsed, drawerOpen, setDrawerOpen, selected, toggleStepSelection } =
-    useFullview((s) => ({
-      activeStepId: s.activeStepId,
-      scrollToStep: s.scrollToStep,
-      collapsed: s.outlineCollapsed,
-      drawerOpen: s.outlineDrawerOpen,
-      setDrawerOpen: s.setOutlineDrawerOpen,
-      selected: s.selectedStepIds,
-      toggleStepSelection: s.toggleStepSelection,
-    }));
+  const {
+    activeStepId,
+    scrollToStep,
+    collapsed,
+    drawerOpen,
+    setDrawerOpen,
+    selected,
+    toggleStepSelection,
+    newStepIds,
+  } = useFullview((s) => ({
+    activeStepId: s.activeStepId,
+    scrollToStep: s.scrollToStep,
+    collapsed: s.outlineCollapsed,
+    drawerOpen: s.outlineDrawerOpen,
+    setDrawerOpen: s.setOutlineDrawerOpen,
+    selected: s.selectedStepIds,
+    toggleStepSelection: s.toggleStepSelection,
+    newStepIds: s.newStepIds,
+  }));
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -126,6 +135,7 @@ export function GuideOutline({ guideId, steps, readOnly, wide, onReorder }: Guid
               number={numbers.get(step.id)}
               active={step.id === activeStepId}
               selected={selected.has(step.id)}
+              isNew={newStepIds.has(step.id)}
               dimmed={dragging.includes(step.id) && step.id !== draggingId}
               disabled={readOnly}
               onActivate={(e) => activate(step, e)}
@@ -175,7 +185,7 @@ export function GuideOutline({ guideId, steps, readOnly, wide, onReorder }: Guid
       <DialogContent
         aria-describedby={undefined}
         showCloseButton={false}
-        className="top-0 left-0 translate-x-0 translate-y-0 flex flex-col h-full w-[320px] max-w-none sm:max-w-none rounded-none border-0 bg-card p-0 gap-0 shadow-xl data-[state=open]:animate-drawer-in data-[state=closed]:animate-drawer-out"
+        className="top-0 left-0 translate-x-0 translate-y-0 flex flex-col h-full w-[320px] max-w-none sm:max-w-none rounded-none border-0 bg-card p-0 gap-0 shadow-xl data-[state=open]:slide-in-from-left data-[state=open]:zoom-in-100 data-[state=closed]:slide-out-to-left data-[state=closed]:zoom-out-100"
       >
         <div className="flex items-center justify-between pl-5 pr-4 pt-[18px] pb-3.5">
           <DialogPrimitive.Title className="text-[15px] font-semibold text-foreground">

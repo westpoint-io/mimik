@@ -5,7 +5,7 @@ import { VOICE_CONFIRM_MS, voiceNotice } from '../voice-notice';
 import { voiceSignature } from '../voice-signature';
 import type { VoicePhase, VoiceUpdate } from '../voice-update';
 
-const LOCALES = ['en', 'es', 'fr', 'pt-BR', 'zh-CN', 'ru'];
+const LOCALES = ['en', 'es', 'fr', 'pt-BR', 'zh-CN', 'ru', 'ja', 'ko', 'zh-TW'];
 
 function update(phase: VoicePhase, extra: Partial<VoiceUpdate> = {}): VoiceUpdate {
   return { phase, ...extra };
@@ -56,8 +56,12 @@ describe('voiceNotice', () => {
     });
   });
 
-  it('offers settings only when the key is the thing that is missing', () => {
+  it('offers settings only when the key or the server is the thing that is missing', () => {
     expect(voiceNotice(update('error', { reason: 'missing-api-key' }), true)?.showSettings).toBe(true);
+    expect(voiceNotice(update('error', { reason: 'server-not-ready' }), true)).toMatchObject({
+      titleKey: 'voice.errorServerNotReady',
+      showSettings: true,
+    });
     expect(voiceNotice(update('error', { reason: 'permission-denied' }), true)?.showSettings).toBe(false);
   });
 
@@ -83,6 +87,18 @@ describe('voiceNotice', () => {
     const notice = voiceNotice(update('idle', { narrated: 0 }), true);
     expect(notice?.titleKey).toBe('voice.narratedNone');
     expect(notice?.titleSubstitutions).toBeUndefined();
+  });
+
+  it('blames the missing scores when the server sent none and nothing was used', () => {
+    expect(voiceNotice(update('idle', { narrated: 0, unscored: true }), true)).toMatchObject({
+      tone: 'failed',
+      titleKey: 'voice.narratedUnscored',
+      showSettings: true,
+    });
+    expect(voiceNotice(update('idle', { narrated: 2, unscored: true }), true)?.titleKey).toBe('voice.narratedPlural');
+    expect(voiceSignature(update('idle', { narrated: 0, unscored: true }))).not.toBe(
+      voiceSignature(update('idle', { narrated: 0 })),
+    );
   });
 
   it('withholds a result the user never watched arrive', () => {

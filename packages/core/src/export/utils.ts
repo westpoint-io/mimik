@@ -70,6 +70,9 @@ const LOCALE_MAP: Record<string, string> = {
   de: 'de-DE',
   ru: 'ru-RU',
   'zh-CN': 'zh-CN',
+  'zh-TW': 'zh-TW',
+  ja: 'ja-JP',
+  ko: 'ko-KR',
 };
 
 export function formatDate(timestamp: number): string {

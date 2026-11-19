@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { StepSourceBadge } from '../StepSourceBadge';
 
 const SOURCES: DescriptionSource[] = ['ai', 'narration', 'heuristic', 'manual'];
-const LOCALES = ['en', 'de', 'es', 'fr', 'pt-BR', 'zh-CN', 'ru'];
+const LOCALES = ['en', 'de', 'es', 'fr', 'pt-BR', 'zh-CN', 'ru', 'ja', 'ko', 'zh-TW'];
 
 describe('StepSourceBadge', () => {
   it('says nothing for a step recorded before the field existed', () => {

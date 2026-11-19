@@ -1,6 +1,6 @@
 import { i18n } from '@mimik/core/env';
 import { ChevronDown, ChevronUp } from 'lucide-react';
-import { MODES } from './lib/modes';
+import type { PointerEvent, ReactNode } from 'react';
 
 interface CardHeadProps {
   label: string;
@@ -8,12 +8,12 @@ interface CardHeadProps {
   recording: boolean;
   paused: boolean;
   collapsed: boolean;
-  mode: string;
+  badge?: ReactNode;
   onCollapse: () => void;
+  onGrab?: (event: PointerEvent<HTMLDivElement>) => void;
 }
 
-export function CardHead({ label, count, recording, paused, collapsed, mode, onCollapse }: CardHeadProps) {
-  const shown = MODES.find((candidate) => candidate.id === mode) ?? MODES[0];
+export function CardHead({ label, count, recording, paused, collapsed, badge, onCollapse, onGrab }: CardHeadProps) {
   const counted = [String(count)];
   const toggleLabel = i18n.t(collapsed ? 'desktop.expand' : 'desktop.collapse');
   const dot = recording
@@ -23,9 +23,10 @@ export function CardHead({ label, count, recording, paused, collapsed, mode, onC
   return (
     <div
       id="head"
+      onPointerDown={onGrab}
       className={`flex items-center gap-2 text-[12.5px] whitespace-nowrap [-webkit-app-region:drag] ${
-        collapsed ? 'py-2 pr-2 pl-3.5' : 'border-b border-secondary py-2.5 pr-2.5 pl-3.5'
-      }`}
+        onGrab ? 'cursor-grab touch-none active:cursor-grabbing' : ''
+      } ${collapsed ? 'py-2 pr-2 pl-3.5' : 'border-b border-secondary py-2.5 pr-2.5 pl-3.5'}`}
     >
       <span id="dot" className={`size-2 shrink-0 rounded-full ${dot}`} />
       <span id="label" className="mr-auto font-semibold">
@@ -40,16 +41,16 @@ export function CardHead({ label, count, recording, paused, collapsed, mode, onC
       </span>
       <span
         id="badge"
-        hidden={paused || collapsed}
+        hidden={!badge || paused || collapsed}
         className="flex items-center gap-[5px] rounded-full bg-secondary px-[9px] py-[3px] text-[11px] font-semibold text-accent"
       >
-        <shown.Icon size={12} />
-        {i18n.t(shown.label)}
+        {badge}
       </span>
       <button
         id="collapse"
         type="button"
         aria-label={toggleLabel}
+        onPointerDown={(event) => event.stopPropagation()}
         onClick={onCollapse}
         className={`flex size-7 items-center justify-center ${
           collapsed ? 'order-last rounded-full bg-on-solid-subtle text-white' : 'rounded-lg text-muted-foreground'

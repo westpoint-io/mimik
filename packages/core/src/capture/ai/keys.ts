@@ -39,10 +39,16 @@ export type ApiKeys = Partial<Record<KeyName, string>>;
 
 export type AiChoice = AIProviderKey | typeof SERVER;
 
+export interface ServerHeader {
+  name: string;
+  value: string;
+}
+
 export interface AiServer {
   url: string;
   protocol: AIProtocol;
   apiKey: string;
+  headers: ServerHeader[];
 }
 
 export interface ApiKeySettings {
@@ -60,6 +66,7 @@ export interface ApiKeySettings {
 export interface AiSettingsStored extends ApiKeySettings {
   aiModel?: unknown;
   aiServerProtocol?: unknown;
+  aiServerHeaders?: unknown;
 }
 
 export const API_KEY_SETTINGS = [
@@ -74,7 +81,7 @@ export const API_KEY_SETTINGS = [
   'aiServerUrl',
 ] as const;
 
-export const AI_CREDENTIAL_SETTINGS = [...API_KEY_SETTINGS, 'aiModel', 'aiServerProtocol'] as const;
+export const AI_CREDENTIAL_SETTINGS = [...API_KEY_SETTINGS, 'aiModel', 'aiServerProtocol', 'aiServerHeaders'] as const;
 
 function trimmed(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
@@ -142,6 +149,24 @@ function legacyServerUrl(stored: ApiKeySettings): string {
   return isCustomBaseUrl(AI_PROVIDERS[providerOrDefault(stored.aiProvider)], url) ? url : '';
 }
 
+function parseServerHeaders(value: unknown): ServerHeader[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((row): row is ServerHeader => typeof row?.name === 'string' && typeof row?.value === 'string')
+    .map(({ name, value }) => ({ name, value }));
+}
+
+const HEADER_NAME = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
+
+export function requestHeaders(rows: ServerHeader[]): Record<string, string> {
+  const headers: Record<string, string> = {};
+  for (const { name, value } of rows) {
+    const key = name.trim();
+    if (HEADER_NAME.test(key) && !/[\r\n\0]/.test(value)) headers[key] = value.trim();
+  }
+  return headers;
+}
+
 export function aiChoice(stored: AiSettingsStored): AiChoice {
   if (stored.aiProvider === SERVER || legacyServerUrl(stored)) return SERVER;
   return providerOrDefault(stored.aiProvider);
@@ -158,7 +183,7 @@ export function resolveServer(stored: AiSettingsStored): AiServer | null {
     (stored.aiServerProtocol === undefined && legacy && AI_PROVIDERS[provider].protocol === 'anthropic')
       ? 'anthropic'
       : 'openai';
-  return { url, protocol, apiKey: keys.server ?? '' };
+  return { url, protocol, apiKey: keys.server ?? '', headers: parseServerHeaders(stored.aiServerHeaders) };
 }
 
 export interface AiCredentials {
@@ -166,6 +191,7 @@ export interface AiCredentials {
   model: string;
   apiKey: string;
   baseUrl?: string;
+  headers?: Record<string, string>;
 }
 
 export function resolveAiCredentials(stored: AiSettingsStored): AiCredentials | null {
@@ -173,7 +199,14 @@ export function resolveAiCredentials(stored: AiSettingsStored): AiCredentials | 
   if (aiChoice(stored) === SERVER) {
     const server = resolveServer(stored);
     if (!server || !model) return null;
-    return { provider: server.protocol, model, apiKey: server.apiKey, baseUrl: server.url };
+    const headers = requestHeaders(server.headers);
+    return {
+      provider: server.protocol,
+      model,
+      apiKey: server.apiKey,
+      baseUrl: server.url,
+      ...(Object.keys(headers).length > 0 ? { headers } : {}),
+    };
   }
   const provider = providerOrDefault(stored.aiProvider);
   const apiKey = readApiKeys(stored)[provider] ?? '';

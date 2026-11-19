@@ -1,5 +1,6 @@
 import { i18n } from '@/core/env';
 import type { ElementMeta } from '@/core/guides/types';
+import { isIdentifier } from './is-identifier';
 import { typedTitle } from './typed-title';
 
 type RoleTrait = 'typedInto' | 'pickedFrom' | 'namesItsHolder' | 'holdsControls' | 'endsTheSearch';
@@ -25,7 +26,6 @@ const ROLE_TRAITS: Record<string, readonly RoleTrait[]> = {
 const NAME_LIMIT = 200;
 const VALUE_LIMIT = 80;
 const INVISIBLE = /[\p{Cf}\uFFFC\uFFFD]/gu;
-const IDENTIFIER = /^(?=.*(?:[\d_.:[\]-]|[a-z][A-Z]))\S+$/;
 const DIGITS_ONLY = /^\d+$/;
 
 function hasTrait(role: string | null | undefined, trait: RoleTrait): boolean {
@@ -42,7 +42,7 @@ function nameCandidates(meta: ElementMeta): NameCandidate[] {
   const role = meta.role;
   const shown = tidy(meta.textContent?.slice(0, VALUE_LIMIT));
   const shownIsLabel = !hasTrait(role, 'typedInto') && !(hasTrait(role, 'endsTheSearch') && DIGITS_ONLY.test(shown));
-  const ownName = IDENTIFIER.test(meta.name ?? '') ? null : meta.name;
+  const ownName = isIdentifier(meta.name) ? null : meta.name;
   const found: NameCandidate[] = [
     meta.ariaLabel,
     meta.label,

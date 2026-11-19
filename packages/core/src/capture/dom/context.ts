@@ -1,3 +1,4 @@
+import { readableAction } from '../ai/readable-action';
 import { isRedactedField } from './element-utils';
 
 interface SiblingElement {
@@ -211,7 +212,7 @@ export function serializeDOMContext(ctx: DOMContext): string {
   }
 
   const { tag, name, value, action } = ctx.target;
-  lines.push(`→ Target: ${tag}${name ? ` "${name}"` : ''}${value ? ` [${value}]` : ''} (${action})`);
+  lines.push(`→ Target: ${tag}${name ? ` "${name}"` : ''}${value ? ` [${value}]` : ''} (${readableAction(action)})`);
 
   return lines.join('\n');
 }

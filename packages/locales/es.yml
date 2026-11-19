@@ -132,14 +132,36 @@ settings:
   hideKey: Ocultar clave
   clearKey: Borrar clave
   aiLanguage: "Idioma de las descripciones"
+  aiAdvanced: "Avanzado"
+  aiAdvancedHint: "Consulta y cambia los prompts que envía Mimik."
+  aiPromptsTitle: "Prompts de IA"
+  aiPromptsHint: "Cambia lo que Mimik le pide a tu proveedor de IA o añade tus propias reglas debajo."
+  aiPromptLabel: "Prompt de Mimik"
+  aiPromptDefault: "Predeterminado"
+  aiPromptEdited: "Editado"
+  aiPromptReset: "Restablecer prompt"
+  aiInstructionsLabel: "Tus instrucciones"
+  aiInstructionsPlaceholder: "p. ej. Escribe en segunda persona. Llama al producto «Acme»."
+  aiCustomised: "Personalizado"
+  aiReset: "Restablecer"
+  aiResetConfirmTitle: "¿Restablecer «$1»?"
+  aiResetConfirmMessage: "Se eliminarán tu prompt editado y tus instrucciones de esta sección. No se puede deshacer."
+  aiExamplesSwitched: "Ejemplos cambiados a $1"
   apiKeys: "Claves de API"
   aiSection: "IA"
   ownServer: "Tu propio servidor"
   optional: "Opcional"
   serverSpeaks: "Compatible con"
+  serverHeaders: "Cabeceras"
+  headerName: "Nombre de la cabecera"
+  headerValue: "Valor"
+  addHeader: "Añadir cabecera"
+  removeHeader: "Quitar cabecera"
   protocolOpenai: "OpenAI"
   protocolAnthropic: "Anthropic"
   noServer: "Aún no hay dirección de servidor."
+  voiceServerNeedsOpenai: "La narración necesita un servidor compatible con OpenAI."
+  transcriptionModel: "Modelo de transcripción"
   noKeyFor: "Aún no hay clave de $1."
   addOneInKeys: "Añade una en Claves de API."
   addKey: "Añadir clave"
@@ -201,9 +223,15 @@ settings:
   smartBlur: Desenfoque inteligente
   version: "Versión $1"
   reportBug: "Informar de un error"
+  machineTranslated: "Este idioma se tradujo con IA, así que algunas frases pueden sonar raras. ¿Ves un error? Abre un pull request en GitHub."
+  fixTranslation: "Corregir una traducción"
   aboutSection: "Acerca de"
   appearance: "Apariencia"
   appearanceHint: "Claro, oscuro o como tu sistema."
+  recordingControls: "Controles de grabación"
+  recordingControlsHint: "Dónde aparecen Finalizar, Pausa y tu último paso mientras grabas. Con la tarjeta, la página conserva todo su ancho."
+  recordingInPanel: "Panel lateral"
+  recordingInCard: "Tarjeta en la página"
   themeSystem: "Sistema"
   themeLight: "Claro"
   themeDark: "Oscuro"
@@ -268,19 +296,29 @@ desktop:
   startAtLoginHint: "Mimik se abre en la bandeja, sin ventana."
   startAtLoginHintMac: "Mimik se abre al iniciar sesión."
   version: "Versión $1"
-  versionHint: "Mimik busca actualizaciones cada vez que se inicia."
+  versionHint: "Mimik busca actualizaciones mientras está abierto."
   checkUpdates: "Buscar actualizaciones"
+  lastChecked: "Última comprobación: $1"
+  checking: "Comprobando…"
+  downloading: "Descargando $1 %"
+  restartToUpdate: "Reiniciar para actualizar"
+  versionAvailable: "Versión $1 disponible"
+  versionDownloaded: "Versión $1 descargada"
+  tryAgain: "Reintentar"
+  updatesUnavailable: "Aún no hay actualizaciones para esta versión"
+  restart: "Reiniciar"
+  trayChecking: "Buscando actualizaciones…"
+  trayDownloading: "Descargando actualización $1 %"
   trayQuit: "Salir de Mimik"
   trayRecording: "Mimik está grabando. Haz clic para terminar."
   cannotRecord: "Mimik no puede grabar"
+  needsX11: "Para grabar otras aplicaciones hace falta una sesión X11. Cierra la sesión, elige una sesión Xorg o X11 en la pantalla de inicio y vuelve a abrir Mimik. Para grabar en el navegador, usa la extensión de Mimik."
+  getExtension: "Obtener la extensión"
   updateReady: "Actualización lista"
-  updateReadyMessage: "Mimik $1 está listo para instalarse."
-  restartNow: "Reiniciar ahora"
+  updateReadyMessage: "Reinicia Mimik para instalar la versión $1."
   later: "Más tarde"
-  updateFailed: "No se pudieron buscar actualizaciones"
-  updateFailedMessage: "Mimik no pudo conectar con el servidor de actualizaciones. Inténtalo de nuevo más tarde."
-  upToDate: "Actualizado"
-  upToDateMessage: "Mimik $1 es la versión más reciente."
+  updateFailed: "No se puede conectar con el servidor de actualizaciones"
+  upToDate: "Tienes la última versión"
   cardScreenshots: "Capturas de pantalla"
   cardGlobalKeys: "Teclas globales"
   cardGlobalKeysHint: "Se toman de todas las aplicaciones mientras Mimik está en ejecución."
@@ -334,6 +372,8 @@ confirmDelete:
   confirm: Eliminar definitivamente
 
 editor:
+  guideHost: Dirección del sitio web
+  guideHostInvalid: "Escribe una dirección web como https://example.com"
   backToLibrary: Volver a la biblioteca
   openInDashboard: Abrir
   openInDashboardHint: "Ábrela en el panel para editarla o exportarla"
@@ -344,7 +384,34 @@ editor:
   selectedCount: "$1 seleccionados"
   deleteSelectedStep: "¿Eliminar $1 paso seleccionado?"
   deleteSelectedSteps: "¿Eliminar $1 pasos seleccionados?"
+  copyTo: Copiar a
+  deselect: Deseleccionar
+  copyStepTo: "Copiar 1 paso a…"
+  copyStepsTo: "Copiar $1 pasos a…"
+  copyStepsHint: "Las capturas, el desenfoque y las ediciones se copian. Esta guía no cambia."
+  searchGuidesToCopyTo: Buscar guías por título
+  allGuides: Todas las guías
+  sameSite: Mismo sitio
+  sameApp: Misma app
+  newGuide: Nueva guía
+  noGuidesToCopyTo: Ninguna guía coincide
+  copyStep: Copiar 1 paso
+  copySteps: "Copiar $1 pasos"
+  copyStepsFailed: No se pudieron copiar estos pasos. Inténtalo de nuevo.
+  stepCopied: "1 paso copiado de «$2»"
+  stepsCopied: "$1 pasos copiados de «$2»"
+  newStep: Nuevo
   copyScreenshot: Copiar captura
+  screenshotCopied: Copiada
+  copyScreenshotFailed: No se pudo copiar la captura. Inténtalo de nuevo.
+  duplicate: Duplicar
+  duplicateStep: Duplicar paso
+  duplicateBelow: Duplicar debajo
+  duplicateAbove: Duplicar encima
+  duplicateToStep: Como paso
+  duplicateGo: OK
+  duplicateLandsAt: "paso $1"
+  duplicateFailed: No se pudo duplicar. Inténtalo de nuevo.
   noScreenshot: Sin captura
   edit: Editar
   done: Listo
@@ -640,6 +707,12 @@ onboarding:
   aiBest: "Lo mejor para guías que compartes"
   aiExample: "Abre Facturación para ver tus facturas y tu plan"
   exampleMeta: "Paso 2 · Facturación"
+  recordTitle: "¿Dónde quieres los controles de grabación?"
+  recordMessage: "Finalizar, Pausa y tu último paso quedan a mano mientras grabas. Puedes cambiarlo cuando quieras en Ajustes."
+  panelMessage: "Un panel junto a la página con tus controles y pasos. Se abre al hacer clic en el icono de Mimik."
+  panelBest: "Ideal para pantallas anchas"
+  cardMessage: "Una pequeña tarjeta flota sobre la página, así la página conserva todo su ancho. Haz clic en el icono de Mimik para mostrarla."
+  cardBest: "Ideal para portátiles"
   keyPrivacy: "Tu clave se queda en este dispositivo y solo va al proveedor que elijas."
   voiceToggleTitle: "Narración por voz"
   voiceToggleHint: "Di lo que estás haciendo y Mimik lo añade al siguiente paso."
@@ -728,12 +801,14 @@ voice:
   narrated: "Narración añadida a $1 paso."
   narratedPlural: "Narración añadida a $1 pasos."
   narratedNone: "Ninguna parte de tu narración coincidió con un paso."
+  narratedUnscored: "Tu servidor no devolvió puntuaciones de confianza, así que no se usó nada de tu narración."
   guideSafe: "Tu guía y tus capturas no se ven afectadas."
   openSettings: "Abrir Ajustes"
   errorPermissionDenied: "Se bloqueó el acceso al micrófono."
   errorNoDevice: "No se encontró ningún micrófono."
   errorNoAudio: "El micrófono no captó ningún sonido."
   errorMissingApiKey: "La narración necesita una clave de API de transcripción."
+  errorServerNotReady: "La narración necesita una dirección de servidor que use el protocolo de OpenAI."
   errorStreamEnded: "El micrófono se cortó a mitad de la grabación."
   errorNotRecording: "La narración no estaba activa."
   errorAlreadyRecording: "La narración ya estaba en marcha."

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
+import { defineConfig } from 'electron-vite';
 import type { PluginOption } from 'vite';
 import { load } from 'js-yaml';
 import react from '@vitejs/plugin-react';
@@ -23,10 +23,11 @@ function yaml(): PluginOption {
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin({ exclude: ['@mimik/core'] }), yaml()],
+    plugins: [yaml()],
     resolve: { alias: { '@mimik/core': core, '@/core': core, '@mimik/locales': locales } },
     build: {
       outDir: resolve(__dirname, 'out/main'),
+      externalizeDeps: { exclude: ['@mimik/core'] },
       rollupOptions: {
         input: {
           index: resolve(__dirname, 'src/main/index.ts'),
@@ -40,7 +41,6 @@ export default defineConfig({
     },
   },
   preload: {
-    plugins: [externalizeDepsPlugin()],
     build: {
       outDir: resolve(__dirname, 'out/preload'),
       rollupOptions: {
@@ -76,6 +76,7 @@ export default defineConfig({
           'check-storage': resolve(__dirname, 'src/renderer/check-storage.html'),
           overlay: resolve(__dirname, 'src/renderer/overlay.html'),
           splash: resolve(__dirname, 'src/renderer/splash.html'),
+          update: resolve(__dirname, 'src/renderer/update.html'),
           'check-pipeline': resolve(__dirname, 'src/renderer/check-pipeline.html'),
         },
       },

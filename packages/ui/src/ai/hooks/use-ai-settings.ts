@@ -8,7 +8,7 @@ import {
 } from '@mimik/core/capture/ai/models';
 import type { AILanguageCode } from '@mimik/core/capture/ai/prompts';
 import { localStorage } from '@mimik/core/env';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const AI_KEYS = [
   'aiProvider',
@@ -52,13 +52,16 @@ export function useAiSettings({ onDirty, reloadOnFocus = false }: Options = {}):
   const [customModel, setCustomModel] = useState(false);
   const [forSteps, setForStepsState] = useState(true);
   const [forGuide, setForGuideState] = useState(true);
+  const pickingCustom = useRef(false);
 
   useEffect(() => {
     const load = () =>
       localStorage.get(AI_KEYS).then((stored) => {
         const next = aiChoice(stored);
         setProviderState(next);
-        setModelState(typeof stored.aiModel === 'string' ? stored.aiModel : defaultModelFor(next));
+        if (!pickingCustom.current) {
+          setModelState(typeof stored.aiModel === 'string' ? stored.aiModel : defaultModelFor(next));
+        }
         if (typeof stored.aiLanguage === 'string') setLanguageState(stored.aiLanguage as AILanguageCode);
         setForStepsState(stored.aiForSteps !== false);
         setForGuideState(stored.aiForGuide !== false);
@@ -70,7 +73,11 @@ export function useAiSettings({ onDirty, reloadOnFocus = false }: Options = {}):
       if (document.visibilityState === 'visible') void load();
     };
     document.addEventListener('visibilitychange', onVisible);
-    return () => document.removeEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', onVisible);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', onVisible);
+    };
   }, [reloadOnFocus]);
 
   const dirty = useCallback(
@@ -84,6 +91,7 @@ export function useAiSettings({ onDirty, reloadOnFocus = false }: Options = {}):
   const setProvider = useCallback(
     (next: AiChoice) => {
       const nextModel = defaultModelFor(next);
+      pickingCustom.current = false;
       setProviderState(next);
       setModelState(nextModel);
       setCustomModel(false);
@@ -94,6 +102,7 @@ export function useAiSettings({ onDirty, reloadOnFocus = false }: Options = {}):
 
   const setModel = useCallback(
     (next: string) => {
+      pickingCustom.current = next === CUSTOM_MODEL_VALUE;
       if (next === CUSTOM_MODEL_VALUE) {
         setCustomModel(true);
         setModelState('');

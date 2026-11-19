@@ -10,6 +10,9 @@ export const TabMessage = {
   DISMISS_BLUR: 'DISMISS_BLUR',
   CLEAR_BLUR: 'CLEAR_BLUR',
   CAPTURE_NOW: 'CAPTURE_NOW',
+  HIDE_CARD: 'HIDE_CARD',
+  SHOW_CARD: 'SHOW_CARD',
+  TOGGLE_CARD: 'TOGGLE_CARD',
 } as const;
 
 export type TabMessageType = (typeof TabMessage)[keyof typeof TabMessage];

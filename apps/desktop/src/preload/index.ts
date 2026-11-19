@@ -1,10 +1,10 @@
 import type { AiFailureUpdate } from '@mimik/core/capture/ai/errors';
 import type { CaptureInsert } from '@mimik/core/capture/capture-insert';
+import type { CardNarration } from '@mimik/core/capture/card-view';
 import type { Rect } from '@mimik/core/rect';
 import { contextBridge, ipcRenderer } from 'electron';
 import type { CaptureSettings } from '../main/capture/settings';
-import type { DesktopStateUpdate, RendererRequest, RendererRequests } from '../main/ipc';
-import type { OverlayNarration } from '../main/overlay';
+import type { DesktopStateUpdate, RendererRequest, RendererRequests, UpdateStatus } from '../main/ipc';
 import type { CapturePermissions, MicrophoneAccess, PermissionKind } from '../main/permissions';
 
 const api = {
@@ -19,7 +19,7 @@ const api = {
       failure: AiFailureUpdate | null,
       source: 'ai' | 'narration' = 'ai',
     ): void => ipcRenderer.send('mimik:capture:described', stepId, description, failure, source),
-    narration: (narration: OverlayNarration | null): void => ipcRenderer.send('mimik:capture:narration', narration),
+    narration: (narration: CardNarration | null): void => ipcRenderer.send('mimik:capture:narration', narration),
     settings: {
       get: (): Promise<CaptureSettings> => ipcRenderer.invoke('mimik:capture:settings:get'),
       set: (patch: Partial<CaptureSettings>): Promise<CaptureSettings> =>
@@ -70,6 +70,14 @@ const api = {
   locale: (code: string): void => ipcRenderer.send('mimik:app:locale', code),
   updates: {
     check: (): Promise<void> => ipcRenderer.invoke('mimik:updates:check'),
+    status: (): Promise<UpdateStatus | undefined> => ipcRenderer.invoke('mimik:updates:status'),
+    onStatus: (handler: (status: UpdateStatus) => void): (() => void) => {
+      const listener = (_event: unknown, status: UpdateStatus) => handler(status);
+      ipcRenderer.on('mimik:updates:status', listener);
+      return () => ipcRenderer.removeListener('mimik:updates:status', listener);
+    },
+    install: (): Promise<void> => ipcRenderer.invoke('mimik:updates:install'),
+    notes: (): Promise<void> => ipcRenderer.invoke('mimik:updates:notes'),
   },
   screenshots: {
     sweep: (keep: string[]): Promise<number> => ipcRenderer.invoke('mimik:screenshots:sweep', keep),

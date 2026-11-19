@@ -5,7 +5,7 @@ import { client, i18n } from '@/core/env';
 import type { ScreenshotEdits } from '@/core/screenshot/types';
 import type { ParsedBundle } from '@/core/transfer/parse';
 import { db } from './db';
-import { getMostCommonDomain } from './domain';
+import { extractOrigin, getMostCommonDomain } from './domain';
 import { hashPayload } from './snapshot-hash';
 import { sanitizeGuideTitle } from './title';
 import type {
@@ -297,6 +297,77 @@ async function duplicateGuide(guideId: string): Promise<string | null> {
   });
   if (copyId) notifyGuidesChanged({ type: 'mutated' });
   return copyId;
+}
+
+async function copySteps(
+  sourceGuideId: string,
+  stepIds: readonly string[],
+  targetGuideId: string | null,
+  atIndex?: number,
+): Promise<{ guideId: string; stepIds: string[] } | null> {
+  const copied = await db.transaction('rw', [db.guides, db.steps, db.screenshots, db.transcripts], async () => {
+    const source = await db.guides.get(sourceGuideId);
+    const target = targetGuideId ? await db.guides.get(targetGuideId) : null;
+    if (!source || (targetGuideId && (!target || target.deletedAt !== null))) return null;
+    const steps = (await db.steps.bulkGet([...stepIds]))
+      .filter((step): step is Step => step?.guideId === sourceGuideId)
+      .sort((a, b) => a.index - b.index);
+    const stepIdMap = new Map(steps.map((step) => [step.id, crypto.randomUUID()]));
+    const screenshots = (
+      await db.screenshots.bulkGet(steps.map((step) => step.screenshotId).filter((id): id is string => !!id))
+    ).filter((row): row is StoredScreenshot => !!row && stepIdMap.has(row.stepId));
+    const screenshotIdMap = new Map(screenshots.map((row) => [row.id, crypto.randomUUID()]));
+    const guideId = target?.id ?? crypto.randomUUID();
+    const existing = target ? await db.steps.where('guideId').equals(guideId).sortBy('index') : [];
+    const at = Math.max(0, Math.min(atIndex ?? existing.length, existing.length));
+    const copies = steps.map((step) => ({
+      ...step,
+      id: stepIdMap.get(step.id)!,
+      guideId,
+      aiPending: undefined,
+      screenshotId: step.screenshotId ? screenshotIdMap.get(step.screenshotId) : undefined,
+    }));
+    const ordered = [...existing.slice(0, at), ...copies, ...existing.slice(at)].map((step, index) => ({
+      ...step,
+      index,
+    }));
+    const newStepIds = copies.map((step) => step.id);
+    const now = Date.now();
+
+    if (target) {
+      await db.guides.update(guideId, { stepIds: ordered.map((step) => step.id), updatedAt: now });
+    } else {
+      await db.guides.add({
+        id: guideId,
+        title: sanitizeGuideTitle(i18n.t('library.copyOfTitle', [source.title])),
+        createdAt: now,
+        updatedAt: now,
+        stepIds: newStepIds,
+        starred: false,
+        deletedAt: null,
+      });
+    }
+    await db.steps.bulkPut(ordered);
+    await db.screenshots.bulkAdd(
+      screenshots.map((row) => ({ ...row, id: screenshotIdMap.get(row.id)!, stepId: stepIdMap.get(row.stepId)! })),
+    );
+    const transcripts = await db.transcripts.where('guideId').equals(sourceGuideId).toArray();
+    await db.transcripts.bulkAdd(
+      transcripts
+        .map((row) => ({
+          ...row,
+          id: crypto.randomUUID(),
+          guideId,
+          lines: row.lines
+            .filter((line) => line.stepId && stepIdMap.has(line.stepId))
+            .map((line) => ({ ...line, stepId: stepIdMap.get(line.stepId!)! })),
+        }))
+        .filter((row) => row.lines.length > 0),
+    );
+    return { guideId, stepIds: newStepIds };
+  });
+  if (copied) notifyGuidesChanged({ type: 'mutated' });
+  return copied;
 }
 
 async function mergeGuideInto(sourceGuideId: string, targetGuideId: string, atIndex: number): Promise<number> {
@@ -667,6 +738,44 @@ async function deleteStep(guideId: string, stepId: string): Promise<void> {
   await deleteSteps(guideId, [stepId]);
 }
 
+function hostTarget(fromOrigin: string, host: string): URL {
+  const target = new URL(/^[a-z][a-z\d+.-]*:\/\//i.test(host) ? host : `//${host}`, fromOrigin);
+  if (!/^https?:$/.test(target.protocol)) throw new TypeError(`Unsupported scheme ${target.protocol}`);
+  if (target.pathname !== '/' || target.search || target.hash || target.username || target.password) {
+    throw new TypeError(`Not a bare host ${host}`);
+  }
+  if (target.hostname.split('.').includes('')) throw new TypeError(`Not a web address ${target.hostname}`);
+  return target;
+}
+
+function moveOrigin(href: string, target: URL): string {
+  const url = new URL(href);
+  url.protocol = target.protocol;
+  url.hostname = target.hostname;
+  url.port = target.port;
+  return url.href;
+}
+
+async function replaceGuideHost(guideId: string, fromOrigin: string, host: string): Promise<void> {
+  const target = hostTarget(fromOrigin, host);
+  await db.transaction('rw', db.steps, db.guides, async () => {
+    const steps = await db.steps.where('guideId').equals(guideId).toArray();
+    const moved = steps
+      .filter((step) => extractOrigin(step.url) === fromOrigin)
+      .map((step) => {
+        const href = step.elementMeta?.href;
+        const elementMeta =
+          step.elementMeta && href && extractOrigin(href) === fromOrigin
+            ? { ...step.elementMeta, href: moveOrigin(href, target) }
+            : step.elementMeta;
+        return { ...step, url: moveOrigin(step.url, target), elementMeta };
+      });
+    await db.steps.bulkPut(moved);
+    await db.guides.update(guideId, { updatedAt: Date.now() });
+  });
+  notifyGuidesChanged({ type: 'mutated' });
+}
+
 async function getGuideDomain(guideId: string): Promise<string> {
   const steps = await db.steps.where('guideId').equals(guideId).sortBy('index');
   return getMostCommonDomain(steps);
@@ -833,6 +942,7 @@ export const dexieStore = {
   findExistingStepIds,
   deleteSteps,
   deleteStep,
+  replaceGuideHost,
   getGuideDomain,
   allScreenshotIds,
   saveScreenshot,
@@ -846,6 +956,7 @@ export const dexieStore = {
   renameSnapshot,
   revertToSnapshot,
   duplicateGuide,
+  copySteps,
   importGuide,
   saveTranscript,
   getTranscripts,

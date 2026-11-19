@@ -132,14 +132,36 @@ settings:
   hideKey: Masquer la clé
   clearKey: Effacer la clé
   aiLanguage: Langue des descriptions
+  aiAdvanced: "Avancé"
+  aiAdvancedHint: "Consultez et modifiez les prompts envoyés par Mimik."
+  aiPromptsTitle: "Prompts IA"
+  aiPromptsHint: "Modifiez ce que Mimik demande à votre fournisseur d'IA, ou ajoutez vos propres règles en dessous."
+  aiPromptLabel: "Prompt de Mimik"
+  aiPromptDefault: "Par défaut"
+  aiPromptEdited: "Modifié"
+  aiPromptReset: "Réinitialiser le prompt"
+  aiInstructionsLabel: "Vos instructions"
+  aiInstructionsPlaceholder: "p. ex. Rédigez à la deuxième personne. Appelez le produit « Acme »."
+  aiCustomised: "Personnalisé"
+  aiReset: "Réinitialiser"
+  aiResetConfirmTitle: "Réinitialiser « $1 » ?"
+  aiResetConfirmMessage: "Votre prompt modifié et vos instructions pour cette section seront supprimés. Cette action est irréversible."
+  aiExamplesSwitched: "Langue des exemples : $1"
   apiKeys: "Clés API"
   aiSection: "IA"
   ownServer: "Votre propre serveur"
   optional: "Facultatif"
   serverSpeaks: "Compatible avec"
+  serverHeaders: "En-têtes"
+  headerName: "Nom de l'en-tête"
+  headerValue: "Valeur"
+  addHeader: "Ajouter un en-tête"
+  removeHeader: "Supprimer l'en-tête"
   protocolOpenai: "OpenAI"
   protocolAnthropic: "Anthropic"
   noServer: "Aucune adresse de serveur pour l'instant."
+  voiceServerNeedsOpenai: "La narration demande un serveur compatible OpenAI."
+  transcriptionModel: "Modèle de transcription"
   noKeyFor: "Aucune clé $1 pour l'instant."
   addOneInKeys: "Ajoutez-en une dans Clés API."
   addKey: "Ajouter une clé"
@@ -201,9 +223,15 @@ settings:
   smartBlur: Flou intelligent
   version: "Version $1"
   reportBug: "Signaler un bug"
+  machineTranslated: "Cette langue a été traduite par IA, certaines formulations peuvent donc sembler maladroites. Vous voyez une erreur ? Ouvrez une pull request sur GitHub."
+  fixTranslation: "Corriger une traduction"
   aboutSection: "À propos"
   appearance: "Apparence"
   appearanceHint: "Clair, sombre ou comme votre système."
+  recordingControls: "Commandes d’enregistrement"
+  recordingControlsHint: "Où s’affichent Terminer, Pause et votre dernière étape pendant l’enregistrement. Avec la carte, la page garde toute sa largeur."
+  recordingInPanel: "Panneau latéral"
+  recordingInCard: "Carte sur la page"
   themeSystem: "Système"
   themeLight: "Clair"
   themeDark: "Sombre"
@@ -268,19 +296,29 @@ desktop:
   startAtLoginHint: "Mimik s’ouvre dans la zone de notification, sans fenêtre."
   startAtLoginHintMac: "Mimik s’ouvre à l’ouverture de votre session."
   version: "Version $1"
-  versionHint: "Mimik recherche les mises à jour à chaque démarrage."
+  versionHint: "Mimik recherche les mises à jour pendant qu'il est ouvert."
   checkUpdates: "Rechercher des mises à jour"
+  lastChecked: "Dernière vérification : $1"
+  checking: "Vérification…"
+  downloading: "Téléchargement $1 %"
+  restartToUpdate: "Redémarrer pour mettre à jour"
+  versionAvailable: "Version $1 disponible"
+  versionDownloaded: "Version $1 téléchargée"
+  tryAgain: "Réessayer"
+  updatesUnavailable: "Les mises à jour ne sont pas encore disponibles pour cette version"
+  restart: "Redémarrer"
+  trayChecking: "Recherche de mises à jour…"
+  trayDownloading: "Téléchargement de la mise à jour $1 %"
   trayQuit: "Quitter Mimik"
   trayRecording: "Mimik enregistre. Cliquez pour terminer."
   cannotRecord: "Mimik ne peut pas enregistrer"
+  needsX11: "Pour enregistrer d'autres applications, il faut une session X11. Déconnectez-vous, choisissez une session Xorg ou X11 sur l'écran de connexion, puis relancez Mimik. Pour enregistrer dans le navigateur, utilisez l'extension Mimik."
+  getExtension: "Obtenir l'extension"
   updateReady: "Mise à jour prête"
-  updateReadyMessage: "Mimik $1 est prêt à être installé."
-  restartNow: "Redémarrer maintenant"
+  updateReadyMessage: "Redémarrez Mimik pour installer la version $1."
   later: "Plus tard"
-  updateFailed: "La recherche de mises à jour a échoué"
-  updateFailedMessage: "Mimik n'a pas pu joindre le serveur de mises à jour. Réessayez plus tard."
-  upToDate: "À jour"
-  upToDateMessage: "Mimik $1 est la dernière version."
+  updateFailed: "Impossible de joindre le serveur de mises à jour"
+  upToDate: "Mimik est à jour"
   cardScreenshots: "Captures d’écran"
   cardGlobalKeys: "Touches globales"
   cardGlobalKeysHint: "Prises à toutes les applications tant que Mimik est en cours d’exécution."
@@ -334,6 +372,8 @@ confirmDelete:
   confirm: "Supprimer définitivement"
 
 editor:
+  guideHost: Adresse du site web
+  guideHostInvalid: "Saisissez une adresse web comme https://example.com"
   backToLibrary: "Retour à la bibliothèque"
   openInDashboard: Ouvrir
   openInDashboardHint: Ouvrir dans le tableau de bord pour modifier ou exporter
@@ -344,7 +384,34 @@ editor:
   selectedCount: "$1 sélectionné(s)"
   deleteSelectedStep: "Supprimer $1 étape sélectionnée ?"
   deleteSelectedSteps: "Supprimer $1 étapes sélectionnées ?"
+  copyTo: Copier vers
+  deselect: Désélectionner
+  copyStepTo: "Copier 1 étape vers…"
+  copyStepsTo: "Copier $1 étapes vers…"
+  copyStepsHint: "Les captures, le flou et les modifications sont copiés. Ce guide reste inchangé."
+  searchGuidesToCopyTo: Rechercher des guides par titre
+  allGuides: Tous les guides
+  sameSite: Même site
+  sameApp: Même app
+  newGuide: Nouveau guide
+  noGuidesToCopyTo: Aucun guide ne correspond
+  copyStep: Copier 1 étape
+  copySteps: "Copier $1 étapes"
+  copyStepsFailed: "Impossible de copier ces étapes. Réessayez."
+  stepCopied: "1 étape copiée depuis « $2 »"
+  stepsCopied: "$1 étapes copiées depuis « $2 »"
+  newStep: Nouveau
   copyScreenshot: "Copier la capture"
+  screenshotCopied: Copiée
+  copyScreenshotFailed: "Impossible de copier la capture. Réessayez."
+  duplicate: Dupliquer
+  duplicateStep: "Dupliquer l’étape"
+  duplicateBelow: Dupliquer en dessous
+  duplicateAbove: Dupliquer au-dessus
+  duplicateToStep: "À l’étape"
+  duplicateGo: OK
+  duplicateLandsAt: "étape $1"
+  duplicateFailed: "Impossible de dupliquer. Réessayez."
   noScreenshot: "Pas de capture"
   edit: Modifier
   done: Terminé
@@ -640,6 +707,12 @@ onboarding:
   aiBest: "Idéal pour les guides que vous partagez"
   aiExample: "Ouvrez Facturation pour voir vos factures et votre abonnement"
   exampleMeta: "Étape 2 · Facturation"
+  recordTitle: "Où placer les commandes d'enregistrement ?"
+  recordMessage: "Terminer, Pause et votre dernière étape restent à portée de main pendant l'enregistrement. Vous pouvez changer cela à tout moment dans les Paramètres."
+  panelMessage: "Un panneau à côté de la page avec vos commandes et vos étapes. Il s'ouvre quand vous cliquez sur l'icône Mimik."
+  panelBest: "Idéal sur un grand écran"
+  cardMessage: "Une petite carte flotte au-dessus de la page, qui garde ainsi toute sa largeur. Cliquez sur l'icône Mimik pour l'afficher."
+  cardBest: "Idéal sur un ordinateur portable"
   keyPrivacy: "Votre clé reste sur cet appareil et ne va qu'au fournisseur que vous choisissez."
   voiceToggleTitle: "Narration vocale"
   voiceToggleHint: "Dites ce que vous faites, Mimik le rattache à l'étape suivante."
@@ -728,12 +801,14 @@ voice:
   narrated: "Narration ajoutée à $1 étape."
   narratedPlural: "Narration ajoutée à $1 étapes."
   narratedNone: "Aucune narration ne correspond à une étape."
+  narratedUnscored: "Votre serveur n'a renvoyé aucun score de confiance, la narration n'a donc pas été utilisée."
   guideSafe: "Votre guide et vos captures ne sont pas affectés."
   openSettings: "Ouvrir les Paramètres"
   errorPermissionDenied: "L'accès au micro a été bloqué."
   errorNoDevice: "Aucun micro trouvé."
   errorNoAudio: "Le micro n'a capté aucun son."
   errorMissingApiKey: "La narration nécessite une clé API de transcription."
+  errorServerNotReady: "La narration nécessite une adresse de serveur qui utilise le protocole OpenAI."
   errorStreamEnded: "Le micro s'est coupé en cours d'enregistrement."
   errorNotRecording: "La narration n'était pas active."
   errorAlreadyRecording: "La narration était déjà en cours."

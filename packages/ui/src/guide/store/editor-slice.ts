@@ -3,6 +3,8 @@ import type { StateCreator } from 'zustand';
 export interface EditorSlice {
   editing: boolean;
   setEditing: (editing: boolean) => void;
+  newStepIds: ReadonlySet<string>;
+  setNewStepIds: (ids: ReadonlySet<string>) => void;
   historyOpen: boolean;
   setHistoryOpen: (open: boolean) => void;
   historyRefreshKey: number;
@@ -15,6 +17,7 @@ export interface EditorSlice {
 
 export const CLOSED_EDITOR = {
   editing: false,
+  newStepIds: new Set<string>(),
   historyOpen: false,
   historyRefreshKey: 0,
   transcriptOpen: false,
@@ -30,8 +33,10 @@ export const createEditorSlice: StateCreator<EditorSlice, [], [], EditorSlice> =
   editing: false,
   setEditing: (editing) => {
     if (!editing) flushFocusedField();
-    set({ editing });
+    set(editing ? { editing, newStepIds: new Set() } : { editing });
   },
+  newStepIds: new Set(),
+  setNewStepIds: (newStepIds) => set({ newStepIds }),
   historyOpen: false,
   setHistoryOpen: (historyOpen) => {
     if (historyOpen) flushFocusedField();
