@@ -53,6 +53,12 @@ describe('stepRequiresManual', () => {
     expect(stepRequiresManual(step(), shot({ ...captured, x: captured.x + 0.4 }))).toBe(false);
   });
 
+  it('stays automatic for a target only trimmed to the edge of the screenshot', () => {
+    const overhanging = { x: 150, y: 20, width: 100, height: 40 };
+    const trimmed: ClickTarget = { x: 300, y: 40, width: 100, height: 80, border: 'dashed', color: '#4F46E5' };
+    expect(stepRequiresManual(step(), shot(trimmed, overhanging))).toBe(false);
+  });
+
   it('requires manual advance once the target is moved', () => {
     expect(stepRequiresManual(step(), shot({ ...captured, x: captured.x + 30 }))).toBe(true);
   });

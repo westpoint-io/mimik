@@ -160,6 +160,8 @@ settings:
   protocolOpenai: "OpenAI"
   protocolAnthropic: "Anthropic"
   noServer: "Aucune adresse de serveur pour l'instant."
+  voiceServerNeedsOpenai: "La narration demande un serveur compatible OpenAI."
+  transcriptionModel: "Modèle de transcription"
   noKeyFor: "Aucune clé $1 pour l'instant."
   addOneInKeys: "Ajoutez-en une dans Clés API."
   addKey: "Ajouter une clé"
@@ -399,6 +401,16 @@ editor:
   stepsCopied: "$1 étapes copiées depuis « $2 »"
   newStep: Nouveau
   copyScreenshot: "Copier la capture"
+  screenshotCopied: Copiée
+  copyScreenshotFailed: "Impossible de copier la capture. Réessayez."
+  duplicate: Dupliquer
+  duplicateStep: "Dupliquer l’étape"
+  duplicateBelow: Dupliquer en dessous
+  duplicateAbove: Dupliquer au-dessus
+  duplicateToStep: "À l’étape"
+  duplicateGo: OK
+  duplicateLandsAt: "étape $1"
+  duplicateFailed: "Impossible de dupliquer. Réessayez."
   noScreenshot: "Pas de capture"
   edit: Modifier
   done: Terminé
@@ -788,12 +800,14 @@ voice:
   narrated: "Narration ajoutée à $1 étape."
   narratedPlural: "Narration ajoutée à $1 étapes."
   narratedNone: "Aucune narration ne correspond à une étape."
+  narratedUnscored: "Votre serveur n'a renvoyé aucun score de confiance, la narration n'a donc pas été utilisée."
   guideSafe: "Votre guide et vos captures ne sont pas affectés."
   openSettings: "Ouvrir les Paramètres"
   errorPermissionDenied: "L'accès au micro a été bloqué."
   errorNoDevice: "Aucun micro trouvé."
   errorNoAudio: "Le micro n'a capté aucun son."
   errorMissingApiKey: "La narration nécessite une clé API de transcription."
+  errorServerNotReady: "La narration nécessite une adresse de serveur qui utilise le protocole OpenAI."
   errorStreamEnded: "Le micro s'est coupé en cours d'enregistrement."
   errorNotRecording: "La narration n'était pas active."
   errorAlreadyRecording: "La narration était déjà en cours."

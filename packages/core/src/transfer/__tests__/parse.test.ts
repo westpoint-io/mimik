@@ -108,8 +108,8 @@ describe('parseManifest', () => {
             stepId: 'step-1',
             file: 'screenshots/a.webp',
             mimeType: 'image/webp',
-            width: 1,
-            height: 1,
+            width: 100,
+            height: 100,
             edits: {
               annotations: [
                 { id: 'bad', type: 'redact', x: 1, y: 2 },
@@ -237,6 +237,77 @@ describe('parseManifest', () => {
     ).toEqual(['ok']);
     expect(withAnnotations([{ id: 'empty', type: 'freehand', points: [], color: '#000' }])).toBeUndefined();
     expect(withAnnotations([{ id: 'odd', type: 'freehand', points: [1, 2, 3], color: '#000' }])).toBeUndefined();
+  });
+
+  describe('a screenshot whose edits reach past its edges', () => {
+    const shotWith = (edits: Record<string, unknown>) =>
+      parseManifest(
+        manifest({
+          screenshots: [
+            {
+              id: 'a',
+              stepId: 'step-1',
+              file: 'screenshots/a.webp',
+              mimeType: 'image/webp',
+              width: 800,
+              height: 600,
+              edits,
+            },
+          ],
+        }),
+      ).screenshots[0]!.edits;
+
+    it('pulls the click target back onto the screenshot', () => {
+      const target = { x: 900, y: -20, width: 100, height: 40, color: '#4F46E5', border: 'dashed' };
+      expect(shotWith({ target })?.target).toEqual({ ...target, x: 700, y: 0 });
+    });
+
+    it('puts a moved click target back where the element was recorded', () => {
+      const parsed = parseManifest(
+        manifest({
+          screenshots: [
+            {
+              id: 'a',
+              stepId: 'step-1',
+              file: 'screenshots/a.webp',
+              mimeType: 'image/webp',
+              width: 800,
+              height: 600,
+              bounds: { x: 250, y: 200, width: 60, height: 20 },
+              pixelRatio: 2,
+              edits: { target: { x: 900, y: 0, width: 120, height: 40, color: '#4F46E5', border: 'dashed' } },
+            },
+          ],
+        }),
+      );
+      expect(parsed.screenshots[0]!.edits?.target).toMatchObject({ x: 500, y: 400, width: 120, height: 40 });
+    });
+
+    it('shrinks a click target larger than the screenshot to its size', () => {
+      const target = { x: 0, y: 0, width: 5000, height: 4000, color: '#4F46E5', border: 'solid' };
+      expect(shotWith({ target })?.target).toMatchObject({ x: 0, y: 0, width: 800, height: 600 });
+    });
+
+    it('keeps every annotation on the screenshot and drops the ones with nothing on it', () => {
+      const annotations = [
+        { id: 'box', type: 'box', x: 790, y: 10, w: 50, h: 50, color: '#000' },
+        { id: 'arrow', type: 'arrow', x1: -30, y1: 10, x2: 20, y2: 60, color: '#000' },
+        { id: 'gone', type: 'box', x: 900, y: 10, w: 50, h: 50, color: '#000' },
+      ];
+      expect(shotWith({ annotations })?.annotations).toEqual([
+        { id: 'box', type: 'box', x: 750, y: 10, w: 50, h: 50, color: '#000' },
+        { id: 'arrow', type: 'arrow', x1: 0, y1: 10, x2: 50, y2: 60, color: '#000' },
+      ]);
+    });
+
+    it('keeps the crop on the screenshot', () => {
+      expect(shotWith({ viewport: { x: 700, y: 500, width: 400, height: 300 } })?.viewport).toEqual({
+        x: 400,
+        y: 300,
+        width: 400,
+        height: 300,
+      });
+    });
   });
 
   it('titles a bundle with no title the way a new guide is titled', () => {

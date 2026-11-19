@@ -37,12 +37,23 @@ export function voiceNotice(update: VoiceUpdate, seenLive: boolean): VoiceNotice
       signature,
       titleKey: voiceErrorKey(update.reason),
       bodyKey: 'voice.guideSafe',
-      showSettings: update.reason === 'missing-api-key',
+      showSettings: update.reason === 'missing-api-key' || update.reason === 'server-not-ready',
       autoDismissMs: null,
     };
   }
 
   if (update.phase !== 'idle' || update.narrated === undefined || !seenLive) return null;
+
+  if (update.narrated === 0 && update.unscored) {
+    return {
+      tone: 'failed',
+      signature,
+      titleKey: 'voice.narratedUnscored',
+      bodyKey: 'voice.guideSafe',
+      showSettings: true,
+      autoDismissMs: null,
+    };
+  }
 
   return {
     tone: 'done',

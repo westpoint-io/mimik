@@ -52,6 +52,8 @@ export interface VoiceStepMark {
 export interface VoiceTranscriptionSettings {
   provider: VoiceProvider;
   apiKey: string;
+  baseUrl?: string;
+  model?: string;
   language?: string;
 }
 

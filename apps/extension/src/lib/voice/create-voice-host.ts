@@ -4,6 +4,7 @@ import { EMPTY_NARRATION, narrateRecording, type VoiceRecording } from '@/core/c
 import { NarrationSlicer } from '@/core/capture/voice/narration-slicer';
 import type { TranscriptionSettings } from '@/core/capture/voice/read-transcription-settings';
 import { startFailureReason } from '@/core/capture/voice/start-failure-reason';
+import { transcriptionBlocker } from '@/core/capture/voice/transcription-blocker';
 import type { NarrationResult } from '@/core/capture/voice/types';
 import { usableRecording } from '@/core/capture/voice/usable-recording';
 import { getExtensionURL } from '../browser-api/get-extension-url';
@@ -136,8 +137,9 @@ export function createVoiceHost(): VoiceHost {
     if (!recorder.recording) {
       return { ok: false, reason: 'not-recording', error: 'Microphone capture is not running' };
     }
-    if (!request.settings?.apiKey) {
-      return { ok: false, reason: 'missing-api-key', error: 'No transcription API key is configured' };
+    const blocker = transcriptionBlocker(request.settings);
+    if (blocker || !request.settings) {
+      return { ok: false, reason: blocker ?? 'missing-api-key', error: 'Transcription is not configured' };
     }
 
     const slice = slicer.forStep(usableRecording(recorder.snapshot()), request.step.timestamp);
@@ -171,8 +173,9 @@ export function createVoiceHost(): VoiceHost {
     }
 
     const settings = request.settings;
-    if (!settings?.apiKey) {
-      return { ok: false, reason: 'missing-api-key', error: 'No transcription API key is configured' };
+    const blocker = transcriptionBlocker(settings);
+    if (blocker || !settings) {
+      return { ok: false, reason: blocker ?? 'missing-api-key', error: 'Transcription is not configured' };
     }
 
     const tail = slicer.tail(audio);

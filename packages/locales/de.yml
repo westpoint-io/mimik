@@ -176,6 +176,8 @@ settings:
   protocolOpenai: "OpenAI"
   protocolAnthropic: "Anthropic"
   noServer: "Noch keine Serveradresse."
+  voiceServerNeedsOpenai: "Der Sprachkommentar braucht einen OpenAI-kompatiblen Server."
+  transcriptionModel: "Transkriptionsmodell"
   noKeyFor: "Noch kein $1-Schlüssel."
   addOneInKeys: "Füge einen unter API-Schlüssel hinzu."
   addKey: "Schlüssel hinzufügen"
@@ -399,6 +401,16 @@ editor:
   stepsCopied: "$1 Schritte aus „$2“ kopiert"
   newStep: Neu
   copyScreenshot: Screenshot kopieren
+  screenshotCopied: Kopiert
+  copyScreenshotFailed: "Der Screenshot konnte nicht kopiert werden. Versuche es erneut."
+  duplicate: Duplizieren
+  duplicateStep: Schritt duplizieren
+  duplicateBelow: Darunter duplizieren
+  duplicateAbove: Darüber duplizieren
+  duplicateToStep: Als Schritt
+  duplicateGo: Los
+  duplicateLandsAt: "Schritt $1"
+  duplicateFailed: "Duplizieren fehlgeschlagen. Versuche es erneut."
   noScreenshot: Kein Screenshot
   edit: Bearbeiten
   done: Fertig
@@ -788,12 +800,14 @@ voice:
   narrated: "Sprachkommentar zu $1 Schritt hinzugefügt."
   narratedPlural: "Sprachkommentar zu $1 Schritten hinzugefügt."
   narratedNone: "Kein Teil deines Sprachkommentars passte zu einem Schritt."
+  narratedUnscored: "Dein Server hat keine Konfidenzwerte geliefert, daher wurde nichts von deinem Sprachkommentar übernommen."
   guideSafe: "Deine Anleitung und die Screenshots sind nicht betroffen."
   openSettings: Einstellungen öffnen
   errorPermissionDenied: "Der Mikrofonzugriff wurde blockiert."
   errorNoDevice: "Kein Mikrofon gefunden."
   errorNoAudio: "Das Mikrofon hat keinen Ton aufgenommen."
   errorMissingApiKey: "Der Sprachkommentar braucht einen API-Schlüssel für die Transkription."
+  errorServerNotReady: "Der Sprachkommentar braucht eine Serveradresse mit dem OpenAI-Protokoll."
   errorStreamEnded: "Das Mikrofon ist mittendrin ausgefallen."
   errorNotRecording: "Der Sprachkommentar lief nicht."
   errorAlreadyRecording: "Der Sprachkommentar lief bereits."

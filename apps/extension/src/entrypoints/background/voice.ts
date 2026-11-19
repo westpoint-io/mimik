@@ -1,11 +1,14 @@
 import { logger } from '@mimik/core/logger';
 import { CaptureState } from '@/core/capture/machine';
 import { applyNarrationResult } from '@/core/capture/voice/apply-narration-result';
+import { canTranscribe } from '@/core/capture/voice/can-transcribe';
 import { describeStepNow, describeUnnarratedSteps } from '@/core/capture/voice/describe-unnarrated';
+import { hasUnscoredLines } from '@/core/capture/voice/has-unscored-lines';
 import { narrateRecording, type VoiceRecording } from '@/core/capture/voice/narrate-recording';
 import { NARRATION_SETTLE_MS } from '@/core/capture/voice/narration-settle-ms';
 import { readTranscriptionSettings } from '@/core/capture/voice/read-transcription-settings';
 import { readVoiceSettings } from '@/core/capture/voice/read-voice-settings';
+import { transcriptionBlocker } from '@/core/capture/voice/transcription-blocker';
 import type { VoicePhase } from '@/core/capture/voice/voice-update';
 import { localStorage } from '@/core/env';
 import { getStepsForGuide } from '@/core/guides/service';
@@ -52,9 +55,23 @@ export function recordNarrated(guideId: string, stepIds: readonly string[]): voi
   narratedSteps.set(guideId, seen);
 }
 
+const unscoredGuides = new Set<string>();
+
+function reportFinished(guideId: string): string[] {
+  const unscored = unscoredGuides.has(guideId);
+  const narrated = takeNarrated(guideId);
+  report({
+    phase: 'idle',
+    narrated: narrated.length,
+    ...(narrated.length === 0 && unscored ? { unscored: true } : {}),
+  });
+  return narrated;
+}
+
 export function takeNarrated(guideId: string): string[] {
   const seen = narratedSteps.get(guideId);
   narratedSteps.delete(guideId);
+  unscoredGuides.delete(guideId);
   return seen ? [...seen] : [];
 }
 
@@ -199,14 +216,14 @@ export async function startVoiceNarration(tabId?: number): Promise<void> {
     return;
   }
   try {
-    const { enabled, hasApiKey, microphoneId } = await readVoiceSettings();
+    const { enabled, blocker, microphoneId } = await readVoiceSettings();
     if (!enabled) {
       logger.info('voice: narration is turned off, recording without it');
       return;
     }
-    if (!hasApiKey) {
-      logger.warn('voice: no transcription API key, recording without narration');
-      report({ phase: 'error', reason: 'missing-api-key', error: 'No transcription API key is configured' });
+    if (blocker) {
+      logger.warn('voice: transcription is not configured, recording without narration');
+      report({ phase: 'error', reason: blocker, error: 'Transcription is not configured' });
       return;
     }
     await withTimeout(beginVoiceCapture(microphoneId, tabId), START_TIMEOUT_MS);
@@ -226,8 +243,9 @@ async function recoverNarration(guideId: string): Promise<void> {
   if (!audio || import.meta.env.BROWSER !== 'firefox') return;
 
   const settings = await readTranscriptionSettings();
-  if (!settings.apiKey) {
-    report({ phase: 'error', reason: 'missing-api-key', error: 'No transcription API key is configured' });
+  const blocker = transcriptionBlocker(settings);
+  if (blocker) {
+    report({ phase: 'error', reason: blocker, error: 'Transcription is not configured' });
     return;
   }
 
@@ -243,7 +261,7 @@ export async function flushNarrationForStep(guideId: string, stepId: string, tim
   if (phase.phase !== 'recording') return;
   try {
     const settings = await readTranscriptionSettings();
-    if (!settings.apiKey) return;
+    if (!canTranscribe(settings)) return;
     const response = await flushVoiceCapture(guideId, { stepId, timestamp }, settings);
     if (!response.ok) {
       logger.warn('voice: could not narrate the step yet', response);
@@ -320,9 +338,7 @@ export async function stopVoiceNarration(guideId: string): Promise<void> {
 }
 
 function finishWithNothingHeard(guideId: string): void {
-  const narratedSoFar = takeNarrated(guideId);
-  report({ phase: 'idle', narrated: narratedSoFar.length });
-  describeUnnarratedSteps(guideId, narratedSoFar);
+  describeUnnarratedSteps(guideId, reportFinished(guideId));
 }
 
 export async function applyNarration(
@@ -331,6 +347,7 @@ export async function applyNarration(
   final: boolean,
 ): Promise<void> {
   try {
+    if (hasUnscoredLines(result)) unscoredGuides.add(guideId);
     const updates = await applyNarrationResult(guideId, result);
     recordNarrated(
       guideId,
@@ -343,9 +360,7 @@ export async function applyNarration(
       stats: result.stats,
     });
     if (final) {
-      const narratedSoFar = takeNarrated(guideId);
-      report({ phase: 'idle', narrated: narratedSoFar.length });
-      describeUnnarratedSteps(guideId, narratedSoFar);
+      describeUnnarratedSteps(guideId, reportFinished(guideId));
     }
   } catch (error) {
     logger.error('voice: narration could not be applied', error);

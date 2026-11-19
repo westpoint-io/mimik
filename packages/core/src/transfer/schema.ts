@@ -7,6 +7,7 @@ import type {
   ScreenshotBounds,
   Step,
 } from '@/core/guides/types';
+import { fitRect, isOffImage, keepInside, resolveTarget } from '@/core/screenshot/geometry';
 import type { Annotation, ScreenshotEdits } from '@/core/screenshot/types';
 
 export const BUNDLE_VERSION = 1;
@@ -159,11 +160,11 @@ function annotations(value: unknown): Annotation[] | undefined {
   return kept.length > 0 ? kept : undefined;
 }
 
-function edits(value: unknown): ScreenshotEdits | undefined {
+function edits(value: unknown, img: { width: number; height: number }): ScreenshotEdits | undefined {
   if (!isObject(value)) return undefined;
   const result: ScreenshotEdits = {};
   const viewport = bounds(value.viewport);
-  if (viewport) result.viewport = viewport;
+  if (viewport) result.viewport = fitRect(viewport, img);
   if (value.target === null) result.target = null;
   else {
     const rect = bounds(value.target);
@@ -176,7 +177,8 @@ function edits(value: unknown): ScreenshotEdits | undefined {
     }
   }
   const list = annotations(value.annotations);
-  if (list) result.annotations = list;
+  const kept = list?.filter((a) => !isOffImage(a, img)).map((a) => keepInside(a, img));
+  if (kept?.length) result.annotations = kept;
   const alt = str(value.alt);
   if (alt) result.alt = alt;
   return Object.keys(result).length > 0 ? result : undefined;
@@ -268,8 +270,9 @@ function parseScreenshot(value: unknown): BundleScreenshot | null {
   if (ratio !== undefined) shot.pixelRatio = Math.min(ratio, 8);
   const click = point(value.clickPoint);
   if (click) shot.clickPoint = click;
-  const editState = edits(value.edits);
+  const editState = edits(value.edits, { width, height });
   if (editState) shot.edits = editState;
+  if (editState?.target) editState.target = resolveTarget(shot);
 
   return shot;
 }

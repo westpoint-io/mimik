@@ -1,6 +1,8 @@
 import { applyNarrationResult } from '@mimik/core/capture/voice/apply-narration-result';
+import { canTranscribe } from '@mimik/core/capture/voice/can-transcribe';
 import { deferDescription } from '@mimik/core/capture/voice/deferred-descriptions';
 import { describeStepNow, describeUnnarratedSteps } from '@mimik/core/capture/voice/describe-unnarrated';
+import { hasUnscoredLines } from '@mimik/core/capture/voice/has-unscored-lines';
 import { MicRecorder } from '@mimik/core/capture/voice/mic-recorder';
 import { narrateRecording, type VoiceRecording } from '@mimik/core/capture/voice/narrate-recording';
 import { NARRATION_SETTLE_MS } from '@mimik/core/capture/voice/narration-settle-ms';
@@ -22,6 +24,7 @@ export class DesktopNarration {
   private guideId: string | null = null;
   private slicer = new NarrationSlicer();
   private narrated = 0;
+  private unscored = false;
   private lost = false;
   private current: VoiceUpdate = { phase: 'idle' };
   private readonly listeners = new Set<(update: VoiceUpdate) => void>();
@@ -37,7 +40,10 @@ export class DesktopNarration {
   }
 
   start(guideId: string): void {
-    if (this.guideId !== guideId) this.narrated = 0;
+    if (this.guideId !== guideId) {
+      this.narrated = 0;
+      this.unscored = false;
+    }
     this.guideId = guideId;
     this.live ??= this.open();
   }
@@ -119,7 +125,9 @@ export class DesktopNarration {
       this.report({ phase: 'error', reason: 'stream-ended' });
       return;
     }
-    if (this.current.phase === 'transcribing') this.report({ phase: 'idle', narrated: this.narrated });
+    if (this.current.phase !== 'transcribing') return;
+    const unscored = this.narrated === 0 && this.unscored;
+    this.report({ phase: 'idle', narrated: this.narrated, ...(unscored ? { unscored: true } : {}) });
   }
 
   private async undescribed(stepId: string): Promise<void> {
@@ -137,8 +145,8 @@ export class DesktopNarration {
   private async open(): Promise<MicRecorder | null> {
     const voice = await readVoiceSettings();
     if (!voice.enabled) return null;
-    if (!voice.hasApiKey) {
-      this.report({ phase: 'error', reason: 'missing-api-key' });
+    if (voice.blocker) {
+      this.report({ phase: 'error', reason: voice.blocker });
       return null;
     }
     const mic = new MicRecorder(assetUrl('mic-frames.js'), {
@@ -171,8 +179,10 @@ export class DesktopNarration {
 
   private async transcribe(guideId: string, audio: VoiceRecording, marks: StepMark[]): Promise<string[]> {
     const settings = await readTranscriptionSettings();
-    if (!settings.apiKey) return [];
-    const updates = await applyNarrationResult(guideId, await narrateRecording(audio, marks, settings));
+    if (!canTranscribe(settings)) return [];
+    const result = await narrateRecording(audio, marks, settings);
+    if (hasUnscoredLines(result)) this.unscored = true;
+    const updates = await applyNarrationResult(guideId, result);
     this.narrated += updates.length;
     for (const { stepId, description } of updates) {
       window.mimik.capture.described(stepId, description, null, 'narration');

@@ -160,6 +160,8 @@ settings:
   protocolOpenai: "OpenAI"
   protocolAnthropic: "Anthropic"
   noServer: "No server address yet."
+  voiceServerNeedsOpenai: "Narration needs a server compatible with OpenAI."
+  transcriptionModel: "Transcription model"
   noKeyFor: "No $1 key yet."
   addOneInKeys: "Add one in API keys."
   addKey: "Add key"
@@ -399,6 +401,16 @@ editor:
   stepsCopied: "$1 steps copied from “$2”"
   newStep: New
   copyScreenshot: Copy screenshot
+  screenshotCopied: Copied
+  copyScreenshotFailed: "Couldn't copy the screenshot. Try again."
+  duplicate: Duplicate
+  duplicateStep: Duplicate step
+  duplicateBelow: Duplicate below
+  duplicateAbove: Duplicate above
+  duplicateToStep: To step
+  duplicateGo: Go
+  duplicateLandsAt: "step $1"
+  duplicateFailed: Couldn't duplicate. Try again.
   noScreenshot: No screenshot
   edit: Edit
   done: Done
@@ -788,12 +800,14 @@ voice:
   narrated: "Narration added to $1 step."
   narratedPlural: "Narration added to $1 steps."
   narratedNone: "None of your narration matched a step."
+  narratedUnscored: "Your server returned no confidence scores, so none of your narration was used."
   guideSafe: "Your guide and screenshots are unaffected."
   openSettings: Open settings
   errorPermissionDenied: "Microphone access was blocked."
   errorNoDevice: "No microphone found."
   errorNoAudio: "The microphone picked up no sound."
   errorMissingApiKey: "Narration needs a transcription API key."
+  errorServerNotReady: "Narration needs a server address that uses the OpenAI protocol."
   errorStreamEnded: "The microphone cut out partway through."
   errorNotRecording: "Narration wasn't running."
   errorAlreadyRecording: "Narration was already running."

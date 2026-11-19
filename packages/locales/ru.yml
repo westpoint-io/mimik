@@ -160,6 +160,8 @@ settings:
   protocolOpenai: OpenAI
   protocolAnthropic: Anthropic
   noServer: Адрес сервера ещё не указан.
+  voiceServerNeedsOpenai: "Для озвучки нужен сервер, совместимый с OpenAI."
+  transcriptionModel: "Модель транскрибации"
   noKeyFor: Ключа $1 ещё нет.
   addOneInKeys: Добавьте его в разделе «API-ключи».
   addKey: Добавить ключ
@@ -399,6 +401,16 @@ editor:
   stepsCopied: "Шаги ($1) скопированы из «$2»"
   newStep: Новый
   copyScreenshot: Копировать скриншот
+  screenshotCopied: Скопировано
+  copyScreenshotFailed: Не удалось скопировать скриншот. Попробуйте ещё раз.
+  duplicate: Дублировать
+  duplicateStep: Дублировать шаг
+  duplicateBelow: Дублировать ниже
+  duplicateAbove: Дублировать выше
+  duplicateToStep: Номер шага
+  duplicateGo: ОК
+  duplicateLandsAt: "шаг $1"
+  duplicateFailed: Не удалось создать копию. Попробуйте ещё раз.
   noScreenshot: Нет скриншота
   edit: Редактировать
   done: Готово
@@ -788,12 +800,14 @@ voice:
   narrated: Озвучка добавлена к $1 шагу.
   narratedPlural: Озвучка добавлена к $1 шагам.
   narratedNone: "Озвучка не совпала ни с одним шагом, описания не изменились."
+  narratedUnscored: "Сервер не вернул оценки уверенности, поэтому озвучка не использована."
   guideSafe: Ваш гайд и скриншоты в порядке. Потеряна только озвучка.
   openSettings: Открыть настройки
   errorPermissionDenied: "Доступ к микрофону заблокирован, поэтому ничего не было озвучено."
   errorNoDevice: "Микрофон не найден, поэтому ничего не было озвучено."
   errorNoAudio: "Микрофон не записал звука, поэтому транскрибировать было нечего."
   errorMissingApiKey: Для озвучки нужен провайдер транскрипции и API-ключ.
+  errorServerNotReady: "Для озвучки нужен адрес сервера с протоколом OpenAI."
   errorStreamEnded: "Микрофон остановился посреди записи, поэтому озвучка закончилась раньше."
   errorNotRecording: "Озвучка не работала, поэтому транскрибировать было нечего."
   errorAlreadyRecording: "Озвучка уже работала, поэтому эта запись не была озвучена."

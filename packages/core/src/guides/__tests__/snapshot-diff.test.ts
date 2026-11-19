@@ -16,7 +16,7 @@ function shot(
   edits?: ScreenshotEdits,
   captured?: { bounds?: ScreenshotBounds; pixelRatio?: number },
 ): ShotInput & { stepId: string } {
-  return { id, stepId, ...(edits ? { edits } : {}), ...captured };
+  return { id, stepId, width: 1000, height: 800, ...(edits ? { edits } : {}), ...captured };
 }
 
 function like(steps: StepInput[], overrides: Partial<SnapshotLike> = {}): SnapshotLike {

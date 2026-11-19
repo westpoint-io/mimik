@@ -303,6 +303,7 @@ async function copySteps(
   sourceGuideId: string,
   stepIds: readonly string[],
   targetGuideId: string | null,
+  atIndex?: number,
 ): Promise<{ guideId: string; stepIds: string[] } | null> {
   const copied = await db.transaction('rw', [db.guides, db.steps, db.screenshots, db.transcripts], async () => {
     const source = await db.guides.get(sourceGuideId);
@@ -317,12 +318,24 @@ async function copySteps(
     ).filter((row): row is StoredScreenshot => !!row && stepIdMap.has(row.stepId));
     const screenshotIdMap = new Map(screenshots.map((row) => [row.id, crypto.randomUUID()]));
     const guideId = target?.id ?? crypto.randomUUID();
-    const offset = target ? await db.steps.where('guideId').equals(guideId).count() : 0;
-    const newStepIds = steps.map((step) => stepIdMap.get(step.id)!);
+    const existing = target ? await db.steps.where('guideId').equals(guideId).sortBy('index') : [];
+    const at = Math.max(0, Math.min(atIndex ?? existing.length, existing.length));
+    const copies = steps.map((step) => ({
+      ...step,
+      id: stepIdMap.get(step.id)!,
+      guideId,
+      aiPending: undefined,
+      screenshotId: step.screenshotId ? screenshotIdMap.get(step.screenshotId) : undefined,
+    }));
+    const ordered = [...existing.slice(0, at), ...copies, ...existing.slice(at)].map((step, index) => ({
+      ...step,
+      index,
+    }));
+    const newStepIds = copies.map((step) => step.id);
     const now = Date.now();
 
     if (target) {
-      await db.guides.update(guideId, { stepIds: [...target.stepIds, ...newStepIds], updatedAt: now });
+      await db.guides.update(guideId, { stepIds: ordered.map((step) => step.id), updatedAt: now });
     } else {
       await db.guides.add({
         id: guideId,
@@ -334,16 +347,7 @@ async function copySteps(
         deletedAt: null,
       });
     }
-    await db.steps.bulkAdd(
-      steps.map((step, index) => ({
-        ...step,
-        id: stepIdMap.get(step.id)!,
-        guideId,
-        index: offset + index,
-        aiPending: undefined,
-        screenshotId: step.screenshotId ? screenshotIdMap.get(step.screenshotId) : undefined,
-      })),
-    );
+    await db.steps.bulkPut(ordered);
     await db.screenshots.bulkAdd(
       screenshots.map((row) => ({ ...row, id: screenshotIdMap.get(row.id)!, stepId: stepIdMap.get(row.stepId)! })),
     );
