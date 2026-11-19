@@ -44,6 +44,17 @@ export function voiceNotice(update: VoiceUpdate, seenLive: boolean): VoiceNotice
 
   if (update.phase !== 'idle' || update.narrated === undefined || !seenLive) return null;
 
+  if (update.narrated === 0 && update.unscored) {
+    return {
+      tone: 'failed',
+      signature,
+      titleKey: 'voice.narratedUnscored',
+      bodyKey: 'voice.guideSafe',
+      showSettings: true,
+      autoDismissMs: null,
+    };
+  }
+
   return {
     tone: 'done',
     signature,

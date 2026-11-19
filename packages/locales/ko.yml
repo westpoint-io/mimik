@@ -798,6 +798,7 @@ voice:
   narrated: "단계 $1개에 음성 설명을 추가했어요."
   narratedPlural: "단계 $1개에 음성 설명을 추가했어요."
   narratedNone: "단계와 일치하는 음성 설명이 없어요."
+  narratedUnscored: "서버가 신뢰도 점수를 보내지 않아 음성 설명을 사용하지 못했어요."
   guideSafe: "가이드와 스크린샷은 그대로예요."
   openSettings: "설정 열기"
   errorPermissionDenied: "마이크 권한이 차단됐어요."

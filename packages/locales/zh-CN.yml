@@ -798,6 +798,7 @@ voice:
   narrated: "已为 $1 个步骤添加语音讲解。"
   narratedPlural: "已为 $1 个步骤添加语音讲解。"
   narratedNone: "没有语音讲解匹配到任何步骤。"
+  narratedUnscored: "你的服务器没有返回置信度分数，因此未使用语音讲解。"
   guideSafe: "你的指南和截图不受影响。"
   openSettings: 打开设置
   errorPermissionDenied: "麦克风访问被阻止。"

@@ -798,6 +798,7 @@ voice:
   narrated: "已將旁白加入 $1 個步驟。"
   narratedPlural: "已將旁白加入 $1 個步驟。"
   narratedNone: "你的旁白沒有對應到任何步驟。"
+  narratedUnscored: "你的伺服器沒有回傳信賴度分數，因此未使用旁白。"
   guideSafe: "你的指南和螢幕截圖不受影響。"
   openSettings: "開啟設定"
   errorPermissionDenied: "麥克風存取遭到封鎖。"

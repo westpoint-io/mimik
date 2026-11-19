@@ -798,6 +798,7 @@ voice:
   narrated: "Narration added to $1 step."
   narratedPlural: "Narration added to $1 steps."
   narratedNone: "None of your narration matched a step."
+  narratedUnscored: "Your server returned no confidence scores, so none of your narration was used."
   guideSafe: "Your guide and screenshots are unaffected."
   openSettings: Open settings
   errorPermissionDenied: "Microphone access was blocked."
