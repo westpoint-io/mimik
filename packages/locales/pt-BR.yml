@@ -160,12 +160,15 @@ settings:
   protocolOpenai: "OpenAI"
   protocolAnthropic: "Anthropic"
   noServer: "Ainda não há endereço de servidor."
+  voiceServerNeedsOpenai: "A narração precisa de um servidor compatível com OpenAI."
+  transcriptionModel: "Modelo de transcrição"
   noKeyFor: "Ainda não há chave da $1."
   addOneInKeys: "Adicione uma em Chaves de API."
   addKey: "Adicionar chave"
   noKey: "Sem chave"
   voiceover: "Narração do vídeo"
   voiceoverHint: "O Mimik lê o texto de cada passo sobre o vídeo exportado."
+  voiceoverServerNeedsOpenai: "A narração do vídeo precisa de um servidor compatível com OpenAI."
   voice: "Voz"
   voiceNarrationHint: "Explique o fluxo em voz alta e o Mimik escreve cada passo com o que você disse."
   voiceNarration: "Narração por voz"
@@ -369,6 +372,8 @@ confirmDelete:
   confirm: "Excluir permanentemente"
 
 editor:
+  guideHost: Endereço do site
+  guideHostInvalid: "Digite um endereço da web como https://example.com"
   backToLibrary: "Voltar para a biblioteca"
   openInDashboard: Abrir
   openInDashboardHint: "Abra no painel para editar ou exportar"
@@ -397,6 +402,16 @@ editor:
   stepsCopied: "$1 passos copiados de “$2”"
   newStep: Novo
   copyScreenshot: Copiar captura
+  screenshotCopied: Copiada
+  copyScreenshotFailed: Não foi possível copiar a captura. Tente novamente.
+  duplicate: Duplicar
+  duplicateStep: Duplicar passo
+  duplicateBelow: Duplicar abaixo
+  duplicateAbove: Duplicar acima
+  duplicateToStep: Como passo
+  duplicateGo: OK
+  duplicateLandsAt: "passo $1"
+  duplicateFailed: Não foi possível duplicar. Tente novamente.
   noScreenshot: Sem captura
   edit: Editar
   done: Pronto
@@ -574,7 +589,7 @@ exportPreview:
   audio: "Áudio"
   audioSilent: "Sem som"
   audioNarrated: "Narrado"
-  voiceoverNoKey: "Adicione uma chave da OpenAI ou ElevenLabs em Ajustes para narrar os vídeos."
+  voiceoverNoKey: "Adicione uma chave de narração do vídeo ou seu próprio servidor em Ajustes para narrar os vídeos."
   videoLength: "Duração do vídeo $1"
   videoLengthVoice: "Duração do vídeo $1 → $2 com narração"
   voiceoverCost: "$1 clipes · cerca de $2 caracteres a sintetizar"
@@ -786,12 +801,14 @@ voice:
   narrated: "Narração adicionada a $1 passo."
   narratedPlural: "Narração adicionada a $1 passos."
   narratedNone: "Nenhuma narração correspondeu a um passo."
+  narratedUnscored: "Seu servidor não retornou pontuações de confiança, então nada da sua narração foi usado."
   guideSafe: "Seu guia e suas capturas não foram afetados."
   openSettings: Abrir ajustes
   errorPermissionDenied: "O acesso ao microfone foi bloqueado."
   errorNoDevice: "Nenhum microfone encontrado."
   errorNoAudio: "O microfone não captou nenhum som."
   errorMissingApiKey: "A narração precisa de uma chave de API de transcrição."
+  errorServerNotReady: "A narração precisa de um endereço de servidor que use o protocolo da OpenAI."
   errorStreamEnded: "O microfone parou no meio da gravação."
   errorNotRecording: "A narração não estava ativa."
   errorAlreadyRecording: "A narração já estava ativa."

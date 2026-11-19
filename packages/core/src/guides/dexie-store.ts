@@ -5,7 +5,7 @@ import { client, i18n } from '@/core/env';
 import type { ScreenshotEdits } from '@/core/screenshot/types';
 import type { ParsedBundle } from '@/core/transfer/parse';
 import { db } from './db';
-import { getMostCommonDomain } from './domain';
+import { extractOrigin, getMostCommonDomain } from './domain';
 import { hashPayload } from './snapshot-hash';
 import { sanitizeGuideTitle } from './title';
 import type {
@@ -303,6 +303,7 @@ async function copySteps(
   sourceGuideId: string,
   stepIds: readonly string[],
   targetGuideId: string | null,
+  atIndex?: number,
 ): Promise<{ guideId: string; stepIds: string[] } | null> {
   const copied = await db.transaction('rw', [db.guides, db.steps, db.screenshots, db.transcripts], async () => {
     const source = await db.guides.get(sourceGuideId);
@@ -317,12 +318,24 @@ async function copySteps(
     ).filter((row): row is StoredScreenshot => !!row && stepIdMap.has(row.stepId));
     const screenshotIdMap = new Map(screenshots.map((row) => [row.id, crypto.randomUUID()]));
     const guideId = target?.id ?? crypto.randomUUID();
-    const offset = target ? await db.steps.where('guideId').equals(guideId).count() : 0;
-    const newStepIds = steps.map((step) => stepIdMap.get(step.id)!);
+    const existing = target ? await db.steps.where('guideId').equals(guideId).sortBy('index') : [];
+    const at = Math.max(0, Math.min(atIndex ?? existing.length, existing.length));
+    const copies = steps.map((step) => ({
+      ...step,
+      id: stepIdMap.get(step.id)!,
+      guideId,
+      aiPending: undefined,
+      screenshotId: step.screenshotId ? screenshotIdMap.get(step.screenshotId) : undefined,
+    }));
+    const ordered = [...existing.slice(0, at), ...copies, ...existing.slice(at)].map((step, index) => ({
+      ...step,
+      index,
+    }));
+    const newStepIds = copies.map((step) => step.id);
     const now = Date.now();
 
     if (target) {
-      await db.guides.update(guideId, { stepIds: [...target.stepIds, ...newStepIds], updatedAt: now });
+      await db.guides.update(guideId, { stepIds: ordered.map((step) => step.id), updatedAt: now });
     } else {
       await db.guides.add({
         id: guideId,
@@ -334,16 +347,7 @@ async function copySteps(
         deletedAt: null,
       });
     }
-    await db.steps.bulkAdd(
-      steps.map((step, index) => ({
-        ...step,
-        id: stepIdMap.get(step.id)!,
-        guideId,
-        index: offset + index,
-        aiPending: undefined,
-        screenshotId: step.screenshotId ? screenshotIdMap.get(step.screenshotId) : undefined,
-      })),
-    );
+    await db.steps.bulkPut(ordered);
     await db.screenshots.bulkAdd(
       screenshots.map((row) => ({ ...row, id: screenshotIdMap.get(row.id)!, stepId: stepIdMap.get(row.stepId)! })),
     );
@@ -734,6 +738,44 @@ async function deleteStep(guideId: string, stepId: string): Promise<void> {
   await deleteSteps(guideId, [stepId]);
 }
 
+function hostTarget(fromOrigin: string, host: string): URL {
+  const target = new URL(/^[a-z][a-z\d+.-]*:\/\//i.test(host) ? host : `//${host}`, fromOrigin);
+  if (!/^https?:$/.test(target.protocol)) throw new TypeError(`Unsupported scheme ${target.protocol}`);
+  if (target.pathname !== '/' || target.search || target.hash || target.username || target.password) {
+    throw new TypeError(`Not a bare host ${host}`);
+  }
+  if (target.hostname.split('.').includes('')) throw new TypeError(`Not a web address ${target.hostname}`);
+  return target;
+}
+
+function moveOrigin(href: string, target: URL): string {
+  const url = new URL(href);
+  url.protocol = target.protocol;
+  url.hostname = target.hostname;
+  url.port = target.port;
+  return url.href;
+}
+
+async function replaceGuideHost(guideId: string, fromOrigin: string, host: string): Promise<void> {
+  const target = hostTarget(fromOrigin, host);
+  await db.transaction('rw', db.steps, db.guides, async () => {
+    const steps = await db.steps.where('guideId').equals(guideId).toArray();
+    const moved = steps
+      .filter((step) => extractOrigin(step.url) === fromOrigin)
+      .map((step) => {
+        const href = step.elementMeta?.href;
+        const elementMeta =
+          step.elementMeta && href && extractOrigin(href) === fromOrigin
+            ? { ...step.elementMeta, href: moveOrigin(href, target) }
+            : step.elementMeta;
+        return { ...step, url: moveOrigin(step.url, target), elementMeta };
+      });
+    await db.steps.bulkPut(moved);
+    await db.guides.update(guideId, { updatedAt: Date.now() });
+  });
+  notifyGuidesChanged({ type: 'mutated' });
+}
+
 async function getGuideDomain(guideId: string): Promise<string> {
   const steps = await db.steps.where('guideId').equals(guideId).sortBy('index');
   return getMostCommonDomain(steps);
@@ -900,6 +942,7 @@ export const dexieStore = {
   findExistingStepIds,
   deleteSteps,
   deleteStep,
+  replaceGuideHost,
   getGuideDomain,
   allScreenshotIds,
   saveScreenshot,

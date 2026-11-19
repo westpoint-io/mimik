@@ -12,12 +12,18 @@ export interface SpeechRequest {
 }
 
 function authHeaders(provider: VoiceoverProviderKey, apiKey: string): Record<string, string> {
+  if (provider === 'server' && !apiKey) return {};
   return provider === 'elevenlabs' ? { 'xi-api-key': apiKey } : { Authorization: `Bearer ${apiKey}` };
 }
 
 export function speechRequest(config: VoiceoverConfig, text: string): SpeechRequest {
-  const base = voiceoverProvider(config.provider).defaultBaseUrl;
-  const headers = { ...authHeaders(config.provider, config.apiKey), 'Content-Type': 'application/json' };
+  const base =
+    config.provider === 'server' ? (config.baseUrl ?? '') : voiceoverProvider(config.provider).defaultBaseUrl;
+  const headers = {
+    ...authHeaders(config.provider, config.apiKey),
+    ...config.headers,
+    'Content-Type': 'application/json',
+  };
 
   if (config.provider === 'elevenlabs') {
     return {

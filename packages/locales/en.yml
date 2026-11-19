@@ -160,12 +160,15 @@ settings:
   protocolOpenai: "OpenAI"
   protocolAnthropic: "Anthropic"
   noServer: "No server address yet."
+  voiceServerNeedsOpenai: "Narration needs a server compatible with OpenAI."
+  transcriptionModel: "Transcription model"
   noKeyFor: "No $1 key yet."
   addOneInKeys: "Add one in API keys."
   addKey: "Add key"
   noKey: "No key"
   voiceover: "Video voice-over"
   voiceoverHint: "Mimik speaks each step's text over the exported video."
+  voiceoverServerNeedsOpenai: "Voice-over needs a server compatible with OpenAI."
   voice: "Voice"
   voiceNarrationHint: "Talk through the workflow and Mimik writes each step from what you said."
   voiceNarration: "Voice narration"
@@ -369,6 +372,8 @@ confirmDelete:
   confirm: Delete permanently
 
 editor:
+  guideHost: Website address
+  guideHostInvalid: "Enter a web address like https://example.com"
   backToLibrary: Back to library
   openInDashboard: Open
   openInDashboardHint: Open in the dashboard to edit or export
@@ -397,6 +402,16 @@ editor:
   stepsCopied: "$1 steps copied from “$2”"
   newStep: New
   copyScreenshot: Copy screenshot
+  screenshotCopied: Copied
+  copyScreenshotFailed: "Couldn't copy the screenshot. Try again."
+  duplicate: Duplicate
+  duplicateStep: Duplicate step
+  duplicateBelow: Duplicate below
+  duplicateAbove: Duplicate above
+  duplicateToStep: To step
+  duplicateGo: Go
+  duplicateLandsAt: "step $1"
+  duplicateFailed: Couldn't duplicate. Try again.
   noScreenshot: No screenshot
   edit: Edit
   done: Done
@@ -574,7 +589,7 @@ exportPreview:
   audio: "Audio"
   audioSilent: "Silent"
   audioNarrated: "Narrated"
-  voiceoverNoKey: "Add an OpenAI or ElevenLabs key in Settings to narrate videos."
+  voiceoverNoKey: "Add a voice-over key or your own server in Settings to narrate videos."
   videoLength: "Video length $1"
   videoLengthVoice: "Video length $1 → $2 with voice-over"
   voiceoverCost: "$1 clips · about $2 characters to synthesize"
@@ -786,12 +801,14 @@ voice:
   narrated: "Narration added to $1 step."
   narratedPlural: "Narration added to $1 steps."
   narratedNone: "None of your narration matched a step."
+  narratedUnscored: "Your server returned no confidence scores, so none of your narration was used."
   guideSafe: "Your guide and screenshots are unaffected."
   openSettings: Open settings
   errorPermissionDenied: "Microphone access was blocked."
   errorNoDevice: "No microphone found."
   errorNoAudio: "The microphone picked up no sound."
   errorMissingApiKey: "Narration needs a transcription API key."
+  errorServerNotReady: "Narration needs a server address that uses the OpenAI protocol."
   errorStreamEnded: "The microphone cut out partway through."
   errorNotRecording: "Narration wasn't running."
   errorAlreadyRecording: "Narration was already running."

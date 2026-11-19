@@ -1,14 +1,17 @@
 import { splitAtShortcut } from '@mimik/core/capture/split-at-shortcut';
 import { i18n } from '@mimik/core/env';
+import type { DuplicatePlace } from '@mimik/core/guides/duplicate-index';
 import { replaceScreenshot, restoreNarratedDescription } from '@mimik/core/guides/service';
 import type { Screenshot, Step } from '@mimik/core/guides/types';
 import { logger } from '@mimik/core/logger';
 import { imageDimensions, renderScreenshot } from '@mimik/core/screenshot/render';
-import { Check, Copy, Loader2, Trash2, Undo2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Check, Copy, CopyPlus, Loader2, Trash2, Undo2 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAskAi } from '../../ai/hooks/use-ask-ai';
 import { ConfirmDialog } from '../../common/components/ConfirmDialog';
+import { Toast } from '../../common/components/Toast';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../../components/ui/tooltip';
+import { DuplicateMenu } from './DuplicateMenu';
 import { ImagePlaceholder } from './ImagePlaceholder';
 import { ScreenshotView } from './ScreenshotView';
 import { StepSourceBadge } from './StepSourceBadge';
@@ -21,6 +24,8 @@ interface StepCardProps {
   onDelete?: (stepId: string) => void;
   onOpenEditor?: (stepId: string, tool: 'annotate' | 'redact' | 'crop' | 'target') => void;
   onCopy?: (stepId: string) => void;
+  onDuplicate?: (stepId: string, place: DuplicatePlace) => void;
+  stepCount?: number;
   placeholderRatio?: number;
   frameRatio?: number;
   readOnly?: boolean;
@@ -36,6 +41,8 @@ export function StepCard({
   onDescriptionChange,
   onDelete,
   onOpenEditor,
+  onDuplicate,
+  stepCount,
   placeholderRatio,
   frameRatio,
   readOnly,
@@ -46,6 +53,8 @@ export function StepCard({
   const [description, setDescription] = useState(step.description);
   const shortcut = splitAtShortcut(step.description, step.action);
   const [copied, setCopied] = useState(false);
+  const [copyFailed, setCopyFailed] = useState<string | null>(null);
+  const dismissCopyFailed = useCallback(() => setCopyFailed(null), []);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
@@ -83,12 +92,13 @@ export function StepCard({
   const handleCopy = async () => {
     if (!screenshot) return;
     try {
-      const rendered = await renderScreenshot(screenshot, { format: 'image/png' });
+      const rendered = renderScreenshot(screenshot, { format: 'image/png' });
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': rendered })]);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch (err) {
       logger.error(' Copy to clipboard failed', err);
+      setCopyFailed(i18n.t('editor.copyScreenshotFailed'));
     }
   };
 
@@ -187,8 +197,25 @@ export function StepCard({
                     {copied ? <Check size={13} /> : <Copy size={13} />}
                   </button>
                 </TooltipTrigger>
-                <TooltipContent>{i18n.t('editor.copyScreenshot')}</TooltipContent>
+                <TooltipContent>{i18n.t(copied ? 'editor.screenshotCopied' : 'editor.copyScreenshot')}</TooltipContent>
               </Tooltip>
+            )}
+            {!readOnly && !step.aiPending && onDuplicate && stepCount !== undefined && (
+              <DuplicateMenu
+                belowStep={number + 1}
+                aboveStep={number}
+                lastStep={stepCount + 1}
+                onDuplicate={(place) => onDuplicate(step.id, place)}
+                tooltip={i18n.t('editor.duplicateStep')}
+              >
+                <button
+                  type="button"
+                  aria-label={i18n.t('editor.duplicateStep')}
+                  className="p-1 rounded-md transition-colors text-border hover:text-success data-[state=open]:text-success"
+                >
+                  <CopyPlus size={13} />
+                </button>
+              </DuplicateMenu>
             )}
             {!readOnly && (
               <Tooltip>
@@ -213,6 +240,7 @@ export function StepCard({
         onConfirm={handleDelete}
         onCancel={() => setConfirmDelete(false)}
       />
+      <Toast message={copyFailed} onDismiss={dismissCopyFailed} />
     </div>
   );
 }

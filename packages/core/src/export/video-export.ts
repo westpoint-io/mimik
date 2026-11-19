@@ -908,7 +908,7 @@ async function prepareVoiceover(
 ): Promise<NarrationOutcome> {
   const [
     { pickVoiceContainer },
-    { resolveVoiceoverConfig, VOICEOVER_SETTINGS },
+    { canVoiceover, resolveVoiceoverConfig, VOICEOVER_SETTINGS },
     { voiceoverProvider },
     { voiceoverScript },
     { renderVoiceover },
@@ -921,7 +921,7 @@ async function prepareVoiceover(
   ]);
 
   const config = resolveVoiceoverConfig(await localStorage.get([...VOICEOVER_SETTINGS]));
-  if (!config.apiKey) {
+  if (!canVoiceover(config)) {
     logger.error('[voiceover] skipped: no', voiceoverProvider(config.provider).label, 'API key');
     return { voice: null, error: { reason: 'noKey' } };
   }

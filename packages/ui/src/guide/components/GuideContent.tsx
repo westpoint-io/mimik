@@ -4,7 +4,7 @@ import { i18n } from '@mimik/core/env';
 import { formatDate } from '@mimik/core/export/utils';
 import { isReplayable } from '@mimik/core/guideme/session';
 import { actionSteps } from '@mimik/core/guides/blocks';
-import { getMostCommonDomain } from '@mimik/core/guides/domain';
+import { getMostCommonDomain, getMostCommonOrigin } from '@mimik/core/guides/domain';
 import {
   deleteStep,
   getGuide,
@@ -35,6 +35,7 @@ import { useFullview } from '../../stores/use-fullview';
 import { useWideLayout } from '../hooks/use-wide-layout';
 import { buildPreview } from '../lib/build-preview';
 import type { PreviewData } from '../types';
+import { GuideHostField } from './GuideHostField';
 import { GuideOutline } from './GuideOutline';
 import { GuideStepList } from './GuideStepList';
 
@@ -112,6 +113,8 @@ export function GuideContent({
   const appliedCopiedRef = useRef<GuideContentProps['copied']>(undefined);
   const [copiedNotice, setCopiedNotice] = useState<string | null>(null);
   const dismissCopiedNotice = useCallback(() => setCopiedNotice(null), []);
+  const [hostRejected, setHostRejected] = useState<string | null>(null);
+  const dismissHostRejected = useCallback(() => setHostRejected(null), []);
   const editingDescriptionRef = useRef(false);
 
   const loadGuide = useCallback(async () => {
@@ -301,6 +304,7 @@ export function GuideContent({
   const viewScreenshots = previewView ? previewView.screenshots : data.screenshots;
   const actionCount = actionSteps(viewSteps).length;
   const domain = getMostCommonDomain(viewSteps);
+  const origin = getMostCommonOrigin(viewSteps);
   const editingScreenshot = editingStepId ? data.screenshots.get(editingStepId) : undefined;
   const animatingTitle = preview ? null : typingTitle;
   const untitledPending = !preview && !typingTitle && title === i18n.t('guide.untitled') && viewSteps.length > 0;
@@ -478,12 +482,23 @@ export function GuideContent({
                     ? i18n.t('guide.stepCountPlural', [String(actionCount)])
                     : i18n.t('guide.stepCount', [String(actionCount)])}
                 </span>
-                {domain && (
-                  <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground bg-card border border-border pl-1.5 pr-2.5 py-0.5 rounded-full">
-                    <FaviconImg domain={domain} size={14} className="rounded-full" />
-                    {domain}
-                  </span>
-                )}
+                {domain &&
+                  (readOnly || !origin ? (
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground bg-card border border-border pl-1.5 pr-2.5 py-0.5 rounded-full">
+                      <FaviconImg domain={domain} size={14} className="rounded-full" />
+                      {domain}
+                    </span>
+                  ) : (
+                    <GuideHostField
+                      key={origin}
+                      guideId={guideId}
+                      domain={domain}
+                      origin={origin}
+                      onChanged={loadGuide}
+                      onRejected={() => setHostRejected(i18n.t('editor.guideHostInvalid'))}
+                    />
+                  ))}
+                <Toast message={hostRejected} onDismiss={dismissHostRejected} />
                 {onGuideMe && !editing && !preview && viewSteps.some(isReplayable) && (
                   <button
                     onClick={() => onGuideMe(guideId)}

@@ -62,6 +62,37 @@ describe('createTranscriber', () => {
     expect(sentForm().get('model')).toBe('whisper-large-v3');
   });
 
+  it('sends the configured model to the server endpoint', async () => {
+    await run({ provider: 'server', apiKey: '', baseUrl: 'http://localhost:8000/v1/', model: ' large-v3 ' });
+    expect(sentTo()).toBe('http://localhost:8000/v1/audio/transcriptions');
+    expect(sentForm().get('model')).toBe('large-v3');
+  });
+
+  it('sends whisper-1 to a server with no model set', async () => {
+    await run({ provider: 'server', apiKey: '', baseUrl: 'http://localhost:8000/v1' });
+    expect(sentForm().get('model')).toBe('whisper-1');
+  });
+
+  it('sends no authorization header to a server without a key', async () => {
+    await run({ provider: 'server', apiKey: '', baseUrl: 'http://localhost:8000/v1' });
+    expect(sentInit().headers).toEqual({});
+  });
+
+  it('authorises a server that has a key', async () => {
+    await run({ provider: 'server', apiKey: 'sk-local', baseUrl: 'http://localhost:8000/v1' });
+    expect(sentInit().headers).toEqual({ Authorization: 'Bearer sk-local' });
+  });
+
+  it('sends the server custom headers with its key', async () => {
+    await run({
+      provider: 'server',
+      apiKey: 'sk-local',
+      baseUrl: 'http://localhost:8000/v1',
+      headers: { 'X-Team': 'docs' },
+    });
+    expect(sentInit().headers).toEqual({ Authorization: 'Bearer sk-local', 'X-Team': 'docs' });
+  });
+
   it('authorises with a bearer token', async () => {
     await run({ provider: 'openai', apiKey: 'sk-test' });
     expect(sentInit().method).toBe('POST');

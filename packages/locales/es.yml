@@ -160,12 +160,15 @@ settings:
   protocolOpenai: "OpenAI"
   protocolAnthropic: "Anthropic"
   noServer: "Aún no hay dirección de servidor."
+  voiceServerNeedsOpenai: "La narración necesita un servidor compatible con OpenAI."
+  transcriptionModel: "Modelo de transcripción"
   noKeyFor: "Aún no hay clave de $1."
   addOneInKeys: "Añade una en Claves de API."
   addKey: "Añadir clave"
   noKey: "Sin clave"
   voiceover: "Voz en off del vídeo"
   voiceoverHint: "Mimik lee el texto de cada paso sobre el vídeo exportado."
+  voiceoverServerNeedsOpenai: "La voz en off necesita un servidor compatible con OpenAI."
   voice: "Voz"
   voiceNarrationHint: "Explica el flujo en voz alta y Mimik escribe cada paso con lo que dijiste."
   voiceNarration: "Narración por voz"
@@ -369,6 +372,8 @@ confirmDelete:
   confirm: Eliminar definitivamente
 
 editor:
+  guideHost: Dirección del sitio web
+  guideHostInvalid: "Escribe una dirección web como https://example.com"
   backToLibrary: Volver a la biblioteca
   openInDashboard: Abrir
   openInDashboardHint: "Ábrela en el panel para editarla o exportarla"
@@ -397,6 +402,16 @@ editor:
   stepsCopied: "$1 pasos copiados de «$2»"
   newStep: Nuevo
   copyScreenshot: Copiar captura
+  screenshotCopied: Copiada
+  copyScreenshotFailed: No se pudo copiar la captura. Inténtalo de nuevo.
+  duplicate: Duplicar
+  duplicateStep: Duplicar paso
+  duplicateBelow: Duplicar debajo
+  duplicateAbove: Duplicar encima
+  duplicateToStep: Como paso
+  duplicateGo: OK
+  duplicateLandsAt: "paso $1"
+  duplicateFailed: No se pudo duplicar. Inténtalo de nuevo.
   noScreenshot: Sin captura
   edit: Editar
   done: Listo
@@ -574,7 +589,7 @@ exportPreview:
   audio: "Audio"
   audioSilent: "Sin sonido"
   audioNarrated: "Narrado"
-  voiceoverNoKey: "Añade una clave de OpenAI o ElevenLabs en Ajustes para narrar los vídeos."
+  voiceoverNoKey: "Añade una clave de voz en off o tu propio servidor en Ajustes para narrar los vídeos."
   videoLength: "Duración del vídeo $1"
   videoLengthVoice: "Duración del vídeo $1 → $2 con voz en off"
   voiceoverCost: "$1 clips · unos $2 caracteres por sintetizar"
@@ -786,12 +801,14 @@ voice:
   narrated: "Narración añadida a $1 paso."
   narratedPlural: "Narración añadida a $1 pasos."
   narratedNone: "Ninguna parte de tu narración coincidió con un paso."
+  narratedUnscored: "Tu servidor no devolvió puntuaciones de confianza, así que no se usó nada de tu narración."
   guideSafe: "Tu guía y tus capturas no se ven afectadas."
   openSettings: "Abrir Ajustes"
   errorPermissionDenied: "Se bloqueó el acceso al micrófono."
   errorNoDevice: "No se encontró ningún micrófono."
   errorNoAudio: "El micrófono no captó ningún sonido."
   errorMissingApiKey: "La narración necesita una clave de API de transcripción."
+  errorServerNotReady: "La narración necesita una dirección de servidor que use el protocolo de OpenAI."
   errorStreamEnded: "El micrófono se cortó a mitad de la grabación."
   errorNotRecording: "La narración no estaba activa."
   errorAlreadyRecording: "La narración ya estaba en marcha."

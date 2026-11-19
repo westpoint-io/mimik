@@ -90,6 +90,7 @@ export interface Settings {
   voiceProvider: VoiceProvider;
   voiceApiKey: string;
   voiceMicrophoneId: string;
+  voiceServerModel: string;
   voiceLanguage: string;
   voiceoverProvider: VoiceoverProviderKey;
   voiceoverApiKeys: VoiceoverApiKeys;

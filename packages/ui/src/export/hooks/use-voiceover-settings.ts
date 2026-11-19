@@ -1,4 +1,3 @@
-import type { ApiKeys } from '@mimik/core/capture/ai/keys';
 import { localStorage } from '@mimik/core/env';
 import { resolveVoiceoverConfig, VOICEOVER_SETTINGS } from '@mimik/core/export/voiceover/config';
 import {
@@ -9,11 +8,16 @@ import {
   voiceoverProvider,
 } from '@mimik/core/export/voiceover/providers';
 import { useCallback, useEffect, useState } from 'react';
+import type { ApiKeysState } from '../../ai/hooks/use-api-keys';
 
 export type ListVoices = (provider: VoiceoverProviderKey, apiKey: string) => Promise<VoiceoverVoice[]>;
 
+function storedText(value: unknown): string {
+  return typeof value === 'string' ? value.trim() : '';
+}
+
 export function useVoiceoverSettings(
-  keys: ApiKeys,
+  keys: ApiKeysState,
   listVoices?: ListVoices,
   onChange?: (patch: Record<string, unknown>) => void,
 ) {
@@ -21,14 +25,17 @@ export function useVoiceoverSettings(
   const [voiceId, setVoiceIdState] = useState(VOICEOVER_PROVIDERS.openai.defaultVoice);
   const [modelId, setModelIdState] = useState(VOICEOVER_PROVIDERS.openai.defaultModel);
   const [voices, setVoices] = useState<VoiceoverVoice[]>(VOICEOVER_PROVIDERS.openai.voices);
-  const apiKey = (keys[provider] ?? '').trim();
+  const onServer = provider === 'server';
+  const apiKey = (onServer ? keys.server.apiKey : (keys.keys[provider] ?? '')).trim();
+  const serverReady = Boolean(keys.server.url.trim()) && keys.server.protocol === 'openai';
 
   useEffect(() => {
     localStorage.get(VOICEOVER_SETTINGS).then((stored) => {
       const config = resolveVoiceoverConfig(stored);
       setProviderState(config.provider);
-      setVoiceIdState(config.voiceId);
-      setModelIdState(config.modelId);
+      const custom = config.provider === 'server';
+      setVoiceIdState(custom ? storedText(stored.voiceoverVoiceId) : config.voiceId);
+      setModelIdState(custom ? storedText(stored.voiceoverModelId) : config.modelId);
     });
   }, []);
 
@@ -61,10 +68,12 @@ export function useVoiceoverSettings(
   const setProvider = useCallback(
     (next: VoiceoverProviderKey) => {
       const config = voiceoverProvider(next);
+      const voice = next === 'server' ? '' : config.defaultVoice;
+      const model = next === 'server' ? '' : config.defaultModel;
       setProviderState(next);
-      setVoiceIdState(config.defaultVoice);
-      setModelIdState(config.defaultModel);
-      save({ voiceoverProvider: next, voiceoverVoiceId: config.defaultVoice, voiceoverModelId: config.defaultModel });
+      setVoiceIdState(voice);
+      setModelIdState(model);
+      save({ voiceoverProvider: next, voiceoverVoiceId: voice, voiceoverModelId: model });
     },
     [save],
   );
@@ -85,5 +94,15 @@ export function useVoiceoverSettings(
     [save],
   );
 
-  return { provider, voiceId, modelId, voices, hasKey: apiKey.length > 0, setProvider, setVoiceId, setModelId };
+  return {
+    provider,
+    voiceId,
+    modelId,
+    voices,
+    serverReady,
+    hasKey: onServer ? serverReady : apiKey.length > 0,
+    setProvider,
+    setVoiceId,
+    setModelId,
+  };
 }

@@ -85,7 +85,7 @@ interface ImageSize {
   height: number;
 }
 
-function fitRect(rect: ScreenshotBounds, img: ImageSize): ScreenshotBounds {
+export function fitRect(rect: ScreenshotBounds, img: ImageSize): ScreenshotBounds {
   const width = Math.min(rect.width, img.width);
   const height = Math.min(rect.height, img.height);
   return {
@@ -183,6 +183,37 @@ export function moveAnnotation(a: Annotation, dx: number, dy: number): Annotatio
   }
 }
 
+export function isOffImage(a: Annotation, img: ImageSize): boolean {
+  const b = annotationBounds(a);
+  return b.x > img.width || b.y > img.height || b.x + b.width < 0 || b.y + b.height < 0;
+}
+
+export function keepInside(a: Annotation, img: ImageSize): Annotation {
+  const b = annotationBounds(a);
+  const fitted = fitRect(b, img);
+  const moved = moveAnnotation(a, fitted.x - b.x, fitted.y - b.y);
+  if (fitted.width === b.width && fitted.height === b.height) return moved;
+  switch (moved.type) {
+    case 'box':
+    case 'ellipse':
+    case 'redact':
+    case 'target':
+      return { ...moved, w: fitted.width, h: fitted.height };
+    case 'arrow':
+      return {
+        ...moved,
+        x1: clamp(moved.x1, 0, img.width),
+        y1: clamp(moved.y1, 0, img.height),
+        x2: clamp(moved.x2, 0, img.width),
+        y2: clamp(moved.y2, 0, img.height),
+      };
+    case 'freehand':
+      return { ...moved, points: moved.points.map((p, i) => clamp(p, 0, i % 2 === 0 ? img.width : img.height)) };
+    case 'text':
+      return moved;
+  }
+}
+
 export function resizeAnnotation(a: Annotation, handle: Handle, dx: number, dy: number): Annotation {
   const left = handle === 'nw' || handle === 'sw';
   const top = handle === 'nw' || handle === 'ne';
@@ -225,22 +256,34 @@ export function resizeAnnotation(a: Annotation, handle: Handle, dx: number, dy: 
   };
 }
 
-export type TargetSource = Pick<Screenshot, 'edits' | 'bounds' | 'pixelRatio'>;
+export type TargetSource = Pick<Screenshot, 'edits' | 'bounds' | 'pixelRatio' | 'width' | 'height'>;
+
+function visiblePart(rect: ScreenshotBounds, img: ImageSize): ScreenshotBounds | null {
+  const x = Math.max(rect.x, 0);
+  const y = Math.max(rect.y, 0);
+  const width = Math.min(rect.x + rect.width, img.width) - x;
+  const height = Math.min(rect.y + rect.height, img.height) - y;
+  return width > 0 && height > 0 ? { x, y, width, height } : null;
+}
 
 export function resolveTarget(screenshot: TargetSource): ClickTarget | null {
   const explicit = screenshot.edits?.target;
-  if (explicit !== undefined) return hasArea(explicit) ? explicit : null;
+  if (explicit !== undefined && !hasArea(explicit)) return null;
 
   const bounds = screenshot.bounds;
-  if (!hasArea(bounds)) return null;
-
   const dpr = screenshot.pixelRatio || 1;
-  return {
-    x: bounds.x * dpr,
-    y: bounds.y * dpr,
-    width: bounds.width * dpr,
-    height: bounds.height * dpr,
-    border: 'dashed',
-    color: DEFAULT_TARGET_COLOR,
-  };
+  const recorded = hasArea(bounds)
+    ? { x: bounds.x * dpr, y: bounds.y * dpr, width: bounds.width * dpr, height: bounds.height * dpr }
+    : null;
+  const target: ClickTarget | null =
+    explicit ?? (recorded ? { ...recorded, border: 'dashed', color: DEFAULT_TARGET_COLOR } : null);
+  if (!target) return null;
+
+  const img = { width: screenshot.width, height: screenshot.height };
+  if (!hasArea(img)) return target;
+  const visible = visiblePart(target, img);
+  if (visible) return { ...target, ...visible };
+  const recordedVisible = explicit && recorded ? visiblePart(recorded, img) : null;
+  if (explicit && recordedVisible) return { ...explicit, ...recordedVisible };
+  return { ...target, ...fitRect(target, img) };
 }
