@@ -589,7 +589,7 @@ exportPreview:
   audio: "Audio"
   audioSilent: "Sin sonido"
   audioNarrated: "Narrado"
-  voiceoverNoKey: "Añade una clave de OpenAI o ElevenLabs en Ajustes para narrar los vídeos."
+  voiceoverNoKey: "Añade una clave de voz en off o tu propio servidor en Ajustes para narrar los vídeos."
   videoLength: "Duración del vídeo $1"
   videoLengthVoice: "Duración del vídeo $1 → $2 con voz en off"
   voiceoverCost: "$1 clips · unos $2 caracteres por sintetizar"

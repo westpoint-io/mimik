@@ -589,7 +589,7 @@ exportPreview:
   audio: "音频"
   audioSilent: "静音"
   audioNarrated: "配音"
-  voiceoverNoKey: "在设置中添加 OpenAI 或 ElevenLabs 密钥即可为视频配音。"
+  voiceoverNoKey: "在设置中添加配音密钥或自己的服务器即可为视频配音。"
   videoLength: "视频时长 $1"
   videoLengthVoice: "视频时长 $1 → $2（含配音）"
   voiceoverCost: "$1 段音频 · 约 $2 个字符待合成"

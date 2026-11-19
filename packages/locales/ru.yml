@@ -589,7 +589,7 @@ exportPreview:
   audio: Звук
   audioSilent: Без звука
   audioNarrated: С озвучкой
-  voiceoverNoKey: "Добавьте ключ OpenAI или ElevenLabs в настройках, чтобы озвучивать видео."
+  voiceoverNoKey: "Добавьте ключ для закадрового голоса или свой сервер в настройках, чтобы озвучивать видео."
   videoLength: Длина видео $1
   videoLengthVoice: Длина видео $1 → $2 с закадровым голосом
   voiceoverCost: "Фрагментов: $1 · около $2 символов для синтеза"

@@ -589,7 +589,7 @@ exportPreview:
   audio: "Audio"
   audioSilent: "Silent"
   audioNarrated: "Narrated"
-  voiceoverNoKey: "Add an OpenAI or ElevenLabs key in Settings to narrate videos."
+  voiceoverNoKey: "Add a voice-over key or your own server in Settings to narrate videos."
   videoLength: "Video length $1"
   videoLengthVoice: "Video length $1 → $2 with voice-over"
   voiceoverCost: "$1 clips · about $2 characters to synthesize"
