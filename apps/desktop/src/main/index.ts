@@ -25,7 +25,7 @@ import { createActor } from 'xstate';
 import { registerAiFetch } from './ai-fetch';
 import { APP_ICON_SCHEME, registerAppIconProtocol } from './app-icon';
 import { ask } from './ask';
-import { enableAccessibility } from './capture/element';
+import { enableAccessibility, wakeApps } from './capture/element';
 import { InputHook } from './capture/input-hook';
 import { DesktopRecorder, frameFor } from './capture/recorder';
 import { grabDisplay } from './capture/screenshot';
@@ -715,6 +715,11 @@ if (!app.requestSingleInstanceLock()) {
     createTray();
     updater?.start();
     void enableAccessibility();
+    let armed = false;
+    capture.subscribe(({ value }) => {
+      if (value === CaptureState.ARMED && !armed) void wakeApps();
+      armed = value === CaptureState.ARMED;
+    });
   });
 
   app.on('activate', () => showWindow());

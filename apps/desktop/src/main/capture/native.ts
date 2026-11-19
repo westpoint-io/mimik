@@ -10,6 +10,7 @@ export type Addon = {
   clearDeadKey(): void;
   releaseWebContent(): void;
   enableAccessibility(): void;
+  wakeApps(): void;
   isSupported(): boolean;
   startInputHook(callback: (event: HookEvent) => void): void;
   floatAboveShell(window: number): void;
