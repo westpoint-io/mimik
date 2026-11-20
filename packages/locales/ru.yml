@@ -169,6 +169,13 @@ settings:
   voiceover: Закадровый голос для видео
   voiceoverHint: Mimik зачитывает текст каждого шага поверх экспортированного видео.
   voiceoverServerNeedsOpenai: "Для закадрового голоса нужен сервер, совместимый с OpenAI."
+  voiceSample: "Проверить голос"
+  voiceSampleStop: "Остановить"
+  voiceSampleLoading: "Создаём пробу…"
+  voiceSampleText: "Так будет звучать закадровый голос ваших руководств."
+  voiceSampleFailed: "Проверка не удалась: $1"
+  voiceSampleUnreadable: "Ответ не является звуком, который Mimik может воспроизвести."
+  voiceSampleCheckVoice: "Сервер не указал причину. Проверьте, что у этой модели есть голос с таким именем."
   voice: Голос
   voiceNarrationHint: "Проговаривайте свои действия, и Mimik напишет каждый шаг по вашим словам."
   voiceNarration: Озвучка

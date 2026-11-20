@@ -1,9 +1,12 @@
 import { coreFetch } from '@/core/env';
 import type { VoiceoverConfig } from './config';
 import { type VoiceoverProviderKey, type VoiceoverVoice, voiceoverProvider } from './providers';
+import { SpeechError } from './speech-error';
 
 const ERROR_BODY_LIMIT = 200;
 const REQUEST_TIMEOUT_MS = 60_000;
+const STATUS_PHRASE =
+  /^(bad request|unprocessable (entity|content)|internal server error|bad gateway|service unavailable|gateway timeout)\.?$/i;
 
 export interface SpeechRequest {
   url: string;
@@ -40,6 +43,15 @@ export function speechRequest(config: VoiceoverConfig, text: string): SpeechRequ
   };
 }
 
+function errorMessage(body: string): string | null {
+  try {
+    const message = (JSON.parse(body) as { error?: { message?: unknown } } | null)?.error?.message;
+    return typeof message === 'string' && message.trim() ? message.trim() : null;
+  } catch {
+    return null;
+  }
+}
+
 function timeout(signal?: AbortSignal): AbortSignal {
   const limit = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
   return signal ? AbortSignal.any([signal, limit]) : limit;
@@ -61,10 +73,15 @@ export async function synthesizeSpeech(
   if (!response.ok) {
     const label = voiceoverProvider(config.provider).label;
     if (response.status === 401 || response.status === 403) {
-      throw new Error(`${label} rejected the API key (${response.status})`);
+      throw new SpeechError(`${label} rejected the API key (${response.status})`, response.status, true);
     }
     const body = await response.text().catch(() => '');
-    throw new Error(`${label} returned ${response.status}: ${body.slice(0, ERROR_BODY_LIMIT)}`);
+    const message = errorMessage(body);
+    throw new SpeechError(
+      `${label} returned ${response.status}: ${(message ?? body).slice(0, ERROR_BODY_LIMIT)}`,
+      response.status,
+      message !== null && !STATUS_PHRASE.test(message),
+    );
   }
 
   return response.arrayBuffer();
