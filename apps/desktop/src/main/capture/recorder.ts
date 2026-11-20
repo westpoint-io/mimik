@@ -142,11 +142,52 @@ export function shouldCapture(settings: CaptureSettings, region: Rect, point: Po
   return inside(region, point) || settings.keepClicksBeyondArea;
 }
 
-export function frameFor(mode: CaptureMode, point: Point, region: Rect, window: Rect | null): Rect {
+function touches(a: Rect, b: Rect): boolean {
+  return a.x <= b.x + b.width && b.x <= a.x + a.width && a.y <= b.y + b.height && b.y <= a.y + a.height;
+}
+
+function withMenus(window: Rect, menus: readonly Rect[], display: Rect): Rect {
+  let frame = window;
+  let left = [...menus];
+  let grown = true;
+  while (grown) {
+    const joined = left.filter((menu) => touches(frame, menu));
+    left = left.filter((menu) => !joined.includes(menu));
+    grown = joined.length > 0;
+    for (const menu of joined) {
+      const x = Math.min(frame.x, menu.x);
+      const y = Math.min(frame.y, menu.y);
+      frame = {
+        x,
+        y,
+        width: Math.max(frame.x + frame.width, menu.x + menu.width) - x,
+        height: Math.max(frame.y + frame.height, menu.y + menu.height) - y,
+      };
+    }
+  }
+  const x = Math.max(frame.x, display.x);
+  const y = Math.max(frame.y, display.y);
+  return {
+    x,
+    y,
+    width: Math.min(frame.x + frame.width, display.x + display.width) - x,
+    height: Math.min(frame.y + frame.height, display.y + display.height) - y,
+  };
+}
+
+export function frameFor(
+  mode: CaptureMode,
+  point: Point,
+  region: Rect,
+  window: Rect | null,
+  menus: readonly Rect[] = [],
+): Rect {
   const display = screen.getDisplayNearestPoint(point).bounds;
   if (mode === 'screen') return display;
-  if (mode === 'window') return window && inside(window, point) ? window : display;
-  return region;
+  if (mode === 'area') return region;
+  if (!window) return display;
+  const framed = withMenus(window, menus, display);
+  return inside(framed, point) ? framed : display;
 }
 
 export function isRepeatKey(previous: { keycode: number; at: number } | null, keycode: number, at: number): boolean {
@@ -485,13 +526,15 @@ export class DesktopRecorder {
     const element = this.lookup(point);
     const taken = this.shoot(point);
     const place = this.windowAt(point);
-    place
-      .then((found) => {
+    const menus = taken.then((shot) => shot.menus).catch(() => undefined);
+    Promise.all([place, menus])
+      .then(([found, open]) => {
         const frame = frameFor(
           this.settings().captureMode,
           point,
           this.region(),
           found.ok ? found.window.bounds : null,
+          open,
         );
         this.aimed({
           x: (point.x - frame.x) / frame.width,
@@ -540,7 +583,7 @@ export class DesktopRecorder {
     };
     const frame = await taken.catch(lost);
     const found = await (place ?? focusedWindow());
-    const framed = frameFor(settings.captureMode, point, region, found.ok ? found.window.bounds : null);
+    const framed = frameFor(settings.captureMode, point, region, found.ok ? found.window.bounds : null, frame?.menus);
     const image = frame
       ? await frame(framed)
           .then((shot) => {
