@@ -58,8 +58,9 @@ nsis:
 linux:
   executableName: mimik
   category: Utility
+  synopsis: Step-by-step guides from your clicks
   artifactName: ${productName}-${version}-${arch}.${ext}
-  icon: linux/icon512.png
+  icon: linux/icons
   target:
     - AppImage
     - deb

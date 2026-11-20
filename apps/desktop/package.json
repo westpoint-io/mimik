@@ -44,7 +44,7 @@
     "tailwindcss": "^4.3.4",
     "vite": "^8.3.5"
   },
-  "description": "Mimik desktop shell",
+  "description": "Turns your clicks into step-by-step guides with annotated screenshots",
   "author": {
     "name": "Westpoint",
     "email": "hello@westpoint.io"
