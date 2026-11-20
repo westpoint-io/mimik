@@ -169,6 +169,13 @@ settings:
   voiceover: "视频配音"
   voiceoverHint: "Mimik 会在导出的视频中朗读每个步骤的文本。"
   voiceoverServerNeedsOpenai: "配音需要兼容 OpenAI 的服务器。"
+  voiceSample: "试听声音"
+  voiceSampleStop: "停止"
+  voiceSampleLoading: "正在生成试听…"
+  voiceSampleText: "这就是你的指南配音听起来的效果。"
+  voiceSampleFailed: "试听失败：$1"
+  voiceSampleUnreadable: "返回的内容不是 Mimik 能播放的音频。"
+  voiceSampleCheckVoice: "服务器没有说明原因。请确认该模型提供此名称的声音。"
   voice: "语音"
   voiceNarrationHint: "边录边讲，Mimik 会根据你说的内容写出每个步骤。"
   voiceNarration: 语音讲解
