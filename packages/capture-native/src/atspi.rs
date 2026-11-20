@@ -1048,10 +1048,17 @@ pub fn element_at_point(x: i32, y: i32) -> Option<UiElement> {
     if let Some(found) = shell_overlay(session, x, y) {
       return Some(full(&promoted(found)));
     }
-    let popup = popup_at(&conn, root, x, y).and_then(|target| popup_root(session, &target));
+    let menu = popup_at(&conn, root, x, y);
+    let popup = menu.as_ref().and_then(|target| popup_root(session, target));
     let window = match popup {
       Some(found) => found,
       None => {
+        let item = menu
+          .and_then(|target| app_for(session, target.pid))
+          .and_then(|app| menu_item_under(&app, x, y));
+        if let Some(item) = item {
+          return Some(full(&item));
+        }
         let target = target_at(&conn, root, x, y).filter(|found| found.pid != std::process::id())?;
         let app = app_for(session, target.pid)?;
         window_under(&app, &target, x, y)?
