@@ -498,6 +498,53 @@ fn target(conn: &RustConnection, root: Window, window: Window) -> Option<Target>
   })
 }
 
+fn is_menu(conn: &RustConnection, window: Window) -> bool {
+  let kinds = property32(conn, window, b"_NET_WM_WINDOW_TYPE", AtomEnum::ATOM).unwrap_or_default();
+  kinds.iter().any(|atom| {
+    conn
+      .get_atom_name(*atom)
+      .ok()
+      .and_then(|cookie| cookie.reply().ok())
+      .is_some_and(|reply| {
+        let name = String::from_utf8_lossy(&reply.name);
+        name.contains("MENU") || name.contains("COMBO")
+      })
+  })
+}
+
+pub fn open_menus() -> Vec<ElementRect> {
+  let Some((conn, root)) = x_root() else {
+    return Vec::new();
+  };
+  let Some(tree) = conn.query_tree(root).ok().and_then(|cookie| cookie.reply().ok()) else {
+    return Vec::new();
+  };
+  tree
+    .children
+    .into_iter()
+    .filter_map(|window| {
+      let attributes = conn.get_window_attributes(window).ok()?.reply().ok()?;
+      if !attributes.override_redirect
+        || attributes.map_state != MapState::VIEWABLE
+        || !is_menu(&conn, window)
+      {
+        return None;
+      }
+      let found = target(&conn, root, window)?;
+      if found.pid == std::process::id() {
+        return None;
+      }
+      let geometry = conn.get_geometry(window).ok()?.reply().ok()?;
+      Some(ElementRect {
+        x: f64::from(found.origin.0),
+        y: f64::from(found.origin.1),
+        width: f64::from(geometry.width),
+        height: f64::from(geometry.height),
+      })
+    })
+    .collect()
+}
+
 fn popup_at(conn: &RustConnection, root: Window, x: i32, y: i32) -> Option<Target> {
   let tree = conn.query_tree(root).ok()?.reply().ok()?;
   for window in tree.children.into_iter().rev() {
@@ -508,18 +555,7 @@ fn popup_at(conn: &RustConnection, root: Window, x: i32, y: i32) -> Option<Targe
     if !attributes.override_redirect {
       return None;
     }
-    let kinds = property32(conn, window, b"_NET_WM_WINDOW_TYPE", AtomEnum::ATOM).unwrap_or_default();
-    let menu = kinds.iter().any(|atom| {
-      conn
-        .get_atom_name(*atom)
-        .ok()
-        .and_then(|cookie| cookie.reply().ok())
-        .is_some_and(|reply| {
-          let name = String::from_utf8_lossy(&reply.name);
-          name.contains("MENU") || name.contains("COMBO")
-        })
-    });
-    if !menu {
+    if !is_menu(conn, window) {
       continue;
     }
     let geometry = conn.get_geometry(window).ok()?.reply().ok()?;

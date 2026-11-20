@@ -128,6 +128,34 @@ describe('clicks', () => {
     expect(frameFor('window', inside, region, null)).toEqual(DISPLAY);
     expect(frameFor('area', outside, region, window)).toEqual(region);
   });
+
+  it('widens a window frame to the menus open over its edge', () => {
+    const window = { x: 100, y: 100, width: 400, height: 300 };
+    const menu = { x: 420, y: 130, width: 160, height: 220 };
+    const submenu = { x: 580, y: 300, width: 150, height: 150 };
+    const unrelated = { x: 1500, y: 900, width: 100, height: 100 };
+
+    expect(frameFor('window', inside, region, window, [menu])).toEqual({ x: 100, y: 100, width: 480, height: 300 });
+    expect(frameFor('window', inside, region, window, [submenu, menu])).toEqual({
+      x: 100,
+      y: 100,
+      width: 630,
+      height: 350,
+    });
+    expect(frameFor('window', inside, region, window, [unrelated])).toEqual(window);
+  });
+
+  it('keeps a widened window frame on the display', () => {
+    const window = { x: 1700, y: 100, width: 200, height: 200 };
+    const menu = { x: 1850, y: 150, width: 200, height: 100 };
+
+    expect(frameFor('window', { x: 1710, y: 110 }, region, window, [menu])).toEqual({
+      x: 1700,
+      y: 100,
+      width: 220,
+      height: 200,
+    });
+  });
 });
 
 describe('keys', () => {
