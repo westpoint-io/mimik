@@ -12,11 +12,11 @@ use zbus::blocking::Connection;
 use zbus::zvariant::{DynamicType, OwnedObjectPath, OwnedValue, Value};
 
 use crate::atspimap::{
-  control_role_mask, control_roles, expansion, has_state, menu_item_mask, role, state_set, PASSWORD_TEXT,
-  STATE_ACTIVE, STATE_FOCUSED, STATE_SELECTED, STATE_SHOWING,
+  control_role_mask, control_roles, expansion, has_state, menu_entry_mask, menu_item_mask, role, state_set,
+  PASSWORD_TEXT, STATE_ACTIVE, STATE_FOCUSED, STATE_SELECTED, STATE_SHOWING,
 };
 use crate::hit::{
-  dropdown_takes, in_row, is_control, is_dropdown_part, is_label, is_option, smallest_under, Bounds,
+  dropdown_takes, in_row, is_control, is_dropdown_part, is_label, is_option, smallest_under, within, Bounds,
   PROMOTE_DEPTH,
 };
 use crate::{ElementNode, ElementRect, UiElement};
@@ -837,6 +837,32 @@ fn in_open_dropdown_row(item: &Node, item_bounds: Bounds, x: i32, y: i32) -> boo
   })
 }
 
+fn popup_item_under(app: &Node, target: &Target, x: i32, y: i32) -> Option<Node> {
+  let (width, height) = target.popup?;
+  let window = app
+    .children()
+    .into_iter()
+    .find(|window| has_state(&window.states(), STATE_SHOWING));
+  if placement(app, window.as_ref(), target).1 == WINDOW {
+    return None;
+  }
+  let popup = (
+    target.origin.0,
+    target.origin.1,
+    target.origin.0 + width,
+    target.origin.1 + height,
+  );
+  let found: Vec<(Node, Bounds)> = showing(app, menu_entry_mask())
+    .into_iter()
+    .filter(|(item, bounds)| {
+      within(*bounds, popup)
+        && item.parent().and_then(|parent| role_name(&parent)).as_deref() != Some("menubar")
+    })
+    .collect();
+  let boxes: Vec<Bounds> = found.iter().map(|(_, bounds)| *bounds).collect();
+  smallest_under(&boxes, x, y).map(|index| found[index].0.clone())
+}
+
 fn menu_item_under(window: &Node, x: i32, y: i32) -> Option<Node> {
   let found = showing(window, menu_item_mask());
   let boxes: Vec<Bounds> = found.iter().map(|(_, bounds)| *bounds).collect();
@@ -1108,10 +1134,18 @@ pub fn element_at_point(x: i32, y: i32) -> Option<UiElement> {
     if let Some(found) = shell_overlay(session, x, y) {
       return Some(full(&promoted(found)));
     }
-    let popup = popup_at(&conn, root, x, y).and_then(|target| popup_root(session, &target));
+    let menu = popup_at(&conn, root, x, y);
+    let popup = menu.as_ref().and_then(|target| popup_root(session, target));
     let window = match popup {
       Some(found) => found,
       None => {
+        let item = menu.and_then(|target| {
+          let app = app_for(session, target.pid)?;
+          popup_item_under(&app, &target, x, y)
+        });
+        if let Some(item) = item {
+          return Some(full(&item));
+        }
         let target = target_at(&conn, root, x, y).filter(|found| found.pid != std::process::id())?;
         let app = app_for(session, target.pid)?;
         window_under(&app, &target, x, y)?

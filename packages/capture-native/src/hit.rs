@@ -42,6 +42,19 @@ pub fn in_row((_, top, _, bottom): Bounds, (left, _, right, _): Bounds, x: i32, 
 }
 
 #[cfg(any(target_os = "linux", test))]
+pub fn within(
+  (left, top, right, bottom): Bounds,
+  (outer_left, outer_top, outer_right, outer_bottom): Bounds,
+) -> bool {
+  right > left
+    && bottom > top
+    && left >= outer_left
+    && top >= outer_top
+    && right <= outer_right
+    && bottom <= outer_bottom
+}
+
+#[cfg(any(target_os = "linux", test))]
 pub fn dropdown_takes(expanded: Option<bool>, on_dropdown: bool, on_option: bool) -> bool {
   match expanded {
     Some(false) => true,
@@ -52,7 +65,9 @@ pub fn dropdown_takes(expanded: Option<bool>, on_dropdown: bool, on_option: bool
 
 #[cfg(test)]
 mod tests {
-  use super::{dropdown_takes, in_row, is_control, is_dropdown_part, is_label, is_option, smallest_under};
+  use super::{
+    dropdown_takes, in_row, is_control, is_dropdown_part, is_label, is_option, smallest_under, within,
+  };
 
   const PANEL: (i32, i32, i32, i32) = (0, 0, 400, 600);
   const ITEM: (i32, i32, i32, i32) = (10, 50, 390, 90);
@@ -129,5 +144,15 @@ mod tests {
     assert!(!is_dropdown_part(None));
     assert!(is_option(Some("listitem")));
     assert!(!is_option(Some("menu")));
+  }
+
+  #[test]
+  fn keeps_only_boxes_inside_the_popup() {
+    let popup = (300, 200, 460, 400);
+    assert!(within((302, 220, 458, 246), popup));
+    assert!(within(popup, popup));
+    assert!(!within((10, 30, 54, 57), popup));
+    assert!(!within((302, 380, 458, 420), popup));
+    assert!(!within((310, 230, 310, 250), popup));
   }
 }

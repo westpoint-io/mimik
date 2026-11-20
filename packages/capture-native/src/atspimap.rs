@@ -119,6 +119,15 @@ pub fn expansion(states: &[u32]) -> Option<bool> {
   }
 }
 
+pub fn menu_entry_mask() -> Vec<i32> {
+  role_mask(
+    ROLES
+      .iter()
+      .filter(|(_, name)| matches!(*name, "menuitem" | "menu"))
+      .map(|(found, _)| *found as i32),
+  )
+}
+
 pub fn state_set(state: u32) -> Vec<i32> {
   let mut words = vec![0i32; 2];
   words[(state / 32) as usize] |= (1u32 << (state % 32)) as i32;
@@ -128,8 +137,8 @@ pub fn state_set(state: u32) -> Vec<i32> {
 #[cfg(test)]
 mod tests {
   use super::{
-    control_role_mask, expansion, has_state, role, state_set, STATE_COLLAPSED, STATE_EXPANDABLE,
-    STATE_EXPANDED, STATE_FOCUSED, STATE_SHOWING,
+    control_role_mask, expansion, has_state, menu_entry_mask, role, state_set, STATE_COLLAPSED,
+    STATE_EXPANDABLE, STATE_EXPANDED, STATE_FOCUSED, STATE_SHOWING,
   };
 
   #[test]
@@ -170,5 +179,13 @@ mod tests {
       Some(true)
     );
     assert_eq!(expansion(&[1 << STATE_EXPANDED, 0]), Some(true));
+  }
+
+  #[test]
+  fn menu_entries_include_submenus() {
+    let words = menu_entry_mask();
+    assert_ne!(words[1] & (1 << (33 - 32)), 0);
+    assert_ne!(words[1] & (1 << (35 - 32)), 0);
+    assert_eq!(words[1] & (1 << (34 - 32)), 0);
   }
 }
