@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { fetchVoices, parseVoices, speechRequest, synthesizeSpeech } from '@/core/export/voiceover/client';
 import type { VoiceoverConfig } from '@/core/export/voiceover/config';
+import { SpeechError } from '@/core/export/voiceover/speech-error';
 
 const openai: VoiceoverConfig = {
   provider: 'openai',
@@ -113,6 +114,43 @@ describe('synthesizeSpeech', () => {
   it('keeps the body for an error that explains something useful', async () => {
     respond({ ok: false, status: 422, body: 'voice_not_found' });
     await expect(synthesizeSpeech(eleven, 'Click Save')).rejects.toThrow(/ElevenLabs returned 422: voice_not_found/);
+  });
+
+  it('keeps only the message of an OpenAI-style error body', async () => {
+    respond({
+      ok: false,
+      status: 400,
+      body: '{"error":{"origin":"router","message":"Invalid model ID. See the model library"}}',
+    });
+    await expect(synthesizeSpeech(server, 'Click Save')).rejects.toThrow(
+      /^Your server returned 400: Invalid model ID\. See the model library$/,
+    );
+  });
+
+  it('marks a failure the server explained apart from one it did not', async () => {
+    respond({ ok: false, status: 400, body: '{"error":{"message":"Invalid model ID"}}' });
+    await expect(synthesizeSpeech(server, 'x')).rejects.toMatchObject({ status: 400, explained: true });
+
+    respond({ ok: false, status: 500, body: 'Internal Server Error' });
+    const failure = await synthesizeSpeech(server, 'x').catch((error: unknown) => error);
+    expect(failure).toBeInstanceOf(SpeechError);
+    expect(failure).toMatchObject({ status: 500, explained: false });
+  });
+
+  it('does not take a message that only names the status for a reason', async () => {
+    respond({ ok: false, status: 500, body: '{"error":{"message":"Internal Server Error"}}' });
+    await expect(synthesizeSpeech(server, 'x')).rejects.toMatchObject({
+      message: 'Your server returned 500: Internal Server Error',
+      explained: false,
+    });
+
+    respond({ ok: false, status: 400, body: '{"error":{"message":"Bad Request."}}' });
+    await expect(synthesizeSpeech(server, 'x')).rejects.toMatchObject({ explained: false });
+  });
+
+  it('keeps the whole body when it carries no error message', async () => {
+    respond({ ok: false, status: 500, body: '{"error":{"code":42}}' });
+    await expect(synthesizeSpeech(server, 'Click Save')).rejects.toThrow(/returned 500: \{"error":\{"code":42\}\}$/);
   });
 });
 

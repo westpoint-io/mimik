@@ -185,6 +185,13 @@ settings:
   voiceover: "Video-Voiceover"
   voiceoverHint: "Mimik spricht den Text jedes Schritts über das exportierte Video."
   voiceoverServerNeedsOpenai: "Das Voice-over braucht einen OpenAI-kompatiblen Server."
+  voiceSample: "Stimme testen"
+  voiceSampleStop: "Stoppen"
+  voiceSampleLoading: "Test wird erzeugt…"
+  voiceSampleText: "So klingt das Voiceover deiner Anleitungen."
+  voiceSampleFailed: "Der Test ist fehlgeschlagen: $1"
+  voiceSampleUnreadable: "Die Antwort ist kein Audio, das Mimik abspielen kann."
+  voiceSampleCheckVoice: "Der Server hat keinen Grund genannt. Prüfe, ob dieses Modell eine Stimme mit diesem Namen anbietet."
   voice: "Stimme"
   voiceNarrationHint: "Erkläre den Ablauf laut, und Mimik formuliert jeden Schritt aus deinen Worten."
   voiceNarration: Sprachkommentar
