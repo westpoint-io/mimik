@@ -1,4 +1,4 @@
-import type { ActiveWindow, HookEvent, UiElement } from '@mimik/capture-native';
+import type { ActiveWindow, ElementRect, HookEvent, UiElement } from '@mimik/capture-native';
 
 export type Addon = {
   elementAtPoint(x: number, y: number): Promise<UiElement | null>;
@@ -6,6 +6,7 @@ export type Addon = {
   activeWindow(): ActiveWindow | null;
   windowAt(x: number, y: number): ActiveWindow | null;
   keyLabel(keycode: number): string | null;
+  openMenus(): ElementRect[];
   resolveKey(keycode: number, shift: boolean, ctrl: boolean, alt: boolean): string | null;
   clearDeadKey(): void;
   releaseWebContent(): void;

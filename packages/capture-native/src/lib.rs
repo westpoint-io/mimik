@@ -203,6 +203,14 @@ pub fn wake_apps() {
 }
 
 #[napi]
+pub fn open_menus() -> Vec<ElementRect> {
+  #[cfg(target_os = "linux")]
+  return atspi::open_menus();
+  #[cfg(not(target_os = "linux"))]
+  Vec::new()
+}
+
+#[napi]
 pub fn is_supported() -> bool {
   cfg!(any(windows, target_os = "macos", target_os = "linux"))
 }
