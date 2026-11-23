@@ -5,6 +5,7 @@
       "release-type": "simple",
       "component": "extension",
       "include-component-in-tag": false,
+      "pull-request-title-pattern": "chore${scope}: release extension ${version}",
       "changelog-path": "apps/extension/CHANGELOG.md",
       "exclude-paths": ["apps/desktop", "packages/capture-native"],
       "extra-files": [
