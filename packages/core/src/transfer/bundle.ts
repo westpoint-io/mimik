@@ -46,6 +46,7 @@ function bundleStep(step: Step, options: BundleOptions, secrets: readonly string
   const {
     guideId: _guideId,
     aiPending: _aiPending,
+    replayUnconfirmed: _replayUnconfirmed,
     screenshotId: _screenshotId,
     narratedDescription: _narratedDescription,
     ...rest

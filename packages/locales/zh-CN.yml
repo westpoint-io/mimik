@@ -225,6 +225,7 @@ settings:
   reportBug: "报告问题"
   machineTranslated: "此语言由 AI 翻译，部分措辞可能不够准确。发现错误？欢迎在 GitHub 上提交 pull request。"
   fixTranslation: "修正翻译"
+  languageBeta: "测试版"
   aboutSection: "关于"
   appearance: "外观"
   appearanceHint: "浅色、深色或跟随系统。"
@@ -401,6 +402,7 @@ editor:
   stepCopied: "已从“$2”复制 1 个步骤"
   stepsCopied: "已从“$2”复制 $1 个步骤"
   newStep: 新
+  replayUnconfirmed: "录制时这次点击可能没有传到页面。"
   copyScreenshot: 复制截图
   screenshotCopied: 已复制
   copyScreenshotFailed: "无法复制截图，请重试。"

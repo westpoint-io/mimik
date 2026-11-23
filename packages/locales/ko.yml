@@ -229,6 +229,7 @@ settings:
   reportBug: "버그 신고"
   machineTranslated: "이 언어는 AI로 번역되어 어색한 표현이 있을 수 있어요. 오류를 발견하면 GitHub에서 풀 리퀘스트를 열어 주세요."
   fixTranslation: "번역 수정하기"
+  languageBeta: "베타"
   aboutSection: "정보"
   appearance: "테마"
   appearanceHint: "라이트, 다크 또는 시스템 설정을 따라요."
@@ -401,6 +402,7 @@ editor:
   stepCopied: '"$2"에서 단계 1개를 복사했어요'
   stepsCopied: '"$2"에서 단계 $1개를 복사했어요'
   newStep: "신규"
+  replayUnconfirmed: "녹화 중에 이 클릭이 페이지에 전달되지 않았을 수 있어요."
   copyScreenshot: "스크린샷 복사"
   screenshotCopied: "복사됨"
   copyScreenshotFailed: "스크린샷을 복사하지 못했어요. 다시 시도해 주세요."

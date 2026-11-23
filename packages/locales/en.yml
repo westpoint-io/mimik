@@ -225,6 +225,7 @@ settings:
   reportBug: "Report a bug"
   machineTranslated: "This language was translated with AI, so some wording may be off. Spotted a mistake? Open a pull request on GitHub."
   fixTranslation: "Fix a translation"
+  languageBeta: "Beta"
   aboutSection: "About"
   appearance: "Appearance"
   appearanceHint: "Light, dark, or the same as your system."
@@ -401,6 +402,7 @@ editor:
   stepCopied: "1 step copied from “$2”"
   stepsCopied: "$1 steps copied from “$2”"
   newStep: New
+  replayUnconfirmed: "This click may not have reached the page while recording."
   copyScreenshot: Copy screenshot
   screenshotCopied: Copied
   copyScreenshotFailed: "Couldn't copy the screenshot. Try again."

@@ -133,6 +133,7 @@ interface MimikProtocol {
   captureStep(data: CaptureStepData): CaptureStepResponse;
   updateInputStep(data: UpdateInputStepData): UpdateInputStepResponse;
   finalizeInputStep(data: FinalizeInputStepData): FinalizeInputStepResponse;
+  markReplayUnconfirmed(stepId: string): void;
   startGuideMe(data: StartGuideMeData): StartGuideMeResponse;
   guideMeStepCompleted(data: GuideMeStepCompletedData): GuideMeStepCompletedResponse;
   guideMeCancel(): GuideMe_CancelResponse;

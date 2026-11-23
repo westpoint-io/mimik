@@ -17,6 +17,7 @@ import {
   deleteStep,
   getScreenshotsForSteps,
   getStepsForGuide,
+  markReplayUnconfirmed,
   permanentlyDeleteGuide,
   softDeleteGuide,
 } from '@/core/guides/service';
@@ -350,6 +351,12 @@ export default defineBackground(() => {
     await deleteStep(currentGuideId, data);
     getActor().send({ type: 'STEP_REMOVED' });
     cardFeed.remove(data);
+  });
+
+  onMessage('markReplayUnconfirmed', async ({ data }) => {
+    await waitUntilReady();
+    if (!isLive(getActor().getSnapshot().value)) return;
+    await markReplayUnconfirmed(data);
   });
 
   onMessage('updateInputStep', async ({ data }) => {

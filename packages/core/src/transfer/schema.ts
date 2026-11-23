@@ -18,7 +18,10 @@ export const MANIFEST_PATH = 'manifest.json';
 export const SCREENSHOT_DIR = 'screenshots';
 export const README_PATH = 'README.md';
 
-export type BundleStep = Omit<Step, 'guideId' | 'aiPending' | 'screenshotId' | 'narratedDescription'>;
+export type BundleStep = Omit<
+  Step,
+  'guideId' | 'aiPending' | 'replayUnconfirmed' | 'screenshotId' | 'narratedDescription'
+>;
 
 export interface BundleScreenshot {
   id: string;

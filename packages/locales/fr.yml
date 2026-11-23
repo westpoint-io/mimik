@@ -225,6 +225,7 @@ settings:
   reportBug: "Signaler un bug"
   machineTranslated: "Cette langue a été traduite par IA, certaines formulations peuvent donc sembler maladroites. Vous voyez une erreur ? Ouvrez une pull request sur GitHub."
   fixTranslation: "Corriger une traduction"
+  languageBeta: "Bêta"
   aboutSection: "À propos"
   appearance: "Apparence"
   appearanceHint: "Clair, sombre ou comme votre système."
@@ -401,6 +402,7 @@ editor:
   stepCopied: "1 étape copiée depuis « $2 »"
   stepsCopied: "$1 étapes copiées depuis « $2 »"
   newStep: Nouveau
+  replayUnconfirmed: "Ce clic n'a peut-être pas atteint la page pendant l'enregistrement."
   copyScreenshot: "Copier la capture"
   screenshotCopied: Copiée
   copyScreenshotFailed: "Impossible de copier la capture. Réessayez."

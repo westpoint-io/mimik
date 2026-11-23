@@ -5,4 +5,5 @@ export const extensionCaptureSink: CaptureSink = {
   captureStep: (data) => sendMessage('captureStep', data),
   updateInputStep: (data) => sendMessage('updateInputStep', data),
   finalizeInputStep: (data) => sendMessage('finalizeInputStep', data),
+  markReplayUnconfirmed: (stepId) => sendMessage('markReplayUnconfirmed', stepId),
 };
