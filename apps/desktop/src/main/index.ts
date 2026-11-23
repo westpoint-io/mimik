@@ -46,7 +46,7 @@ import {
 import { bindShortcuts, type ShortcutName, shortcutMap, unbindShortcuts } from './shortcuts';
 import { createUpdater } from './updater';
 
-if (process.platform === 'linux' && !InputHook.unsupportedSession()) delete process.env.WAYLAND_DISPLAY;
+InputHook.preferX11();
 
 const FINISH_TIMEOUT_MS = NARRATION_SETTLE_MS + 15_000;
 

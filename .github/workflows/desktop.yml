@@ -49,7 +49,7 @@ jobs:
           node-version: "22"
           cache: pnpm
 
-      - run: sudo apt-get update && sudo apt-get install -y xvfb libxkbcommon-dev
+      - run: sudo apt-get update && sudo apt-get install -y xvfb libxkbcommon-dev openbox at-spi2-core dbus-x11 x11-utils
 
       - run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
@@ -90,3 +90,9 @@ jobs:
 
       - name: Overlay check
         run: xvfb-run -a pnpm --filter @mimik/desktop check:overlay
+
+      - name: Capture check on X11, with a stale Wayland variable
+        run: dbus-run-session -- xvfb-run -a sh -c 'openbox & pnpm --filter @mimik/desktop check:capture'
+        env:
+          XDG_SESSION_TYPE: x11
+          WAYLAND_DISPLAY: wayland-0
