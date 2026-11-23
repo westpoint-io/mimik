@@ -5,6 +5,7 @@ import type { Guide, Screenshot, Step } from '@/core/guides/types';
 const rec = vi.hoisted(() => ({
   written: [] as { width: number; height: number; options: Record<string, unknown> }[],
   finished: 0,
+  texts: [] as string[],
 }));
 
 const branding = vi.hoisted(() => ({
@@ -22,6 +23,9 @@ function fakeCtx(width: number, height: number) {
   const base: Record<string, unknown> = {
     canvas: { width, height },
     measureText: (t: unknown) => ({ width: String(t).length * 8 }),
+    fillText: (t: unknown) => {
+      rec.texts.push(String(t));
+    },
     getImageData: () => ({ data: new Uint8ClampedArray(width * height * 4) }),
   };
   return new Proxy(base, {
@@ -113,6 +117,7 @@ const opts = (o = {}) => ({ ...DEFAULT_EXPORT_OPTIONS, cover: false, ...o });
 beforeEach(() => {
   rec.written = [];
   rec.finished = 0;
+  rec.texts = [];
   branding.value = { logo: null, footer: '', attribution: false, accent: '#4F46E5', custom: false };
 
   class FakeOffscreen {
@@ -184,6 +189,18 @@ describe('exportGuideAsGif', () => {
 
     await exportGuideAsGif(guide, steps, screenshots, opts());
     expect(rec.written).toHaveLength(totalStepFrames(1, SPEC.fps));
+  });
+
+  it('numbers steps and counts them on the cover from the full list when a step has no screenshot', async () => {
+    const steps = [makeStep(0), makeStep(1), makeStep(2)];
+    const shots = shotsFor(steps);
+    shots.delete('s1');
+    await exportGuideAsGif(guide, steps, shots, opts({ cover: true, stepNumbers: true }));
+
+    expect(rec.texts).toContain('03');
+    expect(rec.texts).toContain('1. Click the button labelled 0');
+    expect(rec.texts).toContain('3. Click the button labelled 2');
+    expect(rec.texts).not.toContain('2. Click the button labelled 2');
   });
 
   it('reports progress up to the frame total', async () => {

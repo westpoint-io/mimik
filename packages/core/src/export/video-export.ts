@@ -733,7 +733,13 @@ export interface VideoExportResult {
   voiceoverError?: VoiceoverSkip;
 }
 
-export function videoChapters(frames: Step[], cover: boolean, fps = FPS, timeline?: VideoTimeline): VideoChapter[] {
+export function videoChapters(
+  frames: Step[],
+  cover: boolean,
+  fps = FPS,
+  timeline?: VideoTimeline,
+  numbers = stepNumbers(frames),
+): VideoChapter[] {
   if (frames.length === 0) return [];
   const plan = timeline ?? uniformTimeline(frames.length);
   const offset = cover ? plan.coverSeconds : 0;
@@ -743,7 +749,7 @@ export function videoChapters(frames: Step[], cover: boolean, fps = FPS, timelin
 
   return frames.map((step, index) => ({
     stepId: step.id,
-    title: step.description?.trim() || i18n.t('export.stepLabel', [String(index + 1)]),
+    title: step.description?.trim() || i18n.t('export.stepLabel', [String(numbers.get(step.id) ?? index + 1)]),
     kind: stepKind(step),
     start: offset + starts[index]! / fps,
     end: index === frames.length - 1 ? last : offset + starts[index + 1]! / fps,
@@ -755,7 +761,7 @@ export type FrameSink = (timeSec: number, durationSec: number) => Promise<void>;
 
 export async function composeGuideFrames(
   guide: Guide,
-  frames: Step[],
+  steps: Step[],
   screenshots: Map<string, Screenshot>,
   options: FrameOptions,
   brand: Branding,
@@ -765,6 +771,7 @@ export async function composeGuideFrames(
   controls: { onProgress?: (done: number, total: number) => void; signal?: AbortSignal } = {},
   fps = FPS,
 ): Promise<void> {
+  const frames = steps.filter((step) => isBlock(step) || screenshots.has(step.id));
   const overlap = overlapFrames(fps);
   const timeline = options.timeline ?? uniformTimeline(frames.length);
   const spans = stepSpans(timeline, frames.length, fps);
@@ -772,7 +779,7 @@ export async function composeGuideFrames(
   const stepTotal = spannedFrames(spans, fps);
   const total = stepTotal + (options.cover ? 2 : 0);
   const loaded = new Map<number, StepLayer>();
-  const numbers = stepNumbers(frames);
+  const numbers = stepNumbers(steps);
   const { onProgress, signal } = controls;
   let done = 0;
 
@@ -821,7 +828,7 @@ export async function composeGuideFrames(
   try {
     const offset = options.cover ? timeline.coverSeconds : 0;
 
-    const cards = actionSteps(frames);
+    const cards = actionSteps(steps);
 
     if (options.cover) {
       abortIfRequested();
@@ -1034,7 +1041,7 @@ export async function exportGuideAsVideo(
   try {
     await composeGuideFrames(
       guide,
-      frames,
+      steps,
       screenshots,
       { ...options, timeline },
       brand,
@@ -1072,7 +1079,7 @@ export async function exportGuideAsVideo(
   return {
     blob: new Blob([buffer], { type: mp4 ? 'video/mp4' : 'video/webm' }),
     extension: mp4 ? 'mp4' : 'webm',
-    chapters: videoChapters(frames, Boolean(options.cover), FPS, timeline),
+    chapters: videoChapters(frames, Boolean(options.cover), FPS, timeline, stepNumbers(steps)),
     ...(narration.error ? { voiceoverError: narration.error } : {}),
   };
 }

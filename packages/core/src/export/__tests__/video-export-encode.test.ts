@@ -482,6 +482,29 @@ describe('exportGuideAsVideo layers', () => {
     expect(written).toContain('2. Click the button labelled 2');
   });
 
+  it('numbers steps from the full list when a step has no screenshot, as the PDF does', async () => {
+    const steps = [makeStep(0), makeStep(1), makeStep(2)];
+    const shots = shotsFor(steps);
+    shots.delete('s1');
+    await exportGuideAsVideo(guide, steps, shots, opts({ cover: false, stepNumbers: true }));
+
+    const written = rec.calls.filter((c) => c.m === 'fillText').map((c) => String(c.a[0]));
+    expect(written).toContain('1. Click the button labelled 0');
+    expect(written).toContain('3. Click the button labelled 2');
+    expect(written).not.toContain('2. Click the button labelled 2');
+  });
+
+  it('counts every step on the cover, including one with no screenshot', async () => {
+    const steps = [makeStep(0), makeStep(1), makeStep(2)];
+    const shots = shotsFor(steps);
+    shots.delete('s1');
+    await exportGuideAsVideo(guide, steps, shots, opts({ cover: true }));
+
+    const written = rec.calls.filter((c) => c.m === 'fillText').map((c) => String(c.a[0]));
+    expect(written).toContain('03');
+    expect(written).not.toContain('02');
+  });
+
   it('writes only the number when captions are off and numbers are on', async () => {
     const steps = [makeStep(0)];
     await exportGuideAsVideo(
