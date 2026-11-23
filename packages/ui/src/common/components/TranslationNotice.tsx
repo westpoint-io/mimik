@@ -1,14 +1,14 @@
+import { AI_LANGUAGES } from '@mimik/core/capture/ai/prompts';
 import { i18n } from '@mimik/core/env';
 import { Languages } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { tabs } from '../../env';
 
-const REVIEWED_LOCALES = ['en', 'es', 'pt-BR'];
 const EDIT_URL = 'https://github.com/westpoint-io/mimik/edit/dev/packages/locales';
 
 export function TranslationNotice() {
   const locale = i18n.t('meta.locale');
-  if (REVIEWED_LOCALES.includes(locale)) return null;
+  if (!AI_LANGUAGES.some((language) => language.code === locale && 'beta' in language)) return null;
 
   return (
     <div className="flex items-start gap-2.5 rounded-xl border border-border bg-card p-3.5">

@@ -9,6 +9,7 @@ import { useAiSettings } from '../../ai/hooks/use-ai-settings';
 import { useApiKeys } from '../../ai/hooks/use-api-keys';
 import { aiProviderOptions } from '../../ai/lib/ai-provider-options';
 import type { ValidateKey } from '../../ai/types';
+import { LanguageLabel } from '../../common/components/LanguageLabel';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
 import type { StepProps } from '../types';
 import { OnboardingCard } from './OnboardingCard';
@@ -89,7 +90,7 @@ export function WriteStepsStep({
                 <SelectContent>
                   {AI_LANGUAGES.map((lang) => (
                     <SelectItem key={lang.code} value={lang.code}>
-                      {lang.label}
+                      <LanguageLabel language={lang} />
                     </SelectItem>
                   ))}
                 </SelectContent>

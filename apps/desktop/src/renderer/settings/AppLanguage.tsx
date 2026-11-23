@@ -1,6 +1,6 @@
 import { AI_LANGUAGES } from '@mimik/core/capture/ai/prompts';
 import { i18n, localStorage } from '@mimik/core/env';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui';
+import { LanguageLabel, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@mimik/ui';
 import { useEffect, useState } from 'react';
 import { REOPEN_SETTINGS } from './lib/reopen-settings';
 
@@ -27,7 +27,7 @@ export function AppLanguage() {
         <SelectItem value="system">{i18n.t('desktop.languageSystem')}</SelectItem>
         {AI_LANGUAGES.map((language) => (
           <SelectItem key={language.code} value={language.code}>
-            {language.label}
+            <LanguageLabel language={language} />
           </SelectItem>
         ))}
       </SelectContent>
