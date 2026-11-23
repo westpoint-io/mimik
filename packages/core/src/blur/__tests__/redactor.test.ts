@@ -101,3 +101,47 @@ describe('documented coverage limits', () => {
     expect(document.querySelectorAll(BLURRED)).toHaveLength(0);
   });
 });
+
+describe('peeking under a mask', () => {
+  function click(el: Element) {
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+    el.dispatchEvent(event);
+    return event;
+  }
+
+  it('lifts the blur on a click while the blur panel is open', () => {
+    document.body.innerHTML = '<input value="ada@example.com">';
+    const field = document.querySelector('input') as HTMLInputElement;
+    const scanner = new PageRedactor();
+    scanner.start(['email']);
+
+    expect(click(field).defaultPrevented).toBe(true);
+    expect(field.style.filter).toBe('');
+    scanner.detach();
+  });
+
+  it('puts every peeked mask back when the panel closes', () => {
+    document.body.innerHTML = '<p>ada@example.com</p><input value="bob@example.com">';
+    const field = document.querySelector('input') as HTMLInputElement;
+    const scanner = new PageRedactor();
+    scanner.start(['email']);
+    click(field);
+    click(document.querySelector(BLURRED) as Element);
+
+    scanner.detach();
+
+    expect(field.style.filter).toBe('blur(10px)');
+    expect(document.querySelector(BLURRED)?.classList.contains('mimik-redact-shown')).toBe(false);
+  });
+
+  it('lets a click through and keeps the blur once the panel is closed, as while recording', () => {
+    document.body.innerHTML = '<input value="ada@example.com">';
+    const field = document.querySelector('input') as HTMLInputElement;
+    const scanner = new PageRedactor();
+    scanner.start(['email']);
+    scanner.detach();
+
+    expect(click(field).defaultPrevented).toBe(false);
+    expect(field.style.filter).toBe('blur(10px)');
+  });
+});
