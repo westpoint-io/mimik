@@ -126,6 +126,52 @@ describe('holding back the press on a control', () => {
     expect(seen).toEqual(['pointerdown', 'mousedown', 'pointerup', 'mouseup', 'click']);
   });
 
+  it('lets the browser start a native drag from a draggable control', async () => {
+    const host = place(
+      '<div role="listbox"><div id="card" role="option" tabindex="0" draggable="true">Card</div></div>',
+    );
+    const card = host.querySelector('#card')!;
+    const seen: string[] = [];
+    record(card, seen);
+
+    card.dispatchEvent(pointer('pointerdown'));
+    const down = pointer('mousedown');
+    card.dispatchEvent(down);
+
+    expect(down.defaultPrevented).toBe(false);
+    expect(seen).toEqual(['pointerdown', 'mousedown']);
+  });
+
+  it('lets a drag start from inside a draggable item too', async () => {
+    const host = place('<div draggable="true"><button id="handle">Move</button></div>');
+    const handleButton = host.querySelector('#handle')!;
+
+    handleButton.dispatchEvent(pointer('pointerdown'));
+    const down = pointer('mousedown');
+    handleButton.dispatchEvent(down);
+
+    expect(down.defaultPrevented).toBe(false);
+  });
+
+  it('reads the draggable attribute without regard to case', async () => {
+    const host = place('<div role="option" tabindex="0" draggable="TRUE">Card</div>');
+    host.firstElementChild!.dispatchEvent(pointer('pointerdown'));
+    const down = pointer('mousedown');
+    host.firstElementChild!.dispatchEvent(down);
+
+    expect(down.defaultPrevented).toBe(false);
+  });
+
+  it('still holds a control the page marked not draggable inside a draggable item', async () => {
+    const host = place('<div draggable="true"><button id="menu" draggable="false">More</button></div>');
+    const menu = host.querySelector('#menu')!;
+    menu.dispatchEvent(pointer('pointerdown'));
+    const down = pointer('mousedown');
+    menu.dispatchEvent(down);
+
+    expect(down.defaultPrevented).toBe(true);
+  });
+
   it('keeps focus where the page keeps it when the page cancels the press', async () => {
     const host = place('<input id="field"><div role="listbox"><div id="opt" role="option" tabindex="-1">A</div></div>');
     const field = host.querySelector<HTMLInputElement>('#field')!;

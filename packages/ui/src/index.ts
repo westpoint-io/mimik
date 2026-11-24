@@ -10,6 +10,7 @@ export { AppearanceSettings } from './common/components/AppearanceSettings';
 export { CameraMascot } from './common/components/CameraMascot';
 export { FaviconImg } from './common/components/FaviconImg';
 export { GitHubCard } from './common/components/GitHubCard';
+export { LanguageLabel } from './common/components/LanguageLabel';
 export { MascotIcon } from './common/components/MascotIcon';
 export { SavedBadge } from './common/components/SavedBadge';
 export { Segmented } from './common/components/Segmented';

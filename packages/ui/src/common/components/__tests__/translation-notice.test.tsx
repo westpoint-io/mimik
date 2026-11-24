@@ -13,7 +13,7 @@ function inLocale(locale: string) {
 describe('TranslationNotice', () => {
   afterEach(() => vi.restoreAllMocks());
 
-  it.each(['de', 'fr', 'ru', 'zh-CN', 'ja', 'ko', 'zh-TW'])('says %s was translated with AI', (locale) => {
+  it.each(['ja', 'ko', 'zh-TW'])('says %s, still in beta, was translated with AI', (locale) => {
     inLocale(locale);
     render(<TranslationNotice />);
     expect(screen.getByText('settings.machineTranslated')).toBeInTheDocument();
@@ -28,9 +28,12 @@ describe('TranslationNotice', () => {
     expect(create).toHaveBeenCalledWith('https://github.com/westpoint-io/mimik/edit/dev/packages/locales/ja.yml');
   });
 
-  it.each(['en', 'es', 'pt-BR'])('stays out of the way in %s, which a native speaker reviewed', (locale) => {
-    inLocale(locale);
-    const { container } = render(<TranslationNotice />);
-    expect(container).toBeEmptyDOMElement();
-  });
+  it.each(['en', 'es', 'pt-BR', 'de', 'fr', 'ru', 'zh-CN'])(
+    'stays out of the way in %s, which is out of beta',
+    (locale) => {
+      inLocale(locale);
+      const { container } = render(<TranslationNotice />);
+      expect(container).toBeEmptyDOMElement();
+    },
+  );
 });

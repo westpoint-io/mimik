@@ -232,6 +232,7 @@ settings:
   reportBug: "Сообщить об ошибке"
   machineTranslated: "Этот язык переведён с помощью ИИ, поэтому некоторые фразы могут звучать неточно. Нашли ошибку? Откройте pull request на GitHub."
   fixTranslation: "Исправить перевод"
+  languageBeta: "Бета"
   aboutSection: "О Mimik"
   appearance: "Оформление"
   appearanceHint: "Светлое, тёмное или как в системе."
@@ -408,6 +409,7 @@ editor:
   stepCopied: "1 шаг скопирован из «$2»"
   stepsCopied: "Шаги ($1) скопированы из «$2»"
   newStep: Новый
+  replayUnconfirmed: "Возможно, этот клик не дошёл до страницы во время записи."
   copyScreenshot: Копировать скриншот
   screenshotCopied: Скопировано
   copyScreenshotFailed: Не удалось скопировать скриншот. Попробуйте ещё раз.

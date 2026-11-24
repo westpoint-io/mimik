@@ -55,6 +55,10 @@ export class InputHook {
     return process.platform === 'linux' && process.env.XDG_SESSION_TYPE === 'wayland';
   }
 
+  static preferX11(): void {
+    if (process.platform === 'linux' && !InputHook.unsupportedSession()) delete process.env.WAYLAND_DISPLAY;
+  }
+
   async start(onAction: (action: InputAction) => void): Promise<InputHookStart> {
     if (this.running) return { ok: true };
 

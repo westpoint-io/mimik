@@ -5,7 +5,7 @@ import { replaceScreenshot, restoreNarratedDescription } from '@mimik/core/guide
 import type { Screenshot, Step } from '@mimik/core/guides/types';
 import { logger } from '@mimik/core/logger';
 import { imageDimensions, renderScreenshot } from '@mimik/core/screenshot/render';
-import { Check, Copy, CopyPlus, Loader2, Trash2, Undo2 } from 'lucide-react';
+import { Check, Copy, CopyPlus, Loader2, Trash2, TriangleAlert, Undo2 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useAskAi } from '../../ai/hooks/use-ask-ai';
 import { ConfirmDialog } from '../../common/components/ConfirmDialog';
@@ -169,6 +169,12 @@ export function StepCard({
             <span className="shrink-0 text-[11px] font-semibold text-violet-dark">{i18n.t('editor.newStep')}</span>
           )}
         </div>
+        {step.replayUnconfirmed && (
+          <p className="mt-1 flex items-center gap-1.5 text-[11px] leading-snug text-muted-foreground">
+            <TriangleAlert size={12} className="shrink-0" aria-hidden />
+            {i18n.t('editor.replayUnconfirmed')}
+          </p>
+        )}
         <div className="flex items-center justify-between gap-2 mt-1">
           {step.aiPending ? <span /> : <StepSourceBadge source={step.descriptionSource} />}
           <div className="flex items-center gap-0.5">

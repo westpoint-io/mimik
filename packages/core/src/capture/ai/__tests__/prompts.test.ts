@@ -97,7 +97,15 @@ describe('AI_LANGUAGES', () => {
 
   it('names both Chinese scripts', () => {
     expect(AI_LANGUAGES).toContainEqual({ code: 'zh-CN', label: '简体中文' });
-    expect(AI_LANGUAGES).toContainEqual({ code: 'zh-TW', label: '繁體中文' });
+    expect(AI_LANGUAGES).toContainEqual({ code: 'zh-TW', label: '繁體中文', beta: true });
+  });
+
+  it('marks only the languages a native speaker has not reviewed as beta', () => {
+    expect(AI_LANGUAGES.filter((language) => 'beta' in language).map((language) => language.code)).toEqual([
+      'zh-TW',
+      'ja',
+      'ko',
+    ]);
   });
 
   it('includes Russian', () => {

@@ -7,6 +7,7 @@ import {
 } from '@mimik/core/capture/ai/custom-prompts';
 import { AI_LANGUAGES, type AILanguageCode } from '@mimik/core/capture/ai/prompts';
 import { i18n } from '@mimik/core/env';
+import { LanguageLabel } from '../../common/components/LanguageLabel';
 import { Button } from '../../components/ui/button';
 import {
   Dialog,
@@ -60,7 +61,7 @@ export function AiPromptsDialog({ open, section, onSectionChange, onClose, onSav
                 <SelectContent>
                   {AI_LANGUAGES.map((item) => (
                     <SelectItem key={item.code} value={item.code}>
-                      {item.label}
+                      <LanguageLabel language={item} />
                     </SelectItem>
                   ))}
                 </SelectContent>

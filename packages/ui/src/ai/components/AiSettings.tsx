@@ -5,6 +5,7 @@ import { AI_LANGUAGES, type AILanguageCode } from '@mimik/core/capture/ai/prompt
 import { i18n } from '@mimik/core/env';
 import { Sparkles } from 'lucide-react';
 import { Checkbox } from '../../common/components/Checkbox';
+import { LanguageLabel } from '../../common/components/LanguageLabel';
 import { SettingsCard } from '../../common/components/SettingsCard';
 import { Input } from '../../components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select';
@@ -130,7 +131,7 @@ export function AiSettings({
             <SelectContent>
               {AI_LANGUAGES.map((lang) => (
                 <SelectItem key={lang.code} value={lang.code}>
-                  {lang.label}
+                  <LanguageLabel language={lang} />
                 </SelectItem>
               ))}
             </SelectContent>

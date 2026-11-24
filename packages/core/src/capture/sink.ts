@@ -44,4 +44,5 @@ export interface CaptureSink {
   captureStep(data: CaptureStepData): Promise<CaptureStepResponse>;
   updateInputStep(data: UpdateInputStepData): Promise<UpdateInputStepResponse>;
   finalizeInputStep(data: FinalizeInputStepData): Promise<FinalizeInputStepResponse>;
+  markReplayUnconfirmed?(stepId: string): Promise<void>;
 }

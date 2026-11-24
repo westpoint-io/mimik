@@ -97,7 +97,8 @@ export class PressHold {
     if (this.holding) this.flush();
     if (!pe.isTrusted || pe.pointerType !== 'mouse' || pe.button !== 0) return;
     const raw = eventTarget(pe);
-    if (!(raw instanceof Element)) return;
+    if (!(raw instanceof Element) || raw.closest('[draggable]')?.getAttribute('draggable')?.toLowerCase() === 'true')
+      return;
     const control = findFocusableAncestor(raw);
     if (
       control === document.body ||

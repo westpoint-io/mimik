@@ -388,6 +388,19 @@ describe('videoChapters', () => {
     expect(videoChapters(bare, false)[0]!.title).toBe('export.stepLabel[1]');
   });
 
+  it('numbers an untitled chapter as the frames number it when a step before it has no screenshot', () => {
+    const shown = [
+      { id: 'a', description: 'Open settings', action: 'click' },
+      { id: 'c', description: '', action: 'click' },
+    ] as never[];
+    const numbers = new Map([
+      ['a', 1],
+      ['b', 2],
+      ['c', 3],
+    ]);
+    expect(videoChapters(shown, false, undefined, undefined, numbers)[1]!.title).toBe('export.stepLabel[3]');
+  });
+
   it('carries the action kind through to each chapter', () => {
     const mixed = [
       { id: 'a', description: 'Click save', action: 'click' },

@@ -232,6 +232,7 @@ settings:
   reportBug: "Relatar um erro"
   machineTranslated: "Este idioma foi traduzido com IA, então alguns textos podem soar estranhos. Encontrou um erro? Abra um pull request no GitHub."
   fixTranslation: "Corrigir uma tradução"
+  languageBeta: "Beta"
   aboutSection: "Sobre"
   appearance: "Aparência"
   appearanceHint: "Claro, escuro ou igual ao seu sistema."
@@ -408,6 +409,7 @@ editor:
   stepCopied: "1 passo copiado de “$2”"
   stepsCopied: "$1 passos copiados de “$2”"
   newStep: Novo
+  replayUnconfirmed: "Talvez este clique não tenha chegado à página durante a gravação."
   copyScreenshot: Copiar captura
   screenshotCopied: Copiada
   copyScreenshotFailed: Não foi possível copiar a captura. Tente novamente.

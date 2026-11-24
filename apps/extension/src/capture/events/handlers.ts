@@ -23,6 +23,7 @@ import { localStorage } from '@/lib/browser-api/local-storage';
 import { HoverRing } from '@/lib/hover-ring';
 import { InputSession } from './input-session';
 import { isRecordableKey } from './is-recordable-key';
+import { watchPageReaction } from './page-reaction';
 import { PressHold } from './press-hold';
 
 const REPEAT_CLICK_MS = 300;
@@ -136,7 +137,7 @@ class CaptureController {
     return async () => {
       const placement = locateFrame();
       const elementMeta = extractElementMeta(target, atEvent);
-      await this.sink.captureStep({
+      return this.sink.captureStep({
         guideId: this.guideId,
         action,
         elementMeta: placeInTab(point ? { ...elementMeta, clickPoint: point } : elementMeta, await placement),
@@ -145,18 +146,19 @@ class CaptureController {
     };
   }
 
-  private enqueue(task: () => Promise<unknown>, after?: () => void) {
+  private enqueue(task: () => Promise<unknown>, after?: (result: unknown) => void) {
     this.ring.hide();
     const wasIdle = !this.busy;
     this.busy = true;
     this.queue.add(async () => {
       await waitForPaint();
+      let result: unknown;
       try {
-        await Promise.race([task(), sleep(CAPTURE_BUDGET_MS)]);
+        result = await Promise.race([task(), sleep(CAPTURE_BUDGET_MS)]);
       } catch (err) {
         logger.error('Capture failed', err);
       } finally {
-        after?.();
+        after?.(result);
       }
     });
     if (wasIdle) {
@@ -239,9 +241,15 @@ class CaptureController {
     me.preventDefault();
     me.stopImmediatePropagation();
     const init = replayInit(me);
-    this.enqueue(task, () => {
+    this.enqueue(task, (result) => {
+      const reaction = watchPageReaction();
       this.press.replay(press);
       replayClick(target, init);
+      const stepId = result && typeof result === 'object' && 'stepId' in result ? String(result.stepId) : null;
+      if (!stepId) return;
+      reaction
+        .then((reacted) => (reacted ? undefined : this.sink.markReplayUnconfirmed?.(stepId)))
+        .catch((err) => logger.error('Could not flag an unconfirmed replay', err));
     });
     return true;
   }

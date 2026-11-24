@@ -218,6 +218,7 @@ settings:
   reportBug: "Fehler melden"
   machineTranslated: "Diese Sprache wurde mit KI übersetzt, daher kann manches holprig klingen. Fehler entdeckt? Öffne einen Pull Request auf GitHub."
   fixTranslation: "Übersetzung korrigieren"
+  languageBeta: "Beta"
   aboutSection: "Über Mimik"
   appearance: "Darstellung"
   appearanceHint: "Hell, dunkel oder wie dein System."
@@ -408,6 +409,7 @@ editor:
   stepCopied: "1 Schritt aus „$2“ kopiert"
   stepsCopied: "$1 Schritte aus „$2“ kopiert"
   newStep: Neu
+  replayUnconfirmed: "Dieser Klick hat die Seite während der Aufnahme möglicherweise nicht erreicht."
   copyScreenshot: Screenshot kopieren
   screenshotCopied: Kopiert
   copyScreenshotFailed: "Der Screenshot konnte nicht kopiert werden. Versuche es erneut."

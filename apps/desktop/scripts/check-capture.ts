@@ -1,3 +1,7 @@
+import { type ChildProcess, spawn } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { app, nativeImage, screen } from 'electron';
 import {
   captureCursorDisplay,
@@ -10,6 +14,7 @@ import {
   InputHook,
   listDisplays,
 } from '../src/main/capture';
+import { enableAccessibility, wakeApps } from '../src/main/capture/element';
 
 function distinctColours(png: Buffer): number {
   const bitmap = nativeImage.createFromBuffer(png).toBitmap();
@@ -20,6 +25,26 @@ function distinctColours(png: Buffer): number {
   return seen.size;
 }
 
+const TARGET_PAGE = `<!doctype html><html><body style="margin:0;height:100vh;display:grid;place-items:center;background:linear-gradient(135deg,#1E1B4B,#C7D2FE)"><button aria-label="Capture check target" style="width:60vw;height:60vh;font:600 32px sans-serif;color:#1E1B4B;background:#EEF2FF;border:0;border-radius:24px">Capture check target</button></body></html>`;
+
+const TARGET_MAIN = `const { app, BrowserWindow, screen } = require('electron');
+app.whenReady().then(() => {
+  const target = new BrowserWindow({ ...screen.getPrimaryDisplay().bounds, backgroundColor: '#1E1B4B' });
+  target.loadURL('data:text/html,' + encodeURIComponent(${JSON.stringify(TARGET_PAGE)}));
+});`;
+
+const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function showTarget(dir: string): Promise<ChildProcess> {
+  const main = join(dir, 'main.cjs');
+  writeFileSync(main, TARGET_MAIN);
+  const target = spawn(process.execPath, [main], { stdio: 'ignore' });
+  await pause(4000);
+  await wakeApps();
+  await pause(1500);
+  return target;
+}
+
 type Verdict = 'ok' | 'fail' | 'n/a';
 
 function line(name: string, verdict: Verdict, detail: string): void {
@@ -27,9 +52,10 @@ function line(name: string, verdict: Verdict, detail: string): void {
   process.stdout.write(`${tag} ${name.padEnd(18)} ${detail}\n`);
 }
 
+InputHook.preferX11();
 app.disableHardwareAcceleration();
 
-app.whenReady().then(async () => {
+async function runChecks(): Promise<number> {
   let failures = 0;
 
   const displays = listDisplays();
@@ -113,7 +139,23 @@ app.whenReady().then(async () => {
     started.ok ? 'started' : `${started.reason}: ${started.detail}`,
   );
   hook.stop();
+  return failures;
+}
 
+app.whenReady().then(async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'mimik-check-'));
+  let target: ChildProcess | null = null;
+  let failures = 1;
+  try {
+    await enableAccessibility();
+    target = await showTarget(dir);
+    failures = await runChecks();
+  } catch (error) {
+    line('check', 'fail', error instanceof Error ? error.message : String(error));
+  } finally {
+    target?.kill();
+    rmSync(dir, { recursive: true, force: true });
+  }
   process.stdout.write(
     `\n${failures === 0 ? 'no failures — n/a lines are platform limits, not bugs' : `${failures} failure(s)`}\n`,
   );

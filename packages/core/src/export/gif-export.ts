@@ -68,7 +68,7 @@ export async function exportGuideAsGif(
 
   await composeGuideFrames(
     guide,
-    frames,
+    steps,
     screenshots,
     options,
     brand,

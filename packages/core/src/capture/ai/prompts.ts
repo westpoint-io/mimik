@@ -66,14 +66,14 @@ export type RewritePreset = keyof typeof REWRITE_PRESETS;
 export const AI_LANGUAGES = [
   { code: 'en', label: 'English' },
   { code: 'zh-CN', label: '简体中文' },
-  { code: 'zh-TW', label: '繁體中文' },
+  { code: 'zh-TW', label: '繁體中文', beta: true },
   { code: 'es', label: 'Español' },
   { code: 'pt-BR', label: 'Português (Brasil)' },
   { code: 'fr', label: 'Français' },
   { code: 'de', label: 'Deutsch' },
   { code: 'ru', label: 'Русский' },
-  { code: 'ja', label: '日本語' },
-  { code: 'ko', label: '한국어' },
+  { code: 'ja', label: '日本語', beta: true },
+  { code: 'ko', label: '한국어', beta: true },
 ] as const;
 
 export type AILanguageCode = (typeof AI_LANGUAGES)[number]['code'];

@@ -163,14 +163,16 @@ export function LibraryView({ onOpen, searchQuery = '' }: LibraryViewProps) {
             </div>
 
             <div className="flex-1 min-w-0">
-              <p className={`text-[13px] font-medium truncate ${isEmpty ? 'text-[#8B92A8]' : 'text-foreground'}`}>
+              <p
+                className={`text-[13px] font-medium truncate ${isEmpty ? 'text-muted-foreground' : 'text-foreground'}`}
+              >
                 {guide.title}
               </p>
               {guide.description && (
                 <p className="text-[11px] mt-0.5 text-muted-foreground line-clamp-1">{guide.description}</p>
               )}
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[10px] text-[#8B92A8]">{formatRelativeTime(guide.updatedAt)}</span>
+                <span className="text-[10px] text-muted-foreground">{formatRelativeTime(guide.updatedAt)}</span>
                 {guide.stepIds.length > 0 && (
                   <span className="text-[9px] font-semibold text-muted-foreground bg-secondary px-2 py-0.5 rounded-full leading-none">
                     {guide.stepIds.length !== 1

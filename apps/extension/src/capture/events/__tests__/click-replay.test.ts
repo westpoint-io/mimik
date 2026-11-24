@@ -130,6 +130,55 @@ describe('click interception', () => {
     expect(vi.mocked(sendMessage).mock.calls.filter((c) => c[0] === 'captureStep')).toHaveLength(1);
   });
 
+  it('flags the step when the page shows no reaction to the replayed click', async () => {
+    const button = place('button');
+    button.addEventListener('click', (e) => {
+      if (!e.isTrusted) return;
+      button.after(document.createElement('div'));
+    });
+
+    userClick(button);
+    await settle();
+    for (const d of pending) d.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 900));
+
+    expect(sendMessage).toHaveBeenCalledWith('markReplayUnconfirmed', 'step-1');
+  });
+
+  it("still flags the step when only Mimik's own overlay changes on the page", async () => {
+    const button = place('button');
+    button.addEventListener('click', (e) => {
+      if (!e.isTrusted) return;
+      button.after(document.createElement('div'));
+    });
+
+    userClick(button);
+    await settle();
+    for (const d of pending) d.resolve();
+    await settle(2);
+    const overlay = document.createElement('div');
+    overlay.setAttribute('data-mimik-ignore', '');
+    document.body.appendChild(overlay);
+    overlay.remove();
+    await new Promise((resolve) => setTimeout(resolve, 900));
+
+    expect(sendMessage).toHaveBeenCalledWith('markReplayUnconfirmed', 'step-1');
+  });
+
+  it('leaves the step alone when the page reacts to the replayed click', async () => {
+    const button = place('button');
+    button.addEventListener('click', () => {
+      button.after(document.createElement('div'));
+    });
+
+    userClick(button);
+    await settle();
+    for (const d of pending) d.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 900));
+
+    expect(vi.mocked(sendMessage).mock.calls.some((c) => c[0] === 'markReplayUnconfirmed')).toBe(false);
+  });
+
   it('lets a shift-click through untouched and records nothing', async () => {
     const button = place('button');
     let seen = 0;

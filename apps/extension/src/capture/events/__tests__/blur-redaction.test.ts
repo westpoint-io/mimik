@@ -1,9 +1,18 @@
 // @vitest-environment happy-dom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { PageRedactor } from '@/core/blur/redactor';
 import { extractDOMContext } from '@/core/capture/dom/context';
 import { isRedactedField } from '@/core/capture/dom/element-utils';
 import type { CaptureSink } from '@/core/capture/sink';
+import { sendMessage } from '@/lib/messaging';
+import { startCapture } from '../handlers';
 import { InputSession } from '../input-session';
+
+vi.mock('@/lib/messaging', () => ({ sendMessage: vi.fn(), onMessage: vi.fn() }));
+
+vi.mock('@/lib/browser-api/local-storage', () => ({
+  localStorage: { get: vi.fn().mockResolvedValue({}), set: vi.fn().mockResolvedValue(undefined) },
+}));
 
 const updateInputStep = vi.fn();
 const sink: CaptureSink = {
@@ -92,5 +101,38 @@ describe('InputSession.update on a blurred field', () => {
 
     const [payload] = updateInputStep.mock.calls[0]!;
     expect(payload).toMatchObject({ inputValue: 'ada' });
+  });
+});
+
+describe('recording a step on a field Smart Blur covered', () => {
+  it('keeps the field blurred when the step screenshot is taken', async () => {
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      setTimeout(() => cb(0), 0);
+      return 0;
+    });
+    const field = document.createElement('input');
+    field.type = 'text';
+    field.value = 'ada@example.com';
+    field.setAttribute('aria-label', 'Email');
+    document.body.appendChild(field);
+    const redactor = new PageRedactor();
+    redactor.start(['email']);
+    redactor.detach();
+
+    const filters: string[] = [];
+    vi.mocked(sendMessage).mockImplementation((async (type: string) => {
+      if (type === 'captureStep') filters.push(field.style.filter);
+      return { stepId: 'step-1' };
+    }) as unknown as typeof sendMessage);
+    const handle = startCapture('guide-1');
+
+    const click = new MouseEvent('click', { bubbles: true, cancelable: true, clientX: 10, clientY: 20 });
+    Object.defineProperty(click, 'isTrusted', { configurable: true, value: true });
+    field.dispatchEvent(click);
+    for (let i = 0; i < 16; i++) await new Promise((resolve) => setTimeout(resolve, 0));
+    handle.stop();
+    vi.unstubAllGlobals();
+
+    expect(filters).toEqual(['blur(10px)']);
   });
 });

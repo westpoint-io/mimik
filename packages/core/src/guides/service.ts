@@ -33,6 +33,8 @@ export const clearStepAiPending: GuideStore['clearStepAiPending'] = (...args) =>
 export const getStep: GuideStore['getStep'] = (...args) => store.getStep(...args);
 export const updateStepInputValue: GuideStore['updateStepInputValue'] = (...args) =>
   store.updateStepInputValue(...args);
+export const markReplayUnconfirmed: GuideStore['markReplayUnconfirmed'] = (...args) =>
+  store.markReplayUnconfirmed(...args);
 export const updateStepCapture: GuideStore['updateStepCapture'] = (...args) => store.updateStepCapture(...args);
 export const getStepsForGuide: GuideStore['getStepsForGuide'] = (...args) => store.getStepsForGuide(...args);
 export const findExistingStepIds: GuideStore['findExistingStepIds'] = (...args) => store.findExistingStepIds(...args);

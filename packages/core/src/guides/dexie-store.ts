@@ -684,6 +684,11 @@ async function updateStepInputValue(stepId: string, inputValue: string): Promise
   await db.steps.update(stepId, { inputValue });
 }
 
+async function markReplayUnconfirmed(stepId: string): Promise<void> {
+  const updated = await db.steps.update(stepId, { replayUnconfirmed: true });
+  if (updated) notifyGuidesChanged({ type: 'mutated' });
+}
+
 async function updateStepCapture(
   stepId: string,
   elementMeta: ElementMeta,
@@ -937,6 +942,7 @@ export const dexieStore = {
   clearStepAiPending,
   getStep,
   updateStepInputValue,
+  markReplayUnconfirmed,
   updateStepCapture,
   getStepsForGuide,
   findExistingStepIds,

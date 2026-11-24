@@ -20,16 +20,9 @@ function readableText(root: Node): Text[] {
   return found;
 }
 
-function toggleOnClick(target: HTMLElement, toggle: () => void) {
-  target.addEventListener('click', (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    toggle();
-  });
-}
-
 export class PageRedactor implements BlurDetector {
   private kinds: PresetKey[] = [];
+  private peeking = false;
   private watcher: MutationObserver | null = null;
   private pending: ReturnType<typeof setTimeout> | undefined;
   private readonly rescanSoon = () => {
@@ -39,6 +32,7 @@ export class PageRedactor implements BlurDetector {
 
   start(kinds: PresetKey[]) {
     this.kinds = kinds;
+    this.peeking = true;
     addRedactStyles();
     this.redact();
     this.watcher = new MutationObserver(this.rescanSoon);
@@ -58,6 +52,8 @@ export class PageRedactor implements BlurDetector {
   }
 
   detach() {
+    this.peeking = false;
+    this.coverPeeks();
     this.watcher?.disconnect();
     this.watcher = null;
     document.removeEventListener('input', this.rescanSoon, true);
@@ -76,6 +72,22 @@ export class PageRedactor implements BlurDetector {
     }
     for (const picked of Array.from(document.getElementsByClassName(PICKED_CLASS)))
       picked.classList.remove(PICKED_CLASS);
+  }
+
+  private coverPeeks() {
+    for (const mark of Array.from(document.querySelectorAll(`span[${REDACT_ATTR}].${SHOWN_CLASS}`)))
+      mark.classList.remove(SHOWN_CLASS);
+    for (const field of Array.from(document.querySelectorAll<HTMLElement>(`[${REDACT_ATTR}="field"]`)))
+      field.style.setProperty('filter', FIELD_FILTER, 'important');
+  }
+
+  private peekOnClick(target: HTMLElement, toggle: () => void) {
+    target.addEventListener('click', (event) => {
+      if (!this.peeking) return;
+      event.preventDefault();
+      event.stopPropagation();
+      toggle();
+    });
   }
 
   private redact() {
@@ -103,14 +115,14 @@ export class PageRedactor implements BlurDetector {
       mark.setAttribute(REDACT_ATTR, 'text');
       piece.replaceWith(mark);
       mark.append(piece);
-      toggleOnClick(mark, () => mark.classList.toggle(SHOWN_CLASS));
+      this.peekOnClick(mark, () => mark.classList.toggle(SHOWN_CLASS));
     }
   }
 
   private coverField(field: HTMLInputElement | HTMLTextAreaElement) {
     field.style.setProperty('filter', FIELD_FILTER, 'important');
     field.setAttribute(REDACT_ATTR, 'field');
-    toggleOnClick(field, () => {
+    this.peekOnClick(field, () => {
       if (field.style.filter) field.style.removeProperty('filter');
       else field.style.setProperty('filter', FIELD_FILTER, 'important');
     });

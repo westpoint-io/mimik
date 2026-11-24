@@ -44,6 +44,7 @@ export interface Step {
   descriptionSource?: DescriptionSource;
   narratedDescription?: string;
   aiPending?: boolean;
+  replayUnconfirmed?: boolean;
   blockType?: BlockType;
   calloutVariant?: CalloutVariant;
   calloutColor?: string;
