@@ -59,6 +59,9 @@ const ROLES: &[(u32, &str)] = &[
 
 pub const PASSWORD_TEXT: u32 = 40;
 pub const STATE_ACTIVE: u32 = 1;
+pub const STATE_COLLAPSED: u32 = 5;
+pub const STATE_EXPANDABLE: u32 = 9;
+pub const STATE_EXPANDED: u32 = 10;
 pub const STATE_FOCUSED: u32 = 12;
 pub const STATE_SELECTED: u32 = 23;
 pub const STATE_SHOWING: u32 = 25;
@@ -108,6 +111,14 @@ pub fn menu_item_mask() -> Vec<i32> {
   )
 }
 
+pub fn expansion(states: &[u32]) -> Option<bool> {
+  if has_state(states, STATE_EXPANDED) {
+    Some(true)
+  } else {
+    (has_state(states, STATE_EXPANDABLE) || has_state(states, STATE_COLLAPSED)).then_some(false)
+  }
+}
+
 pub fn state_set(state: u32) -> Vec<i32> {
   let mut words = vec![0i32; 2];
   words[(state / 32) as usize] |= (1u32 << (state % 32)) as i32;
@@ -116,7 +127,10 @@ pub fn state_set(state: u32) -> Vec<i32> {
 
 #[cfg(test)]
 mod tests {
-  use super::{control_role_mask, has_state, role, state_set, STATE_FOCUSED, STATE_SHOWING};
+  use super::{
+    control_role_mask, expansion, has_state, role, state_set, STATE_COLLAPSED, STATE_EXPANDABLE,
+    STATE_EXPANDED, STATE_FOCUSED, STATE_SHOWING,
+  };
 
   #[test]
   fn control_roles_are_packed_as_bitmask_words() {
@@ -143,5 +157,18 @@ mod tests {
     assert!(has_state(&[0, 1 << 1], 33));
     assert!(!has_state(&[], STATE_FOCUSED));
     assert_eq!(state_set(STATE_FOCUSED), vec![1 << 12, 0]);
+  }
+
+  #[test]
+  fn expansion_is_unknown_without_an_expandable_state() {
+    assert_eq!(expansion(&[]), None);
+    assert_eq!(expansion(&[1 << STATE_FOCUSED, 0]), None);
+    assert_eq!(expansion(&[1 << STATE_EXPANDABLE, 0]), Some(false));
+    assert_eq!(expansion(&[1 << STATE_COLLAPSED, 0]), Some(false));
+    assert_eq!(
+      expansion(&[1 << STATE_EXPANDABLE | 1 << STATE_EXPANDED, 0]),
+      Some(true)
+    );
+    assert_eq!(expansion(&[1 << STATE_EXPANDED, 0]), Some(true));
   }
 }
