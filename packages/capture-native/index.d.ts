@@ -63,6 +63,8 @@ export declare function isSupported(): boolean
 
 export declare function keyLabel(keycode: number): string | null
 
+export declare function openMenus(): Array<ElementRect>
+
 export declare function releaseWebContent(): void
 
 export declare function resolveKey(keycode: number, shift: boolean, ctrl: boolean, alt: boolean): string | null

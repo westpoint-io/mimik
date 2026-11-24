@@ -20,6 +20,7 @@ import type { ScreenElement } from '../capture/element';
 import type { KeyAction } from '../capture/input-hook';
 import {
   clickAction,
+  DesktopRecorder,
   frameFor,
   isBoundShortcut,
   isRepeatClick,
@@ -127,6 +128,71 @@ describe('clicks', () => {
     expect(frameFor('window', inside, region, elsewhere)).toEqual(DISPLAY);
     expect(frameFor('window', inside, region, null)).toEqual(DISPLAY);
     expect(frameFor('area', outside, region, window)).toEqual(region);
+  });
+
+  it('widens a window frame to the menus open over its edge', () => {
+    const window = { x: 100, y: 100, width: 400, height: 300 };
+    const menu = { x: 420, y: 130, width: 160, height: 220 };
+    const submenu = { x: 580, y: 300, width: 150, height: 150 };
+    const unrelated = { x: 1500, y: 900, width: 100, height: 100 };
+
+    expect(frameFor('window', inside, region, window, [menu])).toEqual({ x: 100, y: 100, width: 480, height: 300 });
+    expect(frameFor('window', inside, region, window, [submenu, menu])).toEqual({
+      x: 100,
+      y: 100,
+      width: 630,
+      height: 350,
+    });
+    expect(frameFor('window', inside, region, window, [unrelated])).toEqual(window);
+  });
+
+  it('keeps a click on a menu hanging past the window edge in the widened frame', () => {
+    const window = { x: 100, y: 100, width: 400, height: 300 };
+    const menu = { x: 420, y: 130, width: 160, height: 220 };
+    const submenu = { x: 580, y: 300, width: 150, height: 150 };
+    const onSubmenu = { x: 650, y: 420 };
+
+    expect(frameFor('window', onSubmenu, region, window, [menu, submenu])).toEqual({
+      x: 100,
+      y: 100,
+      width: 630,
+      height: 350,
+    });
+    expect(frameFor('window', onSubmenu, region, window)).toEqual(DISPLAY);
+  });
+
+  it('aims the click marker inside the frame the menus widened', async () => {
+    const window = { x: 100, y: 100, width: 400, height: 300 };
+    const menu = { x: 420, y: 130, width: 160, height: 220 };
+    const aimed = vi.fn();
+    const recorder = new DesktopRecorder(
+      () => region,
+      (fn) => fn(),
+      async () => undefined,
+      {
+        settings: () => ({ ...DEFAULT_CAPTURE_SETTINGS, captureMode: 'window', screenshotDelayMs: 0 }),
+        grab: async () => Object.assign(async () => Promise.reject(new Error('no pixels')), { menus: [menu] }),
+        lookup: async () => null,
+        windowAt: async () => ({ ok: true, window: { title: null, app: { name: 'Editor' }, bounds: window } }),
+        aimed,
+      },
+    );
+
+    await recorder.capture({ x: 540, y: 160 });
+
+    expect(aimed).toHaveBeenCalledWith({ x: 440 / 480, y: 60 / 300, aspect: 480 / 300 });
+  });
+
+  it('keeps a widened window frame on the display', () => {
+    const window = { x: 1700, y: 100, width: 200, height: 200 };
+    const menu = { x: 1850, y: 150, width: 200, height: 100 };
+
+    expect(frameFor('window', { x: 1710, y: 110 }, region, window, [menu])).toEqual({
+      x: 1700,
+      y: 100,
+      width: 220,
+      height: 200,
+    });
   });
 });
 

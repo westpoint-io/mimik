@@ -1,6 +1,7 @@
 import type { Rect } from '@mimik/core/rect';
 import { screen } from 'electron';
 import { Monitor } from 'node-screenshots';
+import { loadNative } from './native';
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -22,14 +23,24 @@ function monitorAt(x: number, y: number): Monitor {
   return all[0]!;
 }
 
-export type Frame = (area: Rect) => Promise<Capture>;
+async function openMenus(): Promise<Rect[]> {
+  if (process.platform !== 'linux') return [];
+  const native = await loadNative().catch(() => null);
+  try {
+    return native?.openMenus() ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export type Frame = ((area: Rect) => Promise<Capture>) & { menus?: Rect[] };
 
 export async function grabDisplay(point: { x: number; y: number }): Promise<Frame> {
   const { bounds: display, scaleFactor } = screen.getDisplayNearestPoint(point);
   const monitor = monitorAt(point.x, point.y);
-  const frame = await monitor.captureImage();
+  const [frame, menus] = await Promise.all([monitor.captureImage(), openMenus()]);
 
-  return async (area) => {
+  const crop: Frame = async (area) => {
     const scale = display.width > 0 ? frame.width / display.width : scaleFactor;
     const x = clamp(Math.round((area.x - display.x) * scale), 0, Math.max(0, frame.width - 1));
     const y = clamp(Math.round((area.y - display.y) * scale), 0, Math.max(0, frame.height - 1));
@@ -52,6 +63,8 @@ export async function grabDisplay(point: { x: number; y: number }): Promise<Fram
       displayId: monitor.id(),
     };
   };
+  crop.menus = menus;
+  return crop;
 }
 
 async function captureDisplay(displayId: number): Promise<Capture> {
