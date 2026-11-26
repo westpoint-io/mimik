@@ -10,7 +10,8 @@ export type Addon = {
   resolveKey(keycode: number, shift: boolean, ctrl: boolean, alt: boolean): string | null;
   clearDeadKey(): void;
   releaseWebContent(): void;
-  enableAccessibility(): void;
+  turnOnAccessibility(marker: string): Promise<void>;
+  restoreAccessibility(marker: string): void;
   wakeApps(): void;
   isSupported(): boolean;
   startInputHook(callback: (event: HookEvent) => void): void;
