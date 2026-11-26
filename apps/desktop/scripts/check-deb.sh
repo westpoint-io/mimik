@@ -10,6 +10,7 @@ docker run --rm -v "$deb:/tmp/mimik.deb:ro" -v "$addon:/tmp/addon/capture-native
   apt-get update -qq
   apt-get install -y -qq --no-install-recommends /tmp/mimik.deb >/dev/null
   for tool in xprop xwininfo; do command -v "$tool" >/dev/null || { echo "$tool is not installed"; exit 1; }; done
+  find /opt/Mimik -name "capture-native*.node" | grep -q . || { echo "the deb ships no capture addon, so every element lookup returns null"; exit 1; }
   grep -q apparmor_restrict_unprivileged_userns /var/lib/dpkg/info/mimik.postinst || { echo "the deb does not make chrome-sandbox setuid where user namespaces are restricted, so Mimik closes at launch on Ubuntu 24.04"; exit 1; }
   missing=$(find /opt/Mimik /tmp/addon -type f \( -name "*.so*" -o -name "*.node" -o -name mimik \) -exec ldd {} + 2>/dev/null | grep "not found" | sort -u || true)
   if [ -n "$missing" ]; then
