@@ -6,6 +6,7 @@ extraMetadata:
   productName: Mimik
   homepage: https://github.com/westpoint-io/mimik
 npmRebuild: false
+beforePack: scripts/stage-addon.cjs
 afterPack: scripts/flip-fuses.cjs
 directories:
   output: dist
@@ -14,8 +15,16 @@ files:
   - out/**
   - "!out/THIRD_PARTY_NOTICES.txt"
   - package.json
-  - "!**/capture-native/{target,src}{,/**}"
-  - "!**/capture-native/{Cargo.*,build.rs,rustfmt.toml,*.md}"
+  - "!packages/**"
+  - from: staging/addon
+    to: node_modules/@mimik/capture-native
+    filter:
+      - package.json
+      - index.js
+      - index.d.ts
+      - "*.node"
+asarUnpack:
+  - "**/*.node"
 extraFiles:
   - from: out/THIRD_PARTY_NOTICES.txt
     to: THIRD_PARTY_NOTICES.txt

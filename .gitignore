@@ -12,3 +12,4 @@ mockups/
 public/transformers/
 apps/*/out/
 apps/*/dist/
+apps/*/staging/
