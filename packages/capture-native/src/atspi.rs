@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use serde::de::DeserializeOwned;
@@ -12,8 +12,8 @@ use zbus::blocking::Connection;
 use zbus::zvariant::{DynamicType, OwnedObjectPath, OwnedValue, Value};
 
 use crate::atspimap::{
-  control_role_mask, control_roles, expansion, has_state, menu_entry_mask, menu_item_mask, role, state_set,
-  PASSWORD_TEXT, STATE_ACTIVE, STATE_FOCUSED, STATE_SELECTED, STATE_SHOWING,
+  control_role_mask, control_roles, expansion, has_state, keeps_bus_on, menu_entry_mask, menu_item_mask,
+  role, state_set, PASSWORD_TEXT, STATE_ACTIVE, STATE_FOCUSED, STATE_SELECTED, STATE_SHOWING,
 };
 use crate::hit::{
   dropdown_takes, in_row, is_control, is_dropdown_part, is_label, is_option, smallest_under, within, Bounds,
@@ -56,6 +56,10 @@ const SHELL_PATH: &str = "/org/gnome/Shell";
 const CONTENT_LIMIT: usize = 40;
 const WINDOW_LIMIT: usize = 8;
 const WAKE_WAIT: Duration = Duration::from_millis(2500);
+const A11Y_BUS: &str = "org.a11y.Bus";
+const A11Y_PATH: &str = "/org/a11y/bus";
+const STATUS: &str = "org.a11y.Status";
+const STATUS_TIMEOUT: Duration = Duration::from_secs(2);
 const WAKE_POLL: Duration = Duration::from_millis(100);
 const SHELL_SEARCH_LIMIT: usize = 400;
 const OVERLAY_LIMIT: usize = 12;
@@ -73,6 +77,13 @@ struct Session {
 
 static SESSION: Mutex<Option<Session>> = Mutex::new(None);
 static FOCUSED: Mutex<Option<Reference>> = Mutex::new(None);
+
+struct BusOn {
+  bus: Connection,
+  changes: Arc<Mutex<Vec<bool>>>,
+}
+
+static BUS_ON: Mutex<Option<BusOn>> = Mutex::new(None);
 
 type EventBody = (String, i32, i32, OwnedValue, HashMap<String, OwnedValue>);
 
@@ -203,13 +214,7 @@ impl Node {
 fn connect() -> Option<Connection> {
   let session = Connection::session().ok()?;
   let address: String = session
-    .call_method(
-      Some("org.a11y.Bus"),
-      "/org/a11y/bus",
-      Some("org.a11y.Bus"),
-      "GetAddress",
-      &(),
-    )
+    .call_method(Some(A11Y_BUS), A11Y_PATH, Some(A11Y_BUS), "GetAddress", &())
     .ok()?
     .body()
     .deserialize()
@@ -221,18 +226,123 @@ fn connect() -> Option<Connection> {
     .ok()
 }
 
-pub fn enable() {
-  with_session(|_| Some(()));
-  let Ok(session) = Connection::session() else {
+fn status_bus() -> Option<Connection> {
+  zbus::blocking::connection::Builder::session()
+    .ok()?
+    .method_timeout(STATUS_TIMEOUT)
+    .build()
+    .ok()
+}
+
+fn status(bus: &Connection, name: &str) -> Option<bool> {
+  let reply = bus
+    .call_method(
+      Some(A11Y_BUS),
+      A11Y_PATH,
+      Some(PROPERTIES),
+      "Get",
+      &(STATUS, name),
+    )
+    .ok()?;
+  let value: OwnedValue = reply.body().deserialize().ok()?;
+  bool::try_from(value).ok()
+}
+
+fn set_enabled(bus: &Connection, on: bool) -> bool {
+  bus
+    .call_method(
+      Some(A11Y_BUS),
+      A11Y_PATH,
+      Some(PROPERTIES),
+      "Set",
+      &(STATUS, "IsEnabled", Value::from(on)),
+    )
+    .is_ok()
+}
+
+fn watch(bus: &Connection) -> Option<Arc<Mutex<Vec<bool>>>> {
+  let rule = zbus::MatchRule::builder()
+    .msg_type(zbus::message::Type::Signal)
+    .interface(PROPERTIES)
+    .ok()?
+    .member("PropertiesChanged")
+    .ok()?
+    .path(A11Y_PATH)
+    .ok()?
+    .build();
+  let messages = zbus::blocking::MessageIterator::for_match_rule(rule, bus, None).ok()?;
+  let changes = Arc::new(Mutex::new(Vec::new()));
+  let seen = Arc::clone(&changes);
+  std::thread::spawn(move || {
+    for message in messages.flatten() {
+      let Ok((interface, changed, _)) = message
+        .body()
+        .deserialize::<(String, HashMap<String, OwnedValue>, Vec<String>)>()
+      else {
+        continue;
+      };
+      let Some(on) = changed
+        .get("IsEnabled")
+        .and_then(|value| value.try_clone().ok())
+        .and_then(|value| bool::try_from(value).ok())
+      else {
+        continue;
+      };
+      if interface == STATUS {
+        seen
+          .lock()
+          .unwrap_or_else(|poisoned| poisoned.into_inner())
+          .push(on);
+      }
+    }
+  });
+  Some(changes)
+}
+
+pub fn turn_on(marker: &str) {
+  let mut slot = BUS_ON.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+  if slot.is_some() {
+    return;
+  }
+  let Some(bus) = status_bus() else {
     return;
   };
-  let _ = session.call_method(
-    Some("org.a11y.Bus"),
-    "/org/a11y/bus",
-    Some(PROPERTIES),
-    "Set",
-    &("org.a11y.Status", "IsEnabled", Value::from(true)),
-  );
+  if status(&bus, "IsEnabled") != Some(false) {
+    return;
+  }
+  let Some(changes) = watch(&bus) else {
+    return;
+  };
+  if set_enabled(&bus, true) {
+    let _ = std::fs::write(marker, "");
+    *slot = Some(BusOn { bus, changes });
+  }
+}
+
+pub fn restore(marker: &str) {
+  let mut slot = BUS_ON.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
+  let on = slot.take();
+  if on.is_none() && !std::path::Path::new(marker).exists() {
+    return;
+  }
+  let Some(bus) = on.as_ref().map(|on| on.bus.clone()).or_else(status_bus) else {
+    return;
+  };
+  let changes = on
+    .as_ref()
+    .map(|on| {
+      on.changes
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner())
+        .clone()
+    })
+    .unwrap_or_default();
+  let screen_reader = status(&bus, "ScreenReaderEnabled").unwrap_or(false);
+  if !keeps_bus_on(&changes, screen_reader) {
+    set_enabled(&bus, false);
+  }
+  let _ = std::fs::remove_file(marker);
+  let _ = bus.close();
 }
 
 fn wake(app: &Node) {

@@ -190,10 +190,38 @@ pub fn release_web_content() {
   platform::release_web_content();
 }
 
+pub struct AccessibilityOn {
+  marker: String,
+}
+
+impl Task for AccessibilityOn {
+  type Output = ();
+  type JsValue = ();
+
+  fn compute(&mut self) -> Result<Self::Output> {
+    #[cfg(target_os = "linux")]
+    atspi::turn_on(&self.marker);
+    #[cfg(not(target_os = "linux"))]
+    let _ = &self.marker;
+    Ok(())
+  }
+
+  fn resolve(&mut self, _: Env, _: Self::Output) -> Result<Self::JsValue> {
+    Ok(())
+  }
+}
+
+#[napi(ts_return_type = "Promise<void>")]
+pub fn turn_on_accessibility(marker: String) -> AsyncTask<AccessibilityOn> {
+  AsyncTask::new(AccessibilityOn { marker })
+}
+
 #[napi]
-pub fn enable_accessibility() {
+pub fn restore_accessibility(marker: String) {
   #[cfg(target_os = "linux")]
-  std::thread::spawn(atspi::enable);
+  atspi::restore(&marker);
+  #[cfg(not(target_os = "linux"))]
+  drop(marker);
 }
 
 #[napi]

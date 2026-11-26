@@ -128,6 +128,10 @@ pub fn menu_entry_mask() -> Vec<i32> {
   )
 }
 
+pub fn keeps_bus_on(changes: &[bool], screen_reader: bool) -> bool {
+  screen_reader || changes.contains(&false)
+}
+
 pub fn state_set(state: u32) -> Vec<i32> {
   let mut words = vec![0i32; 2];
   words[(state / 32) as usize] |= (1u32 << (state % 32)) as i32;
@@ -137,7 +141,7 @@ pub fn state_set(state: u32) -> Vec<i32> {
 #[cfg(test)]
 mod tests {
   use super::{
-    control_role_mask, expansion, has_state, menu_entry_mask, role, state_set, STATE_COLLAPSED,
+    control_role_mask, expansion, has_state, keeps_bus_on, menu_entry_mask, role, state_set, STATE_COLLAPSED,
     STATE_EXPANDABLE, STATE_EXPANDED, STATE_FOCUSED, STATE_SHOWING,
   };
 
@@ -187,5 +191,14 @@ mod tests {
     assert_ne!(words[1] & (1 << (33 - 32)), 0);
     assert_ne!(words[1] & (1 << (35 - 32)), 0);
     assert_eq!(words[1] & (1 << (34 - 32)), 0);
+  }
+
+  #[test]
+  fn the_bus_goes_back_off_unless_someone_else_changed_it() {
+    assert!(!keeps_bus_on(&[], false));
+    assert!(!keeps_bus_on(&[true], false));
+    assert!(keeps_bus_on(&[true, false], false));
+    assert!(keeps_bus_on(&[true, false, true], false));
+    assert!(keeps_bus_on(&[true], true));
   }
 }

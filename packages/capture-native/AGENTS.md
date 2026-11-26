@@ -6,8 +6,11 @@ lookup, key labels and the macOS event tap. Screenshots, displays and the Window
 come from npm packages. Do not add them here.
 
 - Linux answers from AT-SPI on the session's accessibility bus (`atspi.rs`, roles in `atspimap.rs`)
-  over a blocking zbus connection with a 300 ms timeout per call. `enable_accessibility` switches
-  the bus on at launch and leaves it on, because toolkits only join it when they start after that.
+  over a blocking zbus connection with a 300 ms timeout per call. `turn_on_accessibility` switches
+  the bus on when a capture is armed, because some toolkits only join it once it is on, and leaves a
+  marker file so a crashed run can be undone at the next launch. `restore_accessibility` switches it
+  back off when the capture ends or Mimik quits, unless it was already on, someone else changed it
+  meanwhile or a screen reader is running (`keeps_bus_on`).
   The X window under the point names the app (`_NET_CLIENT_LIST_STACKING`; a server-side title bar
   is the frame's parent), then override-redirect menu windows and GNOME Shell's overlay layers are
   checked before the app's own tree. GTK4 reports window coordinates and everything else screen

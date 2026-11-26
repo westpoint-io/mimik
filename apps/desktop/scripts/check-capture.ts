@@ -14,7 +14,8 @@ import {
   InputHook,
   listDisplays,
 } from '../src/main/capture';
-import { enableAccessibility, wakeApps } from '../src/main/capture/element';
+import { wakeApps } from '../src/main/capture/element';
+import { loadNative } from '../src/main/capture/native';
 
 function distinctColours(png: Buffer): number {
   const bitmap = nativeImage.createFromBuffer(png).toBitmap();
@@ -145,15 +146,18 @@ async function runChecks(): Promise<number> {
 app.whenReady().then(async () => {
   const dir = mkdtempSync(join(tmpdir(), 'mimik-check-'));
   let target: ChildProcess | null = null;
+  const native = await loadNative();
+  const marker = join(dir, 'accessibility-on');
   let failures = 1;
   try {
-    await enableAccessibility();
+    await native?.turnOnAccessibility(marker);
     target = await showTarget(dir);
     failures = await runChecks();
   } catch (error) {
     line('check', 'fail', error instanceof Error ? error.message : String(error));
   } finally {
     target?.kill();
+    native?.restoreAccessibility(marker);
     rmSync(dir, { recursive: true, force: true });
   }
   process.stdout.write(

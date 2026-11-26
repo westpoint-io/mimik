@@ -25,8 +25,9 @@ import { createActor } from 'xstate';
 import { registerAiFetch } from './ai-fetch';
 import { APP_ICON_SCHEME, registerAppIconProtocol } from './app-icon';
 import { ask } from './ask';
-import { enableAccessibility, wakeApps } from './capture/element';
+import { followAccessibility } from './capture/follow-accessibility';
 import { InputHook } from './capture/input-hook';
+import { loadNative } from './capture/native';
 import { DesktopRecorder, frameFor } from './capture/recorder';
 import { grabDisplay } from './capture/screenshot';
 import { registerScreenshotProtocol, SCREENSHOT_SCHEME, sweepScreenshots } from './capture/screenshot-store';
@@ -49,11 +50,13 @@ import { createUpdater } from './updater';
 InputHook.preferX11();
 
 const FINISH_TIMEOUT_MS = NARRATION_SETTLE_MS + 15_000;
+const ACCESSIBILITY_MARKER = 'accessibility-on';
 
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let overlay: CaptureOverlay | null = null;
 let recorder: DesktopRecorder | null = null;
+let leaveAccessibility = () => {};
 const capture = createActor(captureMachine).start();
 let ending = false;
 let insert: CaptureInsert | null = null;
@@ -714,11 +717,10 @@ if (!app.requestSingleInstanceLock()) {
     createWindow();
     createTray();
     updater?.start();
-    void enableAccessibility();
-    let armed = false;
-    capture.subscribe(({ value }) => {
-      if (value === CaptureState.ARMED && !armed) void wakeApps();
-      armed = value === CaptureState.ARMED;
+    void loadNative().then((native) => {
+      if (!native) return;
+      const marker = join(app.getPath('userData'), ACCESSIBILITY_MARKER);
+      leaveAccessibility = followAccessibility(capture, native, marker);
     });
   });
 
@@ -728,6 +730,7 @@ if (!app.requestSingleInstanceLock()) {
     unbindShortcuts();
     recorder?.stop();
     overlay?.destroy();
+    leaveAccessibility();
   });
   app.on('window-all-closed', () => {});
 }

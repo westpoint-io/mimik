@@ -38,8 +38,6 @@ export interface ElementRect {
   height: number
 }
 
-export declare function enableAccessibility(): void
-
 export declare function floatAboveShell(window: number): void
 
 export declare function focusedElement(): Promise<UiElement | null>
@@ -69,7 +67,11 @@ export declare function releaseWebContent(): void
 
 export declare function resolveKey(keycode: number, shift: boolean, ctrl: boolean, alt: boolean): string | null
 
+export declare function restoreAccessibility(marker: string): void
+
 export declare function startInputHook(callback: (event: HookEvent) => void): void
+
+export declare function turnOnAccessibility(marker: string): Promise<void>
 
 export interface UiElement {
   role?: string
