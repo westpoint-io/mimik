@@ -12,6 +12,13 @@ exactly as the extension does. The preload exposes `window.mimik` with context i
   reason `area`.
 - Main bundles `@mimik/core` (it is excluded from `build.externalizeDeps`), so value imports from
   core work there. Every other dependency stays external.
+- `@mimik/capture-native` stays external, and electron-builder cannot take it from `node_modules`,
+  because pnpm links a workspace package as a symlink to a path outside `apps/desktop` and the
+  packer refuses those. `beforePack` stages the addon into `apps/desktop/staging/addon` and a
+  `files` entry maps that to `node_modules/@mimik/capture-native`, then `asarUnpack` unpacks the
+  `.node`, which cannot be loaded from inside an asar. Build the addon before packaging or the
+  hook fails. Without all three the app installs with no addon and every element lookup on Linux
+  returns null.
 - A packed app has its Electron fuses flipped (`scripts/flip-fuses.cjs`): no run-as-node, no
   `NODE_OPTIONS` and no `--inspect`. Pack with `MIMIK_INSPECTABLE=1` to keep the inspector.
 - `out/main` stays flat (`chunkFileNames` is pinned), because main resolves `../renderer` and
