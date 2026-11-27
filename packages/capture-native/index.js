@@ -790,6 +790,7 @@ module.exports.openMenus = nativeBinding.openMenus
 module.exports.releaseWebContent = nativeBinding.releaseWebContent
 module.exports.resolveKey = nativeBinding.resolveKey
 module.exports.restoreAccessibility = nativeBinding.restoreAccessibility
+module.exports.settleAccessibility = nativeBinding.settleAccessibility
 module.exports.startInputHook = nativeBinding.startInputHook
 module.exports.turnOnAccessibility = nativeBinding.turnOnAccessibility
 module.exports.wakeApps = nativeBinding.wakeApps

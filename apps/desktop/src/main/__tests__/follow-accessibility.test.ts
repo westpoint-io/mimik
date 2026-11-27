@@ -14,6 +14,9 @@ function setup() {
     restoreAccessibility: vi.fn((marker: string) => {
       calls.push(`restore ${marker}`);
     }),
+    settleAccessibility: vi.fn(() => {
+      calls.push('settle');
+    }),
     releaseWebContent: vi.fn(() => {
       calls.push('release');
     }),
@@ -73,6 +76,7 @@ describe('followAccessibility', () => {
     leave();
 
     expect(calls.filter((call) => call.startsWith('restore'))).toHaveLength(2);
+    expect(calls.slice(-1)).toEqual(['settle']);
   });
 
   it('leaves the bus alone on quit when nothing is being recorded', () => {
@@ -80,6 +84,6 @@ describe('followAccessibility', () => {
 
     leave();
 
-    expect(calls).toEqual([`restore ${MARKER}`]);
+    expect(calls).toEqual([`restore ${MARKER}`, 'settle']);
   });
 });

@@ -69,6 +69,8 @@ export declare function resolveKey(keycode: number, shift: boolean, ctrl: boolea
 
 export declare function restoreAccessibility(marker: string): void
 
+export declare function settleAccessibility(): void
+
 export declare function startInputHook(callback: (event: HookEvent) => void): void
 
 export declare function turnOnAccessibility(marker: string): Promise<void>

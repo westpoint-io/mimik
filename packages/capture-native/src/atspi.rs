@@ -1,5 +1,6 @@
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{mpsc, Arc, Mutex, OnceLock};
 use std::time::Duration;
 
 use serde::de::DeserializeOwned;
@@ -84,6 +85,24 @@ struct BusOn {
 }
 
 static BUS_ON: Mutex<Option<BusOn>> = Mutex::new(None);
+
+enum BusJob {
+  TurnOn {
+    marker: String,
+    ticket: u64,
+    done: Box<dyn FnOnce() + Send>,
+  },
+  Restore {
+    marker: String,
+  },
+  Settle {
+    done: mpsc::Sender<()>,
+  },
+}
+
+static BUS_JOBS: OnceLock<mpsc::Sender<BusJob>> = OnceLock::new();
+static RESTORES: AtomicU64 = AtomicU64::new(0);
+const SETTLE_LIMIT: Duration = Duration::from_secs(5);
 
 type EventBody = (String, i32, i32, OwnedValue, HashMap<String, OwnedValue>);
 
@@ -299,7 +318,7 @@ fn watch(bus: &Connection) -> Option<Arc<Mutex<Vec<bool>>>> {
   Some(changes)
 }
 
-pub fn turn_on(marker: &str) {
+fn switch_on(marker: &str) {
   let mut slot = BUS_ON.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
   if slot.is_some() {
     return;
@@ -316,10 +335,12 @@ pub fn turn_on(marker: &str) {
   if set_enabled(&bus, true) {
     let _ = std::fs::write(marker, "");
     *slot = Some(BusOn { bus, changes });
+  } else {
+    let _ = bus.close();
   }
 }
 
-pub fn restore(marker: &str) {
+fn switch_back(marker: &str) {
   let mut slot = BUS_ON.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
   let on = slot.take();
   if on.is_none() && !std::path::Path::new(marker).exists() {
@@ -343,6 +364,46 @@ pub fn restore(marker: &str) {
   }
   let _ = std::fs::remove_file(marker);
   let _ = bus.close();
+}
+
+fn bus_jobs() -> &'static mpsc::Sender<BusJob> {
+  BUS_JOBS.get_or_init(|| {
+    let (jobs, queue) = mpsc::channel();
+    std::thread::spawn(move || {
+      for job in queue {
+        match job {
+          BusJob::TurnOn { marker, ticket, done } => {
+            if RESTORES.load(Ordering::SeqCst) == ticket {
+              switch_on(&marker);
+            }
+            done();
+          }
+          BusJob::Restore { marker } => switch_back(&marker),
+          BusJob::Settle { done } => {
+            let _ = done.send(());
+          }
+        }
+      }
+    });
+    jobs
+  })
+}
+
+pub fn turn_on(marker: String, done: Box<dyn FnOnce() + Send>) {
+  let ticket = RESTORES.load(Ordering::SeqCst);
+  let _ = bus_jobs().send(BusJob::TurnOn { marker, ticket, done });
+}
+
+pub fn restore(marker: String) {
+  RESTORES.fetch_add(1, Ordering::SeqCst);
+  let _ = bus_jobs().send(BusJob::Restore { marker });
+}
+
+pub fn settle() {
+  let (done, finished) = mpsc::channel();
+  if bus_jobs().send(BusJob::Settle { done }).is_ok() {
+    let _ = finished.recv_timeout(SETTLE_LIMIT);
+  }
 }
 
 fn wake(app: &Node) {

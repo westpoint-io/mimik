@@ -10,7 +10,9 @@ come from npm packages. Do not add them here.
   the bus on when a capture is armed, because some toolkits only join it once it is on, and leaves a
   marker file so a crashed run can be undone at the next launch. `restore_accessibility` switches it
   back off when the capture ends or Mimik quits, unless it was already on, someone else changed it
-  meanwhile or a screen reader is running (`keeps_bus_on`).
+  meanwhile or a screen reader is running (`keeps_bus_on`). Both run in order on one thread of their
+  own, never on Electron's main thread. A restore cancels a turn-on that has not started yet, and
+  `settle_accessibility` waits for that thread at quit.
   The X window under the point names the app (`_NET_CLIENT_LIST_STACKING`; a server-side title bar
   is the frame's parent), then override-redirect menu windows and GNOME Shell's overlay layers are
   checked before the app's own tree. GTK4 reports window coordinates and everything else screen
