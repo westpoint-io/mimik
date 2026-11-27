@@ -2,7 +2,10 @@ import { CaptureState } from '@mimik/core/capture/machine';
 import type { Addon } from './native';
 
 type CaptureActor = { subscribe(listener: (snapshot: { value: unknown }) => void): unknown };
-type Accessibility = Pick<Addon, 'turnOnAccessibility' | 'restoreAccessibility' | 'releaseWebContent' | 'wakeApps'>;
+type Accessibility = Pick<
+  Addon,
+  'turnOnAccessibility' | 'restoreAccessibility' | 'settleAccessibility' | 'releaseWebContent' | 'wakeApps'
+>;
 
 export function followAccessibility(capture: CaptureActor, native: Accessibility, marker: string): () => void {
   native.restoreAccessibility(marker);
@@ -24,5 +27,8 @@ export function followAccessibility(capture: CaptureActor, native: Accessibility
     if (value === CaptureState.ARMED && !armed) void on.then(() => native.wakeApps());
     armed = value === CaptureState.ARMED;
   });
-  return leave;
+  return () => {
+    leave();
+    native.settleAccessibility();
+  };
 }

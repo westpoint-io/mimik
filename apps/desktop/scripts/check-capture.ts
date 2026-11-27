@@ -158,6 +158,7 @@ app.whenReady().then(async () => {
   } finally {
     target?.kill();
     native?.restoreAccessibility(marker);
+    native?.settleAccessibility();
     rmSync(dir, { recursive: true, force: true });
   }
   process.stdout.write(

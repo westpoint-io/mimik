@@ -12,6 +12,7 @@ export type Addon = {
   releaseWebContent(): void;
   turnOnAccessibility(marker: string): Promise<void>;
   restoreAccessibility(marker: string): void;
+  settleAccessibility(): void;
   wakeApps(): void;
   isSupported(): boolean;
   startInputHook(callback: (event: HookEvent) => void): void;

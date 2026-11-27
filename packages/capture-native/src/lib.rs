@@ -1,6 +1,7 @@
 #![deny(clippy::all)]
 
 use napi::bindgen_prelude::AsyncTask;
+use napi::bindgen_prelude::Object;
 use napi::{Env, Result, Task};
 use napi_derive::napi;
 
@@ -190,38 +191,35 @@ pub fn release_web_content() {
   platform::release_web_content();
 }
 
-pub struct AccessibilityOn {
-  marker: String,
-}
-
-impl Task for AccessibilityOn {
-  type Output = ();
-  type JsValue = ();
-
-  fn compute(&mut self) -> Result<Self::Output> {
-    #[cfg(target_os = "linux")]
-    atspi::turn_on(&self.marker);
-    #[cfg(not(target_os = "linux"))]
-    let _ = &self.marker;
-    Ok(())
-  }
-
-  fn resolve(&mut self, _: Env, _: Self::Output) -> Result<Self::JsValue> {
-    Ok(())
-  }
+fn settled(_: Env) -> Result<()> {
+  Ok(())
 }
 
 #[napi(ts_return_type = "Promise<void>")]
-pub fn turn_on_accessibility(marker: String) -> AsyncTask<AccessibilityOn> {
-  AsyncTask::new(AccessibilityOn { marker })
+pub fn turn_on_accessibility(env: &Env, marker: String) -> Result<Object<'_>> {
+  let (deferred, promise) = env.create_deferred::<(), fn(Env) -> Result<()>>()?;
+  #[cfg(target_os = "linux")]
+  atspi::turn_on(marker, Box::new(move || deferred.resolve(settled)));
+  #[cfg(not(target_os = "linux"))]
+  {
+    drop(marker);
+    deferred.resolve(settled);
+  }
+  Ok(promise)
 }
 
 #[napi]
 pub fn restore_accessibility(marker: String) {
   #[cfg(target_os = "linux")]
-  atspi::restore(&marker);
+  atspi::restore(marker);
   #[cfg(not(target_os = "linux"))]
   drop(marker);
+}
+
+#[napi]
+pub fn settle_accessibility() {
+  #[cfg(target_os = "linux")]
+  atspi::settle();
 }
 
 #[napi]
